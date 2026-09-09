@@ -127,8 +127,16 @@ ahora — desde ~1 m y con las manos en el piano. Todo lo demás es secundario.
 - **Encabezado** = barra de herramientas de una fila (identidad + estado MIDI +
   metrónomo + tiempo de hoy). El panel de conexión vive **dentro** del encabezado.
   No volver a poner un hero decorativo alto: costaba 150 px y no informaba nada.
-- **`.practice-info.stage`** es el elemento dominante: nombre de nota en
-  `clamp(40px,5.4vw,68px)`, digitación y mano debajo, mini pentagrama al lado.
+- **Encabezado `position:sticky`**: el metrónomo y el tiempo de hoy no se van al
+  hacer scroll. Jorge lo pidió porque la cinta de práctica se los tapaba.
+- **`.practice-info.stage`** es el elemento dominante pero **compacto** (~95 px):
+  grid de dos columnas, nota grande a la izquierda (`clamp(34px,4.2vw,56px)`),
+  a su lado progreso + puntos, texto de mano/dedos y retroalimentación; mini
+  pentagramas al lado. No volver a apilar todo en vertical: medía el doble.
+- **Botones interruptor** (`.ghost-btn.active`): relleno dorado tenue + borde
+  dorado + punto. Hover es solo un gris leve (antes hover = encendido y no se
+  distinguía). Los botones de **acción** (Empezar, Escuchar de nuevo) usan
+  `.ghost-btn.primary`, nunca `active`.
 - Dos `MutationObserver` adaptan el escenario sin tocar los modos:
   `progressText` ("Nota 3 / 15") se convierte en puntos (`#stepDots`), y
   `targetNoteLabel` se achica solo (`.sm` >12 chars, `.xs` >22) porque algunos

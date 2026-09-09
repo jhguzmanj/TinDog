@@ -741,6 +741,69 @@
   .fall-key.wrongkey{ fill:var(--wrong); }
   .count-in{ font-family:'Fraunces',serif; font-size:70px; font-weight:600; fill:var(--ivory); opacity:0.9; text-anchor:middle; pointer-events:none; }
   .cascade-wrap{ padding:10px 0; }
+
+  /* =====================================================================
+     Encabezado fijo + escenario compacto.
+     El metrónomo y el tiempo de hoy viven en el encabezado; si la práctica
+     empuja el teclado hacia abajo y hay que hacer scroll, el encabezado
+     se queda pegado arriba en vez de desaparecer.
+     ===================================================================== */
+  body{ padding-top:10px; }
+  header{
+    position:sticky; top:8px; z-index:30;
+    box-shadow:0 12px 30px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.04);
+  }
+  .hero-content{ padding:9px 18px; }
+  .metro, .session-box, .conn{ padding:5px 10px; }
+  .metro-btn{ width:34px; height:34px; }
+  .metro-bpm{ font-size:20px; }
+  .session-time{ font-size:18px; }
+
+  /* Escenario en dos columnas: la nota grande a la izquierda, el texto a su
+     lado. Antes iban apilados y la cinta medía el doble de lo necesario. */
+  .practice-info.stage{ padding:10px 20px; gap:8px 34px; margin-bottom:10px; }
+  .stage-main{
+    display:grid;
+    grid-template-columns:auto minmax(0,1fr);
+    grid-template-areas:"prog dots" "note sub" "note fb";
+    column-gap:20px; row-gap:2px; align-items:center;
+    flex:0 1 min(700px, 100%);
+  }
+  .practice-info .progress{ grid-area:prog; order:0; }
+  .step-dots{ grid-area:dots; min-height:0; }
+  .practice-info .target-note{ grid-area:note; font-size:clamp(34px,4.2vw,56px); align-self:center; }
+  .practice-info .target-note.sm{ font-size:clamp(26px,2.8vw,36px); }
+  .practice-info .target-note.xs{ font-size:clamp(20px,2vw,26px); }
+  .practice-info .target-sub{ grid-area:sub; font-size:16.5px; align-self:end; }
+  .practice-info .feedback{ grid-area:fb; font-size:16px; min-height:22px; align-self:start; }
+  .practice-info .mini-staff{ width:190px; height:92px; }
+
+  /* Botones de encendido/apagado: encendido = relleno dorado tenue + borde
+     dorado + punto; apagado = borde gris. Antes solo cambiaba el color del
+     texto y al pasar el mouse se ponía igual que encendido: no se distinguía. */
+  .ghost-btn{ position:relative; }
+  .ghost-btn:hover{ background:rgba(255,255,255,0.06); color:var(--text); border-color:var(--brass-soft); }
+  .ghost-btn.active{
+    background:rgba(226,185,100,0.18); color:var(--brass); border-color:var(--brass);
+    font-weight:700; box-shadow:inset 0 0 0 1px rgba(226,185,100,0.35);
+  }
+  .ghost-btn.active::before{
+    content:''; display:inline-block; width:7px; height:7px; border-radius:50%;
+    background:var(--brass); margin-right:7px; vertical-align:2px;
+    box-shadow:0 0 6px var(--brass-glow);
+  }
+  .ghost-btn.active:hover{ background:rgba(226,185,100,0.26); }
+  /* botones de acción (Empezar, Escuchar de nuevo): siempre rellenos, no son interruptores */
+  .ghost-btn.primary{ background:var(--brass-soft); color:#0c0a06; border-color:transparent; font-weight:700; }
+  .ghost-btn.primary:hover{ background:var(--brass); color:#0c0a06; }
+  /* "ir directo a": el actual bien marcado, los hechos con marca verde */
+  .pick-btn:hover{ background:rgba(255,255,255,0.07); color:var(--text); border-color:var(--brass-soft); }
+  .pick-btn.current{ background:var(--brass); color:#0c0a06; border-color:var(--brass); font-weight:700; }
+  .pick-btn.done{ border-color:rgba(127,196,168,0.6); color:#7fc4a8; background:rgba(127,196,168,0.08); }
+  .pick-btn.done::after{ content:' ✓'; font-size:0.85em; }
+  /* al presionar cualquier botón se nota */
+  button:active{ transform:scale(0.96); filter:brightness(1.25); }
+  .mode-tab:hover:not(.active){ background:rgba(255,255,255,0.05); }
 </style>
 </head>
 <body>
@@ -914,7 +977,7 @@
       <button id="earModeBtn" class="ghost-btn" title="La app toca el intervalo y tú lo tienes que encontrar en el piano.">👂 De oído</button>
     </div>
     <div id="earBar" class="ear-bar" style="display:none;">
-      <button id="earPlayBtn" class="ghost-btn active">▶ Escuchar de nuevo</button>
+      <button id="earPlayBtn" class="ghost-btn primary">▶ Escuchar de nuevo</button>
       <span class="reg-label" id="earHint">Escucha las dos notas. La primera es la nota de partida (está marcada). Toca la segunda.</span>
       <span class="reg-label" id="earScore"></span>
     </div>
@@ -955,7 +1018,7 @@
           <select id="cascadeTo" aria-label="Hasta el paso"></select>
           <button id="cascadeLoopBtn" class="ghost-btn" title="Al terminar el tramo, vuelve a empezar solo.">🔁 En bucle</button>
           <button id="cascadeClickBtn" class="ghost-btn active" title="Clic de metrónomo en cada pulso (más fuerte en el primero del compás).">🔔 Clics</button>
-          <button id="cascadeStartBtn" class="ghost-btn active">▶ Empezar</button>
+          <button id="cascadeStartBtn" class="ghost-btn primary">▶ Empezar</button>
           <span id="cascadeScore" class="cascade-score"></span>
         </div>
         <p class="cascade-help">La cuenta de entrada son cuatro pulsos. Las notas <span class="hand-tag lh">IZQ</span> bajan en azul y las <span class="hand-tag rh">DER</span> en dorado; las líneas más marcadas son el inicio de cada compás.</p>
