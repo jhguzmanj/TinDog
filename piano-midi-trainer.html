@@ -675,6 +675,72 @@
     .practice-info.stage{ padding:16px 18px; }
     .practice-info .mini-staff{ width:180px; height:90px; }
   }
+
+  /* =====================================================================
+     Color con significado, sin gritar: cada grupo de opciones tiene un
+     tono propio y apagado, y el dorado se reserva para "dónde estoy"
+     (pestaña principal) y "qué toco ahora" (escenario).
+       mano      → izquierda azul, derecha dorado, ambas mitad y mitad
+       octava    → marfil
+       sentido   → salvia
+       tipo/pos. → malva
+     ===================================================================== */
+  :root{ --sage:#a4c9ab; --mauve:#c6afd9; }
+  .reg-label.g-hand::before, .reg-label.g-oct::before, .reg-label.g-dir::before, .reg-label.g-type::before{
+    content:''; display:inline-block; width:7px; height:7px; border-radius:50%;
+    margin-right:7px; vertical-align:1px;
+  }
+  .reg-label.g-hand::before{ background:linear-gradient(90deg, var(--lh) 50%, var(--rh) 50%); }
+  .reg-label.g-oct::before{ background:var(--ivory); }
+  .reg-label.g-dir::before{ background:var(--sage); }
+  .reg-label.g-type::before{ background:var(--mauve); }
+  .g-hand .reg-btn.active[data-shand="lh"], .g-hand .reg-btn.active[data-chand="lh"], .g-hand .hand-btn.active[data-hand="lh"]{
+    background:var(--lh); color:#07131f;
+  }
+  .g-hand .reg-btn.active[data-shand="both"], .g-hand .hand-btn.active[data-hand="both"]{
+    background:linear-gradient(90deg, var(--lh) 0%, var(--lh) 46%, var(--rh) 54%, var(--rh) 100%); color:#0c0a06;
+  }
+  .g-oct .reg-btn.active{ background:var(--ivory); color:#0c0a06; }
+  .g-dir .reg-btn.active{ background:var(--sage); color:#08190d; }
+  .g-type .reg-btn.active{ background:var(--mauve); color:#170b22; }
+  /* sub-pestañas (tonalidad, pieza, nivel) en marfil: distinto del "dónde estoy" dorado */
+  .mode-tab.sub.active{ background:var(--ivory); border-color:var(--ivory); color:#0c0a06; }
+  .mode-tab.sub.warn.active{ background:#e9d9a8; }
+  /* segmentado también fuera de .reg-bar (barra de cascada) */
+  .seg{
+    display:inline-flex; flex-wrap:wrap; gap:2px; padding:3px; border-radius:11px;
+    border:1px solid var(--panel-border); background:rgba(0,0,0,0.38);
+  }
+  .seg .reg-btn{ border:none; background:transparent; border-radius:8px; padding:7px 13px; font-size:14.5px; color:var(--text-dim); }
+  .seg .reg-btn:hover:not(.active){ background:rgba(255,255,255,0.07); color:var(--text); }
+  .seg .reg-btn.active{ background:var(--ivory); color:#0c0a06; font-weight:700; }
+
+  /* --- pentagramas lado a lado en escalas --- */
+  .mini-staves{ display:flex; gap:14px; align-items:center; flex:0 0 auto; }
+  .staff-label{ font-family:'Source Sans 3',sans-serif; font-size:9px; font-weight:700; letter-spacing:1px; fill:var(--text-dim); }
+  .staff-label.lh{ fill:var(--lh); }
+  .staff-label.rh{ fill:var(--rh); }
+
+  /* --- mapa de calor: verde practicado, rojo apagado sin práctica --- */
+  .heat-cell.l1{ background:#2b4a36; } .heat-cell.l2{ background:#3b7050; } .heat-cell.l3{ background:#4f9a6c; } .heat-cell.l4{ background:#7fd39d; }
+  .heat-cell.l0.missed{ background:#3d2226; border-color:#552c31; }
+  .heat-cell.today{ outline:1px solid var(--ivory); }
+
+  /* --- cascada: manos, pulso, cuenta de entrada, errores --- */
+  .cascade-toolbar{ gap:8px 12px; }
+  .cascade-toolbar select{ font-size:14px; padding:5px 8px; max-width:190px; }
+  .cascade-help{ margin:4px 0 8px; font-size:14.5px; color:var(--text-dim); line-height:1.5; }
+  .fall-note.pending.rh{ fill:#d8b25f; opacity:0.95; }
+  .fall-note.pending.lh{ fill:#6fa9de; opacity:0.95; }
+  .fall-note.hit{ fill:var(--correct); }
+  .fall-note.missed{ fill:var(--wrong); opacity:0.7; }
+  .beat-line{ stroke:rgba(255,255,255,0.14); stroke-width:1; }
+  .beat-line.bar{ stroke:rgba(255,255,255,0.26); stroke-width:1.6; }
+  .fall-key.lit-lh{ fill:var(--lh); }
+  .fall-key.black.lit-lh{ fill:#3d7db8; }
+  .fall-key.wrongkey{ fill:var(--wrong); }
+  .count-in{ font-family:'Fraunces',serif; font-size:70px; font-weight:600; fill:var(--ivory); opacity:0.9; text-anchor:middle; pointer-events:none; }
+  .cascade-wrap{ padding:10px 0; }
 </style>
 </head>
 <body>
@@ -771,24 +837,24 @@
     </div>
     <div class="mode-tabs sub-tabs scroll-tabs" id="scaleSubTabs" style="display:none;"></div>
     <div id="scaleOptBar" class="reg-bar" style="display:none;">
-      <span class="reg-label">Mano</span>
-      <div class="reg-picker" id="scaleHandPicker">
+      <span class="reg-label g-hand">Mano</span>
+      <div class="reg-picker g-hand" id="scaleHandPicker">
         <button class="reg-btn active" data-shand="rh">Derecha</button>
         <button class="reg-btn" data-shand="lh">Izquierda</button>
         <button class="reg-btn" data-shand="both">Ambas</button>
       </div>
-      <span class="reg-label">Octavas</span>
-      <div class="reg-picker" id="scaleOctPicker">
+      <span class="reg-label g-oct">Octavas</span>
+      <div class="reg-picker g-oct" id="scaleOctPicker">
         <button class="reg-btn active" data-soct="1">1</button>
         <button class="reg-btn" data-soct="2">2</button>
       </div>
-      <span class="reg-label">Sentido</span>
-      <div class="reg-picker" id="scaleDirPicker">
+      <span class="reg-label g-dir">Sentido</span>
+      <div class="reg-picker g-dir" id="scaleDirPicker">
         <button class="reg-btn" data-sdir="up">Subida</button>
         <button class="reg-btn active" data-sdir="updown">Subida y bajada</button>
       </div>
-      <span class="reg-label" id="minorVarLabel" style="display:none;">Tipo</span>
-      <div class="reg-picker" id="minorVarPicker" style="display:none;">
+      <span class="reg-label g-type" id="minorVarLabel" style="display:none;">Tipo</span>
+      <div class="reg-picker g-type" id="minorVarPicker" style="display:none;">
         <button class="reg-btn active" data-mvar="natural">Natural</button>
         <button class="reg-btn" data-mvar="harmonic">Armónica</button>
       </div>
@@ -804,7 +870,10 @@
         <span class="target-sub" id="targetSubLabel"></span>
         <span class="feedback" id="feedbackText"></span>
       </div>
-      <svg id="miniStaff" class="mini-staff" style="display:none;" aria-label="Nota en el pentagrama"></svg>
+      <div class="mini-staves" id="miniStaves" style="display:none;">
+        <svg id="miniStaff" class="mini-staff" aria-label="Nota en el pentagrama"></svg>
+        <svg id="miniStaff2" class="mini-staff" style="display:none;" aria-label="Nota de la mano derecha en el pentagrama"></svg>
+      </div>
     </div>
     <div id="timingBox" class="timing-box" style="display:none;"></div>
     <div id="scaleTip" class="tip" style="display:none;"></div>
@@ -813,17 +882,17 @@
       <div class="reg-picker" id="chordPicker"></div>
     </div>
     <div id="chordOctaveBar" class="reg-bar" style="display:none;">
-      <span class="reg-label">Octava</span>
-      <div class="reg-picker" id="chordOctavePicker"></div>
+      <span class="reg-label g-oct">Octava</span>
+      <div class="reg-picker g-oct" id="chordOctavePicker"></div>
       <button id="chordRandomOct" class="ghost-btn">🎲 Octava al azar</button>
-      <span class="reg-label">Posición</span>
-      <div class="reg-picker" id="chordInvPicker">
+      <span class="reg-label g-type">Posición</span>
+      <div class="reg-picker g-type" id="chordInvPicker">
         <button class="reg-btn active" data-inv="0">Fundamental</button>
         <button class="reg-btn" data-inv="1">1ª inversión</button>
         <button class="reg-btn" data-inv="2">2ª inversión</button>
       </div>
-      <span class="reg-label">Mano</span>
-      <div class="reg-picker" id="chordHandPicker">
+      <span class="reg-label g-hand">Mano</span>
+      <div class="reg-picker g-hand" id="chordHandPicker">
         <button class="reg-btn active" data-chand="rh">Derecha</button>
         <button class="reg-btn" data-chand="lh">Izquierda</button>
       </div>
@@ -837,10 +906,10 @@
       <div class="reg-picker" id="intervalPicker"></div>
     </div>
     <div id="intervalRootBar" class="reg-bar" style="display:none;">
-      <span class="reg-label">Nota de partida</span>
-      <div class="reg-picker" id="intervalRootPicker"></div>
-      <span class="reg-label">Octava</span>
-      <div class="reg-picker" id="intervalOctavePicker"></div>
+      <span class="reg-label g-type">Nota de partida</span>
+      <div class="reg-picker g-type" id="intervalRootPicker"></div>
+      <span class="reg-label g-oct">Octava</span>
+      <div class="reg-picker g-oct" id="intervalOctavePicker"></div>
       <button id="intervalRandomRoot" class="ghost-btn">🎲 Al azar</button>
       <button id="earModeBtn" class="ghost-btn" title="La app toca el intervalo y tú lo tienes que encontrar en el piano.">👂 De oído</button>
     </div>
@@ -850,20 +919,18 @@
       <span class="reg-label" id="earScore"></span>
     </div>
     <div id="distanceBox" class="distance-box" style="display:none;"></div>
-    <div id="intervalTip" class="tip" style="display:none;">
-      <b>Cubierto en clase:</b> del unísono hasta la 8ª (octava). Ahora puedes transportarlos: cambia la nota de partida y la octava para escuchar el mismo intervalo en cualquier punto del piano. La distancia en tonos <em>no cambia</em> aunque cambies de nota — eso es justamente lo que define al intervalo.
-    </div>
+    <div id="intervalTip" class="tip" style="display:none;"></div>
 
     <div id="fragmentsPanel" style="display:none;">
       <div class="mode-tabs sub-tabs scroll-tabs" id="fragSubTabs"></div>
       <div id="agilOctaveBar" class="reg-bar" style="display:none;">
-        <span class="reg-label">Octava mano derecha</span>
-        <div class="reg-picker" id="agilRhOctavePicker"></div>
-        <span class="reg-label">Octava mano izquierda</span>
-        <div class="reg-picker" id="agilLhOctavePicker"></div>
+        <span class="reg-label g-oct">Octava mano derecha</span>
+        <div class="reg-picker g-oct" id="agilRhOctavePicker"></div>
+        <span class="reg-label g-oct">Octava mano izquierda</span>
+        <div class="reg-picker g-oct" id="agilLhOctavePicker"></div>
       </div>
       <div class="frag-bar">
-        <div class="hand-picker">
+        <div class="hand-picker g-hand">
           <button class="hand-btn active" data-hand="both">Ambas manos</button>
           <button class="hand-btn" data-hand="rh">Solo derecha</button>
           <button class="hand-btn" data-hand="lh">Solo izquierda</button>
@@ -874,13 +941,24 @@
       <div id="fragTip" class="tip"></div>
       <div id="cascadeWrap" style="display:none;">
         <div class="cascade-toolbar">
+          <div class="reg-picker seg g-mode" id="cascadeModePicker" title="Espera por mí: las notas se detienen en la línea hasta que toques la correcta. A tempo: siguen cayendo y se mide tu tiempo.">
+            <button class="reg-btn active" data-cmode="wait">⏸ Espera por mí</button>
+            <button class="reg-btn" data-cmode="timed">⏱ A tempo</button>
+          </div>
           <span class="reg-label">Velocidad</span>
           <button class="ghost-btn speed-btn" data-speed="-1">–</button>
           <span id="cascadeSpeedLabel" class="zoom-value">100%</span>
           <button class="ghost-btn speed-btn" data-speed="1">+</button>
+          <span class="reg-label">Tramo</span>
+          <select id="cascadeFrom" aria-label="Desde el paso"></select>
+          <span class="reg-label">a</span>
+          <select id="cascadeTo" aria-label="Hasta el paso"></select>
+          <button id="cascadeLoopBtn" class="ghost-btn" title="Al terminar el tramo, vuelve a empezar solo.">🔁 En bucle</button>
+          <button id="cascadeClickBtn" class="ghost-btn active" title="Clic de metrónomo en cada pulso (más fuerte en el primero del compás).">🔔 Clics</button>
           <button id="cascadeStartBtn" class="ghost-btn active">▶ Empezar</button>
           <span id="cascadeScore" class="cascade-score"></span>
         </div>
+        <p class="cascade-help">La cuenta de entrada son cuatro pulsos. Las notas <span class="hand-tag lh">IZQ</span> bajan en azul y las <span class="hand-tag rh">DER</span> en dorado; las líneas más marcadas son el inicio de cada compás.</p>
         <div class="cascade-wrap">
           <svg id="cascadeSvg"></svg>
         </div>
@@ -920,7 +998,7 @@
       <p class="info-note">Todo se guarda en este navegador (localStorage). Exporta un respaldo de vez en cuando; si cambias de computador, impórtalo allá.</p>
       <div class="stat-row" id="progressStats"></div>
       <h4 class="prog-h4">Últimas 12 semanas</h4>
-      <div class="heat-wrap"><div class="heat-grid" id="heatGrid"></div><div class="heat-legend">menos <span class="heat-cell l0"></span><span class="heat-cell l1"></span><span class="heat-cell l2"></span><span class="heat-cell l3"></span><span class="heat-cell l4"></span> más</div></div>
+      <div class="heat-wrap"><div class="heat-grid" id="heatGrid"></div><div class="heat-legend"><span class="heat-cell l0 missed"></span> sin práctica &nbsp; <span class="heat-cell l1"></span><span class="heat-cell l2"></span><span class="heat-cell l3"></span><span class="heat-cell l4"></span> de 1 a 20+ min</div></div>
       <h4 class="prog-h4">Dominio por módulo</h4>
       <div class="mastery-list" id="masteryList"></div>
       <div class="prog-actions">
@@ -1709,20 +1787,34 @@ const SONGS = [
 
 const FRAGMENTS = SONGS;
 
+// ref = cómo reconocerlo de oído; tip = qué practicar / dónde cae en el teclado.
 const INTERVALS = [
-  {name:'Unísono',            semitones:0,  ref:'La misma nota repetida.'},
-  {name:'2ª menor',           semitones:1,  ref:'Suena tenso. Es el motivo de "Tiburón".'},
-  {name:'2ª mayor',           semitones:2,  ref:'Las dos primeras notas de "Cumpleaños feliz".'},
-  {name:'3ª menor',           semitones:3,  ref:'El color triste. Base de todos los acordes menores.'},
-  {name:'3ª mayor',           semitones:4,  ref:'El color alegre. Base de todos los acordes mayores.'},
-  {name:'4ª justa',           semitones:5,  ref:'El comienzo de la "Marcha nupcial".'},
-  {name:'4ª aum. / 5ª dism.', semitones:6,  ref:'El tritono, justo la mitad de la octava. Inestable — pide resolver.'},
-  {name:'5ª justa',           semitones:7,  ref:'Sonido hueco y abierto. Tema de "Star Wars", y la base del power chord.'},
-  {name:'6ª menor',           semitones:8,  ref:'Melancólico. Es la 3ª mayor dada vuelta (invertida).'},
-  {name:'6ª mayor',           semitones:9,  ref:'Dulce, tipo "My Way".'},
-  {name:'7ª menor',           semitones:10, ref:'El sonido del blues y del acorde de dominante (C7).'},
-  {name:'7ª mayor',           semitones:11, ref:'Suave y sofisticado, típico del jazz.'},
-  {name:'8ª (octava)',        semitones:12, ref:'La misma nota, más aguda. Suena "igual pero arriba".'},
+  {name:'Unísono',            semitones:0,  ref:'La misma nota repetida.',
+   tip:'No es una distancia, es el punto de partida: la misma tecla dos veces. Úsalo para igualar el toque — que las dos suenen exactamente igual de fuerte.'},
+  {name:'2ª menor',           semitones:1,  ref:'Suena tenso. Es el motivo de "Tiburón".',
+   tip:'La tecla vecina inmediata, contando las negras. Es la distancia más chica del piano. Entre dos blancas solo pasa en Mi–Fa y Si–Do: por eso ahí no hay negra.'},
+  {name:'2ª mayor',           semitones:2,  ref:'Las dos primeras notas de "Cumpleaños feliz".',
+   tip:'Un tono: dos teclas con una en medio (casi siempre una negra). Es el paso normal de cualquier escala; si te sale cómodo con dedos vecinos, ya tienes la base.'},
+  {name:'3ª menor',           semitones:3,  ref:'El color triste. Base de todos los acordes menores.',
+   tip:'Tres semitonos. Comparada con la 3ª mayor es un semitono más corta y suena "triste": es exactamente lo que diferencia La menor de La mayor. Toca las dos seguidas para oírlo.'},
+  {name:'3ª mayor',           semitones:4,  ref:'El color alegre. Base de todos los acordes mayores.',
+   tip:'Cuatro semitonos. En Do–Mi: dos blancas con una blanca en medio. Dedos 1 y 3 de la derecha, 5 y 3 de la izquierda. Es la primera "abertura" real de la mano.'},
+  {name:'4ª justa',           semitones:5,  ref:'El comienzo de la "Marcha nupcial".',
+   tip:'Cinco semitonos. Do–Fa: cuenta cuatro blancas incluyendo las dos de los extremos. Casi todas las 4ª entre blancas son justas; la única que no es Fa–Si.'},
+  {name:'4ª aum. / 5ª dism.', semitones:6,  ref:'El tritono, justo la mitad de la octava. Inestable — pide resolver.',
+   tip:'Seis semitonos: la mitad exacta de la octava. Entre blancas solo existe en Fa–Si. Suena "colgado", como una pregunta sin respuesta; después toca Mi–Do y sentirás cómo se resuelve.'},
+  {name:'5ª justa',           semitones:7,  ref:'Sonido hueco y abierto. Tema de "Star Wars", y la base del power chord.',
+   tip:'Siete semitonos. Do–Sol: en posición de 5 dedos, el pulgar y el meñique caen justo en una 5ª. Es tu "ancho de mano" natural, por eso está en todos los acordes básicos.'},
+  {name:'6ª menor',           semitones:8,  ref:'Melancólico. Es la 3ª mayor dada vuelta (invertida).',
+   tip:'Ocho semitonos. Do–Lab. Ya hay que abrir la mano más allá de los 5 dedos: pulgar en Do y meñique en Lab, sin tensar la muñeca. Si no llegas cómodo, usa las dos manos por ahora.'},
+  {name:'6ª mayor',           semitones:9,  ref:'Dulce, tipo "My Way".',
+   tip:'Nueve semitonos. Do–La: seis blancas contando los extremos. Es la 3ª menor invertida (La–Do dada vuelta). Mano abierta, sin forzar.'},
+  {name:'7ª menor',           semitones:10, ref:'El sonido del blues y del acorde de dominante (C7).',
+   tip:'Diez semitonos. Do–Sib: un tono antes de la octava. Es la nota que convierte un acorde mayor en un "7" (C7) y le da ganas de ir a Fa. Prueba tocar Do–Mi–Sol–Sib juntos.'},
+  {name:'7ª mayor',           semitones:11, ref:'Suave y sofisticado, típico del jazz.',
+   tip:'Once semitonos. Do–Si: un semitono antes de la octava, y por eso "roza". Sola suena tensa; dentro de un acorde (Do–Mi–Sol–Si) suena elegante. Ancho de mano casi de octava.'},
+  {name:'8ª (octava)',        semitones:12, ref:'La misma nota, más aguda. Suena "igual pero arriba".',
+   tip:'Doce semitonos: misma letra, una vuelta completa del teclado. Pulgar y meñique bien abiertos. Si aún no llegas, es completamente normal al empezar: tócala con dos manos y ya.'},
 ];
 
 const ROOT_NAMES = ['Do','Do#','Re','Mib','Mi','Fa','Fa#','Sol','Sol#','La','Sib','Si'];
@@ -1822,7 +1914,7 @@ function enterMode(mode){
   show(scaleTip, isScale);
   show(scaleOptBar, isScale, 'flex');
   show($('timingBox'), isScale && scaleTempoMode, 'flex');
-  show($('miniStaff'), isScale);
+  show($('miniStaves'), isScale, 'flex');
   show(functionsPanel, mode === 'functions');
   show(fragmentsPanel, mode === 'fragments' || mode === 'agility');
   show(todayPanel, mode === 'today');
@@ -2436,22 +2528,16 @@ function startFragmentStep(){
   const names = notes.slice().sort((a,b)=>a-b).map(n => noteLabel(n)).join(' + ');
   targetNoteLabel.textContent = names;
 
-  let sub = '';
-  if(currentHand === 'both'){
-    const parts = [];
-    if(step.lh.length) parts.push('izq: ' + step.lh.map(noteLabel).join(' '));
-    if(step.rh.length) parts.push('der: ' + step.rh.map(noteLabel).join(' '));
-    sub = parts.join('   |   ');
-  } else {
-    sub = currentHand === 'rh' ? 'mano derecha' : 'mano izquierda';
-  }
-  if(step.label) sub = step.label + '  —  ' + sub;
-  targetSubLabel.textContent = sub;
+  // Cada mano con su color, también en el texto: izquierda fría, derecha cálida.
+  const parts = [];
+  if(currentHand !== 'rh' && step.lh.length) parts.push('<span class="hand-tag lh">IZQ</span>' + step.lh.map(noteLabel).join(' '));
+  if(currentHand !== 'lh' && step.rh.length) parts.push('<span class="hand-tag rh">DER</span>' + step.rh.map(noteLabel).join(' '));
+  let sub = parts.join(' &nbsp;·&nbsp; ');
+  if(step.label) sub = step.label + ' &nbsp;—&nbsp; ' + sub;
+  targetSubLabel.innerHTML = sub;
 
-  notes.forEach(n => {
-    const r = getRect(n);
-    if(r) r.classList.add('target');
-  });
+  if(currentHand !== 'rh') step.lh.forEach(n => markTarget(n, 'lh'));
+  if(currentHand !== 'lh') step.rh.forEach(n => markTarget(n, 'rh'));
 }
 
 function checkFragment(){
@@ -2577,6 +2663,7 @@ function startIntervalStep(){
 
   renderDistanceBox(iv, root, top);
   distanceBox.style.display = 'block';
+  intervalTip.innerHTML = '<b>' + iv.name + ':</b> ' + iv.tip;
   scrollToTargets();
 }
 
@@ -2964,7 +3051,16 @@ renderFuncDetail();
 })();
 
 
-// ===== Modo cascada (notas cayendo, estilo "las que ves en YouTube") =====
+// ===== Modo cascada (notas cayendo) =====
+// Dos modos:
+//  - "espera" (por defecto): el tiempo se CONGELA cuando una nota llega a la
+//    línea y no sigue hasta que toques la correcta. Es un profesor paciente.
+//  - "tempo": las notas siguen cayendo pase lo que pase y se mide el tiempo,
+//    como un juego de ritmo. Es el examen, para cuando la pieza ya sale.
+// Además: color por mano, líneas de pulso y de compás, cuenta de entrada,
+// tramo elegible que se puede repetir en bucle, clics de metrónomo y un
+// mini-teclado que se puede tocar con el mouse (el grande se esconde para
+// que solo haya UN teclado que mirar).
 const raf = window.requestAnimationFrame ? window.requestAnimationFrame.bind(window) : (cb) => setTimeout(() => cb(performance.now()), 16);
 const caf = window.cancelAnimationFrame ? window.cancelAnimationFrame.bind(window) : clearTimeout;
 
@@ -2974,39 +3070,52 @@ const cascadeSvg = document.getElementById('cascadeSvg');
 const cascadeStartBtn = document.getElementById('cascadeStartBtn');
 const cascadeScoreEl = document.getElementById('cascadeScore');
 const cascadeSpeedLabel = document.getElementById('cascadeSpeedLabel');
+const cascadeLoopBtn = document.getElementById('cascadeLoopBtn');
+const cascadeClickBtn = document.getElementById('cascadeClickBtn');
+const cascadeFromSel = document.getElementById('cascadeFrom');
+const cascadeToSel = document.getElementById('cascadeTo');
+const keyboardWrapEl = document.getElementById('keyboardWrap');
 
 const CASCADE_SPEEDS = [40, 50, 60, 70, 80, 90, 100, 115, 130, 150];
 let cascadeSpeedIdx = 4; // arranca en 80%: más lento que el tempo original
+let cascadeMode = 'wait';
+let cascadeClicks = true;
+let cascadeLoop = false;
+let cascadeFrom = 1, cascadeTo = null; // pasos (1-based); null = hasta el final
+let cascadeRangeFragId = null;
 let cascadeOn = false;
 let cascade = null;
 let cascadeXFor = {};
 let cascadeKeyRects = {};
 let cascadeMinUnits = 0;
+try { const m = localStorage.getItem('cascadeMode'); if(m === 'wait' || m === 'timed') cascadeMode = m; } catch(e){}
 
-const FALL_FWK = 30, FALL_FBKW = 18, FALL_FBKH = 30, FALL_KBH = 52, FALL_H = 150, FALL_PAD = 6;
-const LOOKAHEAD_MS = 2200;
+const FALL_FWK = 30, FALL_FBKW = 18, FALL_FBKH = 30, FALL_KBH = 52, FALL_H = 210, FALL_PAD = 6;
+const LOOKAHEAD_MS = 2600;
 const LIGHT_LEAD_MS = 450;
 const HIT_TOLERANCE_MS = 320;
+const COUNT_IN_BEATS = 4;
+const BEATS_PER_BAR = 4;
 
 // Cuenta cuántas notas activas piden encendida cada tecla, para que dos
 // eventos solapados no se apaguen entre sí al terminar el primero.
 const litCounts = {};
-function setCascadeKeyLit(note, on){
+function setCascadeKeyLit(note, on, hand){
   litCounts[note] = (litCounts[note] || 0) + (on ? 1 : -1);
   if(litCounts[note] < 0) litCounts[note] = 0;
   const lit = litCounts[note] > 0;
   const bigRect = getRect(note);
-  if(bigRect) bigRect.classList.toggle('target', lit);
+  if(bigRect){ bigRect.classList.toggle('target', lit); bigRect.classList.toggle('lh', lit && hand === 'lh'); }
   const miniRect = cascadeKeyRects[note];
-  if(miniRect) miniRect.classList.toggle('lit', lit);
+  if(miniRect){ miniRect.classList.toggle('lit', lit); miniRect.classList.toggle('lit-lh', lit && hand === 'lh'); }
 }
 function clearAllCascadeLights(){
   Object.keys(litCounts).forEach(n => {
     litCounts[n] = 0;
     const bigRect = getRect(parseInt(n, 10));
-    if(bigRect) bigRect.classList.remove('target');
+    if(bigRect) bigRect.classList.remove('target', 'lh');
     const miniRect = cascadeKeyRects[n];
-    if(miniRect) miniRect.classList.remove('lit');
+    if(miniRect) miniRect.classList.remove('lit', 'lit-lh');
   });
 }
 
@@ -3031,6 +3140,55 @@ try {
 } catch(e){}
 applyCascadeSpeed();
 
+function applyCascadeMode(){
+  document.querySelectorAll('#cascadeModePicker .reg-btn').forEach(b => b.classList.toggle('active', b.dataset.cmode === cascadeMode));
+  try { localStorage.setItem('cascadeMode', cascadeMode); } catch(e){}
+}
+document.querySelectorAll('#cascadeModePicker .reg-btn').forEach(b => b.addEventListener('click', () => {
+  cascadeMode = b.dataset.cmode;
+  applyCascadeMode();
+  if(cascade && !cascade.finished) startCascade();
+}));
+applyCascadeMode();
+cascadeLoopBtn.addEventListener('click', () => { cascadeLoop = !cascadeLoop; cascadeLoopBtn.classList.toggle('active', cascadeLoop); });
+cascadeClickBtn.addEventListener('click', () => { cascadeClicks = !cascadeClicks; cascadeClickBtn.classList.toggle('active', cascadeClicks); });
+
+// Tramo: qué pasos de la pieza entran en la cascada (para machacar 2 compases).
+function cascadeSteps(){
+  const all = currentFragment.steps;
+  const from = Math.max(1, Math.min(cascadeFrom, all.length));
+  const to = cascadeTo ? Math.max(from, Math.min(cascadeTo, all.length)) : all.length;
+  return { from, to, steps: all.slice(from - 1, to) };
+}
+function refreshCascadeRange(){
+  const n = currentFragment.steps.length;
+  if(cascadeRangeFragId !== currentFragment.id){ cascadeRangeFragId = currentFragment.id; cascadeFrom = 1; cascadeTo = null; }
+  const fill = (sel, val) => {
+    sel.innerHTML = '';
+    for(let i = 1; i <= n; i++){
+      const o = document.createElement('option');
+      o.value = i; o.textContent = i;
+      const st = currentFragment.steps[i - 1];
+      if(st && st.label) o.textContent = i + ' · ' + st.label;
+      sel.appendChild(o);
+    }
+    sel.value = String(val);
+  };
+  fill(cascadeFromSel, cascadeFrom);
+  fill(cascadeToSel, cascadeTo || n);
+}
+cascadeFromSel.addEventListener('change', () => {
+  cascadeFrom = parseInt(cascadeFromSel.value, 10);
+  if(cascadeTo && cascadeTo < cascadeFrom){ cascadeTo = cascadeFrom; cascadeToSel.value = String(cascadeTo); }
+  setupCascadeKeyboard(); exitCascade();
+});
+cascadeToSel.addEventListener('change', () => {
+  cascadeTo = parseInt(cascadeToSel.value, 10);
+  if(cascadeTo < cascadeFrom){ cascadeFrom = cascadeTo; cascadeFromSel.value = String(cascadeFrom); }
+  if(cascadeTo >= currentFragment.steps.length) cascadeTo = null;
+  setupCascadeKeyboard(); exitCascade();
+});
+
 cascadeBtn.addEventListener('click', () => {
   cascadeOn = !cascadeOn;
   cascadeBtn.classList.toggle('active', cascadeOn);
@@ -3038,9 +3196,12 @@ cascadeBtn.addEventListener('click', () => {
   if(cascadeOn){
     practiceInfo.style.display = 'none';
     clearAllHighlights(); // borra la marca del modo paso a paso
+    if(keyboardWrapEl) keyboardWrapEl.style.display = 'none'; // un solo teclado en pantalla
+    refreshCascadeRange();
     setupCascadeKeyboard();
   } else {
     exitCascade();
+    if(keyboardWrapEl) keyboardWrapEl.style.display = '';
     if(currentMode === 'fragments' || currentMode === 'agility'){
       practiceInfo.style.display = 'flex';
       startFragmentStep(); // vuelve a marcar el paso actual
@@ -3051,7 +3212,10 @@ cascadeBtn.addEventListener('click', () => {
 function exitCascade(){
   if(cascade){
     if(cascade.raf) caf(cascade.raf);
+    if(cascade.loopTimer) clearTimeout(cascade.loopTimer);
     cascade.events.forEach(ev => { if(ev.el) ev.el.remove(); });
+    cascade.beats.forEach(b => { if(b.el) b.el.remove(); });
+    if(cascade.countEl) cascade.countEl.remove();
   }
   if(typeof clearAllCascadeLights === 'function') clearAllCascadeLights();
   cascade = null;
@@ -3059,12 +3223,22 @@ function exitCascade(){
   if(cascadeScoreEl) cascadeScoreEl.textContent = '';
 }
 
+function cascadeHandNotes(step){
+  const out = [];
+  if(currentHand !== 'rh') step.lh.forEach(n => out.push({ n, hand:'lh' }));
+  if(currentHand !== 'lh') step.rh.forEach(n => out.push({ n, hand:'rh' }));
+  return out;
+}
+
 function setupCascadeKeyboard(){
+  if(cascadeRangeFragId !== currentFragment.id) refreshCascadeRange();
   let notes = [];
-  currentFragment.steps.forEach(st => { stepNotes(st, currentHand).forEach(n => notes.push(n)); });
+  cascadeSteps().steps.forEach(st => { cascadeHandNotes(st).forEach(x => notes.push(x.n)); });
   if(!notes.length) notes = [60];
-  let lo = Math.max(MIN_NOTE, Math.min(...notes) - 1);
-  let hi = Math.min(MAX_NOTE, Math.max(...notes) + 1);
+  let lo = Math.max(MIN_NOTE, Math.min(...notes) - 2);
+  let hi = Math.min(MAX_NOTE, Math.max(...notes) + 2);
+  // mínimo una octava y media de ancho para que no quede un teclado enano
+  while(hi - lo < 18 && (lo > MIN_NOTE || hi < MAX_NOTE)){ if(lo > MIN_NOTE) lo--; if(hi < MAX_NOTE) hi++; }
 
   cascadeMinUnits = xUnitsFor(lo);
   const totalUnits = xUnitsFor(hi) - cascadeMinUnits + 1;
@@ -3072,14 +3246,13 @@ function setupCascadeKeyboard(){
   const svgH = FALL_H + FALL_KBH + 6;
   cascadeSvg.setAttribute('viewBox', `0 0 ${svgW} ${svgH}`);
   cascadeSvg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
-  // Escala en píxeles: prioriza que la tecla se vea cómoda (~40px de ancho),
-  // pero nunca dejando el bloque más alto de MAX_CASCADE_PX para que quepa
-  // en pantalla junto con el teclado grande de abajo.
-  const MAX_CASCADE_PX = 265;
-  const DESIRED_KEY_PX = 40;
+  // Sin el teclado grande abajo hay más alto disponible: teclas cómodas (~44px)
+  // pero nunca más de MAX_CASCADE_PX de alto.
+  const MAX_CASCADE_PX = 460;
+  const DESIRED_KEY_PX = 44;
   let scale = DESIRED_KEY_PX / FALL_FWK;
   scale = Math.min(scale, MAX_CASCADE_PX / svgH);
-  scale = Math.max(scale, 0.8);
+  scale = Math.max(scale, 0.9);
   cascadeSvg.style.width = Math.round(svgW * scale) + 'px';
   cascadeSvg.style.height = Math.round(svgH * scale) + 'px';
   cascadeSvg.innerHTML = '';
@@ -3099,6 +3272,9 @@ function setupCascadeKeyboard(){
     cascadeXFor[n] = { x, w: FALL_FWK - 1 };
   }
 
+  const beatLayer = mk('g'); beatLayer.setAttribute('id', 'cascadeBeats'); cascadeSvg.appendChild(beatLayer);
+  const noteLayer = mk('g'); noteLayer.setAttribute('id', 'cascadeNotes'); cascadeSvg.appendChild(noteLayer);
+
   const hl = mk('line');
   hl.setAttribute('x1', 0); hl.setAttribute('x2', svgW);
   hl.setAttribute('y1', FALL_H); hl.setAttribute('y2', FALL_H);
@@ -3116,6 +3292,7 @@ function setupCascadeKeyboard(){
     r.dataset.note = n;
     cascadeSvg.appendChild(r);
     cascadeKeyRects[n] = r;
+    attachPointerPlay(r, n);
 
     const lbl = mk('text');
     lbl.setAttribute('x', x + (FALL_FWK - 1) / 2);
@@ -3132,7 +3309,7 @@ function setupCascadeKeyboard(){
     lane.setAttribute('x', cx - FALL_FBKW / 2); lane.setAttribute('y', 0);
     lane.setAttribute('width', FALL_FBKW); lane.setAttribute('height', FALL_H);
     lane.setAttribute('class', 'fall-lane-black');
-    cascadeSvg.appendChild(lane);
+    cascadeSvg.insertBefore(lane, beatLayer);
     cascadeXFor[n] = { x: cx - FALL_FBKW / 2, w: FALL_FBKW };
 
     const r = mk('rect');
@@ -3143,6 +3320,7 @@ function setupCascadeKeyboard(){
     r.dataset.note = n;
     cascadeSvg.appendChild(r);
     cascadeKeyRects[n] = r;
+    attachPointerPlay(r, n);
 
     const lbl = mk('text');
     lbl.setAttribute('x', cx);
@@ -3158,35 +3336,57 @@ function buildCascadeSchedule(){
   const beatMs = 60000 / (currentFragment.tempo * cascadeSpeedMult());
   let t = 0;
   const events = [];
-  currentFragment.steps.forEach(step => {
-    const notes = stepNotes(step, currentHand);
+  cascadeSteps().steps.forEach(step => {
     const dur = step.dur * beatMs;
-    notes.forEach(n => {
-      events.push({ note: n, tStart: t, tEnd: t + dur * 0.85, hit: false, missed: false, el: null });
+    cascadeHandNotes(step).forEach(x => {
+      events.push({ note: x.n, hand: x.hand, tStart: t, tEnd: t + dur * 0.85, hit: false, missed: false, el: null });
     });
     t += dur;
   });
-  return { events, totalMs: t };
+  const totalBeats = Math.ceil(t / beatMs);
+  const beats = [];
+  for(let k = -COUNT_IN_BEATS; k <= totalBeats; k++) beats.push({ k, t: k * beatMs, el: null, clicked: false });
+  return { events, beats, totalMs: t, beatMs };
 }
 
 function startCascade(){
-  if(cascade && cascade.raf) caf(cascade.raf);
+  if(cascade){
+    if(cascade.raf) caf(cascade.raf);
+    if(cascade.loopTimer) clearTimeout(cascade.loopTimer);
+  }
   clearAllCascadeLights();
-  cascadeSvg.querySelectorAll('.fall-note').forEach(e => e.remove());
-  const { events, totalMs } = buildCascadeSchedule();
+  cascadeSvg.querySelectorAll('.fall-note, .beat-line, .count-in').forEach(e => e.remove());
+  const { events, beats, totalMs, beatMs } = buildCascadeSchedule();
+  const mk = (tag) => document.createElementNS('http://www.w3.org/2000/svg', tag);
+  const beatLayer = cascadeSvg.querySelector('#cascadeBeats') || cascadeSvg;
+  const noteLayer = cascadeSvg.querySelector('#cascadeNotes') || cascadeSvg;
+  const svgW = cascadeSvg.viewBox.baseVal.width || 600;
+  beats.forEach(b => {
+    const ln = mk('line');
+    ln.setAttribute('x1', 0); ln.setAttribute('x2', svgW);
+    ln.setAttribute('class', 'beat-line' + (((b.k % BEATS_PER_BAR) + BEATS_PER_BAR) % BEATS_PER_BAR === 0 ? ' bar' : ''));
+    beatLayer.appendChild(ln);
+    b.el = ln;
+  });
   events.forEach(ev => {
     const pos = cascadeXFor[ev.note];
     if(!pos) return;
-    const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    const rect = mk('rect');
     rect.setAttribute('x', pos.x);
     rect.setAttribute('width', pos.w);
-    rect.setAttribute('class', 'fall-note pending');
-    cascadeSvg.appendChild(rect);
+    rect.setAttribute('class', 'fall-note pending ' + ev.hand);
+    noteLayer.appendChild(rect);
     ev.el = rect;
   });
-  // el tiempo 0 = el instante en que debería sonar la primera nota;
-  // por eso arrancamos LOOKAHEAD_MS antes, para que alcance a caer desde arriba.
-  cascade = { events, totalMs, startTime: performance.now() + LOOKAHEAD_MS, raf: null, hits: 0, misses: 0, finished: false };
+  const countEl = mk('text');
+  countEl.setAttribute('x', svgW / 2); countEl.setAttribute('y', FALL_H * 0.45);
+  countEl.setAttribute('class', 'count-in');
+  cascadeSvg.appendChild(countEl);
+  // t = 0 es el instante de la primera nota. Arrancamos antes: la cuenta de
+  // entrada (4 pulsos) o lo que tarde la primera nota en caer, lo que sea mayor.
+  const t0 = -Math.max(COUNT_IN_BEATS * beatMs, LOOKAHEAD_MS);
+  cascade = { events, beats, totalMs, beatMs, t: t0, lastNow: performance.now(), raf: null,
+              hits: 0, misses: 0, wrong: 0, finished: false, countEl, mode: cascadeMode, loopTimer: null };
   cascadeStartBtn.textContent = '⏹ Detener';
   updateCascadeScore();
   cascade.raf = raf(cascadeTick);
@@ -3194,23 +3394,68 @@ function startCascade(){
 
 function updateCascadeScore(){
   if(!cascade) return;
-  cascadeScoreEl.textContent = 'Aciertos: ' + cascade.hits + '   Fallos: ' + cascade.misses;
+  const total = cascade.events.length;
+  if(cascade.mode === 'wait'){
+    cascadeScoreEl.textContent = 'Notas: ' + cascade.hits + ' / ' + total + '   Equivocadas: ' + cascade.wrong;
+  } else {
+    cascadeScoreEl.textContent = 'Aciertos: ' + cascade.hits + '   Fallos: ' + cascade.misses + '   Equivocadas: ' + cascade.wrong;
+  }
+}
+
+// En modo espera el reloj no puede pasar de la nota pendiente más cercana.
+function cascadeFrontier(){
+  let f = Infinity;
+  cascade.events.forEach(ev => { if(!ev.hit && !ev.missed && ev.tStart < f) f = ev.tStart; });
+  return f;
 }
 
 function cascadeTick(now){
   if(!cascade) return;
-  const t = now - cascade.startTime;
+  const dt = Math.min(now - cascade.lastNow, 100);
+  cascade.lastNow = now;
+  const prevT = cascade.t;
+  let t = cascade.t + dt;
+  if(cascade.mode === 'wait'){
+    const f = cascadeFrontier();
+    if(t > f) t = Math.max(prevT, f);
+  }
+  cascade.t = t;
   const pxPerMs = FALL_H / LOOKAHEAD_MS;
+
+  // clics de metrónomo al cruzar cada pulso (solo si el tiempo avanzó)
+  if(t > prevT){
+    cascade.beats.forEach(b => {
+      if(!b.clicked && b.t > prevT && b.t <= t){
+        b.clicked = true;
+        if(cascadeClicks && audioCtx && typeof metroClick === 'function') metroClick(audioCtx.currentTime, ((b.k % BEATS_PER_BAR) + BEATS_PER_BAR) % BEATS_PER_BAR === 0);
+      }
+      if(b.el){
+        const y = FALL_H - (b.t - t) * pxPerMs;
+        if(y < -4 || y > FALL_H + 2){ b.el.setAttribute('opacity', 0); }
+        else { b.el.setAttribute('opacity', 1); b.el.setAttribute('y1', y); b.el.setAttribute('y2', y); }
+      }
+    });
+  }
+
+  // cuenta de entrada
+  if(cascade.countEl){
+    if(t < 0){
+      const left = Math.ceil(-t / cascade.beatMs);
+      cascade.countEl.textContent = left <= COUNT_IN_BEATS ? String(left) : '…';
+    } else if(cascade.countEl.textContent !== ''){
+      cascade.countEl.textContent = '';
+    }
+  }
 
   cascade.events.forEach(ev => {
     // Iluminación: se enciende un poco ANTES de que la nota llegue a la línea,
-    // para que alcances a mover la mano, y se apaga al acertar o al pasarse.
+    // para que alcances a mover la mano; se apaga al acertar o al pasarse.
     const shouldLight = !ev.hit && !ev.missed &&
                         t > ev.tStart - LIGHT_LEAD_MS &&
-                        t < ev.tStart + HIT_TOLERANCE_MS;
+                        (cascade.mode === 'wait' || t < ev.tStart + HIT_TOLERANCE_MS);
     if(shouldLight !== !!ev.lit){
       ev.lit = shouldLight;
-      setCascadeKeyLit(ev.note, shouldLight);
+      setCascadeKeyLit(ev.note, shouldLight, ev.hand);
     }
 
     if(!ev.el) return;
@@ -3221,13 +3466,13 @@ function cascadeTick(now){
     ev.el.setAttribute('y', y);
     ev.el.setAttribute('height', h);
 
-    if(!ev.hit && !ev.missed && t > ev.tStart + HIT_TOLERANCE_MS){
+    if(cascade.mode === 'timed' && !ev.hit && !ev.missed && t > ev.tStart + HIT_TOLERANCE_MS){
       ev.missed = true;
-      ev.el.setAttribute('class', 'fall-note missed');
+      ev.el.setAttribute('class', 'fall-note missed ' + ev.hand);
       cascade.misses++;
       updateCascadeScore();
     }
-    if(bottomY > FALL_H + 34){
+    if(bottomY > FALL_H + 34 && (ev.hit || ev.missed)){
       ev.el.remove();
       ev.el = null;
     }
@@ -3244,35 +3489,52 @@ function finishCascade(){
   if(!cascade) return;
   clearAllCascadeLights();
   cascade.events.forEach(ev => { if(ev.el) ev.el.remove(); });
+  cascade.beats.forEach(b => { if(b.el) b.el.remove(); });
+  if(cascade.countEl){ cascade.countEl.remove(); cascade.countEl = null; }
   const total = cascade.events.length;
-  const pct = total ? Math.round(cascade.hits / total * 100) : 0;
-  cascadeScoreEl.textContent = 'Aciertos: ' + cascade.hits + ' / ' + total + '  (' + pct + '%)';
-  if(typeof recordCascadeResult === 'function' && total) recordCascadeResult(pct);
+  let pct;
+  if(cascade.mode === 'wait'){
+    pct = total ? Math.round(total / (total + cascade.wrong) * 100) : 0;
+    cascadeScoreEl.textContent = 'Completado · equivocadas: ' + cascade.wrong + '  (' + pct + '% limpio)';
+  } else {
+    pct = total ? Math.round(cascade.hits / total * 100) : 0;
+    cascadeScoreEl.textContent = 'Aciertos: ' + cascade.hits + ' / ' + total + '  (' + pct + '%)' + (cascade.wrong ? ' · equivocadas: ' + cascade.wrong : '');
+  }
   cascadeStartBtn.textContent = '🔁 Repetir';
   cascade.raf = null;
   cascade.finished = true;
+  if(typeof recordCascadeResult === 'function' && total) recordCascadeResult(pct, cascade.mode);
+  if(cascadeLoop && cascadeOn){
+    cascade.loopTimer = setTimeout(() => { if(cascadeOn && cascadeLoop) startCascade(); }, 900);
+  }
 }
 
 function checkCascadeHit(note){
   if(!cascade || cascade.finished) return;
-  const t = performance.now() - cascade.startTime;
+  const t = cascade.t;
   let best = null, bestDist = Infinity;
   cascade.events.forEach(ev => {
     if(ev.note !== note || ev.hit || ev.missed) return;
-    const dist = Math.abs(ev.tStart - t);
-    if(dist <= HIT_TOLERANCE_MS && dist < bestDist){ best = ev; bestDist = dist; }
+    const d = ev.tStart - t; // >0: todavía viene bajando
+    const ok = cascade.mode === 'wait'
+      ? (d <= LIGHT_LEAD_MS && d >= -HIT_TOLERANCE_MS)
+      : (Math.abs(d) <= HIT_TOLERANCE_MS);
+    if(ok && Math.abs(d) < bestDist){ best = ev; bestDist = Math.abs(d); }
   });
+  const kr = cascadeKeyRects[note];
   if(best){
     best.hit = true;
-    if(best.lit){ best.lit = false; setCascadeKeyLit(best.note, false); }
-    if(best.el){ best.el.setAttribute('class', 'fall-note hit'); }
+    if(best.lit){ best.lit = false; setCascadeKeyLit(best.note, false, best.hand); }
+    if(best.el){ best.el.setAttribute('class', 'fall-note hit ' + best.hand); }
     cascade.hits++;
     updateCascadeScore();
-  }
-  const kr = cascadeKeyRects[note];
-  if(kr){
-    kr.classList.add('pressed');
-    setTimeout(() => kr.classList.remove('pressed'), 150);
+    if(kr){ kr.classList.add('pressed'); setTimeout(() => kr.classList.remove('pressed'), 150); }
+  } else if(t >= 0){
+    cascade.wrong++;
+    updateCascadeScore();
+    if(kr){ kr.classList.add('wrongkey'); setTimeout(() => kr.classList.remove('wrongkey'), 260); }
+  } else if(kr){
+    kr.classList.add('pressed'); setTimeout(() => kr.classList.remove('pressed'), 150);
   }
 }
 
@@ -3343,6 +3605,14 @@ function renderStaff(svgEl, notes, opts){
     info[c] = { top, bottomY, base: bottomLinePos[c] };
   });
   const yFor = (c, pos) => info[c].bottomY - (pos - info[c].base) * S / 2;
+  if(opts.label){
+    const lb = mk('text');
+    lb.setAttribute('x', W - 8); lb.setAttribute('y', S * 1.3);
+    lb.setAttribute('text-anchor', 'end');
+    lb.setAttribute('class', 'staff-label ' + (opts.labelCls || ''));
+    lb.textContent = opts.label;
+    svgEl.appendChild(lb);
+  }
   const n = notes.length;
   notes.forEach((item, idx) => {
     const sp = item.sp;
@@ -3387,12 +3657,24 @@ function renderStaff(svgEl, notes, opts){
 }
 
 // Mini pentagrama junto a la nota objetivo de la escala.
+// Con ambas manos van dos pentagramas lado a lado (izquierda a la izquierda,
+// derecha a la derecha), cada uno con su clave y su color. Apilados en 200 px
+// se pisaban y no se entendía nada.
 function renderMiniStaff(step){
-  const el = $('miniStaff');
-  if(!el || !step) return;
-  const items = step.notes.map(x => ({ sp: spellFromName(x.name, x.n), clef: x.hand === 'lh' ? 'bass' : 'treble', cls: x.hand === 'lh' ? 'lh' : '' }));
-  const clef = items.length > 1 ? 'grand' : items[0].clef;
-  renderStaff(el, items, { clef, width: 200, gap: 7, showName: false });
+  const s1 = $('miniStaff'), s2 = $('miniStaff2');
+  if(!s1 || !step) return;
+  const item = (x) => ({ sp: spellFromName(x.name, x.n), clef: x.hand === 'lh' ? 'bass' : 'treble', cls: x.hand === 'lh' ? 'lh' : '' });
+  const lh = step.notes.find(x => x.hand === 'lh');
+  const rh = step.notes.find(x => x.hand === 'rh');
+  if(lh && rh){
+    renderStaff(s1, [item(lh)], { clef:'bass',   width: 200, gap: 9, label:'IZQ', labelCls:'lh' });
+    renderStaff(s2, [item(rh)], { clef:'treble', width: 200, gap: 9, label:'DER', labelCls:'rh' });
+    s2.style.display = '';
+  } else {
+    const x = lh || rh || step.notes[0];
+    renderStaff(s1, [item(x)], { clef: x.hand === 'lh' ? 'bass' : 'treble', width: 200, gap: 9, label: x.hand === 'lh' ? 'IZQ' : 'DER', labelCls: x.hand });
+    s2.style.display = 'none';
+  }
 }
 
 // ===== Lectura: la nota aparece en el pentagrama y la tocas =====
@@ -3683,9 +3965,13 @@ function recordPracticeDone(){
     r.runs++; r.lastDay = dateKey(); progress.songs[currentFragment.id] = r; bump('songs');
   }
 }
-function recordCascadeResult(pct){
-  const r = progress.cascade[currentFragment.id] || { runs:0, best:0, lastDay:null };
-  r.runs++; r.best = Math.max(r.best, pct); r.lastDay = dateKey();
+// best = mejor % a tempo (el examen); bestWait = mejor % limpio en modo espera.
+function recordCascadeResult(pct, mode){
+  const r = progress.cascade[currentFragment.id] || { runs:0, best:0, bestWait:0, lastDay:null };
+  r.runs++;
+  if(mode === 'wait') r.bestWait = Math.max(r.bestWait || 0, pct);
+  else r.best = Math.max(r.best, pct);
+  r.lastDay = dateKey();
   progress.cascade[currentFragment.id] = r; bump('cascade');
 }
 
@@ -3802,7 +4088,7 @@ function masteryRows(){
   rows.push(['Lectura', avg(READING_LEVELS.map(lv => { const s = readingLevelStats(lv.id); return s.mastered ? 1 : Math.min(s.attempts, 20) / 20 * (s.attempts ? s.first / s.attempts : 0); }))]);
   rows.push(['Agilidad', avg(AGILITY_DRILLS.map(d => Math.min((progress.drills[d.id] || {}).runs || 0, 5) / 5))]);
   rows.push(['Fragmentos', avg(SONGS.map(s => Math.min((progress.songs[s.id] || {}).runs || 0, 3) / 3))]);
-  rows.push(['Cascada', avg(SONGS.map(s => ((progress.cascade[s.id] || {}).best || 0) / 100))]);
+  rows.push(['Cascada', avg(SONGS.map(s => { const c = progress.cascade[s.id] || {}; return Math.max(c.best || 0, (c.bestWait || 0) * 0.7) / 100; }))]);
   return rows;
 }
 function renderProgress(){
@@ -3825,8 +4111,9 @@ function renderProgress(){
     const k = dateKey(d), m = minutesOf(k);
     const lvl = m === 0 ? 0 : m < 5 ? 1 : m < 10 ? 2 : m < 20 ? 3 : 4;
     const c = document.createElement('span');
-    c.className = 'heat-cell l' + lvl + (k === todayK ? ' today' : '');
-    c.title = k + ': ' + m + ' min';
+    // verde = practicaste (más minutos, más verde); rojo apagado = día pasado sin práctica
+    c.className = 'heat-cell l' + lvl + (k === todayK ? ' today' : '') + (m === 0 && k < todayK ? ' missed' : '');
+    c.title = k + ': ' + (m === 0 ? 'sin práctica' : m + ' min');
     grid.appendChild(c);
   }
   $('masteryList').innerHTML = masteryRows().map(([name, v]) => {

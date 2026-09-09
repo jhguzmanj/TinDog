@@ -215,6 +215,71 @@ ev('#toggleLabelsBtn');
 check(window.localStorage.getItem('labelsShown') === '0', 'ocultar nombres se recuerda');
 ev('#toggleLabelsBtn');
 
+section('Manos con color en fragmentos');
+ev('#mainTabs [data-cat="fragments"]');
+W("currentHand='both'; practiceIndex=0; startFragmentStep()");
+check(doc.querySelectorAll('#pianoSvg .target.lh').length === 3 && doc.querySelectorAll('#pianoSvg .target:not(.lh)').length === 1, 'izquierda azul (3 notas) y derecha dorada (1 nota)');
+check(doc.getElementById('targetSubLabel').querySelector('.hand-tag.lh') !== null && doc.getElementById('targetSubLabel').querySelector('.hand-tag.rh') !== null, 'etiquetas IZQ / DER en el texto');
+check(doc.getElementById('scaleHandPicker').classList.contains('g-hand') && doc.getElementById('chordInvPicker').classList.contains('g-type') && doc.getElementById('intervalOctavePicker').classList.contains('g-oct'), 'grupos de opciones etiquetados por color');
+
+section('Cascada: modo espera');
+const tick = (now) => W(`cascadeTick(${now}); if(cascade && cascade.raf){ caf(cascade.raf); cascade.raf = null; }`);
+ev('#cascadeBtn');
+check(W('cascadeOn') === true && doc.getElementById('keyboardWrap').style.display === 'none', 'al abrir la cascada se esconde el teclado grande');
+check(doc.getElementById('cascadeFrom').options.length === 4 && doc.getElementById('cascadeTo').value === '4', 'tramo: selectores con los 4 pasos, hasta el final por defecto');
+check(Object.keys(W('cascadeKeyRects')).length >= 19, 'mini-teclado con al menos octava y media');
+W("cascadeMode='wait'; applyCascadeMode(); cascadeClicks=false; startCascade(); caf(cascade.raf); cascade.raf=null");
+check(W('cascade.events.length') === 16 && W("cascade.events.filter(e=>e.hand==='lh').length") === 12, '16 notas: 12 de izquierda y 4 de derecha');
+check(W('cascade.t') < 0 && W('cascade.beats.length') > 4, 'arranca con cuenta de entrada y líneas de pulso');
+check(doc.querySelectorAll('#cascadeSvg .fall-note.lh').length === 12 && doc.querySelectorAll('#cascadeSvg .beat-line.bar').length >= 2, 'notas azules de izquierda y líneas de compás dibujadas');
+W('cascade.t = -cascade.beatMs * 2.5; cascade.lastNow = 5000'); tick(5000);
+check(doc.querySelector('#cascadeSvg .count-in').textContent === '3', 'cuenta de entrada muestra 3');
+W('cascade.t = -10; cascade.lastNow = 6000'); tick(6100);
+check(W('cascade.t') === 0, 'el reloj se detiene en la primera nota');
+tick(6300);
+check(W('cascade.t') === 0 && W('cascade.misses') === 0, 'sigue detenido y no cuenta fallos en modo espera');
+check(doc.querySelectorAll('#cascadeSvg .fall-key.lit').length === 4 && doc.querySelectorAll('#cascadeSvg .fall-key.lit-lh').length === 3, 'teclas iluminadas: 3 azules y 1 dorada');
+W('noteOn(61); noteOff(61)');
+check(W('cascade.wrong') === 1 && W('cascade.hits') === 0, 'nota equivocada se cuenta como equivocada');
+for(const n of [48,52,55,72]){ W(`noteOn(${n}); noteOff(${n})`); }
+check(W('cascade.hits') === 4, 'las cuatro notas del primer paso aciertan');
+tick(6400);
+check(W('cascade.t') > 0, 'con el paso completo el reloj vuelve a andar');
+W("cascade.t = cascade.totalMs + 2000; cascade.lastNow = 9000"); tick(9001);
+check(W('cascade.finished') === true && doc.getElementById('cascadeScore').textContent.includes('equivocadas: 1'), 'termina y reporta equivocadas');
+check(W("progress.cascade['cuatro-acordes'].bestWait") > 0 && W("progress.cascade['cuatro-acordes'].runs") === 1, 'resultado en modo espera registrado aparte');
+
+section('Cascada: modo a tempo y tramo');
+W("cascadeMode='timed'; applyCascadeMode(); startCascade(); caf(cascade.raf); cascade.raf=null");
+W('cascade.t = -10; cascade.lastNow = 100'); tick(200);
+check(W('cascade.t') === 90, 'a tempo el reloj no se frena');
+W('cascade.t = 400; cascade.lastNow = 1000'); tick(1001);
+check(W('cascade.misses') === 4, 'pasada la tolerancia, las 4 notas del primer paso son fallos');
+W("exitCascade()");
+const fromSel = doc.getElementById('cascadeFrom'); fromSel.value = '2'; fromSel.dispatchEvent(new window.Event('change', { bubbles:true }));
+check(W('cascadeFrom') === 2 && W('cascadeSteps().steps.length') === 3, 'tramo desde el paso 2: quedan 3 pasos');
+W("startCascade(); caf(cascade.raf); cascade.raf=null");
+check(W('cascade.events.length') === 12, 'la cascada del tramo solo trae 12 notas');
+W("exitCascade()");
+ev('#cascadeBtn');
+check(W('cascadeOn') === false && doc.getElementById('keyboardWrap').style.display === '', 'al cerrar la cascada vuelve el teclado grande');
+
+section('Pentagramas lado a lado y consejo por intervalo');
+ev('#mainTabs [data-cat="scales"]');
+W("scaleHand='both'; refreshScaleHand(); startScaleRun()");
+check(doc.getElementById('miniStaff2').style.display === '' && doc.getElementById('miniStaff').querySelector('ellipse') && doc.getElementById('miniStaff2').querySelector('ellipse'), 'ambas manos: dos pentagramas, cada uno con su nota');
+check(doc.getElementById('miniStaff').querySelector('.staff-label.lh') !== null && doc.getElementById('miniStaff2').querySelector('.staff-label.rh') !== null, 'izquierda a la izquierda, derecha a la derecha');
+W("scaleHand='rh'; refreshScaleHand(); startScaleRun()");
+check(doc.getElementById('miniStaff2').style.display === 'none', 'una mano: un solo pentagrama');
+ev('#mainTabs [data-cat="intervals"]');
+W('practiceIndex = 7; startIntervalStep()');
+check(doc.getElementById('intervalTip').textContent.includes('5ª justa') && doc.getElementById('intervalTip').textContent.includes('ancho de mano'), 'consejo específico de la 5ª justa');
+
+section('Mapa de calor verde / rojo');
+ev('#mainTabs [data-cat="progress"]');
+check(doc.querySelectorAll('#heatGrid .heat-cell.missed').length >= 80, 'días pasados sin práctica marcados en rojo apagado');
+check(doc.querySelector('#heatGrid .heat-cell.today') !== null && !doc.querySelector('#heatGrid .heat-cell.today').classList.contains('missed'), 'hoy no se marca como perdido');
+
 console.log(`\n${passes} pruebas OK, ${failures} fallos`);
 if(errors.length) console.log('Errores de consola:', errors);
 process.exit(failures || errors.length ? 1 : 0);

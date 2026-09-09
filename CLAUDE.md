@@ -61,7 +61,9 @@ Orden dentro del `<script>`:
 - **Intervalos**: `checkInterval` compara **notas MIDI exactas** (antes comparaba solo
   la letra y Do4+Mi5 aprobaba como 3ª mayor — no reintroducir). Modo oído: la app
   toca raíz y segunda nota (`playEarInterval`), solo se marca la raíz, se registra
-  acierto/fallo por intervalo.
+  acierto/fallo por intervalo. Cada intervalo trae `ref` (cómo reconocerlo de oído,
+  va en el cuadro de distancia) y `tip` (qué practicar / dónde cae en el teclado,
+  va en `#intervalTip`). No volver a poner un texto genérico ahí.
 - **Lectura**: `READING_LEVELS` (7 niveles, clave de Sol / Fa / ambas / alteraciones).
   `renderStaff(svg, [{sp, cls, clef}], {clef, width, gap, showName})`; `sp` viene de
   `spellMidi(midi, preferFlat)` o `spellFromName('B#', 60)` (respeta octava de la letra).
@@ -71,6 +73,27 @@ Orden dentro del `<script>`:
   `advanceToPlayableStep()` (que vuelve a 0 y antes ocultaba el final).
 - **P-45**: el manual numera las octavas una posición abajo (su C3 = C4/Do central);
   `manualToMidi()` hace esa conversión. Mapa extraído del PDF, no adivinar.
+
+## Cascada (`cascadeMode`)
+- **`wait` (por defecto, persistido):** el reloj virtual `cascade.t` no puede pasar
+  de `cascadeFrontier()` (la nota pendiente más cercana). Se congela en la línea
+  hasta que suene la nota correcta. No hay "fallos", solo `wrong` (equivocadas).
+- **`timed`:** el reloj avanza siempre; una nota sin tocar pasada la tolerancia
+  cuenta como `missed`. Es el examen.
+- Reloj propio (`cascade.t += dt`, dt tope 100 ms) en vez de `now - startTime`:
+  así se puede congelar, y los tests llaman `cascadeTick(now)` a mano.
+- Cada evento lleva `hand` (`lh|rh`); `cascadeHandNotes(step)` respeta el filtro
+  de mano. Colores: azul izquierda, dorado derecha (`.fall-note.lh/.rh`,
+  `.fall-key.lit-lh`).
+- `beats[]`: líneas de pulso (las de compás más marcadas, `BEATS_PER_BAR=4`) y
+  clics de metrónomo al cruzar cada pulso (`cascadeClicks`). Cuenta de entrada de
+  `COUNT_IN_BEATS=4` pulsos dibujada en `.count-in`.
+- Tramo: `cascadeFrom/cascadeTo` (pasos 1-based) + `cascadeLoop`. Los `<select>`
+  se rellenan en `refreshCascadeRange()`; el rango se resetea al cambiar de pieza.
+- Al abrir la cascada se **esconde el teclado grande** (`#keyboardWrap`) para que
+  haya un solo teclado; el mini-teclado se puede tocar con el mouse.
+- Progreso: `recordCascadeResult(pct, mode)` guarda `best` (a tempo) y `bestWait`
+  (espera) por separado.
 
 ## Metrónomo
 Web Audio con programación por adelantado (`metroScheduler` cada 25 ms, 120 ms de
@@ -113,9 +136,19 @@ ahora — desde ~1 m y con las manos en el piano. Todo lo demás es secundario.
 - **Controles segmentados**: `.reg-bar .reg-picker` y `.hand-picker` son un solo
   bloque con segmentos, no botones sueltos. Los pickers largos (`#chordPicker`,
   `#intervalPicker`, `#funcCatPicker`) quedan fuera a propósito: son listas.
-- **Color con significado**: brass = "lo que tienes que hacer ahora"; mano derecha
-  cálida (`--rh`), izquierda fría (`--lh`) y ese par se usa igual en teclas,
-  números de dedo, etiquetas y pentagrama. El cromo es neutro.
+- **Color con significado**: brass = "dónde estoy" (pestaña principal) y "qué toco
+  ahora" (escenario). Sub-pestañas activas en **marfil**. Cada grupo de opciones
+  tiene su tono apagado, marcado con un punto en la etiqueta (`.reg-label.g-*`):
+  mano (`g-hand`: izquierda `--lh` azul, derecha `--rh` dorado, ambas mitad/mitad),
+  octava (`g-oct` marfil), sentido (`g-dir` `--sage`), tipo/posición (`g-type`
+  `--mauve`). El par mano izquierda/derecha se usa igual en teclas, números de
+  dedo, etiquetas `IZQ/DER`, pentagrama y cascada. Nada saturado: Jorge pidió
+  sobriedad.
+- **Pentagrama en escalas**: con ambas manos son **dos** pentagramas lado a lado
+  (`#miniStaff` = izquierda en clave de Fa, `#miniStaff2` = derecha en clave de
+  Sol), cada uno con etiqueta de mano. Apilados no se leían.
+- **Mapa de calor**: verde por minutos, rojo apagado (`.heat-cell.missed`) los
+  días pasados sin práctica; hoy solo se contornea.
 - Si se toca tipografía: **subir tamaños, nunca bajarlos** (Jorge es corto de vista).
 
 ## Cosas ya resueltas — no "arreglar" de nuevo
