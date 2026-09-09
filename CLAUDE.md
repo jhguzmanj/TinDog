@@ -98,12 +98,38 @@ lookahead). `metroOffsetMs(tPerf)` devuelve el desfase en ms al pulso más cerca
 `solfaShown`, `cascadeSpeed`, `scaleOpts` (mano/octavas/sentido/dedos/variante menor),
 `metroBpm`, `readingLevel`.
 
+## Diseño (jerarquía deliberada)
+Regla que manda: el 90% del tiempo Jorge mira **una sola cosa** — qué tecla toca
+ahora — desde ~1 m y con las manos en el piano. Todo lo demás es secundario.
+- **Encabezado** = barra de herramientas de una fila (identidad + estado MIDI +
+  metrónomo + tiempo de hoy). El panel de conexión vive **dentro** del encabezado.
+  No volver a poner un hero decorativo alto: costaba 150 px y no informaba nada.
+- **`.practice-info.stage`** es el elemento dominante: nombre de nota en
+  `clamp(40px,5.4vw,68px)`, digitación y mano debajo, mini pentagrama al lado.
+- Dos `MutationObserver` adaptan el escenario sin tocar los modos:
+  `progressText` ("Nota 3 / 15") se convierte en puntos (`#stepDots`), y
+  `targetNoteLabel` se achica solo (`.sm` >12 chars, `.xs` >22) porque algunos
+  modos escriben frases ahí. **Modo nuevo no necesita hacer nada para esto.**
+- **Controles segmentados**: `.reg-bar .reg-picker` y `.hand-picker` son un solo
+  bloque con segmentos, no botones sueltos. Los pickers largos (`#chordPicker`,
+  `#intervalPicker`, `#funcCatPicker`) quedan fuera a propósito: son listas.
+- **Color con significado**: brass = "lo que tienes que hacer ahora"; mano derecha
+  cálida (`--rh`), izquierda fría (`--lh`) y ese par se usa igual en teclas,
+  números de dedo, etiquetas y pentagrama. El cromo es neutro.
+- Si se toca tipografía: **subir tamaños, nunca bajarlos** (Jorge es corto de vista).
+
 ## Cosas ya resueltas — no "arreglar" de nuevo
 - Doble sonido con el piano conectado (solo `src:'ui'` sintetiza).
 - Listener duplicado del `<select>` de dispositivos MIDI (`deviceSelectBound`).
 - `ensureValidHandSelection()` / `advanceToPlayableStep()` (red de seguridad de manos).
 - Barra C=Do plegada por defecto (pedido de Jorge).
 - Etiquetas de teclas: el nombre de nota + Do Re Mi en dos líneas (`<tspan>`).
+- **Colisión de CSS `.sub`**: existía una regla `.sub { margin:0 auto; max-width:480px }`
+  para el subtítulo del encabezado. Como los botones de sub-pestaña son
+  `class="mode-tab sub"`, les caía encima y las filas de escalas / fragmentos
+  salían repartidas a lo ancho en vez de alineadas a la izquierda. Regla borrada.
+  No volver a usar nombres de clase genéricos (`.sub`, `.row`, `.tip`) para algo
+  específico de un componente.
 
 ## Ideas pendientes (no pedidas aún)
 - Progresiones de acordes con metrónomo (I–V–vi–IV a tempo).
