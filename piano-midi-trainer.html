@@ -1,0 +1,3732 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Yamaha P-45B — Práctica Piano</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Source+Sans+3:wght@400;500;600&family=Noto+Music&display=swap');
+
+  :root{
+    --bg:#050505;
+    --panel:#111111;
+    --panel-border:#262421;
+    --ivory:#f2ead9;
+    --ebony:#0c0c0c;
+    --brass:#d4af5a;
+    --brass-soft:#8f7638;
+    --brass-glow:rgba(212,175,90,0.25);
+    --active-key:#8a5a1a;
+    --correct:#5fb583;
+    --wrong:#d16a56;
+    --text:#eee7d8;
+    --text-dim:#8c8577;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(900px 420px at 50% -8%, #17140f 0%, var(--bg) 55%),
+      var(--bg);
+    color:var(--text);
+    font-family:'Source Sans 3', sans-serif;
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding:36px 16px 60px;
+  }
+  header{
+    position:relative;
+    width:100%;
+    max-width:min(1634px, 92vw);
+    text-align:center;
+    margin-bottom:18px;
+    padding:26px 24px 22px;
+    border-radius:20px;
+    overflow:hidden;
+    background:
+      radial-gradient(900px 420px at 50% -15%, #241d10 0%, #0a0908 60%),
+      linear-gradient(180deg,#0d0c0a,#050505);
+    border:1px solid var(--panel-border);
+    box-shadow:0 20px 50px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.03);
+  }
+  .hero-keys{
+    position:absolute;
+    left:50%; bottom:-18px;
+    width:150%;
+    transform:translateX(-50%) perspective(420px) rotateX(52deg);
+    transform-origin:bottom center;
+    opacity:0.55;
+    pointer-events:none;
+    filter:drop-shadow(0 0 22px rgba(212,175,90,0.18));
+  }
+  .hero-fade{
+    position:absolute; inset:0;
+    background:linear-gradient(180deg, rgba(10,9,8,0.96) 0%, rgba(10,9,8,0.55) 42%, rgba(10,9,8,0) 78%);
+    pointer-events:none;
+  }
+  .hero-white{ fill:#2a2621; stroke:rgba(212,175,90,0.35); stroke-width:1; }
+  .hero-black{ fill:#000; }
+  .hero-content{ position:relative; z-index:1; }
+  h1{
+    font-family:'Fraunces', serif;
+    font-weight:600;
+    font-size:clamp(26px,3.6vw,34px);
+    letter-spacing:0.2px;
+    margin:0;
+    color:var(--ivory);
+  }
+  h1 .name{ color:var(--brass); font-weight:700; font-style:italic; }
+  .badge{
+    display:inline-block;
+    padding:5px 16px;
+    border:1px solid var(--brass-soft);
+    border-radius:999px;
+    color:var(--brass);
+    font-size:14px;
+    letter-spacing:1.5px;
+    text-transform:uppercase;
+    margin-bottom:14px;
+  }
+  .sub{
+    color:var(--text-dim);
+    font-size:16.5px;
+    margin:0 auto;
+    max-width:480px;
+    line-height:1.6;
+  }
+
+  .panel{
+    background:linear-gradient(180deg,#131210,#0e0d0b);
+    border:1px solid var(--panel-border);
+    border-radius:12px;
+    padding:14px 18px;
+    width:100%;
+    max-width:min(1634px, 92vw);
+    margin-bottom:11px;
+    box-shadow:0 10px 30px rgba(0,0,0,0.35);
+  }
+  .row{
+    display:flex;
+    gap:14px;
+    flex-wrap:wrap;
+    align-items:center;
+    justify-content:space-between;
+  }
+  .status-dot{
+    width:9px;height:9px;border-radius:50%;
+    background:var(--wrong);
+    display:inline-block;
+    margin-right:8px;
+    box-shadow:0 0 0 4px rgba(209,106,86,0.15);
+  }
+  .status-dot.connected{
+    background:var(--correct);
+    box-shadow:0 0 0 4px rgba(95,181,131,0.16);
+  }
+  .status-text{font-size:16px;color:var(--text-dim);}
+  select, button{
+    font-family:inherit;
+    font-size:16px;
+    background:var(--ebony);
+    color:var(--text);
+    border:1px solid var(--panel-border);
+    border-radius:7px;
+    padding:8px 12px;
+  }
+  button{
+    cursor:pointer;
+    background:var(--brass-soft);
+    color:#0c0a06;
+    font-weight:600;
+    border:none;
+    transition:background 0.15s ease, transform 0.1s ease;
+  }
+  button:hover{background:var(--brass);}
+  button:active{transform:scale(0.98);}
+  button:disabled{background:#2a2822;color:var(--text-dim);cursor:not-allowed;}
+
+  .menu-label{
+    font-size:13px;letter-spacing:1.2px;text-transform:uppercase;
+    color:var(--text-dim);margin:0 0 10px;
+  }
+  .mode-tabs{display:flex;gap:8px;margin-bottom:11px;flex-wrap:wrap;}
+  .sub-tabs{margin-top:-4px;margin-bottom:11px;padding-left:4px;}
+  .mode-tab.sub{
+    padding:7px 13px;font-size:14px;
+    border-radius:14px;border-style:dashed;
+  }
+  .mode-tab.sub.warn{ border-color:#8a6a3a; color:#c9a36a; }
+  .info-panel{
+    background:var(--panel);
+    border:1px solid var(--panel-border);
+    border-radius:14px;
+    padding:18px 20px;
+    margin-bottom:16px;
+  }
+  .info-panel h3{
+    font-family:'Fraunces', serif;
+    color:var(--brass);
+    margin:0 0 10px;
+    font-size:21px;
+  }
+  .info-note{
+    font-size:14.5px;
+    color:var(--text-dim);
+    margin:0 0 14px;
+    font-style:italic;
+  }
+  .finger-list{ margin:0; padding-left:18px; }
+  .finger-list li{ margin-bottom:10px; line-height:1.6; font-size:16.5px; }
+  .finger-list b{ color:var(--ivory); }
+  .scroll-tabs{
+    flex-wrap:nowrap;overflow-x:auto;
+    padding-bottom:6px;
+    -webkit-overflow-scrolling:touch;
+  }
+  .scroll-tabs .mode-tab{ flex:0 0 auto; }
+  .mode-tab{
+    padding:8px 15px;border-radius:20px;
+    border:1px solid var(--panel-border);
+    background:transparent;color:var(--text-dim);
+    font-size:15px;font-weight:500;cursor:pointer;
+    transition:all 0.15s ease;
+  }
+  .mode-tab.active{background:var(--brass); color:#0c0a06;border-color:var(--brass); font-weight:600;}
+  .mode-tab:hover:not(.active){border-color:var(--brass-soft); color:var(--text);}
+
+  .practice-info{
+    display:flex;align-items:baseline;gap:14px;
+    margin-bottom:6px;flex-wrap:wrap;
+  }
+  .target-note{
+    font-family:'Fraunces', serif;
+    font-size:38px;font-weight:600;color:var(--brass);
+    text-shadow:0 0 24px var(--brass-glow);
+  }
+  .target-sub{font-size:16px;color:var(--text-dim);}
+  .progress{font-size:16px;color:var(--text-dim);}
+  .feedback{font-size:16px;min-height:20px;font-weight:600;}
+  .feedback.correct{color:var(--correct);}
+  .feedback.wrong{color:var(--wrong);}
+  .tip{
+    font-size:14.5px;color:var(--text-dim);margin-top:6px;
+    padding-top:8px;border-top:1px solid var(--panel-border);
+    line-height:1.5;
+  }
+  .tip b{color:var(--brass-soft);}
+
+  .keyboard-wrap{
+    width:100%;
+    max-width:min(1634px, 92vw);
+    overflow-x:auto;
+    background:linear-gradient(180deg,#141210,#0a0908);
+    border:1px solid var(--panel-border);
+    border-radius:12px;
+    padding:12px;
+    box-shadow:0 10px 30px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.02);
+  }
+  svg{display:block;}
+  #pianoSvg{ width:var(--kb-w, 1150px); min-width:0; margin:0 auto; }
+  .white-key{fill:var(--ivory);stroke:#00000040;stroke-width:0.5;transition:fill 0.08s ease;cursor:pointer;}
+  .black-key{fill:var(--ebony);stroke:#00000070;stroke-width:0.5;transition:fill 0.08s ease;cursor:pointer;}
+  .white-key.active{fill:var(--active-key);}
+  .black-key.active{fill:var(--active-key);}
+  .white-key.target{fill:#f7e7c1;stroke:var(--brass);stroke-width:2.2;}
+  .black-key.target{fill:#5c4d28;stroke:var(--brass);stroke-width:2.2;}
+  .white-key.correct{fill:var(--correct);}
+  .black-key.correct{fill:var(--correct);}
+  .white-key.wrong{fill:var(--wrong);}
+  .black-key.wrong{fill:var(--wrong);}
+
+  .warn-box{
+    margin:9px 0 11px; padding:10px 13px; border-radius:10px;
+    border:1px solid rgba(224,101,95,0.45); background:rgba(224,101,95,0.08);
+    font-size:15.5px; line-height:1.55;
+  }
+  .func-kb-wrap{ overflow-x:auto; padding:6px 0 2px; }
+  #funcSvg{ display:block; width:1500px; min-width:1500px; }
+  .fk-white{ fill:#f2ede4; stroke:#2a2620; stroke-width:0.5; }
+  .fk-black{ fill:#141210; stroke:#2a2620; stroke-width:0.5; }
+  .fk-on{ stroke:#0c0a06; stroke-width:0.8; }
+  .fk-label{ fill:var(--text-dim); font-size:6px; font-family:'Source Sans 3',sans-serif; font-weight:600; }
+  .fk-label.black{ fill:var(--text); }
+  .fk-oct{ fill:var(--text-dim); font-size:8px; font-family:'Source Sans 3',sans-serif; }
+  .func-legend{ display:flex; flex-wrap:wrap; gap:10px; margin:10px 0 4px; }
+  .swatch{
+    display:inline-block; width:11px; height:11px; border-radius:3px;
+    margin-right:7px; vertical-align:-1px;
+  }
+  .func-detail{ margin-top:16px; }
+  .func-detail h4{ font-family:'Fraunces',serif; font-size:19px; color:var(--brass); margin:0 0 10px; }
+  .func-table{ width:100%; border-collapse:collapse; font-size:15.5px; }
+  .func-table th{
+    text-align:left; padding:8px 10px; color:var(--text-dim);
+    font-weight:600; border-bottom:1px solid var(--panel-border); font-size:14.5px;
+  }
+  .func-table td{ padding:7px 10px; border-bottom:1px solid rgba(255,255,255,0.05); }
+  .func-table .mono{ font-variant-numeric:tabular-nums; color:var(--brass); font-weight:600; }
+  .func-table .dim{ color:var(--text-dim); font-weight:400; }
+  .solfa-bar{
+    display:flex; flex-wrap:wrap; gap:8px; align-items:center;
+    margin:9px 0 3px; padding:9px 12px; border-radius:10px;
+    border:1px solid var(--panel-border); background:rgba(255,255,255,0.02);
+  }
+  .solfa-chip{
+    display:inline-flex; align-items:baseline; gap:6px;
+    padding:6px 12px; border-radius:8px;
+    border:1px solid var(--brass-soft); background:rgba(212,175,90,0.07);
+    font-size:16px;
+  }
+  .solfa-chip b{ color:var(--brass); font-size:17px; }
+  .solfa-chip span{ color:var(--text); }
+  .solfa-note{ font-size:14.5px; color:var(--text-dim); margin-top:8px; width:100%; }
+  .kb-toolbar{ display:flex; justify-content:flex-end; align-items:center; gap:10px; margin-bottom:10px; flex-wrap:wrap; }
+  .zoom-label{ font-size:14.5px; color:var(--text-dim); margin-right:2px; }
+  .zoom-value{ font-size:15px; color:var(--brass); min-width:52px; text-align:center; font-variant-numeric:tabular-nums; }
+  .zoom-btn{ min-width:40px; font-size:18px; line-height:1; padding:6px 12px; }
+  .frag-bar{
+    display:flex; justify-content:space-between; align-items:center;
+    gap:12px; flex-wrap:wrap; margin-bottom:14px;
+  }
+  .hand-picker{ display:flex; gap:8px; flex-wrap:wrap; }
+  .pick-bar{
+    display:flex; align-items:flex-start; gap:10px; flex-wrap:wrap;
+    margin-bottom:10px; padding:9px 12px;
+    border:1px solid var(--panel-border); border-radius:10px;
+    background:rgba(255,255,255,0.015);
+  }
+  .pick-bar .reg-picker{ max-width:100%; }
+  .pick-btn{
+    background:transparent; border:1px solid var(--panel-border);
+    color:var(--text-dim); font-family:'Source Sans 3', sans-serif;
+    font-size:14px; padding:6px 11px; border-radius:8px; cursor:pointer;
+  }
+  .pick-btn.done{ border-color:rgba(127,196,168,0.5); color:#7fc4a8; }
+  .pick-btn.current{ color:var(--brass); border-color:var(--brass-soft); background:rgba(212,175,90,0.1); font-weight:700; }
+  .pick-btn:hover{ background:var(--brass); color:#0c0a06; border-color:var(--brass); }
+  .reg-bar{
+    display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+    margin-bottom:10px; padding:9px 12px;
+    border:1px solid var(--panel-border); border-radius:10px;
+    background:rgba(255,255,255,0.02);
+  }
+  .reg-label{ font-size:14.5px; color:var(--text-dim); }
+  .reg-picker{ display:flex; gap:6px; flex-wrap:wrap; }
+  .reg-btn{
+    background:transparent; border:1px solid var(--panel-border);
+    color:var(--text-dim); font-family:'Source Sans 3', sans-serif;
+    font-size:14.5px; padding:6px 12px; border-radius:8px; cursor:pointer;
+    min-width:42px;
+  }
+  .reg-btn.disabled{ opacity:0.3; cursor:not-allowed; }
+  .reg-btn.disabled:hover{ background:transparent; color:var(--text-dim); border-color:var(--panel-border); }
+  .reg-btn.active{ color:var(--brass); border-color:var(--brass-soft); background:rgba(212,175,90,0.08); }
+  .reg-btn:hover{ background:var(--brass); color:#0c0a06; border-color:var(--brass); }
+  .distance-box{
+    margin-top:10px; padding:10px 14px; border-radius:10px;
+    border:1px solid var(--brass-soft); background:rgba(212,175,90,0.06);
+    font-size:16px; color:var(--text);
+  }
+  .distance-box b{ color:var(--brass); }
+  .hand-btn{
+    background:transparent;
+    border:1px solid var(--panel-border);
+    color:var(--text-dim);
+    font-family:'Source Sans 3', sans-serif;
+    font-size:14px;
+    padding:7px 14px;
+    border-radius:999px;
+    cursor:pointer;
+  }
+  .badge.live{
+    border-color:#7fc4a8; color:#7fc4a8;
+    background:rgba(127,196,168,0.1);
+  }
+  .badge.live::before{
+    content:'●'; margin-right:7px; font-size:0.8em; color:#7fc4a8;
+  }
+  .cascade-toolbar{
+    display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+    margin:6px 0 10px;
+  }
+  .cascade-score{ font-size:15px; color:var(--brass); font-weight:600; margin-left:auto; }
+  .cascade-wrap{
+    overflow-x:auto; border:1px solid var(--panel-border); border-radius:10px;
+    background:rgba(0,0,0,0.25); padding:6px 0;
+  }
+  #cascadeSvg{ display:block; margin:0 auto; }
+  .fall-lane-white{ fill:rgba(255,255,255,0.025); }
+  .fall-lane-black{ fill:rgba(255,255,255,0.05); }
+  .hit-line{ stroke:var(--brass); stroke-width:1.2; stroke-dasharray:3,3; opacity:0.7; }
+  .fall-note{ rx:3; }
+  .fall-note.pending{ fill:#8fb3d9; opacity:0.92; }
+  .fall-note.hit{ fill:#7fc4a8; opacity:0.95; }
+  .fall-note.missed{ fill:#e0655f; opacity:0.65; }
+  .fall-key{ stroke:#2a2620; stroke-width:0.5; }
+  .fall-key.white{ fill:#efe9de; }
+  .fall-key.black{ fill:#161310; }
+  .fall-key.pressed{ fill:var(--active-key); }
+  .fall-key.lit{ fill:var(--brass); }
+  .fall-key.black.lit{ fill:#b98f3f; }
+  .fall-key-label{
+    font-family:'Source Sans 3', sans-serif; font-size:9px; font-weight:700;
+    fill:#3a3226; pointer-events:none;
+  }
+  .fall-key-label.black{ fill:var(--brass); font-size:7.5px; }
+  .hand-btn.active{ color:var(--brass); border-color:var(--brass-soft); }
+  .hand-btn:hover{ background:var(--brass); color:#0c0a06; border-color:var(--brass); }
+  .hand-badge{
+    display:inline-block; font-size:12.5px; font-weight:600;
+    padding:2px 9px; border-radius:999px; margin-right:6px;
+    border:1px solid var(--brass-soft); color:var(--brass);
+  }
+  .ghost-btn{
+    background:transparent;
+    border:1px solid var(--panel-border);
+    color:var(--text-dim);
+    font-family:'Source Sans 3', sans-serif;
+    font-size:14.5px;
+    padding:7px 15px;
+    border-radius:10px;
+    cursor:pointer;
+  }
+  .ghost-btn.active{ color:var(--brass); border-color:var(--brass-soft); }
+  .ghost-btn:hover{ background:var(--brass); color:#0c0a06; border-color:var(--brass); }
+  .key-label{
+    font-family:'Source Sans 3', sans-serif;
+    font-size:8.5px;
+    font-weight:700;
+    pointer-events:none;
+    fill:#000;
+    opacity:0;
+    transition:opacity 0.15s ease;
+  }
+  .key-label.black{ fill:var(--brass); font-size:6.5px; }
+  .key-label.shown{ opacity:1; }
+  .key-label-solfa{ font-size:0.82em; font-weight:600; opacity:0.75; }
+  .now-playing{
+    margin-top:16px;font-size:16px;color:var(--text-dim);
+    min-height:20px;
+  }
+  .now-playing b{color:var(--ivory);font-weight:600;}
+  .no-midi-msg{
+    color:var(--text-dim);font-size:16px;line-height:1.6;
+    max-width:520px;text-align:center;
+  }
+
+  /* ===== Encabezado compacto con herramientas ===== */
+  header{ text-align:left; padding:18px 24px 16px; }
+  .hero-content{ display:flex; align-items:center; justify-content:space-between; gap:18px; flex-wrap:wrap; }
+  .hero-left .badge{ margin-bottom:8px; }
+  .hero-tools{ display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
+  .metro{
+    display:flex; align-items:center; gap:8px;
+    padding:8px 12px; border-radius:12px;
+    border:1px solid var(--panel-border); background:rgba(0,0,0,0.35);
+  }
+  .metro-btn{
+    width:38px; height:38px; border-radius:50%; padding:0; font-size:15px;
+    display:inline-flex; align-items:center; justify-content:center;
+  }
+  .metro-btn.on{ background:var(--correct); color:#06110b; }
+  .metro-dot{
+    width:14px; height:14px; border-radius:50%;
+    background:#2a2822; border:1px solid var(--panel-border);
+    transition:transform 0.06s ease, background 0.06s ease;
+  }
+  .metro-dot.beat{ background:var(--brass); transform:scale(1.35); box-shadow:0 0 14px var(--brass-glow); }
+  .metro-dot.beat.accent{ background:var(--ivory); transform:scale(1.6); }
+  .metro-bpm{ font-family:'Fraunces',serif; font-size:24px; color:var(--ivory); font-variant-numeric:tabular-nums; min-width:44px; text-align:center; }
+  .metro-unit{ font-size:12px; letter-spacing:1px; color:var(--text-dim); margin-left:-4px; }
+  .metro-step{ padding:5px 10px; font-size:16px; }
+  .metro select{ font-size:14px; padding:6px 8px; }
+  .session-box{
+    display:flex; align-items:baseline; gap:8px;
+    padding:8px 14px; border-radius:12px;
+    border:1px solid var(--panel-border); background:rgba(0,0,0,0.35);
+  }
+  .session-label{ font-size:12px; letter-spacing:1.4px; text-transform:uppercase; color:var(--text-dim); }
+  .session-time{ font-family:'Fraunces',serif; font-size:22px; color:var(--brass); font-variant-numeric:tabular-nums; }
+  .session-streak{ font-size:14px; color:#7fc4a8; }
+  @media (max-width:760px){ .hero-content{ justify-content:center; text-align:center; } }
+
+  /* ===== Digitación sobre las teclas ===== */
+  .finger-num{
+    font-family:'Source Sans 3', sans-serif; font-size:13px; font-weight:700;
+    pointer-events:none; text-anchor:middle;
+  }
+  .finger-num.rh{ fill:#7a4d0e; }
+  .finger-num.lh{ fill:#1f4f7a; }
+  .finger-num.black{ font-size:11px; }
+  .finger-num.black.rh{ fill:#f2cd77; }
+  .finger-num.black.lh{ fill:#9ccdf7; }
+  .white-key.target.lh{ fill:#dbe9f7; stroke:#5b9bd5; }
+  .black-key.target.lh{ fill:#2c4a66; stroke:#5b9bd5; }
+  .hand-tag{ display:inline-block; font-size:12px; font-weight:700; letter-spacing:1px; padding:2px 8px; border-radius:6px; margin-right:6px; vertical-align:middle; }
+  .hand-tag.rh{ background:rgba(212,175,90,0.18); color:var(--brass); }
+  .hand-tag.lh{ background:rgba(91,155,213,0.18); color:#8fc1ec; }
+
+  /* ===== Mini pentagrama y lectura ===== */
+  .mini-staff{ width:200px; height:96px; margin-left:auto; flex:0 0 auto; }
+  .staff-line{ stroke:var(--text-dim); stroke-width:1; }
+  .staff-ledger{ stroke:var(--text); stroke-width:1.2; }
+  .staff-note{ fill:var(--ivory); }
+  .staff-note.lh{ fill:#8fc1ec; }
+  .staff-stem{ stroke:var(--ivory); stroke-width:1.4; }
+  .staff-clef{ fill:var(--brass); font-family:'Noto Music','Segoe UI Symbol','Apple Symbols','Noto Sans Symbols2',serif; }
+  .staff-acc{ fill:var(--brass); font-family:'Source Sans 3',sans-serif; font-weight:700; }
+  .staff-name{ fill:var(--text-dim); font-family:'Source Sans 3',sans-serif; font-size:9px; }
+  .staff-note.correct{ fill:var(--correct); }
+  .staff-note.wrong{ fill:var(--wrong); }
+  .reading-stage{
+    display:flex; gap:20px; align-items:stretch; flex-wrap:wrap;
+    padding:14px; border:1px solid var(--panel-border); border-radius:14px;
+    background:rgba(0,0,0,0.25); margin-bottom:10px;
+  }
+  .reading-staff{ width:min(560px, 100%); height:230px; flex:1 1 360px; }
+  .reading-side{ flex:1 1 220px; display:flex; flex-direction:column; justify-content:center; gap:12px; }
+  .reading-big{ font-family:'Fraunces',serif; font-size:30px; color:var(--ivory); line-height:1.25; text-wrap:balance; }
+  .reading-big.correct{ color:var(--correct); }
+  .reading-big.wrong{ color:var(--wrong); }
+  .reading-stats{ font-size:15px; color:var(--text-dim); line-height:1.6; font-variant-numeric:tabular-nums; }
+  .reading-stats b{ color:var(--brass); }
+  .reading-actions{ display:flex; gap:8px; flex-wrap:wrap; }
+
+  /* ===== Tiempo / metrónomo en escalas ===== */
+  .timing-box{
+    display:flex; gap:6px; align-items:center; flex-wrap:wrap;
+    margin:4px 0 10px; font-size:15px; color:var(--text-dim);
+  }
+  .timing-chip{
+    width:18px; height:18px; border-radius:4px; background:#2a2822; border:1px solid var(--panel-border);
+  }
+  .timing-chip.ok{ background:var(--correct); }
+  .timing-chip.early{ background:#8fb3d9; }
+  .timing-chip.late{ background:#dba14f; }
+  .timing-chip.miss{ background:var(--wrong); }
+  .timing-summary{ margin-left:10px; color:var(--text); }
+  .timing-summary b{ color:var(--brass); }
+
+  /* ===== Oído ===== */
+  .ear-bar{
+    display:flex; align-items:center; gap:12px; flex-wrap:wrap;
+    margin-bottom:10px; padding:9px 12px; border-radius:10px;
+    border:1px solid rgba(127,196,168,0.4); background:rgba(127,196,168,0.06);
+  }
+
+  /* ===== Hoy ===== */
+  .today-head{ display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap; }
+  .today-list{ list-style:none; margin:6px 0 0; padding:0; display:flex; flex-direction:column; gap:8px; }
+  .today-item{
+    display:grid; grid-template-columns:34px 1fr auto; gap:12px; align-items:center;
+    padding:11px 14px; border-radius:12px;
+    border:1px solid var(--panel-border); background:rgba(255,255,255,0.02);
+  }
+  .today-item.done{ border-color:rgba(127,196,168,0.5); background:rgba(127,196,168,0.06); }
+  .today-check{
+    width:30px; height:30px; border-radius:50%; border:2px solid var(--panel-border);
+    display:inline-flex; align-items:center; justify-content:center; font-size:16px; color:var(--text-dim);
+    background:transparent; padding:0;
+  }
+  .today-item.done .today-check{ background:var(--correct); border-color:var(--correct); color:#06110b; }
+  .today-title{ font-size:17px; color:var(--ivory); font-weight:600; }
+  .today-sub{ font-size:14.5px; color:var(--text-dim); margin-top:2px; line-height:1.45; }
+  .today-go{ white-space:nowrap; }
+  .today-min{ font-size:13px; color:var(--brass); letter-spacing:0.5px; margin-left:8px; }
+
+  /* ===== Progreso ===== */
+  .stat-row{ display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:10px; margin:6px 0 16px; }
+  .stat-tile{ padding:12px 14px; border-radius:12px; border:1px solid var(--panel-border); background:rgba(0,0,0,0.25); }
+  .stat-val{ font-family:'Fraunces',serif; font-size:30px; color:var(--brass); font-variant-numeric:tabular-nums; line-height:1.1; }
+  .stat-lbl{ font-size:13px; letter-spacing:1px; text-transform:uppercase; color:var(--text-dim); margin-top:4px; }
+  .prog-h4{ font-family:'Fraunces',serif; font-size:18px; color:var(--ivory); margin:14px 0 8px; }
+  .heat-wrap{ display:flex; flex-direction:column; gap:8px; }
+  .heat-grid{ display:grid; grid-template-rows:repeat(7, 14px); grid-auto-flow:column; grid-auto-columns:14px; gap:3px; overflow-x:auto; padding-bottom:4px; }
+  .heat-cell{ width:14px; height:14px; border-radius:3px; background:#1c1a17; border:1px solid #2a2722; display:inline-block; }
+  .heat-cell.l1{ background:#4a3d1c; } .heat-cell.l2{ background:#7a6228; } .heat-cell.l3{ background:#b08d3f; } .heat-cell.l4{ background:var(--brass); }
+  .heat-cell.today{ outline:1px solid var(--ivory); }
+  .heat-legend{ font-size:12.5px; color:var(--text-dim); display:flex; align-items:center; gap:4px; }
+  .mastery-list{ display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:10px 22px; }
+  .mastery-item{ display:grid; grid-template-columns:130px 1fr 52px; align-items:center; gap:10px; font-size:15px; }
+  .mastery-name{ color:var(--text); }
+  .mastery-bar{ height:10px; border-radius:6px; background:#1c1a17; border:1px solid #2a2722; overflow:hidden; }
+  .mastery-fill{ height:100%; background:linear-gradient(90deg, var(--brass-soft), var(--brass)); }
+  .mastery-pct{ color:var(--text-dim); font-variant-numeric:tabular-nums; text-align:right; }
+  .prog-actions{ display:flex; gap:8px; flex-wrap:wrap; margin-top:16px; }
+  .ghost-btn.danger{ border-color:rgba(224,101,95,0.45); color:#e0655f; }
+  .ghost-btn.danger:hover{ background:#e0655f; color:#0c0a06; }
+  label.ghost-btn{ display:inline-block; }
+  button:focus-visible, select:focus-visible, label.ghost-btn:focus-within{ outline:2px solid var(--brass); outline-offset:2px; }
+  @media (prefers-reduced-motion: reduce){ *{ transition:none !important; } }
+</style>
+</head>
+<body>
+
+  <header>
+    <svg class="hero-keys" viewBox="0 0 800 120" preserveAspectRatio="none" aria-hidden="true">
+      <rect class="hero-white" x="0" y="0" width="38.5" height="120" rx="2"/>
+      <rect class="hero-white" x="40" y="0" width="38.5" height="120" rx="2"/>
+      <rect class="hero-white" x="80" y="0" width="38.5" height="120" rx="2"/>
+      <rect class="hero-white" x="120" y="0" width="38.5" height="120" rx="2"/>
+      <rect class="hero-white" x="160" y="0" width="38.5" height="120" rx="2"/>
+      <rect class="hero-white" x="200" y="0" width="38.5" height="120" rx="2"/>
+      <rect class="hero-white" x="240" y="0" width="38.5" height="120" rx="2"/>
+      <rect class="hero-white" x="280" y="0" width="38.5" height="120" rx="2"/>
+      <rect class="hero-white" x="320" y="0" width="38.5" height="120" rx="2"/>
+      <rect class="hero-white" x="360" y="0" width="38.5" height="120" rx="2"/>
+      <rect class="hero-white" x="400" y="0" width="38.5" height="120" rx="2"/>
+      <rect class="hero-white" x="440" y="0" width="38.5" height="120" rx="2"/>
+      <rect class="hero-white" x="480" y="0" width="38.5" height="120" rx="2"/>
+      <rect class="hero-white" x="520" y="0" width="38.5" height="120" rx="2"/>
+      <rect class="hero-white" x="560" y="0" width="38.5" height="120" rx="2"/>
+      <rect class="hero-white" x="600" y="0" width="38.5" height="120" rx="2"/>
+      <rect class="hero-white" x="640" y="0" width="38.5" height="120" rx="2"/>
+      <rect class="hero-white" x="680" y="0" width="38.5" height="120" rx="2"/>
+      <rect class="hero-white" x="720" y="0" width="38.5" height="120" rx="2"/>
+      <rect class="hero-white" x="760" y="0" width="38.5" height="120" rx="2"/>
+      <rect class="hero-black" x="26" y="0" width="24" height="72" rx="1.5"/>
+      <rect class="hero-black" x="66" y="0" width="24" height="72" rx="1.5"/>
+      <rect class="hero-black" x="146" y="0" width="24" height="72" rx="1.5"/>
+      <rect class="hero-black" x="186" y="0" width="24" height="72" rx="1.5"/>
+      <rect class="hero-black" x="226" y="0" width="24" height="72" rx="1.5"/>
+      <rect class="hero-black" x="306" y="0" width="24" height="72" rx="1.5"/>
+      <rect class="hero-black" x="346" y="0" width="24" height="72" rx="1.5"/>
+      <rect class="hero-black" x="426" y="0" width="24" height="72" rx="1.5"/>
+      <rect class="hero-black" x="466" y="0" width="24" height="72" rx="1.5"/>
+      <rect class="hero-black" x="506" y="0" width="24" height="72" rx="1.5"/>
+      <rect class="hero-black" x="586" y="0" width="24" height="72" rx="1.5"/>
+      <rect class="hero-black" x="626" y="0" width="24" height="72" rx="1.5"/>
+      <rect class="hero-black" x="706" y="0" width="24" height="72" rx="1.5"/>
+      <rect class="hero-black" x="746" y="0" width="24" height="72" rx="1.5"/>
+    </svg>
+    <div class="hero-fade"></div>
+    <div class="hero-content">
+      <div class="hero-left">
+        <span class="badge" id="deviceBadge">Práctica Piano</span>
+        <h1>Yamaha <span class="name">P-45B</span></h1>
+      </div>
+      <div class="hero-tools">
+        <div class="metro" id="metroBox" title="Metrónomo de la app (Web Audio). También puedes usar el del P-45: FUNCTION + E3 según el manual.">
+          <button id="metroToggle" class="metro-btn" aria-label="Encender o apagar el metrónomo">▶</button>
+          <span class="metro-dot" id="metroDot"></span>
+          <button class="ghost-btn metro-step" data-bpm="-5" aria-label="Bajar 5 BPM">–</button>
+          <span class="metro-bpm" id="metroBpm">80</span><span class="metro-unit">BPM</span>
+          <button class="ghost-btn metro-step" data-bpm="5" aria-label="Subir 5 BPM">+</button>
+          <select id="metroMeter" aria-label="Compás">
+            <option value="4">4/4</option>
+            <option value="3">3/4</option>
+            <option value="2">2/4</option>
+          </select>
+        </div>
+        <div class="session-box" title="Tiempo real de práctica de hoy: cuenta solo mientras tocas o usas la app.">
+          <span class="session-label">Hoy</span>
+          <span class="session-time" id="sessionTime">0 min</span>
+          <span class="session-streak" id="sessionStreak"></span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="panel" id="connectionPanel">
+    <div class="row">
+      <div><span class="status-dot" id="statusDot"></span><span class="status-text" id="statusText">Sin conectar</span></div>
+      <div class="row" style="gap:8px;">
+        <select id="deviceSelect" disabled><option>Sin dispositivos</option></select>
+        <button id="connectBtn">Conectar MIDI</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel" id="modePanel">
+    <p class="menu-label">Prácticas fundamentales</p>
+    <div class="mode-tabs" id="mainTabs">
+      <button class="mode-tab active" data-cat="today">Hoy</button>
+      <button class="mode-tab" data-cat="free">Libre</button>
+      <button class="mode-tab" data-cat="scales">Escalas</button>
+      <button class="mode-tab" data-cat="chords">Acordes</button>
+      <button class="mode-tab" data-cat="intervals">Intervalos</button>
+      <button class="mode-tab" data-cat="reading">Lectura</button>
+      <button class="mode-tab" data-cat="agility">Agilidad</button>
+      <button class="mode-tab" data-cat="fragments">Fragmentos</button>
+      <button class="mode-tab" data-cat="progress">Progreso</button>
+      <button class="mode-tab" data-cat="functions">Funciones</button>
+    </div>
+    <div class="mode-tabs sub-tabs" id="scaleFamilyTabs" style="display:none;">
+      <button class="mode-tab sub active" data-family="major">Mayores</button>
+      <button class="mode-tab sub" data-family="minor">Menores</button>
+    </div>
+    <div class="mode-tabs sub-tabs scroll-tabs" id="scaleSubTabs" style="display:none;"></div>
+    <div id="scaleOptBar" class="reg-bar" style="display:none;">
+      <span class="reg-label">Mano</span>
+      <div class="reg-picker" id="scaleHandPicker">
+        <button class="reg-btn active" data-shand="rh">Derecha</button>
+        <button class="reg-btn" data-shand="lh">Izquierda</button>
+        <button class="reg-btn" data-shand="both">Ambas</button>
+      </div>
+      <span class="reg-label">Octavas</span>
+      <div class="reg-picker" id="scaleOctPicker">
+        <button class="reg-btn active" data-soct="1">1</button>
+        <button class="reg-btn" data-soct="2">2</button>
+      </div>
+      <span class="reg-label">Sentido</span>
+      <div class="reg-picker" id="scaleDirPicker">
+        <button class="reg-btn" data-sdir="up">Subida</button>
+        <button class="reg-btn active" data-sdir="updown">Subida y bajada</button>
+      </div>
+      <span class="reg-label" id="minorVarLabel" style="display:none;">Tipo</span>
+      <div class="reg-picker" id="minorVarPicker" style="display:none;">
+        <button class="reg-btn active" data-mvar="natural">Natural</button>
+        <button class="reg-btn" data-mvar="harmonic">Armónica</button>
+      </div>
+      <button id="scaleFingerBtn" class="ghost-btn active">☝ Dedos</button>
+      <button id="scaleTempoBtn" class="ghost-btn">⏱ Con metrónomo</button>
+    </div>
+
+    <div id="practiceInfo" class="practice-info" style="display:none;">
+      <span class="progress" id="progressText">1 / 8</span>
+      <span class="target-note" id="targetNoteLabel">—</span>
+      <span class="target-sub" id="targetSubLabel"></span>
+      <span class="feedback" id="feedbackText"></span>
+      <svg id="miniStaff" class="mini-staff" style="display:none;" aria-label="Nota en el pentagrama"></svg>
+    </div>
+    <div id="timingBox" class="timing-box" style="display:none;"></div>
+    <div id="scaleTip" class="tip" style="display:none;"></div>
+    <div id="chordPickBar" class="pick-bar" style="display:none;">
+      <span class="reg-label">Ir directo a:</span>
+      <div class="reg-picker" id="chordPicker"></div>
+    </div>
+    <div id="chordOctaveBar" class="reg-bar" style="display:none;">
+      <span class="reg-label">Octava</span>
+      <div class="reg-picker" id="chordOctavePicker"></div>
+      <button id="chordRandomOct" class="ghost-btn">🎲 Octava al azar</button>
+      <span class="reg-label">Posición</span>
+      <div class="reg-picker" id="chordInvPicker">
+        <button class="reg-btn active" data-inv="0">Fundamental</button>
+        <button class="reg-btn" data-inv="1">1ª inversión</button>
+        <button class="reg-btn" data-inv="2">2ª inversión</button>
+      </div>
+      <span class="reg-label">Mano</span>
+      <div class="reg-picker" id="chordHandPicker">
+        <button class="reg-btn active" data-chand="rh">Derecha</button>
+        <button class="reg-btn" data-chand="lh">Izquierda</button>
+      </div>
+      <button id="chordStrictBtn" class="ghost-btn" title="Exige las notas exactas marcadas (con la inversión y octava elegidas). Apagado: acepta el acorde en cualquier octava/posición.">🎯 Notas exactas</button>
+    </div>
+    <div id="chordTip" class="tip" style="display:none;">
+      <b>Orden recomendado:</b> empieza por C, G, F, Am, Em, Dm — son los que más vas a usar. F#m y C#m vienen después, y el resto de sostenidos al final: no te frustres si tardan más.
+    </div>
+    <div id="intervalPickBar" class="pick-bar" style="display:none;">
+      <span class="reg-label">Ir directo a:</span>
+      <div class="reg-picker" id="intervalPicker"></div>
+    </div>
+    <div id="intervalRootBar" class="reg-bar" style="display:none;">
+      <span class="reg-label">Nota de partida</span>
+      <div class="reg-picker" id="intervalRootPicker"></div>
+      <span class="reg-label">Octava</span>
+      <div class="reg-picker" id="intervalOctavePicker"></div>
+      <button id="intervalRandomRoot" class="ghost-btn">🎲 Al azar</button>
+      <button id="earModeBtn" class="ghost-btn" title="La app toca el intervalo y tú lo tienes que encontrar en el piano.">👂 De oído</button>
+    </div>
+    <div id="earBar" class="ear-bar" style="display:none;">
+      <button id="earPlayBtn" class="ghost-btn active">▶ Escuchar de nuevo</button>
+      <span class="reg-label" id="earHint">Escucha las dos notas. La primera es la nota de partida (está marcada). Toca la segunda.</span>
+      <span class="reg-label" id="earScore"></span>
+    </div>
+    <div id="distanceBox" class="distance-box" style="display:none;"></div>
+    <div id="intervalTip" class="tip" style="display:none;">
+      <b>Cubierto en clase:</b> del unísono hasta la 8ª (octava). Ahora puedes transportarlos: cambia la nota de partida y la octava para escuchar el mismo intervalo en cualquier punto del piano. La distancia en tonos <em>no cambia</em> aunque cambies de nota — eso es justamente lo que define al intervalo.
+    </div>
+
+    <div id="fragmentsPanel" style="display:none;">
+      <div class="mode-tabs sub-tabs scroll-tabs" id="fragSubTabs"></div>
+      <div id="agilOctaveBar" class="reg-bar" style="display:none;">
+        <span class="reg-label">Octava mano derecha</span>
+        <div class="reg-picker" id="agilRhOctavePicker"></div>
+        <span class="reg-label">Octava mano izquierda</span>
+        <div class="reg-picker" id="agilLhOctavePicker"></div>
+      </div>
+      <div class="frag-bar">
+        <div class="hand-picker">
+          <button class="hand-btn active" data-hand="both">Ambas manos</button>
+          <button class="hand-btn" data-hand="rh">Solo derecha</button>
+          <button class="hand-btn" data-hand="lh">Solo izquierda</button>
+        </div>
+        <button id="listenBtn" class="ghost-btn">▶ Escuchar</button>
+        <button id="cascadeBtn" class="ghost-btn">🌊 Modo cascada</button>
+      </div>
+      <div id="fragTip" class="tip"></div>
+      <div id="cascadeWrap" style="display:none;">
+        <div class="cascade-toolbar">
+          <span class="reg-label">Velocidad</span>
+          <button class="ghost-btn speed-btn" data-speed="-1">–</button>
+          <span id="cascadeSpeedLabel" class="zoom-value">100%</span>
+          <button class="ghost-btn speed-btn" data-speed="1">+</button>
+          <button id="cascadeStartBtn" class="ghost-btn active">▶ Empezar</button>
+          <span id="cascadeScore" class="cascade-score"></span>
+        </div>
+        <div class="cascade-wrap">
+          <svg id="cascadeSvg"></svg>
+        </div>
+      </div>
+    </div>
+
+    <div id="todayPanel" class="info-panel" style="display:none;">
+      <div class="today-head">
+        <div>
+          <h3 id="todayTitle">Plan de hoy</h3>
+          <p class="info-note" id="todayNote">Sesión sugerida de ~20 minutos. Se arma sola con lo que menos has practicado y lo que te toca desbloquear.</p>
+        </div>
+        <button id="todayRegen" class="ghost-btn">↻ Otro plan</button>
+      </div>
+      <ol class="today-list" id="todayList"></ol>
+      <div class="tip" id="todayTip"></div>
+    </div>
+
+    <div id="readingPanel" style="display:none;">
+      <div class="mode-tabs sub-tabs scroll-tabs" id="readingLevelTabs"></div>
+      <div class="reading-stage">
+        <svg id="readingStaff" class="reading-staff" aria-label="Pentagrama con la nota a tocar"></svg>
+        <div class="reading-side">
+          <div class="reading-big" id="readingFeedback">Toca la nota que ves.</div>
+          <div class="reading-stats" id="readingStats"></div>
+          <div class="reading-actions">
+            <button id="readingHintBtn" class="ghost-btn">💡 Pista</button>
+            <button id="readingSkipBtn" class="ghost-btn">Saltar →</button>
+          </div>
+        </div>
+      </div>
+      <div class="tip" id="readingTip"></div>
+    </div>
+
+    <div id="progressPanel" class="info-panel" style="display:none;">
+      <h3>Tu progreso</h3>
+      <p class="info-note">Todo se guarda en este navegador (localStorage). Exporta un respaldo de vez en cuando; si cambias de computador, impórtalo allá.</p>
+      <div class="stat-row" id="progressStats"></div>
+      <h4 class="prog-h4">Últimas 12 semanas</h4>
+      <div class="heat-wrap"><div class="heat-grid" id="heatGrid"></div><div class="heat-legend">menos <span class="heat-cell l0"></span><span class="heat-cell l1"></span><span class="heat-cell l2"></span><span class="heat-cell l3"></span><span class="heat-cell l4"></span> más</div></div>
+      <h4 class="prog-h4">Dominio por módulo</h4>
+      <div class="mastery-list" id="masteryList"></div>
+      <div class="prog-actions">
+        <button id="exportBtn" class="ghost-btn">⬇ Exportar respaldo</button>
+        <label class="ghost-btn" for="importFile">⬆ Importar respaldo</label>
+        <input type="file" id="importFile" accept="application/json" style="display:none;">
+        <button id="resetBtn" class="ghost-btn danger">Borrar progreso</button>
+      </div>
+    </div>
+
+    <div id="functionsPanel" class="info-panel" style="display:none;">
+      <h3>Funciones del P-45</h3>
+      <p class="info-note">Todo se hace igual: mantén presionado <b>GRAND PIANO/FUNCTION</b> y, sin soltarlo, presiona la tecla marcada. Elige una categoría para ver exactamente qué teclas de <em>tu</em> piano corresponden.</p>
+      <div class="warn-box">
+        <b>Ojo con los nombres:</b> el manual del P-45 llama a las teclas una octava más abajo que el resto del mundo. Lo que el manual llama <b>C3</b> es la misma tecla que aquí y en cualquier partitura se llama <b>C4 (Do central)</b>. No es un error de nadie: son dos convenciones. Abajo te muestro <em>las dos</em>.
+      </div>
+      <div class="reg-picker" id="funcCatPicker" style="margin-bottom:12px;"></div>
+      <div class="func-kb-wrap">
+        <svg id="funcSvg" role="img" aria-label="Mapa de funciones del teclado"></svg>
+      </div>
+      <div id="funcLegend" class="func-legend"></div>
+      <div id="funcDetail" class="func-detail"></div>
+    </div>
+
+    <div class="now-playing" id="nowPlaying">Toca una tecla para verla aquí.</div>
+  </div>
+
+  <div class="keyboard-wrap" id="keyboardWrap">
+    <div class="kb-toolbar">
+      <span class="zoom-label">Tamaño del teclado</span>
+      <button class="ghost-btn zoom-btn" data-zoom="-1">–</button>
+      <span id="zoomValue" class="zoom-value">100%</span>
+      <button class="ghost-btn zoom-btn" data-zoom="1">+</button>
+      <button id="toggleSoundBtn" class="ghost-btn active" title="Sonido de la app para el teclado dibujado y para 'Escuchar'. Las notas que vienen del piano real no se duplican.">🔊 Sonido</button>
+      <button id="toggleLabelsBtn" class="ghost-btn">Mostrar nombres de notas</button>
+      <button id="labelStyleBtn" class="ghost-btn">Do Re Mi</button>
+      <button id="solfaToggleBtn" class="ghost-btn">C = Do ?</button>
+    </div>
+    <div class="solfa-bar" id="solfaBar" style="display:none;"></div>
+    <svg id="pianoSvg" viewBox="0 0 1040 130" role="img" aria-label="Teclado de piano" style="touch-action:none;"></svg>
+  </div>
+
+  <div class="no-midi-msg" id="noMidiMsg" style="display:none;margin-top:18px;">
+    Tu navegador no soporta Web MIDI, así que no vas a poder conectar el piano físico acá (prueba Chrome o Edge en computador para eso). Pero igual puedes practicar tocando el teclado dibujado con el mouse o el dedo — eso funciona en cualquier navegador.
+  </div>
+
+<script>
+const NOTE_NAMES = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+const SOLFA_NAMES = ['Do','Do#','Re','Re#','Mi','Fa','Fa#','Sol','Sol#','La','La#','Si'];
+// 0 = letras (C4)  1 = ambos (C4 / Do4)  2 = solfeo (Do4)
+let labelStyle = 1;
+const WHITE_OFFSET = {0:0,2:1,4:2,5:3,7:4,9:5,11:6};
+const BLACK_OFFSET = {1:0.72,3:1.78,6:3.72,8:4.66,10:5.78};
+const BLACK_SET = new Set([1,3,6,8,10]);
+
+const MIN_NOTE = 21, MAX_NOTE = 108;
+const WK = 20, WH = 100, BK = 12, BH = 62;
+
+function xUnitsFor(note){
+  const pc = note % 12;
+  const oct = Math.floor(note/12);
+  if (BLACK_SET.has(pc)) return oct*7 + BLACK_OFFSET[pc];
+  return oct*7 + WHITE_OFFSET[pc];
+}
+const minUnits = xUnitsFor(MIN_NOTE);
+
+function noteLabel(note){
+  const pc = note % 12;
+  const oct = Math.floor(note/12) - 1;
+  return NOTE_NAMES[pc] + oct;
+}
+function solfaLabel(note){
+  const pc = note % 12;
+  const oct = Math.floor(note/12) - 1;
+  return SOLFA_NAMES[pc] + oct;
+}
+// Rellena un <text> SVG con el nombre de la tecla. En modo "ambos" usa dos
+// líneas (tspans) — nombre de nota arriba, solfeo abajo — en vez de una
+// sola línea con "/", que en teclas angostas quedaba ilegible.
+function fillKeyLabel(textEl, note, isBlack){
+  while(textEl.firstChild) textEl.removeChild(textEl.firstChild);
+  const x = textEl.getAttribute('x');
+  if(labelStyle === 0){
+    textEl.textContent = noteLabel(note);
+    return;
+  }
+  if(labelStyle === 2){
+    textEl.textContent = solfaLabel(note);
+    return;
+  }
+  // ambos: dos líneas
+  const dy1 = isBlack ? '-2.4' : '-3.2';
+  const dy2 = isBlack ? '5.2' : '6.4';
+  const t1 = document.createElementNS('http://www.w3.org/2000/svg','tspan');
+  t1.setAttribute('x', x); t1.setAttribute('dy', dy1);
+  t1.textContent = noteLabel(note);
+  const t2 = document.createElementNS('http://www.w3.org/2000/svg','tspan');
+  t2.setAttribute('x', x); t2.setAttribute('dy', dy2);
+  t2.setAttribute('class', 'key-label-solfa');
+  t2.textContent = solfaLabel(note);
+  textEl.appendChild(t1);
+  textEl.appendChild(t2);
+}
+
+const svg = document.getElementById('pianoSvg');
+const totalWhiteUnits = xUnitsFor(MAX_NOTE) - minUnits + 1;
+svg.setAttribute('viewBox', `0 0 ${totalWhiteUnits*WK + 20} ${WH+20}`);
+
+const whiteRects = {}, blackRects = {};
+const keyLabels = [];
+
+function attachPointerPlay(rect, note){
+  rect.addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    rect.setPointerCapture(e.pointerId);
+    noteOn(note);
+  });
+  const release = (e) => { e.preventDefault(); noteOff(note); };
+  rect.addEventListener('pointerup', release);
+  rect.addEventListener('pointercancel', release);
+  rect.addEventListener('lostpointercapture', release);
+}
+
+for(let n=MIN_NOTE; n<=MAX_NOTE; n++){
+  if(BLACK_SET.has(n%12)) continue;
+  const x = (xUnitsFor(n) - minUnits) * WK + 10;
+  const rect = document.createElementNS('http://www.w3.org/2000/svg','rect');
+  rect.setAttribute('x', x);
+  rect.setAttribute('y', 10);
+  rect.setAttribute('width', WK-1);
+  rect.setAttribute('height', WH);
+  rect.setAttribute('rx', 2);
+  rect.setAttribute('class','white-key');
+  rect.dataset.note = n;
+  svg.appendChild(rect);
+  whiteRects[n] = rect;
+  attachPointerPlay(rect, n);
+
+  const label = document.createElementNS('http://www.w3.org/2000/svg','text');
+  label.setAttribute('x', x + (WK-1)/2);
+  label.setAttribute('y', WH + 4);
+  label.setAttribute('text-anchor', 'middle');
+  label.setAttribute('class', 'key-label');
+  label.dataset.note = n;
+  fillKeyLabel(label, n, false);
+  svg.appendChild(label);
+  keyLabels.push(label);
+}
+for(let n=MIN_NOTE; n<=MAX_NOTE; n++){
+  if(!BLACK_SET.has(n%12)) continue;
+  const x = (xUnitsFor(n) - minUnits) * WK + 10 - BK/2;
+  const rect = document.createElementNS('http://www.w3.org/2000/svg','rect');
+  rect.setAttribute('x', x);
+  rect.setAttribute('y', 10);
+  rect.setAttribute('width', BK);
+  rect.setAttribute('height', BH);
+  rect.setAttribute('rx', 1.5);
+  rect.setAttribute('class','black-key');
+  rect.dataset.note = n;
+  svg.appendChild(rect);
+  blackRects[n] = rect;
+  attachPointerPlay(rect, n);
+
+  const label = document.createElementNS('http://www.w3.org/2000/svg','text');
+  label.setAttribute('x', x + BK/2);
+  label.setAttribute('y', BH + 2);
+  label.setAttribute('text-anchor', 'middle');
+  label.setAttribute('class', 'key-label black');
+  label.dataset.note = n;
+  fillKeyLabel(label, n, true);
+  svg.appendChild(label);
+  keyLabels.push(label);
+}
+function getRect(n){ return whiteRects[n] || blackRects[n]; }
+
+const toggleLabelsBtn = document.getElementById('toggleLabelsBtn');
+// Para alguien que empieza, ver los nombres ayuda: encendido por defecto,
+// y la elección se recuerda (antes se perdía al recargar).
+let labelsShown = true;
+try { const v = localStorage.getItem('labelsShown'); if(v !== null) labelsShown = v === '1'; } catch(e){}
+function applyLabelsShown(){
+  keyLabels.forEach(l => l.classList.toggle('shown', labelsShown));
+  toggleLabelsBtn.classList.toggle('active', labelsShown);
+  toggleLabelsBtn.textContent = labelsShown ? 'Ocultar nombres de notas' : 'Mostrar nombres de notas';
+  try { localStorage.setItem('labelsShown', labelsShown ? '1' : '0'); } catch(e){}
+}
+toggleLabelsBtn.addEventListener('click', () => {
+  labelsShown = !labelsShown;
+  applyLabelsShown();
+});
+applyLabelsShown();
+
+const labelStyleBtn = document.getElementById('labelStyleBtn');
+const LABEL_STYLE_TEXT = ['C D E', 'Nota + Do Re Mi', 'Do Re Mi'];
+function refreshKeyLabels(){
+  keyLabels.forEach(l => {
+    const isBlack = l.classList.contains('black');
+    fillKeyLabel(l, parseInt(l.dataset.note, 10), isBlack);
+  });
+  labelStyleBtn.textContent = LABEL_STYLE_TEXT[labelStyle];
+  try { localStorage.setItem('labelStyle', labelStyle); } catch(e){}
+}
+try {
+  const ls = parseInt(localStorage.getItem('labelStyle'), 10);
+  if(!isNaN(ls) && ls >= 0 && ls <= 2) labelStyle = ls;
+} catch(e){}
+labelStyleBtn.addEventListener('click', () => {
+  labelStyle = (labelStyle + 1) % 3;
+  refreshKeyLabels();
+});
+refreshKeyLabels();
+
+// --- Synth: simple sound for keys played by click/touch or MIDI ---
+const toggleSoundBtn = document.getElementById('toggleSoundBtn');
+let soundEnabled = true;
+toggleSoundBtn.addEventListener('click', () => {
+  soundEnabled = !soundEnabled;
+  toggleSoundBtn.classList.toggle('active', soundEnabled);
+  toggleSoundBtn.textContent = soundEnabled ? '🔊 Sonido' : '🔇 Sonido';
+});
+
+let audioCtx = null;
+const activeVoices = {};
+function ensureAudioCtx(){
+  if(!audioCtx){
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if(!AC) return null; // navegador sin Web Audio (o entorno de pruebas)
+    audioCtx = new AC();
+  }
+  if(audioCtx.state === 'suspended') audioCtx.resume();
+  return audioCtx;
+}
+function playNoteSound(note){
+  if(!soundEnabled) return;
+  const ctx = ensureAudioCtx();
+  if(!ctx) return;
+  const freq = 440 * Math.pow(2, (note-69)/12);
+  const now = ctx.currentTime;
+
+  const gain = ctx.createGain();
+  gain.gain.setValueAtTime(0, now);
+  gain.gain.linearRampToValueAtTime(0.3, now+0.008);
+  gain.gain.exponentialRampToValueAtTime(0.11, now+0.4);
+  gain.connect(ctx.destination);
+
+  const osc1 = ctx.createOscillator();
+  osc1.type = 'triangle';
+  osc1.frequency.value = freq;
+  osc1.connect(gain);
+
+  const osc2 = ctx.createOscillator();
+  osc2.type = 'sine';
+  osc2.frequency.value = freq*2;
+  const gain2 = ctx.createGain();
+  gain2.gain.value = 0.12;
+  osc2.connect(gain2);
+  gain2.connect(gain);
+
+  osc1.start(now);
+  osc2.start(now);
+  if(activeVoices[note]) stopNoteSound(note);
+  activeVoices[note] = { osc1, osc2, gain };
+}
+function stopNoteSound(note){
+  const v = activeVoices[note];
+  if(!v || !audioCtx) return;
+  const now = audioCtx.currentTime;
+  v.gain.gain.cancelScheduledValues(now);
+  v.gain.gain.setValueAtTime(Math.max(v.gain.gain.value, 0.0001), now);
+  v.gain.gain.exponentialRampToValueAtTime(0.0001, now+0.22);
+  v.osc1.stop(now+0.26);
+  v.osc2.stop(now+0.26);
+  delete activeVoices[note];
+}
+
+const statusDot = document.getElementById('statusDot');
+const statusText = document.getElementById('statusText');
+const deviceSelect = document.getElementById('deviceSelect');
+const connectBtn = document.getElementById('connectBtn');
+const modePanel = document.getElementById('modePanel');
+const nowPlaying = document.getElementById('nowPlaying');
+const noMidiMsg = document.getElementById('noMidiMsg');
+
+let currentInput = null;
+let activeNotes = new Set();
+
+if(!navigator.requestMIDIAccess){
+  noMidiMsg.style.display = 'block';
+  connectBtn.disabled = true;
+} else {
+  connectBtn.addEventListener('click', () => {
+    ensureAudioCtx();
+    navigator.requestMIDIAccess().then(onMIDISuccess, () => {
+      statusText.textContent = 'Acceso MIDI denegado';
+    });
+  });
+}
+
+function onMIDISuccess(midiAccess){
+  const inputs = Array.from(midiAccess.inputs.values());
+  deviceSelect.innerHTML = '';
+  if(inputs.length === 0){
+    deviceSelect.innerHTML = '<option>No se detectó ningún piano</option>';
+    statusText.textContent = 'Conecta el piano por USB e intenta de nuevo';
+    statusDot.classList.remove('connected');
+    const badge0 = document.getElementById('deviceBadge');
+    if(badge0){
+      badge0.textContent = 'Práctica Piano';
+      badge0.classList.remove('live');
+      badge0.title = 'Sin conexión MIDI';
+    }
+    currentInput = null;
+    return;
+  }
+  inputs.forEach((input, i) => {
+    const opt = document.createElement('option');
+    opt.value = i;
+    opt.textContent = input.name;
+    deviceSelect.appendChild(opt);
+  });
+  deviceSelect.disabled = false;
+  attachInput(inputs[0]);
+
+  // onstatechange vuelve a llamar a esta función: el listener del select se
+  // registra una sola vez y lee la lista vigente, para no acumular copias.
+  midiInputsNow = inputs;
+  if(!deviceSelectBound){
+    deviceSelectBound = true;
+    deviceSelect.addEventListener('change', () => {
+      const inp = midiInputsNow[deviceSelect.value];
+      if(inp) attachInput(inp);
+    });
+  }
+
+  midiAccess.onstatechange = () => onMIDISuccess(midiAccess);
+}
+let midiInputsNow = [];
+let deviceSelectBound = false;
+
+function attachInput(input){
+  if(currentInput) currentInput.onmidimessage = null;
+  currentInput = input;
+  currentInput.onmidimessage = handleMIDIMessage;
+  statusDot.classList.add('connected');
+  statusText.textContent = 'Conectado: ' + input.name;
+  // el nombre real que reporta el piano pasa al encabezado
+  const badge = document.getElementById('deviceBadge');
+  if(badge){
+    badge.textContent = input.name;
+    badge.classList.add('live');
+    badge.title = 'Piano conectado por MIDI';
+  }
+  modePanel.style.display = 'block';
+}
+
+function handleMIDIMessage(msg){
+  const [status, note, velocity] = msg.data;
+  const command = status & 0xf0;
+  if(command === 0x90 && velocity > 0){
+    noteOn(note, 'midi');
+  } else if(command === 0x80 || (command === 0x90 && velocity === 0)){
+    noteOff(note);
+  }
+}
+
+// Registro de modos: cada modo declara qué hacer cuando suena una nota.
+// Así un modo nuevo se suma aquí y no hay que tocar noteOn() (antes había
+// tres sitios que comparaban el nombre del modo a mano y uno se olvidaba).
+const NOTE_HANDLERS = {};
+function registerNoteHandler(mode, fn){ NOTE_HANDLERS[mode] = fn; }
+
+// src: 'midi' = viene del piano real (ya suena solo, la app no lo duplica);
+//      'ui'   = clic/touch en el teclado dibujado (la app pone el sonido).
+function noteOn(note, src){
+  src = src || 'ui';
+  activeNotes.add(note);
+  const rect = getRect(note);
+  if(rect) rect.classList.add('active');
+  nowPlaying.innerHTML = 'Sonando: <b>' + noteLabel(note) + '</b>';
+  if(src !== 'midi') playNoteSound(note);
+  if(typeof markActivity === 'function') markActivity();
+  if(typeof recordAnyNote === 'function') recordAnyNote(note, src);
+  if(SCALES[currentMode]){ checkScaleStep(note); return; }
+  if((currentMode === 'fragments' || currentMode === 'agility') && typeof cascadeOn !== 'undefined' && cascadeOn && cascade){
+    checkCascadeHit(note); return;
+  }
+  const h = NOTE_HANDLERS[currentMode];
+  if(h) h(note);
+}
+function noteOff(note){
+  activeNotes.delete(note);
+  const rect = getRect(note);
+  if(rect) rect.classList.remove('active');
+  stopNoteSound(note);
+}
+
+// ===== Escalas: generadas desde raíz + patrón, con deletreo correcto =====
+// Antes había 13 escalas escritas a mano. Ahora cada escala se define por su
+// raíz (letra + clase de nota), su familia y la digitación estándar de cada
+// mano; las notas y los nombres (E#, B#, Fx, Cb...) se calculan, así no se
+// cuelan errores de tipeo como el Si natural que hubo en Sol# mayor.
+const LETTERS = ['C','D','E','F','G','A','B'];
+const LETTER_PC = [0,2,4,5,7,9,11];
+const STEP_PATTERNS = {
+  major:    [2,2,1,2,2,2,1],
+  natural:  [2,1,2,2,1,2,2],
+  harmonic: [2,1,2,2,1,3,1],
+};
+function accText(diff){
+  return diff === 0 ? '' : diff === 1 ? '#' : diff === -1 ? 'b' : diff === 2 ? 'x' : 'bb';
+}
+function spellScale(rootLetter, rootPc, steps){
+  const names = [], pcs = [], semis = [];
+  let pc = rootPc, cum = 0;
+  for(let i = 0; i <= 7; i++){
+    const li = (rootLetter + i) % 7;
+    let diff = ((pc - LETTER_PC[li]) % 12 + 12) % 12;
+    if(diff > 6) diff -= 12;
+    names.push(LETTERS[li] + accText(diff));
+    pcs.push(((pc % 12) + 12) % 12);
+    semis.push(cum);
+    cum += steps[i % 7];
+    pc += steps[i % 7];
+  }
+  return { names, pcs, semis };
+}
+
+// rh / lh: digitación estándar (Hanon / ABRSM) de UNA octava ascendente.
+// Con dos octavas se repite el ciclo: derecha = los 7 primeros dedos ×2 y el
+// dedo final; izquierda = el primer dedo y luego los 7 siguientes ×2.
+const SCALE_DEFS = [
+  {id:'cmajor',  label:'Do mayor',   short:'Do M',   rootLetter:0, rootPc:0,  family:'major', rh:'12312345', lh:'54321321'},
+  {id:'gmajor',  label:'Sol mayor',  short:'Sol M',  rootLetter:4, rootPc:7,  family:'major', rh:'12312345', lh:'54321321'},
+  {id:'fmajor',  label:'Fa mayor',   short:'Fa M',   rootLetter:3, rootPc:5,  family:'major', rh:'12341234', lh:'54321321'},
+  {id:'dmajor',  label:'Re mayor',   short:'Re M',   rootLetter:1, rootPc:2,  family:'major', rh:'12312345', lh:'54321321'},
+  {id:'bbmajor', label:'Sib mayor',  short:'Sib M',  rootLetter:6, rootPc:10, family:'major', rh:'41231234', lh:'32143213'},
+  {id:'amajor',  label:'La mayor',   short:'La M',   rootLetter:5, rootPc:9,  family:'major', rh:'12312345', lh:'54321321'},
+  {id:'ebmajor', label:'Mib mayor',  short:'Mib M',  rootLetter:2, rootPc:3,  family:'major', rh:'31234123', lh:'32143213'},
+  {id:'emajor',  label:'Mi mayor',   short:'Mi M',   rootLetter:2, rootPc:4,  family:'major', rh:'12312345', lh:'54321321'},
+  {id:'abmajor', label:'Lab mayor',  short:'Lab M',  rootLetter:5, rootPc:8,  family:'major', rh:'34123123', lh:'32143213'},
+  {id:'bmajor',  label:'Si mayor',   short:'Si M',   rootLetter:6, rootPc:11, family:'major', rh:'12312345', lh:'43214321'},
+  {id:'dbmajor', label:'Reb mayor',  short:'Reb M',  rootLetter:1, rootPc:1,  family:'major', rh:'23123412', lh:'32143213'},
+  {id:'fsmajor', label:'Fa# mayor',  short:'Fa# M',  rootLetter:3, rootPc:6,  family:'major', rh:'23412312', lh:'43213214'},
+  {id:'gsharp',  label:'Sol# mayor (teórica, vista en clase)', short:'Sol# M *', rootLetter:4, rootPc:8, family:'major', rh:'34123123', lh:'32143213', warn:true},
+
+  {id:'aminor',  label:'La menor',   short:'La m',   rootLetter:5, rootPc:9,  family:'minor', rh:'12312345', lh:'54321321'},
+  {id:'eminor',  label:'Mi menor',   short:'Mi m',   rootLetter:2, rootPc:4,  family:'minor', rh:'12312345', lh:'54321321'},
+  {id:'dminor',  label:'Re menor',   short:'Re m',   rootLetter:1, rootPc:2,  family:'minor', rh:'12312345', lh:'54321321'},
+  {id:'bminor',  label:'Si menor',   short:'Si m',   rootLetter:6, rootPc:11, family:'minor', rh:'12312345', lh:'43214321'},
+  {id:'gminor',  label:'Sol menor',  short:'Sol m',  rootLetter:4, rootPc:7,  family:'minor', rh:'12312345', lh:'54321321'},
+  {id:'fsminor', label:'Fa# menor',  short:'Fa# m',  rootLetter:3, rootPc:6,  family:'minor', rh:'34123123', lh:'43213214'},
+  {id:'cminor',  label:'Do menor',   short:'Do m',   rootLetter:0, rootPc:0,  family:'minor', rh:'12312345', lh:'54321321'},
+  {id:'csminor', label:'Do# menor',  short:'Do# m',  rootLetter:0, rootPc:1,  family:'minor', rh:'34123123', lh:'32143213'},
+  {id:'fminor',  label:'Fa menor',   short:'Fa m',   rootLetter:3, rootPc:5,  family:'minor', rh:'12341234', lh:'54321321'},
+  {id:'gsminor', label:'Sol# menor', short:'Sol# m', rootLetter:4, rootPc:8,  family:'minor', rh:'34123123', lh:'32143213'},
+  {id:'bbminor', label:'Sib menor',  short:'Sib m',  rootLetter:6, rootPc:10, family:'minor', rh:'41231234', lh:'21321432'},
+  {id:'ebminor', label:'Mib menor',  short:'Mib m',  rootLetter:2, rootPc:3,  family:'minor', rh:'31234123', lh:'21432132'},
+];
+const MAJOR_ORDER = SCALE_DEFS.filter(d => d.family === 'major' && !d.warn).map(d => d.id);
+const MINOR_ORDER = SCALE_DEFS.filter(d => d.family === 'minor').map(d => d.id);
+
+function buildScale(def, variant){
+  const steps = def.family === 'major' ? STEP_PATTERNS.major : STEP_PATTERNS[variant || 'natural'];
+  const sp = spellScale(def.rootLetter, def.rootPc, steps);
+  const root = 60 + def.rootPc; // la raíz vive en la octava del Do central (mano derecha)
+  return {
+    id: def.id, label: def.label + (def.family === 'minor' ? (variant === 'harmonic' ? ' armónica' : ' natural') : ''),
+    short: def.short, family: def.family, warn: !!def.warn,
+    rootLetter: def.rootLetter, rootPc: def.rootPc, steps,
+    notes: sp.semis.map(s => root + s), // 1 octava, mano derecha, compatibilidad con código previo
+    names: sp.names, rh: def.rh, lh: def.lh,
+  };
+}
+const SCALES = {};
+function rebuildScales(variant){
+  SCALE_DEFS.forEach(def => { SCALES[def.id] = buildScale(def, variant); });
+}
+rebuildScales('natural');
+
+// Secuencia concreta de una práctica de escala: mano, octavas y sentido.
+// Cada paso trae las notas que deben sonar A LA VEZ (una por mano) con su dedo.
+function fingerSeq(f8, hand, octaves){
+  const f = f8.split('').map(Number);
+  if(octaves === 1) return f.slice();
+  if(hand === 'rh') return f.slice(0,7).concat(f.slice(0,7), [f[7]]);
+  return [f[0]].concat(f.slice(1,8), f.slice(1,8));
+}
+function buildScaleRun(scale, hand, octaves, dir){
+  const hands = hand === 'both' ? ['rh','lh'] : [hand];
+  const count = 7 * octaves + 1;
+  const perHand = {};
+  hands.forEach(h => {
+    const root = (h === 'rh' ? 60 : 48) + scale.rootPc;
+    const fingers = fingerSeq(scale[h], h, octaves);
+    const asc = [];
+    for(let i = 0; i < count; i++){
+      const oct = Math.floor(i / 7), deg = i % 7;
+      const semis = oct * 12 + scale.steps.slice(0, deg).reduce((a,b) => a+b, 0);
+      asc.push({ n: root + semis, finger: fingers[i], name: scale.names[deg === 0 && i === count - 1 ? 7 : deg], hand: h });
+    }
+    let seq = asc;
+    if(dir === 'updown') seq = asc.concat(asc.slice(0, -1).reverse());
+    perHand[h] = seq;
+  });
+  const len = perHand[hands[0]].length;
+  const steps = [];
+  for(let i = 0; i < len; i++){
+    const notes = hands.map(h => perHand[h][i]);
+    const goingUp = dir === 'up' || i < count - 1;
+    steps.push({ notes, name: notes[0].name, up: goingUp });
+  }
+  return { scaleId: scale.id, hand, octaves, dir, steps, mistakes: 0, timing: [], startedAt: null };
+}
+
+const CHORDS = [
+  {name:'C',  full:'Do mayor',        root:0,  q:'M'},
+  {name:'G',  full:'Sol mayor',       root:7,  q:'M'},
+  {name:'F',  full:'Fa mayor',        root:5,  q:'M'},
+  {name:'Am', full:'La menor',        root:9,  q:'m'},
+  {name:'Em', full:'Mi menor',        root:4,  q:'m'},
+  {name:'Dm', full:'Re menor',        root:2,  q:'m'},
+  {name:'F#m',full:'Fa# menor',       root:6,  q:'m'},
+  {name:'C#m',full:'Do# menor',       root:1,  q:'m'},
+  {name:'D',  full:'Re mayor',        root:2,  q:'M'},
+  {name:'E',  full:'Mi mayor',        root:4,  q:'M'},
+  {name:'A',  full:'La mayor',        root:9,  q:'M'},
+  {name:'B',  full:'Si mayor',        root:11, q:'M'},
+  {name:'Cm', full:'Do menor',        root:0,  q:'m'},
+  {name:'Fm', full:'Fa menor',        root:5,  q:'m'},
+  {name:'Gm', full:'Sol menor',       root:7,  q:'m'},
+  {name:'Bm', full:'Si menor',        root:11, q:'m'},
+  {name:'C#', full:'Do# mayor',       root:1,  q:'M'},
+  {name:'D#', full:'Re# mayor',       root:3,  q:'M'},
+  {name:'F#', full:'Fa# mayor',       root:6,  q:'M'},
+  {name:'G#', full:'Sol# mayor',      root:8,  q:'M'},
+  {name:'A#', full:'La# mayor',       root:10, q:'M'},
+  {name:'D#m',full:'Re# menor',       root:3,  q:'m'},
+  {name:'G#m',full:'Sol# menor',      root:8,  q:'m'},
+  {name:'A#m',full:'La# menor',       root:10, q:'m'},
+];
+function chordTones(chord){
+  const third = chord.q === 'M' ? 4 : 3;
+  return [chord.root, (chord.root+third)%12, (chord.root+7)%12];
+}
+
+
+// ===== Mapa de funciones del P-45 =====
+// Nombres tal como aparecen en el manual (una octava más abajo que el estándar).
+// manualToMidi('C3') -> 60 (Do central)
+function manualToMidi(name){
+  const m = name.match(/^([A-G]#?)(-?\d+)$/);
+  const pc = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'].indexOf(m[1]);
+  return (parseInt(m[2],10) + 2) * 12 + pc;
+}
+
+const FUNC_CATS = [
+  {id:'voice',      name:'Sonidos (Voice)',    color:'#d4af5a'},
+  {id:'demo',       name:'Demos',              color:'#8fb3d9'},
+  {id:'song',       name:'Canciones',          color:'#a99ad6'},
+  {id:'touch',      name:'Sensibilidad',       color:'#7fc4a8'},
+  {id:'duo',        name:'Dúo',                color:'#e39b7b'},
+  {id:'metronome',  name:'Metrónomo',          color:'#e0655f'},
+  {id:'tempo',      name:'Tempo (números)',    color:'#c98a4b'},
+  {id:'reverb',     name:'Reverberación',      color:'#6fa8c9'},
+  {id:'octave',     name:'Octava',             color:'#b6c96f'},
+  {id:'balance',    name:'Balance de voces',   color:'#c9a0b8'},
+  {id:'midi',       name:'Canal MIDI',         color:'#7d8fa8'},
+  {id:'transpose',  name:'Transposición',      color:'#dba14f'},
+  {id:'tuning',     name:'Afinación fina',     color:'#9fd0b0'},
+  {id:'power',      name:'Apagado automático', color:'#8a8a8a'},
+  {id:'confirm',    name:'Sonido de aviso',    color:'#8a8a8a'},
+];
+
+const FUNC_KEYS = [
+  ['A-1','power','Desactivar apagado automático'],
+  ['A#-1','power','Activar apagado automático (~15 min sin tocar)'],
+  ['C0','voice','Grand Piano 1'], ['C#0','voice','Grand Piano 2'],
+  ['D0','voice','Piano eléctrico 1'], ['D#0','voice','Piano eléctrico 2'],
+  ['E0','voice','Órgano de tubos 1'], ['F0','voice','Órgano de tubos 2'],
+  ['F#0','voice','Cuerdas'], ['G0','voice','Clavicémbalo 1'],
+  ['G#0','voice','Clavicémbalo 2'], ['A0','voice','Vibráfono'],
+  ['C1','demo','Demo: Grand Piano 1'], ['C#1','demo','Demo: Grand Piano 2'],
+  ['D1','demo','Demo: Piano eléctrico 1'], ['D#1','demo','Demo: Piano eléctrico 2'],
+  ['E1','demo','Demo: Órgano 1'], ['F1','demo','Demo: Órgano 2'],
+  ['F#1','demo','Demo: Cuerdas'], ['G1','demo','Demo: Clavicémbalo 1'],
+  ['G#1','demo','Demo: Clavicémbalo 2'], ['A1','demo','Demo: Vibráfono'],
+  ['A#1','song','Canción 1'], ['B1','song','Canción 2'], ['C2','song','Canción 3'],
+  ['C#2','song','Canción 4'], ['D2','song','Canción 5'], ['D#2','song','Canción 6'],
+  ['E2','song','Canción 7'], ['F2','song','Canción 8'], ['F#2','song','Canción 9'],
+  ['G2','song','Canción 10'],
+  ['A2','touch','Toque: Fijo (siempre igual volumen)'],
+  ['A#2','touch','Toque: Suave'],
+  ['B2','touch','Toque: Medio (el normal)'],
+  ['C3','touch','Toque: Duro'],
+  ['D3','duo','Dúo ON/OFF (divide el teclado en dos mitades)'],
+  ['E3','metronome','Metrónomo ON/OFF'],
+  ['F3','tempo','Número 0'], ['F#3','tempo','Número 1'], ['G3','tempo','Número 2'],
+  ['G#3','tempo','Número 3'], ['A3','tempo','Número 4'], ['A#3','tempo','Número 5'],
+  ['B3','tempo','Número 6'], ['C4','tempo','Número 7'], ['C#4','tempo','Número 8'],
+  ['D4','tempo','Número 9'], ['D#4','tempo','Tempo por defecto'],
+  ['E4','metronome','Compás: bajar un paso'],
+  ['F4','metronome','Compás: subir un paso'],
+  ['F#4','metronome','Volumen del metrónomo: bajar'],
+  ['G4','metronome','Volumen del metrónomo: por defecto'],
+  ['G#4','metronome','Volumen del metrónomo: subir'],
+  ['A4','reverb','Profundidad de reverb: bajar'],
+  ['A#4','reverb','Profundidad de reverb: por defecto'],
+  ['B4','reverb','Profundidad de reverb: subir'],
+  ['C5','reverb','Reverb: Room (sala)'], ['C#5','reverb','Reverb: Hall 1'],
+  ['D5','reverb','Reverb: Hall 2'], ['D#5','reverb','Reverb: Stage (escenario)'],
+  ['E5','reverb','Reverb: apagada'],
+  ['F5','octave','Voz 1: octava −1'], ['F#5','octave','Voz 1: octava 0'],
+  ['G5','octave','Voz 1: octava +1'], ['G#5','octave','Voz 2: octava −1'],
+  ['A5','octave','Voz 2: octava 0'], ['A#5','octave','Voz 2: octava +1'],
+  ['B5','balance','Balance: bajar volumen'],
+  ['C6','balance','Balance: igualado'],
+  ['C#6','balance','Balance: subir volumen'],
+  ['D6','midi','Canal MIDI: bajar'], ['D#6','midi','Canal MIDI: por defecto'],
+  ['E6','midi','Canal MIDI: subir'],
+  ['F6','transpose','Transponer: bajar un semitono'],
+  ['F#6','transpose','Transponer: volver a 0 (original)'],
+  ['G6','transpose','Transponer: subir un semitono'],
+  ['G#6','tuning','Afinación: bajar ~0,2 Hz'],
+  ['A6','tuning','Afinación: subir ~0,2 Hz'],
+  ['A#6','tuning','Afinación: La = 442,0 Hz'],
+  ['B6','tuning','Afinación: La = 440,0 Hz (estándar)'],
+  ['C7','confirm','Sonidos de confirmación ON/OFF'],
+];
+
+// Fragmentos: piezas cortas de dominio público / progresiones básicas.
+// lh = mano izquierda, rh = mano derecha. Duración en negras.
+// Ejercicios de agilidad: definidos como PATRONES relativos a una nota
+// raíz (deg = semitonos desde la raíz), no como notas fijas. Así la octava
+// se puede elegir libremente y el mismo patrón sirve para mano derecha,
+// izquierda o ambas a la vez (cada mano usa su propia raíz/octava).
+const AGILITY_DRILLS = [
+  {
+    id:'cinco-dedos',
+    name:'Posición de 5 dedos',
+    tip:'La posición más básica que existe: pulgar en la raíz, cada dedo en una tecla blanca. Con "ambas manos" tocas el mismo dibujo con las dos a la vez — mano derecha 1-2-3-4-5, izquierda en espejo 5-4-3-2-1. Sube y baja sin mirar el teclado si puedes.',
+    tempo:70,
+    pattern:[
+      {deg:0, dur:1, label:'1 (pulgar)'}, {deg:2, dur:1, label:'2'},
+      {deg:4, dur:1, label:'3'}, {deg:5, dur:1, label:'4'},
+      {deg:7, dur:1, label:'5 (meñique)'}, {deg:5, dur:1, label:'4'},
+      {deg:4, dur:1, label:'3'}, {deg:2, dur:1, label:'2'},
+      {deg:0, dur:1.5, label:'1 (pulgar)'},
+    ]
+  },
+  {
+    id:'alterna-pulgar-indice',
+    name:'Pulgar-índice alternado',
+    tip:'Solo dos dedos, solo dos notas. Sirve para practicar el "rebote" de la muñeca sin preocuparte de dónde va cada dedo — ese movimiento suelto es la base de la agilidad real.',
+    tempo:88,
+    pattern:[
+      {deg:0,dur:1},{deg:4,dur:1},{deg:0,dur:1},{deg:4,dur:1},
+      {deg:0,dur:1},{deg:4,dur:1},{deg:0,dur:1},{deg:4,dur:1.5},
+    ]
+  },
+  {
+    id:'notas-repetidas',
+    name:'Notas repetidas',
+    tip:'La misma tecla varias veces, cambiando de dedo cada vez (1-2-3-2). Parece tonto, pero es justo lo que te falla cuando una melodía repite una nota y se te traba la mano.',
+    tempo:92,
+    pattern:[
+      {deg:0,dur:0.5,label:'1'},{deg:0,dur:0.5,label:'2'},
+      {deg:0,dur:0.5,label:'3'},{deg:0,dur:0.5,label:'2'},
+      {deg:0,dur:0.5,label:'1'},{deg:0,dur:0.5,label:'2'},
+      {deg:0,dur:0.5,label:'3'},{deg:0,dur:1,label:'2'},
+    ]
+  },
+  {
+    id:'escalera-corta',
+    name:'Escalera corta (3 notas)',
+    tip:'La raíz, la 2ª y la 3ª una y otra vez, sin parar entre repeticiones. Cuando esto te salga fluido y sin pausas raras entre la última nota y la siguiente vuelta, ya diste un paso real en agilidad.',
+    tempo:100,
+    pattern:[
+      {deg:0,dur:0.5},{deg:2,dur:0.5},{deg:4,dur:0.5},
+      {deg:0,dur:0.5},{deg:2,dur:0.5},{deg:4,dur:0.5},
+      {deg:0,dur:0.5},{deg:2,dur:0.5},{deg:4,dur:1},
+    ]
+  },
+  {
+    id:'saltos-terceras',
+    name:'Saltos de terceras',
+    tip:'Hasta ahora todo era por grados, tecla vecina con tecla vecina. Acá el dedo tiene que "saltar" a una tecla que no está al lado, algo que te va a costar más al inicio. Ve lento: primero encuentra la nota con la vista, después ya lo harás de memoria.',
+    tempo:76,
+    pattern:[
+      {deg:0,dur:1,label:'1'}, {deg:4,dur:1,label:'3'},
+      {deg:7,dur:1,label:'5'}, {deg:4,dur:1,label:'3'},
+      {deg:2,dur:1,label:'2'}, {deg:5,dur:1,label:'4'},
+      {deg:0,dur:1.5,label:'1'},
+    ]
+  },
+  {
+    id:'cruce-pulgar',
+    name:'Cruce de pulgar (escala corta)',
+    tip:'El siguiente hito real después de la posición de 5 dedos: para seguir subiendo más allá del meñique, el pulgar tiene que "pasar por debajo" de la mano sin que se note el quiebre. Es el movimiento que separa tocar 5 notas de tocar escalas completas. Ve despacio — la meta hoy no es la velocidad, es que el cruce sea suave.',
+    tempo:66,
+    pattern:[
+      {deg:0,dur:0.75,label:'1'}, {deg:2,dur:0.75,label:'2'},
+      {deg:4,dur:0.75,label:'3'}, {deg:5,dur:0.75,label:'1 (cruza)'},
+      {deg:7,dur:0.75,label:'2'}, {deg:9,dur:0.75,label:'3'},
+      {deg:11,dur:0.75,label:'4'}, {deg:12,dur:1,label:'5'},
+      {deg:11,dur:0.75,label:'4'}, {deg:9,dur:0.75,label:'3'},
+      {deg:7,dur:0.75,label:'2'}, {deg:5,dur:0.75,label:'1 (cruza)'},
+      {deg:4,dur:0.75,label:'3'}, {deg:2,dur:0.75,label:'2'},
+      {deg:0,dur:1.25,label:'1'},
+    ]
+  },
+];
+
+const SONGS = [
+  {
+    id:'cuatro-acordes',
+    name:'Los 4 acordes',
+    tip:'La progresión Do–Sol–Lam–Fa. Está en cientos de canciones pop. La izquierda hace el acorde completo, la derecha toca la nota más alta como melodía. Si te sale esto, ya puedes acompañar muchísimas canciones.',
+    tempo:76,
+    steps:[
+      {lh:[48,52,55], rh:[72], dur:2, label:'Do (C)'},
+      {lh:[43,47,50], rh:[71], dur:2, label:'Sol (G)'},
+      {lh:[45,48,52], rh:[72], dur:2, label:'Lam (Am)'},
+      {lh:[41,45,48], rh:[69], dur:2, label:'Fa (F)'},
+    ]
+  },
+  {
+    id:'oda-alegria',
+    name:'Himno a la alegría',
+    tip:'Beethoven. Melodía en la derecha, bajo simple en la izquierda. Toda la melodía cabe en 5 dedos sin mover la mano: por eso es la primera pieza real de casi todo estudiante de piano.',
+    tempo:92,
+    steps:[
+      {lh:[48], rh:[64], dur:1}, {lh:[], rh:[64], dur:1},
+      {lh:[], rh:[65], dur:1},  {lh:[], rh:[67], dur:1},
+      {lh:[48], rh:[67], dur:1}, {lh:[], rh:[65], dur:1},
+      {lh:[], rh:[64], dur:1},  {lh:[], rh:[62], dur:1},
+      {lh:[48], rh:[60], dur:1}, {lh:[], rh:[60], dur:1},
+      {lh:[], rh:[62], dur:1},  {lh:[], rh:[64], dur:1},
+      {lh:[48], rh:[64], dur:1.5}, {lh:[], rh:[62], dur:0.5},
+      {lh:[], rh:[62], dur:2},
+    ]
+  },
+  {
+    id:'estrellita',
+    name:'Estrellita',
+    tip:'La que ya te había recomendado. Melodía de 5 notas en la derecha, acordes largos en la izquierda. Buen primer ejercicio de coordinación entre manos porque la izquierda se mueve poco.',
+    tempo:88,
+    steps:[
+      {lh:[48,52,55], rh:[60], dur:1}, {lh:[], rh:[60], dur:1},
+      {lh:[41,45,48], rh:[67], dur:1}, {lh:[], rh:[67], dur:1},
+      {lh:[], rh:[69], dur:1},         {lh:[], rh:[69], dur:1},
+      {lh:[48,52,55], rh:[67], dur:2},
+      {lh:[41,45,48], rh:[65], dur:1}, {lh:[], rh:[65], dur:1},
+      {lh:[48,52,55], rh:[64], dur:1}, {lh:[], rh:[64], dur:1},
+      {lh:[43,47,50], rh:[62], dur:1}, {lh:[], rh:[62], dur:1},
+      {lh:[48,52,55], rh:[60], dur:2},
+    ]
+  },
+  {
+    id:'cadencia',
+    name:'Cadencia I–IV–V–I',
+    tip:'El "punto final" de la música occidental: Do–Fa–Sol–Do. Suena a conclusión. Vale la pena que la reconozcas de oído, porque termina casi todas las piezas clásicas que vas a estudiar.',
+    tempo:66,
+    steps:[
+      {lh:[48], rh:[60,64,67], dur:2, label:'I  — Do'},
+      {lh:[41], rh:[60,65,69], dur:2, label:'IV — Fa'},
+      {lh:[43], rh:[59,62,67], dur:2, label:'V  — Sol'},
+      {lh:[48], rh:[60,64,67], dur:3, label:'I  — Do'},
+    ]
+  },
+  {
+    id:'arpegio',
+    name:'Arpegio de Do',
+    tip:'Las mismas 3 notas del acorde de Do, pero una a la vez en vez de juntas. Es como suena un acorde "desarmado" — muy usado en baladas. Practica que suene parejo, sin que una nota salga más fuerte.',
+    tempo:80,
+    steps:[
+      {lh:[48], rh:[60], dur:1}, {lh:[], rh:[64], dur:1},
+      {lh:[], rh:[67], dur:1},   {lh:[], rh:[72], dur:1},
+      {lh:[], rh:[67], dur:1},   {lh:[], rh:[64], dur:1},
+      {lh:[43], rh:[62], dur:1}, {lh:[], rh:[65], dur:1},
+      {lh:[], rh:[67], dur:1},   {lh:[], rh:[71], dur:1},
+      {lh:[], rh:[67], dur:1},   {lh:[], rh:[65], dur:1},
+      {lh:[48], rh:[64], dur:3},
+    ]
+  },
+];
+
+const FRAGMENTS = SONGS;
+
+const INTERVALS = [
+  {name:'Unísono',            semitones:0,  ref:'La misma nota repetida.'},
+  {name:'2ª menor',           semitones:1,  ref:'Suena tenso. Es el motivo de "Tiburón".'},
+  {name:'2ª mayor',           semitones:2,  ref:'Las dos primeras notas de "Cumpleaños feliz".'},
+  {name:'3ª menor',           semitones:3,  ref:'El color triste. Base de todos los acordes menores.'},
+  {name:'3ª mayor',           semitones:4,  ref:'El color alegre. Base de todos los acordes mayores.'},
+  {name:'4ª justa',           semitones:5,  ref:'El comienzo de la "Marcha nupcial".'},
+  {name:'4ª aum. / 5ª dism.', semitones:6,  ref:'El tritono, justo la mitad de la octava. Inestable — pide resolver.'},
+  {name:'5ª justa',           semitones:7,  ref:'Sonido hueco y abierto. Tema de "Star Wars", y la base del power chord.'},
+  {name:'6ª menor',           semitones:8,  ref:'Melancólico. Es la 3ª mayor dada vuelta (invertida).'},
+  {name:'6ª mayor',           semitones:9,  ref:'Dulce, tipo "My Way".'},
+  {name:'7ª menor',           semitones:10, ref:'El sonido del blues y del acorde de dominante (C7).'},
+  {name:'7ª mayor',           semitones:11, ref:'Suave y sofisticado, típico del jazz.'},
+  {name:'8ª (octava)',        semitones:12, ref:'La misma nota, más aguda. Suena "igual pero arriba".'},
+];
+
+const ROOT_NAMES = ['Do','Do#','Re','Mib','Mi','Fa','Fa#','Sol','Sol#','La','Sib','Si'];
+
+// nombre de la distancia en tonos: 2 semitonos = 1 tono
+function tonesLabel(semis){
+  if(semis === 0) return '0 tonos';
+  const whole = Math.floor(semis / 2);
+  const half = semis % 2;
+  const parts = [];
+  if(whole) parts.push(whole + (whole === 1 ? ' tono' : ' tonos'));
+  if(half) parts.push('1 semitono');
+  return parts.join(' + ');
+}
+const INTERVAL_ROOT = 60; // Do central, misma referencia que se usó en clase
+
+let currentMode = 'today';
+let currentCategory = 'today';
+let practiceIndex = 0;
+
+// Opciones de escalas (se recuerdan entre sesiones)
+let scaleFamily = 'major';
+let minorVariant = 'natural';
+let currentScaleId = 'cmajor';
+let scaleHand = 'rh', scaleOctaves = 1, scaleDir = 'updown';
+let showFingers = true, scaleTempoMode = false;
+try {
+  const so = JSON.parse(localStorage.getItem('scaleOpts') || '{}');
+  if(so.hand) scaleHand = so.hand;
+  if(so.octaves) scaleOctaves = so.octaves;
+  if(so.dir) scaleDir = so.dir;
+  if(typeof so.fingers === 'boolean') showFingers = so.fingers;
+  if(so.variant) minorVariant = so.variant;
+} catch(e){}
+function saveScaleOpts(){
+  try { localStorage.setItem('scaleOpts', JSON.stringify({hand:scaleHand, octaves:scaleOctaves, dir:scaleDir, fingers:showFingers, variant:minorVariant})); } catch(e){}
+}
+rebuildScales(minorVariant);
+
+const $ = (id) => document.getElementById(id);
+const practiceInfo = $('practiceInfo');
+const progressText = $('progressText');
+const targetNoteLabel = $('targetNoteLabel');
+const targetSubLabel = $('targetSubLabel');
+const feedbackText = $('feedbackText');
+
+const chordTip = $('chordTip');
+const intervalTip = $('intervalTip');
+const scaleTip = $('scaleTip');
+const functionsPanel = $('functionsPanel');
+const scaleSubTabs = $('scaleSubTabs');
+const scaleFamilyTabs = $('scaleFamilyTabs');
+const scaleOptBar = $('scaleOptBar');
+const todayPanel = $('todayPanel');
+const readingPanel = $('readingPanel');
+const progressPanel = $('progressPanel');
+const categoryTabs = document.querySelectorAll('#mainTabs > .mode-tab');
+
+function show(el, on, disp){ if(el) el.style.display = on ? (disp || 'block') : 'none'; }
+
+function enterMode(mode){
+  currentMode = mode;
+  practiceIndex = 0;
+  clearAllHighlights();
+  const isScale = !!SCALES[mode];
+  show(chordTip, mode === 'chords');
+  show(intervalTip, mode === 'intervals');
+  show(chordOctaveBar, mode === 'chords', 'flex');
+  show(intervalRootBar, mode === 'intervals', 'flex');
+  show($('chordPickBar'), mode === 'chords', 'flex');
+  show($('intervalPickBar'), mode === 'intervals', 'flex');
+  show(distanceBox, mode === 'intervals');
+  show($('earBar'), mode === 'intervals' && earMode, 'flex');
+  show(scaleTip, isScale);
+  show(scaleOptBar, isScale, 'flex');
+  show($('timingBox'), isScale && scaleTempoMode, 'flex');
+  show($('miniStaff'), isScale);
+  show(functionsPanel, mode === 'functions');
+  show(fragmentsPanel, mode === 'fragments' || mode === 'agility');
+  show(todayPanel, mode === 'today');
+  show(readingPanel, mode === 'reading');
+  show(progressPanel, mode === 'progress');
+  if(mode !== 'fragments' && mode !== 'agility' && typeof exitCascade === 'function'){
+    exitCascade();
+    cascadeOn = false;
+    if(cascadeBtn) cascadeBtn.classList.remove('active');
+    if(cascadeWrap) cascadeWrap.style.display = 'none';
+  }
+  if(mode !== 'reading' && typeof stopReading === 'function') stopReading();
+  const noPractice = ['free','functions','today','reading','progress'];
+  if(noPractice.includes(mode)){
+    practiceInfo.style.display = 'none';
+  } else {
+    practiceInfo.style.display = 'flex';
+    if(mode === 'chords') startChordStep();
+    else if(mode === 'intervals') startIntervalStep();
+    else if(mode === 'fragments' || mode === 'agility'){ loadPracticeFamily(mode === 'agility' ? 'agility' : 'songs'); }
+    else startScaleRun();
+  }
+  if(mode === 'today' && typeof renderToday === 'function') renderToday();
+  if(mode === 'reading' && typeof startReading === 'function') startReading();
+  if(mode === 'progress' && typeof renderProgress === 'function') renderProgress();
+}
+
+// Cambia de pestaña principal (desde el menú o desde el plan de "Hoy").
+function selectCategory(cat){
+  categoryTabs.forEach(t => t.classList.toggle('active', t.dataset.cat === cat));
+  currentCategory = cat;
+  const isScales = cat === 'scales';
+  show(scaleFamilyTabs, isScales, 'flex');
+  show(scaleSubTabs, isScales, 'flex');
+  if(isScales){
+    renderScaleSubTabs();
+    enterMode(currentScaleId);
+  } else {
+    enterMode(cat);
+  }
+  if(typeof markActivity === 'function') markActivity();
+}
+categoryTabs.forEach(tab => tab.addEventListener('click', () => selectCategory(tab.dataset.cat)));
+
+function renderScaleSubTabs(){
+  scaleFamilyTabs.querySelectorAll('.mode-tab').forEach(t => t.classList.toggle('active', t.dataset.family === scaleFamily));
+  scaleSubTabs.innerHTML = '';
+  SCALE_DEFS.filter(d => d.family === scaleFamily).forEach(def => {
+    const b = document.createElement('button');
+    b.className = 'mode-tab sub' + (def.warn ? ' warn' : '') + (def.id === currentScaleId ? ' active' : '');
+    b.textContent = def.short;
+    b.dataset.mode = def.id;
+    b.title = def.label;
+    b.addEventListener('click', () => {
+      currentScaleId = def.id;
+      scaleSubTabs.querySelectorAll('.mode-tab').forEach(t => t.classList.toggle('active', t === b));
+      enterMode(def.id);
+    });
+    scaleSubTabs.appendChild(b);
+  });
+  const isMinor = scaleFamily === 'minor';
+  show($('minorVarLabel'), isMinor, 'inline');
+  show($('minorVarPicker'), isMinor, 'flex');
+}
+scaleFamilyTabs.querySelectorAll('.mode-tab').forEach(t => {
+  t.addEventListener('click', () => {
+    scaleFamily = t.dataset.family;
+    const inFamily = SCALE_DEFS.some(d => d.family === scaleFamily && d.id === currentScaleId);
+    if(!inFamily) currentScaleId = (scaleFamily === 'major' ? MAJOR_ORDER : MINOR_ORDER)[0];
+    renderScaleSubTabs();
+    enterMode(currentScaleId);
+  });
+});
+function bindPicker(containerId, attr, getter, setter){
+  const cont = $(containerId);
+  if(!cont) return;
+  const refresh = () => cont.querySelectorAll('.reg-btn').forEach(b => b.classList.toggle('active', b.dataset[attr] === String(getter())));
+  cont.querySelectorAll('.reg-btn').forEach(b => b.addEventListener('click', () => { setter(b.dataset[attr]); refresh(); }));
+  refresh();
+  return refresh;
+}
+const refreshScaleHand = bindPicker('scaleHandPicker', 'shand', () => scaleHand, v => { scaleHand = v; saveScaleOpts(); if(SCALES[currentMode]) startScaleRun(); });
+const refreshScaleOct = bindPicker('scaleOctPicker', 'soct', () => scaleOctaves, v => { scaleOctaves = parseInt(v,10); saveScaleOpts(); if(SCALES[currentMode]) startScaleRun(); });
+const refreshScaleDir = bindPicker('scaleDirPicker', 'sdir', () => scaleDir, v => { scaleDir = v; saveScaleOpts(); if(SCALES[currentMode]) startScaleRun(); });
+bindPicker('minorVarPicker', 'mvar', () => minorVariant, v => { minorVariant = v; saveScaleOpts(); rebuildScales(minorVariant); if(SCALES[currentMode]) startScaleRun(); });
+$('scaleFingerBtn').addEventListener('click', () => {
+  showFingers = !showFingers; saveScaleOpts();
+  $('scaleFingerBtn').classList.toggle('active', showFingers);
+  if(SCALES[currentMode]) startScaleStep();
+});
+$('scaleFingerBtn').classList.toggle('active', showFingers);
+$('scaleTempoBtn').addEventListener('click', () => {
+  scaleTempoMode = !scaleTempoMode;
+  $('scaleTempoBtn').classList.toggle('active', scaleTempoMode);
+  if(scaleTempoMode && typeof metroStart === 'function' && !metro.on) metroStart();
+  show($('timingBox'), SCALES[currentMode] && scaleTempoMode, 'flex');
+  if(SCALES[currentMode]) startScaleRun();
+});
+
+function clearAllHighlights(){
+  Object.values(whiteRects).concat(Object.values(blackRects)).forEach(r => {
+    r.classList.remove('target','correct','wrong','lh');
+  });
+  if(typeof clearFingerNums === 'function') clearFingerNums();
+}
+
+// ===== Motor de práctica de escalas (mano, octavas, sentido, dedos, tiempo) =====
+let scaleRun = null;
+const fingerEls = [];
+function clearFingerNums(){ while(fingerEls.length) fingerEls.pop().remove(); }
+function drawFingerNum(note, finger, hand){
+  const rect = getRect(note);
+  if(!rect) return;
+  const isBlack = BLACK_SET.has(note % 12);
+  const t = document.createElementNS('http://www.w3.org/2000/svg','text');
+  const x = parseFloat(rect.getAttribute('x')) + parseFloat(rect.getAttribute('width')) / 2;
+  const y = isBlack ? 10 + BH - 8 : 10 + WH - 24;
+  t.setAttribute('x', x); t.setAttribute('y', y);
+  t.setAttribute('class', 'finger-num ' + hand + (isBlack ? ' black' : ''));
+  t.textContent = finger;
+  svg.appendChild(t);
+  fingerEls.push(t);
+}
+function markTarget(note, hand){
+  const r = getRect(note);
+  if(!r) return;
+  r.classList.add('target');
+  if(hand === 'lh') r.classList.add('lh');
+}
+
+function scaleRunKey(){ return currentMode + ':' + scaleHand + ':' + scaleOctaves + ':' + scaleDir; }
+
+function renderScaleTip(scale){
+  const accs = scale.names.slice(0,7).filter(n => n.length > 1).join(', ') || 'ninguna';
+  const rhF = scale.rh.split('').join(' '), lhF = scale.lh.split('').join(' ');
+  let html = '<b>' + scale.label + '</b> — alteraciones: ' + accs + '. ' +
+    '<span class="hand-tag rh">DER</span>' + rhF + ' &nbsp; <span class="hand-tag lh">IZQ</span>' + lhF + '.';
+  if(scale.family === 'major'){
+    html += ' <b>Orden recomendado:</b> Do, Sol, Fa, Re, Sib, La, Mib, Mi, Lab, Si, Reb, Fa#.';
+    if(scale.warn) html += ' <b>Sol# mayor</b> es un ejercicio teórico de notación (con Fx doble sostenido); en la práctica se usa Lab mayor, que suena igual.';
+  } else {
+    html += ' <b>Menor natural</b> = las mismas teclas que su relativa mayor, empezando dos notas más abajo. <b>Armónica</b> = sube el 7º grado un semitono para que "pida" volver a la tónica.';
+  }
+  if(scaleHand === 'both') html += ' <b>Ambas manos:</b> las dos suben y bajan a la vez, una octava aparte; el cruce de pulgar cae en lugares distintos en cada mano — ahí es donde se traba todo el mundo, ve lento.';
+  if(scaleTempoMode) html += ' <b>Con metrónomo:</b> una nota por pulso. Verde = a tiempo, azul = adelantado, naranja = atrasado.';
+  scaleTip.innerHTML = html;
+}
+
+function startScaleRun(){
+  const scale = SCALES[currentMode];
+  if(!scale) return;
+  scaleRun = buildScaleRun(scale, scaleHand, scaleOctaves, scaleDir);
+  scaleRun.key = scaleRunKey();
+  practiceIndex = 0;
+  renderScaleTip(scale);
+  renderTimingBox();
+  startScaleStep();
+}
+
+function startScaleStep(){
+  clearAllHighlights();
+  clearFingerNums();
+  feedbackText.textContent = '';
+  feedbackText.className = 'feedback';
+  const scale = SCALES[currentMode];
+  if(!scaleRun || scaleRun.key !== scaleRunKey()) { startScaleRun(); return; }
+  const steps = scaleRun.steps;
+  const step = steps[practiceIndex];
+  progressText.textContent = `Nota ${practiceIndex+1} / ${steps.length}`;
+  const oct = Math.floor(step.notes[0].n / 12) - 1;
+  targetNoteLabel.textContent = scaleHand === 'both' ? step.name : (step.name + oct);
+  const handTxt = scaleHand === 'rh' ? 'mano derecha' : scaleHand === 'lh' ? 'mano izquierda' : 'ambas manos';
+  targetSubLabel.textContent = scale.label + ' · ' + handTxt + (step.up ? ' ↑' : ' ↓') +
+    (showFingers ? ' · dedo ' + step.notes.map(x => (scaleHand === 'both' ? (x.hand === 'rh' ? 'D' : 'I') : '') + x.finger).join(' / ') : '');
+  step.notes.forEach(x => {
+    markTarget(x.n, x.hand);
+    if(showFingers) drawFingerNum(x.n, x.finger, x.hand);
+  });
+  if(typeof renderMiniStaff === 'function') renderMiniStaff(step);
+  scrollToTargets();
+}
+
+function checkScaleStep(playedNote){
+  if(!scaleRun) return;
+  const step = scaleRun.steps[practiceIndex];
+  if(!step) return;
+  const expected = step.notes.map(x => x.n);
+  if(!expected.includes(playedNote)){
+    scaleRun.mistakes++;
+    feedbackText.textContent = 'Esa no es — intenta de nuevo';
+    feedbackText.className = 'feedback wrong';
+    const wrongRect = getRect(playedNote);
+    if(wrongRect){
+      wrongRect.classList.add('wrong');
+      setTimeout(() => wrongRect.classList.remove('wrong'), 350);
+    }
+    return;
+  }
+  if(!expected.every(n => activeNotes.has(n))){
+    feedbackText.textContent = 'Falta la otra mano';
+    feedbackText.className = 'feedback';
+    return;
+  }
+  if(scaleRun.startedAt === null) scaleRun.startedAt = performance.now();
+  if(scaleTempoMode && typeof metroOffsetMs === 'function'){
+    const off = metroOffsetMs(performance.now());
+    scaleRun.timing[practiceIndex] = off;
+    renderTimingBox();
+  }
+  feedbackText.textContent = 'Correcto';
+  feedbackText.className = 'feedback correct';
+  expected.forEach(n => { const r = getRect(n); if(r){ r.classList.remove('target','lh'); r.classList.add('correct'); } });
+  practiceIndex++;
+  if(practiceIndex >= scaleRun.steps.length){
+    const run = scaleRun;
+    const okPct = timingPct(run.timing);
+    if(typeof recordScaleRun === 'function') recordScaleRun(run, okPct);
+    setTimeout(() => {
+      feedbackText.textContent = run.mistakes === 0
+        ? '¡Escala limpia! ' + (okPct !== null ? okPct + '% a tiempo. ' : '') + 'Reiniciando'
+        : 'Escala completa con ' + run.mistakes + (run.mistakes === 1 ? ' error' : ' errores') + ' — reiniciando';
+      feedbackText.className = 'feedback ' + (run.mistakes === 0 ? 'correct' : '');
+      setTimeout(startScaleRun, 1100);
+    }, 300);
+  } else {
+    setTimeout(startScaleStep, 300);
+  }
+}
+
+// ---- tiempo (metrónomo) ----
+const TIMING_OK = 90, TIMING_FAR = 250;
+function timingClass(off){
+  if(off === null || off === undefined) return '';
+  if(Math.abs(off) <= TIMING_OK) return 'ok';
+  if(Math.abs(off) > TIMING_FAR) return 'miss';
+  return off < 0 ? 'early' : 'late';
+}
+function timingPct(arr){
+  const vals = arr.filter(v => typeof v === 'number');
+  if(!vals.length) return null;
+  return Math.round(vals.filter(v => Math.abs(v) <= TIMING_OK).length / vals.length * 100);
+}
+function renderTimingBox(){
+  const box = $('timingBox');
+  if(!box || !scaleRun) return;
+  if(!scaleTempoMode){ box.innerHTML = ''; return; }
+  const chips = scaleRun.steps.map((s, i) => '<span class="timing-chip ' + timingClass(scaleRun.timing[i]) + '" title="' +
+    (typeof scaleRun.timing[i] === 'number' ? (scaleRun.timing[i] > 0 ? '+' : '') + Math.round(scaleRun.timing[i]) + ' ms' : 'pendiente') + '"></span>').join('');
+  const pct = timingPct(scaleRun.timing);
+  const summary = metro.on
+    ? (pct === null ? 'Una nota por pulso a ' + metro.bpm + ' BPM.' : '<b>' + pct + '%</b> a tiempo')
+    : 'Enciende el metrónomo (arriba) para medir el tiempo.';
+  box.innerHTML = chips + '<span class="timing-summary">' + summary + '</span>';
+}
+
+let chordOctave = 4; // octava del Do de referencia (C4 = Do central)
+let chordInversion = 0; // 0 fundamental, 1 primera, 2 segunda
+let chordHand = 'rh';
+let chordStrict = false; // exigir notas exactas (obligatorio con inversiones)
+
+// Digitación estándar de tríadas en posición cerrada.
+const CHORD_FINGERS = {
+  rh: [[1,3,5],[1,2,5],[1,3,5]],
+  lh: [[5,3,1],[5,3,1],[5,2,1]],
+};
+function chordVoicing(chord, inv, octave){
+  const base = (octave + 1) * 12 + chord.root;
+  const third = base + (chord.q === 'M' ? 4 : 3), fifth = base + 7;
+  let notes;
+  if(inv === 1) notes = [third, fifth, base + 12];
+  else if(inv === 2) notes = [fifth, base + 12, third + 12];
+  else notes = [base, third, fifth];
+  return notes.filter(n => n >= MIN_NOTE && n <= MAX_NOTE);
+}
+const INV_NAMES = ['posición fundamental', '1ª inversión', '2ª inversión'];
+
+function startChordStep(){
+  if(typeof refreshChordPicker === 'function') refreshChordPicker();
+  clearAllHighlights();
+  clearFingerNums();
+  feedbackText.textContent = '';
+  feedbackText.className = 'feedback';
+  const chord = CHORDS[practiceIndex];
+  progressText.textContent = `Acorde ${practiceIndex+1} / ${CHORDS.length}`;
+  targetNoteLabel.textContent = chord.name + (chordInversion ? ' /' + INV_NAMES[chordInversion].slice(0,2) : '');
+
+  const notes = chordVoicing(chord, chordInversion, chordOctave);
+  const fingers = CHORD_FINGERS[chordHand][chordInversion];
+  notes.forEach((n, i) => {
+    markTarget(n, chordHand);
+    drawFingerNum(n, fingers[i], chordHand);
+  });
+  targetSubLabel.textContent = chord.full + ' · ' + INV_NAMES[chordInversion] + ' — ' + notes.map(noteLabel).join(' + ') +
+    (chordStrict ? '' : ' (vale en cualquier octava)');
+  scrollToTargets();
+}
+
+// Un piano de 88 teclas va de A0 a C8: la octava 0 sólo tiene La y Si,
+// y la 8 sólo tiene Do. Por eso cada botón se valida antes de habilitarse.
+function noteExists(pc, oct){
+  const n = (oct + 1) * 12 + pc;
+  return n >= MIN_NOTE && n <= MAX_NOTE;
+}
+
+function buildOctavePicker(containerId, current, onPick, isValid){
+  const cont = document.getElementById(containerId);
+  cont.innerHTML = '';
+  [0,1,2,3,4,5,6,7,8].forEach(oct => {
+    const ok = isValid ? isValid(oct) : true;
+    const b = document.createElement('button');
+    b.className = 'reg-btn' + (oct === current ? ' active' : '') + (ok ? '' : ' disabled');
+    b.textContent = oct;
+    b.disabled = !ok;
+    b.title = ok
+      ? 'Octava ' + oct + (oct === 4 ? ' (la del Do central)' : '')
+      : 'Esa octava no existe completa en un piano de 88 teclas';
+    if(ok){
+      b.addEventListener('click', () => {
+        cont.querySelectorAll('.reg-btn').forEach(x => x.classList.remove('active'));
+        b.classList.add('active');
+        onPick(oct);
+      });
+    }
+    cont.appendChild(b);
+  });
+}
+
+function checkChord(){
+  if(currentMode !== 'chords') return;
+  const chord = CHORDS[practiceIndex];
+  let allPresent;
+  if(chordStrict){
+    const notes = chordVoicing(chord, chordInversion, chordOctave);
+    allPresent = notes.every(n => activeNotes.has(n));
+  } else {
+    const target = new Set(chordTones(chord));
+    const playedPCs = new Set(Array.from(activeNotes).map(n => n % 12));
+    allPresent = [...target].every(pc => playedPCs.has(pc));
+  }
+  if(allPresent){
+    feedbackText.textContent = 'Correcto';
+    feedbackText.className = 'feedback correct';
+    document.querySelectorAll('.target').forEach(r => { r.classList.remove('target','lh'); r.classList.add('correct'); });
+    chordDoneSet.add(practiceIndex);
+    if(typeof recordChord === 'function') recordChord(chord.name, chordInversion);
+    practiceIndex++;
+    if(practiceIndex >= CHORDS.length){
+      setTimeout(() => {
+        feedbackText.textContent = 'Recorriste los 24 acordes — reiniciando';
+        practiceIndex = 0;
+        setTimeout(startChordStep, 1000);
+      }, 400);
+    } else {
+      setTimeout(startChordStep, 500);
+    }
+  }
+}
+registerNoteHandler('chords', checkChord);
+
+const chordStrictBtn = $('chordStrictBtn');
+function applyChordStrict(){ chordStrictBtn.classList.toggle('active', chordStrict); }
+chordStrictBtn.addEventListener('click', () => { chordStrict = !chordStrict; applyChordStrict(); startChordStep(); });
+bindPicker('chordInvPicker', 'inv', () => chordInversion, v => {
+  chordInversion = parseInt(v, 10);
+  // Una inversión sin exigir notas exactas no se distingue de la fundamental.
+  if(chordInversion > 0 && !chordStrict){ chordStrict = true; applyChordStrict(); }
+  startChordStep();
+});
+bindPicker('chordHandPicker', 'chand', () => chordHand, v => { chordHand = v; startChordStep(); });
+applyChordStrict();
+
+// ---- Zoom del teclado ----
+const ZOOM_STEPS = [780, 900, 1020, 1150, 1300, 1500, 1900, 2400, 3000, 3800];
+const ZOOM_BASE = 1150; // referencia del 100%
+let zoomIdx = 3; // 100%
+const zoomValue = document.getElementById('zoomValue');
+const kbWrap = document.querySelector('.keyboard-wrap');
+
+function applyZoom(){
+  document.documentElement.style.setProperty('--kb-w', ZOOM_STEPS[zoomIdx] + 'px');
+  zoomValue.textContent = Math.round(ZOOM_STEPS[zoomIdx] / ZOOM_BASE * 100) + '%';
+  try { localStorage.setItem('kbZoom2', zoomIdx); } catch(e){}
+}
+document.querySelectorAll('.zoom-btn').forEach(b => {
+  b.addEventListener('click', () => {
+    zoomIdx = Math.max(0, Math.min(ZOOM_STEPS.length - 1, zoomIdx + parseInt(b.dataset.zoom,10)));
+    applyZoom();
+    scrollToTargets();
+  });
+});
+try {
+  const saved = parseInt(localStorage.getItem('kbZoom2'),10);
+  if(!isNaN(saved)) zoomIdx = Math.max(0, Math.min(ZOOM_STEPS.length-1, saved));
+} catch(e){}
+applyZoom();
+
+// centra el scroll horizontal sobre las teclas marcadas
+function scrollToTargets(){
+  const marked = document.querySelectorAll('.target');
+  if(!marked.length || !kbWrap) return;
+  let min = Infinity, max = -Infinity;
+  marked.forEach(r => {
+    const x = parseFloat(r.getAttribute('x'));
+    const w = parseFloat(r.getAttribute('width'));
+    if(x < min) min = x;
+    if(x + w > max) max = x + w;
+  });
+  const svgEl = document.getElementById('pianoSvg');
+  if(!svgEl || !svgEl.viewBox || !svgEl.viewBox.baseVal) return;
+  const vb = svgEl.viewBox.baseVal.width || 1;
+  const pxPerUnit = svgEl.getBoundingClientRect().width / vb;
+  if(!isFinite(pxPerUnit) || pxPerUnit <= 0) return;
+  if(typeof kbWrap.scrollTo !== 'function') return;
+  const center = ((min + max) / 2) * pxPerUnit;
+  kbWrap.scrollTo({ left: Math.max(0, center - kbWrap.clientWidth / 2), behavior: 'smooth' });
+}
+
+// ---- Fragmentos / Agilidad (comparten el mismo motor de práctica) ----
+let practiceFamily = 'songs'; // 'songs' = Fragmentos, 'agility' = Agilidad
+let currentFragment = FRAGMENTS[0];
+let currentDrillShape = AGILITY_DRILLS[0];
+let currentHand = 'both';
+let isPlayingBack = false;
+let agilRhOct = 4, agilLhOct = 3;
+
+const fragSubTabs = document.getElementById('fragSubTabs');
+const fragTip = document.getElementById('fragTip');
+const fragmentsPanel = document.getElementById('fragmentsPanel');
+const listenBtn = document.getElementById('listenBtn');
+const agilOctaveBar = document.getElementById('agilOctaveBar');
+
+// Convierte un patrón relativo (semitonos desde la raíz) en pasos concretos
+// para ambas manos, cada una en su propia octava. Las dos manos siempre
+// quedan generadas — es el selector "Ambas/Derecha/Izquierda" (vía
+// stepNotes) el que decide cuál se exige, igual que en Fragmentos.
+function materializeAgilitySteps(shape, rhOct, lhOct){
+  const rhRoot = (rhOct + 1) * 12;
+  const lhRoot = (lhOct + 1) * 12;
+  return shape.pattern.map(p => ({
+    lh: [lhRoot + p.deg],
+    rh: [rhRoot + p.deg],
+    dur: p.dur,
+    label: p.label
+  }));
+}
+
+function shapeOctaveValid(oct, shape){
+  const degs = shape.pattern.map(p => p.deg);
+  const lo = Math.min(...degs), hi = Math.max(...degs);
+  const root = (oct + 1) * 12;
+  return root + lo >= MIN_NOTE && root + hi <= MAX_NOTE;
+}
+
+function rebuildAgilityFragment(){
+  const shape = currentDrillShape;
+  currentFragment = {
+    id: shape.id, name: shape.name, tip: shape.tip, tempo: shape.tempo,
+    steps: materializeAgilitySteps(shape, agilRhOct, agilLhOct)
+  };
+}
+
+function refreshAgilOctavePickers(){
+  // si la octava elegida dejó de caber en el patrón actual, se corrige antes de dibujar
+  if(!shapeOctaveValid(agilRhOct, currentDrillShape)){
+    for(let o = 8; o >= 0; o--){ if(shapeOctaveValid(o, currentDrillShape)){ agilRhOct = o; break; } }
+  }
+  if(!shapeOctaveValid(agilLhOct, currentDrillShape)){
+    for(let o = 8; o >= 0; o--){ if(shapeOctaveValid(o, currentDrillShape)){ agilLhOct = o; break; } }
+  }
+  buildOctavePicker('agilRhOctavePicker', agilRhOct, (oct) => {
+    agilRhOct = oct;
+    onAgilityChange();
+  }, (oct) => shapeOctaveValid(oct, currentDrillShape));
+  buildOctavePicker('agilLhOctavePicker', agilLhOct, (oct) => {
+    agilLhOct = oct;
+    onAgilityChange();
+  }, (oct) => shapeOctaveValid(oct, currentDrillShape));
+}
+
+function onAgilityChange(){
+  rebuildAgilityFragment();
+  practiceIndex = 0;
+  ensureValidHandSelection();
+  renderFragTip();
+  startFragmentStep();
+  if(typeof cascadeOn !== 'undefined' && cascadeOn){
+    exitCascade();
+    setupCascadeKeyboard();
+  }
+}
+
+function renderSubTabs(){
+  fragSubTabs.innerHTML = '';
+  const items = practiceFamily === 'agility' ? AGILITY_DRILLS : FRAGMENTS;
+  items.forEach((item, i) => {
+    const b = document.createElement('button');
+    b.className = 'mode-tab sub' + (i === 0 ? ' active' : '');
+    b.textContent = item.name;
+    b.dataset.frag = item.id;
+    b.addEventListener('click', () => {
+      fragSubTabs.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('active'));
+      b.classList.add('active');
+      if(practiceFamily === 'agility'){
+        currentDrillShape = item;
+        refreshAgilOctavePickers();
+        rebuildAgilityFragment();
+      } else {
+        currentFragment = item;
+      }
+      practiceIndex = 0;
+      ensureValidHandSelection();
+      renderFragTip();
+      startFragmentStep();
+      if(typeof cascadeOn !== 'undefined' && cascadeOn){
+        exitCascade();
+        setupCascadeKeyboard();
+      }
+    });
+    fragSubTabs.appendChild(b);
+  });
+}
+
+// Se llama al entrar a "Agilidad" o "Fragmentos" desde el menú principal.
+function loadPracticeFamily(family){
+  practiceFamily = family;
+  agilOctaveBar.style.display = family === 'agility' ? 'flex' : 'none';
+  if(family === 'agility'){
+    currentDrillShape = AGILITY_DRILLS[0];
+    refreshAgilOctavePickers();
+    rebuildAgilityFragment();
+  } else {
+    currentFragment = FRAGMENTS[0];
+  }
+  practiceIndex = 0;
+  currentHand = 'both';
+  document.querySelectorAll('.hand-btn').forEach(b => b.classList.toggle('active', b.dataset.hand === 'both'));
+  renderSubTabs();
+  renderFragTip();
+  startFragmentStep();
+}
+
+document.querySelectorAll('.hand-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.hand-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentHand = btn.dataset.hand;
+    practiceIndex = 0;
+    ensureValidHandSelection();
+    startFragmentStep();
+    if(typeof cascadeOn !== 'undefined' && cascadeOn){
+      exitCascade();
+      setupCascadeKeyboard();
+    }
+  });
+});
+
+function renderFragTip(){
+  fragTip.innerHTML = '<b>' + currentFragment.name + ':</b> ' + currentFragment.tip;
+}
+
+function stepNotes(step, hand){
+  if(hand === 'rh') return step.rh;
+  if(hand === 'lh') return step.lh;
+  return step.lh.concat(step.rh);
+}
+
+// salta pasos vacíos para la mano elegida (ej: la izquierda calla varios tiempos)
+function fragmentHasHand(fragment, hand){
+  return fragment.steps.some(st => stepNotes(st, hand).length > 0);
+}
+
+// Si el filtro de mano elegido no existe en el fragmento actual
+// (ej. "solo izquierda" sobre un ejercicio que es solo de mano derecha),
+// se cae de vuelta a "ambas manos" en vez de quedar en blanco.
+function ensureValidHandSelection(){
+  if(currentHand === 'both') return;
+  if(fragmentHasHand(currentFragment, currentHand)) return;
+  currentHand = 'both';
+  document.querySelectorAll('.hand-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.hand === 'both');
+  });
+}
+
+function advanceToPlayableStep(){
+  const steps = currentFragment.steps;
+  let guard = 0;
+  while(practiceIndex < steps.length && stepNotes(steps[practiceIndex], currentHand).length === 0){
+    practiceIndex++;
+    if(++guard > steps.length) break;
+  }
+  // red de seguridad: si el filtro de mano no calzó con ningún paso
+  // (p.ej. "solo izquierda" en un ejercicio que es solo de mano derecha),
+  // no dejamos el índice fuera de rango.
+  if(practiceIndex >= steps.length) practiceIndex = 0;
+}
+
+function startFragmentStep(){
+  clearAllHighlights();
+  feedbackText.textContent = '';
+  feedbackText.className = 'feedback';
+  advanceToPlayableStep();
+  const steps = currentFragment.steps;
+  if(practiceIndex >= steps.length){
+    practiceIndex = 0;
+    advanceToPlayableStep();
+  }
+  const step = steps[practiceIndex];
+  const notes = stepNotes(step, currentHand);
+  progressText.textContent = `Paso ${practiceIndex+1} / ${steps.length}`;
+
+  const names = notes.slice().sort((a,b)=>a-b).map(n => noteLabel(n)).join(' + ');
+  targetNoteLabel.textContent = names;
+
+  let sub = '';
+  if(currentHand === 'both'){
+    const parts = [];
+    if(step.lh.length) parts.push('izq: ' + step.lh.map(noteLabel).join(' '));
+    if(step.rh.length) parts.push('der: ' + step.rh.map(noteLabel).join(' '));
+    sub = parts.join('   |   ');
+  } else {
+    sub = currentHand === 'rh' ? 'mano derecha' : 'mano izquierda';
+  }
+  if(step.label) sub = step.label + '  —  ' + sub;
+  targetSubLabel.textContent = sub;
+
+  notes.forEach(n => {
+    const r = getRect(n);
+    if(r) r.classList.add('target');
+  });
+}
+
+function checkFragment(){
+  if((currentMode !== 'fragments' && currentMode !== 'agility') || isPlayingBack) return;
+  const step = currentFragment.steps[practiceIndex];
+  if(!step) return;
+  const notes = stepNotes(step, currentHand);
+  if(!notes.length) return;
+  // Nota exacta, no solo la letra: si pides Do3 y Do5 a la vez (típico al
+  // practicar "ambas manos" con el mismo patrón en dos octavas), tocar solo
+  // una de las dos no debe darse por válido.
+  const target = new Set(notes);
+  const allPresent = [...target].every(n => activeNotes.has(n));
+  if(allPresent){
+    feedbackText.textContent = 'Correcto';
+    feedbackText.className = 'feedback correct';
+    document.querySelectorAll('.target').forEach(r => { r.classList.remove('target'); r.classList.add('correct'); });
+    practiceIndex++;
+    // Se decide si terminó ANTES de avanzar: advanceToPlayableStep() vuelve
+    // a 0 cuando se pasa del final, y eso hacía que el mensaje de "completaste"
+    // nunca saliera (ni se registrara la pieza como terminada).
+    const remaining = currentFragment.steps.slice(practiceIndex);
+    const finished = !remaining.some(st => stepNotes(st, currentHand).length > 0);
+    if(!finished) advanceToPlayableStep();
+    if(finished){
+      if(typeof recordPracticeDone === 'function') recordPracticeDone();
+      setTimeout(() => {
+        feedbackText.textContent = '¡Completaste el fragmento! Reiniciando';
+        practiceIndex = 0;
+        setTimeout(startFragmentStep, 1200);
+      }, 400);
+    } else {
+      setTimeout(startFragmentStep, 450);
+    }
+  }
+}
+registerNoteHandler('fragments', checkFragment);
+registerNoteHandler('agility', checkFragment);
+
+listenBtn.addEventListener('click', () => {
+  if(isPlayingBack) return;
+  playFragment();
+});
+
+async function playFragment(){
+  isPlayingBack = true;
+  listenBtn.textContent = '♪ Sonando...';
+  clearAllHighlights();
+  const wasSound = soundEnabled;
+  soundEnabled = true;
+  ensureAudioCtx();
+
+  const beatMs = 60000 / currentFragment.tempo;
+  for(const step of currentFragment.steps){
+    const notes = stepNotes(step, currentHand);
+    notes.forEach(n => {
+      playNoteSound(n);
+      const r = getRect(n);
+      if(r) r.classList.add('active');
+    });
+    await new Promise(res => setTimeout(res, beatMs * step.dur * 0.92));
+    notes.forEach(n => {
+      stopNoteSound(n);
+      const r = getRect(n);
+      if(r) r.classList.remove('active');
+    });
+    await new Promise(res => setTimeout(res, beatMs * step.dur * 0.08));
+  }
+
+  soundEnabled = wasSound;
+  isPlayingBack = false;
+  listenBtn.textContent = '▶ Escuchar';
+  practiceIndex = 0;
+  startFragmentStep();
+}
+
+let intervalRootPC = 0;   // 0 = Do
+let intervalOctave = 4;   // C4 = Do central
+
+function currentIntervalRoot(){
+  return (intervalOctave + 1) * 12 + intervalRootPC;
+}
+
+// cuenta cuántas teclas físicas (blancas y negras) hay entre las dos notas
+function keysBetween(a, b){
+  return Math.abs(b - a) - 1;
+}
+
+function startIntervalStep(){
+  if(typeof refreshIntervalPicker === 'function') refreshIntervalPicker();
+  // si la octava elegida dejó de ser válida para este intervalo, se corrige
+  if(typeof intervalOctaveValid === 'function' && !intervalOctaveValid(intervalOctave)){
+    for(let o = 8; o >= 0; o--){ if(intervalOctaveValid(o)){ intervalOctave = o; break; } }
+  }
+  if(typeof refreshIntervalOctaves === 'function') refreshIntervalOctaves();
+  clearAllHighlights();
+  feedbackText.textContent = '';
+  feedbackText.className = 'feedback';
+  const iv = INTERVALS[practiceIndex];
+  const root = currentIntervalRoot();
+  let top = root + iv.semitones;
+  if(top > MAX_NOTE){ top = MAX_NOTE; }
+  progressText.textContent = `Intervalo ${practiceIndex+1} / ${INTERVALS.length}`;
+  const rootRect = getRect(root);
+  const topRect = getRect(top);
+  if(earMode){
+    // De oído: solo se marca la nota de partida; la segunda hay que encontrarla.
+    targetNoteLabel.textContent = '👂 ¿Cuál es la segunda nota?';
+    targetSubLabel.textContent = 'Desde ' + noteLabel(root) + ' — escucha y toca la nota que sigue';
+    if(rootRect) rootRect.classList.add('target');
+    distanceBox.style.display = 'none';
+    earAwaiting = true;
+    earStats.missedThis = false;
+    updateEarScore();
+    scrollToTargets();
+    playEarInterval();
+    return;
+  }
+  targetNoteLabel.textContent = iv.name;
+  targetSubLabel.textContent = noteLabel(root) + '  →  ' + noteLabel(top) + ' — toca ambas juntas';
+  if(rootRect) rootRect.classList.add('target');
+  if(topRect) topRect.classList.add('target');
+
+  renderDistanceBox(iv, root, top);
+  distanceBox.style.display = 'block';
+  scrollToTargets();
+}
+
+function renderDistanceBox(iv, root, top){
+  const box = document.getElementById('distanceBox');
+  if(!box) return;
+  const semis = iv.semitones;
+  const between = keysBetween(root, top);
+  box.innerHTML =
+    '<b>Distancia:</b> ' + semis + (semis === 1 ? ' semitono' : ' semitonos') +
+    '  =  <b>' + tonesLabel(semis) + '</b>' +
+    '<br><b>Al contar en el teclado:</b> ' +
+    (semis === 0
+      ? 'es la misma tecla.'
+      : 'sube ' + semis + (semis === 1 ? ' tecla' : ' teclas') +
+        ' desde ' + noteLabel(root) + ', contando blancas <em>y</em> negras' +
+        (between > 0 ? ' (quedan ' + between + ' tecla' + (between === 1 ? '' : 's') + ' en medio)' : '') + '.') +
+    '<br><b>Para reconocerlo:</b> ' + iv.ref;
+}
+
+function buildRootPicker(){
+  const cont = document.getElementById('intervalRootPicker');
+  cont.innerHTML = '';
+  ROOT_NAMES.forEach((nm, pc) => {
+    const b = document.createElement('button');
+    b.className = 'reg-btn' + (pc === intervalRootPC ? ' active' : '');
+    b.textContent = nm;
+    b.addEventListener('click', () => {
+      cont.querySelectorAll('.reg-btn').forEach(x => x.classList.remove('active'));
+      b.classList.add('active');
+      intervalRootPC = pc;
+      if(typeof refreshIntervalOctaves === 'function') refreshIntervalOctaves();
+      startIntervalStep();
+    });
+    cont.appendChild(b);
+  });
+}
+
+// Verificación por NOTA EXACTA. Antes comparaba solo la letra (clase de
+// nota): Do4 + Mi5 (una décima) aprobaba como "3ª mayor", que es justo la
+// distancia que el ejercicio enseña. Un intervalo es distancia, no letras.
+let earMode = false;
+let earStats = { asked: 0, right: 0 };
+let earAwaiting = false;
+
+function checkInterval(playedNote){
+  if(currentMode !== 'intervals') return;
+  const iv = INTERVALS[practiceIndex];
+  const root = currentIntervalRoot();
+  const top = Math.min(root + iv.semitones, MAX_NOTE);
+  if(earMode){
+    if(!earAwaiting) return;
+    if(playedNote === root) return; // la nota de partida ya está dada
+    if(playedNote === top){
+      earAwaiting = false;
+      if(!earStats.missedThis){
+        earStats.asked++; earStats.right++;
+        if(typeof recordEar === 'function') recordEar(practiceIndex, true);
+      }
+      feedbackText.textContent = '¡Ese es! ' + iv.name + ' (' + noteLabel(root) + ' → ' + noteLabel(top) + ')';
+      feedbackText.className = 'feedback correct';
+      [root, top].forEach(n => { const r = getRect(n); if(r){ r.classList.remove('target'); r.classList.add('correct'); } });
+      renderDistanceBox(iv, root, top);
+      distanceBox.style.display = 'block';
+      updateEarScore();
+      setTimeout(() => { practiceIndex = Math.floor(Math.random() * INTERVALS.length); startIntervalStep(); }, 1400);
+    } else {
+      feedbackText.textContent = playedNote < top ? 'Más arriba…' : 'Más abajo…';
+      feedbackText.className = 'feedback wrong';
+      if(!earStats.missedThis){
+        earStats.missedThis = true; earStats.asked++;
+        if(typeof recordEar === 'function') recordEar(practiceIndex, false);
+        updateEarScore();
+      }
+      const wr = getRect(playedNote);
+      if(wr){ wr.classList.add('wrong'); setTimeout(() => wr.classList.remove('wrong'), 350); }
+    }
+    return;
+  }
+  const allPresent = activeNotes.has(root) && activeNotes.has(top);
+  if(allPresent){
+    feedbackText.textContent = 'Correcto';
+    feedbackText.className = 'feedback correct';
+    document.querySelectorAll('.target').forEach(r => { r.classList.remove('target'); r.classList.add('correct'); });
+    intervalDoneSet.add(practiceIndex);
+    if(typeof recordInterval === 'function') recordInterval(practiceIndex);
+    practiceIndex++;
+    if(practiceIndex >= INTERVALS.length){
+      setTimeout(() => {
+        feedbackText.textContent = 'Repasaste los 13 intervalos — reiniciando';
+        practiceIndex = 0;
+        setTimeout(startIntervalStep, 1000);
+      }, 400);
+    } else {
+      setTimeout(startIntervalStep, 500);
+    }
+  } else if(activeNotes.has(playedNote) && playedNote !== root && playedNote !== top){
+    const pcOk = (playedNote % 12) === (top % 12) || (playedNote % 12) === (root % 12);
+    feedbackText.textContent = pcOk ? 'Es la letra correcta pero en otra octava — la distancia no es esa' : '';
+    feedbackText.className = 'feedback wrong';
+  }
+}
+registerNoteHandler('intervals', checkInterval);
+
+function updateEarScore(){
+  const el = $('earScore');
+  if(el) el.textContent = earStats.asked ? 'Aciertos: ' + earStats.right + ' / ' + earStats.asked : '';
+}
+async function playEarInterval(){
+  const iv = INTERVALS[practiceIndex];
+  const root = currentIntervalRoot();
+  const top = Math.min(root + iv.semitones, MAX_NOTE);
+  const wasSound = soundEnabled;
+  soundEnabled = true;
+  try {
+    if(!ensureAudioCtx()) return;
+    playNoteSound(root);
+    await new Promise(r => setTimeout(r, 650));
+    stopNoteSound(root);
+    await new Promise(r => setTimeout(r, 80));
+    playNoteSound(top);
+    await new Promise(r => setTimeout(r, 650));
+    stopNoteSound(top);
+  } finally {
+    soundEnabled = wasSound;
+  }
+}
+$('earModeBtn').addEventListener('click', () => {
+  earMode = !earMode;
+  $('earModeBtn').classList.toggle('active', earMode);
+  show($('earBar'), earMode, 'flex');
+  if(earMode) practiceIndex = Math.floor(Math.random() * INTERVALS.length);
+  startIntervalStep();
+});
+$('earPlayBtn').addEventListener('click', () => { if(earMode) playEarInterval(); });
+
+
+// ===== Selección directa: acordes e intervalos =====
+let chordDoneSet = new Set();
+let intervalDoneSet = new Set();
+
+function buildChordPicker(){
+  const cont = document.getElementById('chordPicker');
+  cont.innerHTML = '';
+  CHORDS.forEach((c, i) => {
+    const b = document.createElement('button');
+    b.className = 'pick-btn';
+    b.textContent = c.name;
+    b.title = c.full;
+    b.addEventListener('click', () => {
+      practiceIndex = i;
+      startChordStep();
+    });
+    cont.appendChild(b);
+  });
+  refreshChordPicker();
+}
+function refreshChordPicker(){
+  const cont = document.getElementById('chordPicker');
+  [...cont.children].forEach((b, i) => {
+    b.classList.toggle('current', i === practiceIndex);
+    b.classList.toggle('done', chordDoneSet.has(i) && i !== practiceIndex);
+  });
+}
+
+function buildIntervalPicker(){
+  const cont = document.getElementById('intervalPicker');
+  cont.innerHTML = '';
+  INTERVALS.forEach((iv, i) => {
+    const b = document.createElement('button');
+    b.className = 'pick-btn';
+    b.textContent = iv.name;
+    b.addEventListener('click', () => {
+      practiceIndex = i;
+      startIntervalStep();
+    });
+    cont.appendChild(b);
+  });
+  refreshIntervalPicker();
+}
+function refreshIntervalPicker(){
+  const cont = document.getElementById('intervalPicker');
+  [...cont.children].forEach((b, i) => {
+    b.classList.toggle('current', i === practiceIndex);
+    b.classList.toggle('done', intervalDoneSet.has(i) && i !== practiceIndex);
+  });
+}
+
+// ---- Controles de registro (acordes e intervalos) ----
+const chordOctaveBar = document.getElementById('chordOctaveBar');
+const intervalRootBar = document.getElementById('intervalRootBar');
+const distanceBox = document.getElementById('distanceBox');
+
+// una tríada mayor/menor abarca 7 semitonos desde la fundamental
+function chordOctaveValid(oct){
+  const root = (oct + 1) * 12;
+  return root >= MIN_NOTE && root + 7 <= MAX_NOTE;
+}
+function refreshChordOctaves(){
+  buildOctavePicker('chordOctavePicker', chordOctave, (oct) => {
+    chordOctave = oct;
+    startChordStep();
+  }, chordOctaveValid);
+}
+// para intervalos: la fundamental debe existir y el intervalo debe caber
+function intervalOctaveValid(oct){
+  const root = (oct + 1) * 12 + intervalRootPC;
+  const semis = INTERVALS[practiceIndex] ? INTERVALS[practiceIndex].semitones : 12;
+  return root >= MIN_NOTE && root + semis <= MAX_NOTE;
+}
+function refreshIntervalOctaves(){
+  buildOctavePicker('intervalOctavePicker', intervalOctave, (oct) => {
+    intervalOctave = oct;
+    startIntervalStep();
+  }, intervalOctaveValid);
+}
+refreshChordOctaves();
+refreshIntervalOctaves();
+buildRootPicker();
+buildChordPicker();
+buildIntervalPicker();
+
+document.getElementById('chordRandomOct').addEventListener('click', () => {
+  const opts = [2,3,4,5,6].filter(o => o !== chordOctave && chordOctaveValid(o));
+  chordOctave = opts[Math.floor(Math.random() * opts.length)];
+  refreshChordOctaves();
+  startChordStep();
+});
+
+document.getElementById('intervalRandomRoot').addEventListener('click', () => {
+  intervalRootPC = Math.floor(Math.random() * 12);
+  const opts = [2,3,4,5,6].filter(intervalOctaveValid);
+  intervalOctave = opts[Math.floor(Math.random() * opts.length)];
+  buildRootPicker();
+  refreshIntervalOctaves();
+  startIntervalStep();
+});
+
+
+
+// ===== Render del mapa de funciones =====
+const FUNC_BY_MIDI = {};
+FUNC_KEYS.forEach(([nm, cat, desc]) => {
+  FUNC_BY_MIDI[manualToMidi(nm)] = {manual:nm, cat, desc};
+});
+
+let activeFuncCat = null;
+const funcSvg = document.getElementById('funcSvg');
+const funcRects = {};
+
+(function buildFuncKeyboard(){
+  const FW = 14, FH = 74, FBW = 8.6, FBH = 46;
+  const total = xUnitsFor(MAX_NOTE) - minUnits + 1;
+  funcSvg.setAttribute('viewBox', `0 0 ${total*FW + 12} ${FH + 26}`);
+
+  function mk(tag){ return document.createElementNS('http://www.w3.org/2000/svg', tag); }
+
+  for(let n = MIN_NOTE; n <= MAX_NOTE; n++){
+    if(BLACK_SET.has(n % 12)) continue;
+    const x = (xUnitsFor(n) - minUnits) * FW + 6;
+    const r = mk('rect');
+    r.setAttribute('x', x); r.setAttribute('y', 6);
+    r.setAttribute('width', FW - 1); r.setAttribute('height', FH);
+    r.setAttribute('rx', 2);
+    r.setAttribute('class', 'fk-white');
+    funcSvg.appendChild(r);
+    funcRects[n] = r;
+    
+    // nombre en cada tecla blanca
+    const label = mk('text');
+    label.setAttribute('x', x + (FW-1)/2); label.setAttribute('y', FH - 2);
+    label.setAttribute('text-anchor','middle');
+    label.setAttribute('class','fk-label');
+    label.textContent = noteLabel(n);
+    funcSvg.appendChild(label);
+  }
+  for(let n = MIN_NOTE; n <= MAX_NOTE; n++){
+    if(!BLACK_SET.has(n % 12)) continue;
+    const x = (xUnitsFor(n) - minUnits) * FW + 6 - FBW/2;
+    const r = mk('rect');
+    r.setAttribute('x', x); r.setAttribute('y', 6);
+    r.setAttribute('width', FBW); r.setAttribute('height', FBH);
+    r.setAttribute('rx', 1.5);
+    r.setAttribute('class', 'fk-black');
+    funcSvg.appendChild(r);
+    funcRects[n] = r;
+    
+    // nombre en cada tecla negra
+    const label = mk('text');
+    label.setAttribute('x', x + FBW/2); label.setAttribute('y', FBH + 2);
+    label.setAttribute('text-anchor','middle');
+    label.setAttribute('class','fk-label black');
+    label.textContent = noteLabel(n);
+    funcSvg.appendChild(label);
+  }
+})();
+
+function paintFuncMap(){
+  Object.entries(funcRects).forEach(([n, r]) => {
+    const f = FUNC_BY_MIDI[n];
+    r.style.fill = '';
+    r.style.opacity = '';
+    r.classList.remove('fk-on');
+    if(!f) return;
+    if(activeFuncCat && f.cat !== activeFuncCat){ r.style.opacity = '0.18'; return; }
+    const cat = FUNC_CATS.find(c => c.id === f.cat);
+    r.style.fill = cat.color;
+    r.classList.add('fk-on');
+  });
+}
+
+function renderFuncDetail(){
+  const box = document.getElementById('funcDetail');
+  const list = FUNC_KEYS.filter(([nm, cat]) => !activeFuncCat || cat === activeFuncCat);
+  const catName = activeFuncCat
+    ? FUNC_CATS.find(c => c.id === activeFuncCat).name
+    : 'Todas las funciones';
+  box.innerHTML =
+    '<h4>' + catName + '</h4>' +
+    '<table class="func-table"><thead><tr>' +
+    '<th>Tecla real (la que ves aquí)</th><th>Como la llama el manual</th><th>Qué hace</th>' +
+    '</tr></thead><tbody>' +
+    list.map(([nm, cat, desc]) => {
+      const midi = manualToMidi(nm);
+      return '<tr><td class="mono">' + noteLabel(midi) + '</td><td class="mono dim">' + nm + '</td><td>' + desc + '</td></tr>';
+    }).join('') +
+    '</tbody></table>';
+}
+
+(function buildFuncCatPicker(){
+  const cont = document.getElementById('funcCatPicker');
+  const all = document.createElement('button');
+  all.className = 'reg-btn active';
+  all.textContent = 'Todas';
+  all.addEventListener('click', () => selectFuncCat(null, all));
+  cont.appendChild(all);
+  FUNC_CATS.forEach(c => {
+    const b = document.createElement('button');
+    b.className = 'reg-btn';
+    b.innerHTML = '<span class="swatch" style="background:' + c.color + '"></span>' + c.name;
+    b.addEventListener('click', () => selectFuncCat(c.id, b));
+    cont.appendChild(b);
+  });
+  function selectFuncCat(id, btn){
+    activeFuncCat = id;
+    cont.querySelectorAll('.reg-btn').forEach(x => x.classList.remove('active'));
+    btn.classList.add('active');
+    paintFuncMap();
+    renderFuncDetail();
+  }
+})();
+
+paintFuncMap();
+renderFuncDetail();
+
+
+// ===== Equivalencia letras <-> Do Re Mi (plegable) =====
+(function buildSolfaBar(){
+  const bar = document.getElementById('solfaBar');
+  const btn = document.getElementById('solfaToggleBtn');
+  const pairs = [[0,'Do'],[2,'Re'],[4,'Mi'],[5,'Fa'],[7,'Sol'],[9,'La'],[11,'Si']];
+  bar.innerHTML = pairs.map(([pc, sol]) =>
+    '<span class="solfa-chip"><b>' + NOTE_NAMES[pc] + '</b><span>= ' + sol + '</span></span>'
+  ).join('') +
+  '<div class="solfa-note">Truco para no olvidarlo frente al piano: el abecedario <b>empieza en La</b>, no en Do. ' +
+  'A = La, B = Si, C = Do, D = Re, E = Mi, F = Fa, G = Sol. ' +
+  'Si te acuerdas de que <b>C es Do</b>, el resto sale contando hacia adelante.</div>';
+
+  let solfaShown = false;
+  try {
+    solfaShown = localStorage.getItem('solfaShown') === '1';
+  } catch(e){}
+
+  function applySolfa(){
+    bar.style.display = solfaShown ? 'flex' : 'none';
+    btn.classList.toggle('active', solfaShown);
+    btn.textContent = solfaShown ? 'Ocultar C = Do' : 'C = Do ?';
+    try { localStorage.setItem('solfaShown', solfaShown ? '1' : '0'); } catch(e){}
+  }
+  btn.addEventListener('click', () => {
+    solfaShown = !solfaShown;
+    applySolfa();
+  });
+  applySolfa();
+})();
+
+
+// ===== Modo cascada (notas cayendo, estilo "las que ves en YouTube") =====
+const raf = window.requestAnimationFrame ? window.requestAnimationFrame.bind(window) : (cb) => setTimeout(() => cb(performance.now()), 16);
+const caf = window.cancelAnimationFrame ? window.cancelAnimationFrame.bind(window) : clearTimeout;
+
+const cascadeBtn = document.getElementById('cascadeBtn');
+const cascadeWrap = document.getElementById('cascadeWrap');
+const cascadeSvg = document.getElementById('cascadeSvg');
+const cascadeStartBtn = document.getElementById('cascadeStartBtn');
+const cascadeScoreEl = document.getElementById('cascadeScore');
+const cascadeSpeedLabel = document.getElementById('cascadeSpeedLabel');
+
+const CASCADE_SPEEDS = [40, 50, 60, 70, 80, 90, 100, 115, 130, 150];
+let cascadeSpeedIdx = 4; // arranca en 80%: más lento que el tempo original
+let cascadeOn = false;
+let cascade = null;
+let cascadeXFor = {};
+let cascadeKeyRects = {};
+let cascadeMinUnits = 0;
+
+const FALL_FWK = 30, FALL_FBKW = 18, FALL_FBKH = 30, FALL_KBH = 52, FALL_H = 150, FALL_PAD = 6;
+const LOOKAHEAD_MS = 2200;
+const LIGHT_LEAD_MS = 450;
+const HIT_TOLERANCE_MS = 320;
+
+// Cuenta cuántas notas activas piden encendida cada tecla, para que dos
+// eventos solapados no se apaguen entre sí al terminar el primero.
+const litCounts = {};
+function setCascadeKeyLit(note, on){
+  litCounts[note] = (litCounts[note] || 0) + (on ? 1 : -1);
+  if(litCounts[note] < 0) litCounts[note] = 0;
+  const lit = litCounts[note] > 0;
+  const bigRect = getRect(note);
+  if(bigRect) bigRect.classList.toggle('target', lit);
+  const miniRect = cascadeKeyRects[note];
+  if(miniRect) miniRect.classList.toggle('lit', lit);
+}
+function clearAllCascadeLights(){
+  Object.keys(litCounts).forEach(n => {
+    litCounts[n] = 0;
+    const bigRect = getRect(parseInt(n, 10));
+    if(bigRect) bigRect.classList.remove('target');
+    const miniRect = cascadeKeyRects[n];
+    if(miniRect) miniRect.classList.remove('lit');
+  });
+}
+
+function cascadeSpeedMult(){ return CASCADE_SPEEDS[cascadeSpeedIdx] / 100; }
+
+document.querySelectorAll('.speed-btn').forEach(b => {
+  b.addEventListener('click', () => {
+    cascadeSpeedIdx = Math.max(0, Math.min(CASCADE_SPEEDS.length - 1, cascadeSpeedIdx + parseInt(b.dataset.speed, 10)));
+    applyCascadeSpeed();
+    // si ya está sonando, se reinicia con la nueva velocidad
+    if(cascade && !cascade.finished && cascade.raf) startCascade();
+  });
+});
+
+function applyCascadeSpeed(){
+  cascadeSpeedLabel.textContent = CASCADE_SPEEDS[cascadeSpeedIdx] + '%';
+  try { localStorage.setItem('cascadeSpeed', cascadeSpeedIdx); } catch(e){}
+}
+try {
+  const cs = parseInt(localStorage.getItem('cascadeSpeed'), 10);
+  if(!isNaN(cs) && cs >= 0 && cs < CASCADE_SPEEDS.length) cascadeSpeedIdx = cs;
+} catch(e){}
+applyCascadeSpeed();
+
+cascadeBtn.addEventListener('click', () => {
+  cascadeOn = !cascadeOn;
+  cascadeBtn.classList.toggle('active', cascadeOn);
+  cascadeWrap.style.display = cascadeOn ? 'block' : 'none';
+  if(cascadeOn){
+    practiceInfo.style.display = 'none';
+    clearAllHighlights(); // borra la marca del modo paso a paso
+    setupCascadeKeyboard();
+  } else {
+    exitCascade();
+    if(currentMode === 'fragments' || currentMode === 'agility'){
+      practiceInfo.style.display = 'flex';
+      startFragmentStep(); // vuelve a marcar el paso actual
+    }
+  }
+});
+
+function exitCascade(){
+  if(cascade){
+    if(cascade.raf) caf(cascade.raf);
+    cascade.events.forEach(ev => { if(ev.el) ev.el.remove(); });
+  }
+  if(typeof clearAllCascadeLights === 'function') clearAllCascadeLights();
+  cascade = null;
+  if(cascadeStartBtn) cascadeStartBtn.textContent = '▶ Empezar';
+  if(cascadeScoreEl) cascadeScoreEl.textContent = '';
+}
+
+function setupCascadeKeyboard(){
+  let notes = [];
+  currentFragment.steps.forEach(st => { stepNotes(st, currentHand).forEach(n => notes.push(n)); });
+  if(!notes.length) notes = [60];
+  let lo = Math.max(MIN_NOTE, Math.min(...notes) - 1);
+  let hi = Math.min(MAX_NOTE, Math.max(...notes) + 1);
+
+  cascadeMinUnits = xUnitsFor(lo);
+  const totalUnits = xUnitsFor(hi) - cascadeMinUnits + 1;
+  const svgW = totalUnits * FALL_FWK + FALL_PAD * 2;
+  const svgH = FALL_H + FALL_KBH + 6;
+  cascadeSvg.setAttribute('viewBox', `0 0 ${svgW} ${svgH}`);
+  cascadeSvg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+  // Escala en píxeles: prioriza que la tecla se vea cómoda (~40px de ancho),
+  // pero nunca dejando el bloque más alto de MAX_CASCADE_PX para que quepa
+  // en pantalla junto con el teclado grande de abajo.
+  const MAX_CASCADE_PX = 265;
+  const DESIRED_KEY_PX = 40;
+  let scale = DESIRED_KEY_PX / FALL_FWK;
+  scale = Math.min(scale, MAX_CASCADE_PX / svgH);
+  scale = Math.max(scale, 0.8);
+  cascadeSvg.style.width = Math.round(svgW * scale) + 'px';
+  cascadeSvg.style.height = Math.round(svgH * scale) + 'px';
+  cascadeSvg.innerHTML = '';
+  cascadeXFor = {};
+  cascadeKeyRects = {};
+
+  function mk(tag){ return document.createElementNS('http://www.w3.org/2000/svg', tag); }
+
+  for(let n = lo; n <= hi; n++){
+    if(BLACK_SET.has(n % 12)) continue;
+    const x = (xUnitsFor(n) - cascadeMinUnits) * FALL_FWK + FALL_PAD;
+    const lane = mk('rect');
+    lane.setAttribute('x', x); lane.setAttribute('y', 0);
+    lane.setAttribute('width', FALL_FWK - 1); lane.setAttribute('height', FALL_H);
+    lane.setAttribute('class', 'fall-lane-white');
+    cascadeSvg.appendChild(lane);
+    cascadeXFor[n] = { x, w: FALL_FWK - 1 };
+  }
+
+  const hl = mk('line');
+  hl.setAttribute('x1', 0); hl.setAttribute('x2', svgW);
+  hl.setAttribute('y1', FALL_H); hl.setAttribute('y2', FALL_H);
+  hl.setAttribute('class', 'hit-line');
+  cascadeSvg.appendChild(hl);
+
+  for(let n = lo; n <= hi; n++){
+    if(BLACK_SET.has(n % 12)) continue;
+    const x = (xUnitsFor(n) - cascadeMinUnits) * FALL_FWK + FALL_PAD;
+    const r = mk('rect');
+    r.setAttribute('x', x); r.setAttribute('y', FALL_H);
+    r.setAttribute('width', FALL_FWK - 1); r.setAttribute('height', FALL_KBH);
+    r.setAttribute('rx', 2);
+    r.setAttribute('class', 'fall-key white');
+    r.dataset.note = n;
+    cascadeSvg.appendChild(r);
+    cascadeKeyRects[n] = r;
+
+    const lbl = mk('text');
+    lbl.setAttribute('x', x + (FALL_FWK - 1) / 2);
+    lbl.setAttribute('y', FALL_H + FALL_KBH - 9);
+    lbl.setAttribute('text-anchor', 'middle');
+    lbl.setAttribute('class', 'fall-key-label');
+    lbl.textContent = noteLabel(n);
+    cascadeSvg.appendChild(lbl);
+  }
+  for(let n = lo; n <= hi; n++){
+    if(!BLACK_SET.has(n % 12)) continue;
+    const cx = (xUnitsFor(n) - cascadeMinUnits) * FALL_FWK + FALL_PAD;
+    const lane = mk('rect');
+    lane.setAttribute('x', cx - FALL_FBKW / 2); lane.setAttribute('y', 0);
+    lane.setAttribute('width', FALL_FBKW); lane.setAttribute('height', FALL_H);
+    lane.setAttribute('class', 'fall-lane-black');
+    cascadeSvg.appendChild(lane);
+    cascadeXFor[n] = { x: cx - FALL_FBKW / 2, w: FALL_FBKW };
+
+    const r = mk('rect');
+    r.setAttribute('x', cx - FALL_FBKW / 2); r.setAttribute('y', FALL_H);
+    r.setAttribute('width', FALL_FBKW); r.setAttribute('height', FALL_FBKH);
+    r.setAttribute('rx', 1.5);
+    r.setAttribute('class', 'fall-key black');
+    r.dataset.note = n;
+    cascadeSvg.appendChild(r);
+    cascadeKeyRects[n] = r;
+
+    const lbl = mk('text');
+    lbl.setAttribute('x', cx);
+    lbl.setAttribute('y', FALL_H + FALL_FBKH - 6);
+    lbl.setAttribute('text-anchor', 'middle');
+    lbl.setAttribute('class', 'fall-key-label black');
+    lbl.textContent = noteLabel(n);
+    cascadeSvg.appendChild(lbl);
+  }
+}
+
+function buildCascadeSchedule(){
+  const beatMs = 60000 / (currentFragment.tempo * cascadeSpeedMult());
+  let t = 0;
+  const events = [];
+  currentFragment.steps.forEach(step => {
+    const notes = stepNotes(step, currentHand);
+    const dur = step.dur * beatMs;
+    notes.forEach(n => {
+      events.push({ note: n, tStart: t, tEnd: t + dur * 0.85, hit: false, missed: false, el: null });
+    });
+    t += dur;
+  });
+  return { events, totalMs: t };
+}
+
+function startCascade(){
+  if(cascade && cascade.raf) caf(cascade.raf);
+  clearAllCascadeLights();
+  cascadeSvg.querySelectorAll('.fall-note').forEach(e => e.remove());
+  const { events, totalMs } = buildCascadeSchedule();
+  events.forEach(ev => {
+    const pos = cascadeXFor[ev.note];
+    if(!pos) return;
+    const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    rect.setAttribute('x', pos.x);
+    rect.setAttribute('width', pos.w);
+    rect.setAttribute('class', 'fall-note pending');
+    cascadeSvg.appendChild(rect);
+    ev.el = rect;
+  });
+  // el tiempo 0 = el instante en que debería sonar la primera nota;
+  // por eso arrancamos LOOKAHEAD_MS antes, para que alcance a caer desde arriba.
+  cascade = { events, totalMs, startTime: performance.now() + LOOKAHEAD_MS, raf: null, hits: 0, misses: 0, finished: false };
+  cascadeStartBtn.textContent = '⏹ Detener';
+  updateCascadeScore();
+  cascade.raf = raf(cascadeTick);
+}
+
+function updateCascadeScore(){
+  if(!cascade) return;
+  cascadeScoreEl.textContent = 'Aciertos: ' + cascade.hits + '   Fallos: ' + cascade.misses;
+}
+
+function cascadeTick(now){
+  if(!cascade) return;
+  const t = now - cascade.startTime;
+  const pxPerMs = FALL_H / LOOKAHEAD_MS;
+
+  cascade.events.forEach(ev => {
+    // Iluminación: se enciende un poco ANTES de que la nota llegue a la línea,
+    // para que alcances a mover la mano, y se apaga al acertar o al pasarse.
+    const shouldLight = !ev.hit && !ev.missed &&
+                        t > ev.tStart - LIGHT_LEAD_MS &&
+                        t < ev.tStart + HIT_TOLERANCE_MS;
+    if(shouldLight !== !!ev.lit){
+      ev.lit = shouldLight;
+      setCascadeKeyLit(ev.note, shouldLight);
+    }
+
+    if(!ev.el) return;
+    const bottomY = FALL_H - (ev.tStart - t) * pxPerMs;
+    const topY = FALL_H - (ev.tEnd - t) * pxPerMs;
+    const y = Math.min(bottomY, topY);
+    const h = Math.max(3, Math.abs(bottomY - topY));
+    ev.el.setAttribute('y', y);
+    ev.el.setAttribute('height', h);
+
+    if(!ev.hit && !ev.missed && t > ev.tStart + HIT_TOLERANCE_MS){
+      ev.missed = true;
+      ev.el.setAttribute('class', 'fall-note missed');
+      cascade.misses++;
+      updateCascadeScore();
+    }
+    if(bottomY > FALL_H + 34){
+      ev.el.remove();
+      ev.el = null;
+    }
+  });
+
+  if(t > cascade.totalMs + HIT_TOLERANCE_MS + 700){
+    finishCascade();
+    return;
+  }
+  cascade.raf = raf(cascadeTick);
+}
+
+function finishCascade(){
+  if(!cascade) return;
+  clearAllCascadeLights();
+  cascade.events.forEach(ev => { if(ev.el) ev.el.remove(); });
+  const total = cascade.events.length;
+  const pct = total ? Math.round(cascade.hits / total * 100) : 0;
+  cascadeScoreEl.textContent = 'Aciertos: ' + cascade.hits + ' / ' + total + '  (' + pct + '%)';
+  if(typeof recordCascadeResult === 'function' && total) recordCascadeResult(pct);
+  cascadeStartBtn.textContent = '🔁 Repetir';
+  cascade.raf = null;
+  cascade.finished = true;
+}
+
+function checkCascadeHit(note){
+  if(!cascade || cascade.finished) return;
+  const t = performance.now() - cascade.startTime;
+  let best = null, bestDist = Infinity;
+  cascade.events.forEach(ev => {
+    if(ev.note !== note || ev.hit || ev.missed) return;
+    const dist = Math.abs(ev.tStart - t);
+    if(dist <= HIT_TOLERANCE_MS && dist < bestDist){ best = ev; bestDist = dist; }
+  });
+  if(best){
+    best.hit = true;
+    if(best.lit){ best.lit = false; setCascadeKeyLit(best.note, false); }
+    if(best.el){ best.el.setAttribute('class', 'fall-note hit'); }
+    cascade.hits++;
+    updateCascadeScore();
+  }
+  const kr = cascadeKeyRects[note];
+  if(kr){
+    kr.classList.add('pressed');
+    setTimeout(() => kr.classList.remove('pressed'), 150);
+  }
+}
+
+cascadeStartBtn.addEventListener('click', () => {
+  if(cascade && cascade.raf && !cascade.finished){
+    exitCascade();
+  } else {
+    startCascade();
+  }
+});
+
+
+// ===== Pentagrama (SVG) =====
+// Posición diatónica: C4 = 0, D4 = 1 ... cada línea/espacio es un paso.
+const SHARP_SPELL = [[0,0],[0,1],[1,0],[1,1],[2,0],[3,0],[3,1],[4,0],[4,1],[5,0],[5,1],[6,0]];
+const FLAT_SPELL  = [[0,0],[1,-1],[1,0],[2,-1],[2,0],[3,0],[4,-1],[4,0],[5,-1],[5,0],[6,-1],[6,0]];
+function spellMidi(midi, preferFlat){
+  const pc = midi % 12, oct = Math.floor(midi / 12) - 1;
+  const [letter, acc] = (preferFlat ? FLAT_SPELL : SHARP_SPELL)[pc];
+  return { midi, letter, acc, octave: oct, name: LETTERS[letter] + accText(acc) + oct };
+}
+// Deletreo dentro de una escala: usa el nombre real (E#, Fx...) de la escala.
+function spellFromName(name, midi){
+  const m = name.match(/^([A-G])(x|#|b|bb)?$/);
+  const letter = LETTERS.indexOf(m[1]);
+  const acc = m[2] === '#' ? 1 : m[2] === 'x' ? 2 : m[2] === 'b' ? -1 : m[2] === 'bb' ? -2 : 0;
+  // la octava de la LETRA: B#3 suena como C4, Cb4 suena como B3
+  let octave = Math.floor(midi / 12) - 1;
+  const natural = LETTER_PC[letter];
+  if(natural + acc >= 12) octave -= 1;
+  if(natural + acc < 0) octave += 1;
+  return { midi, letter, acc, octave, name: name + octave };
+}
+function diatonicPos(sp){ return (sp.octave - 4) * 7 + sp.letter; }
+const ACC_GLYPH = {'-2':'𝄫', '-1':'♭', '0':'♮', '1':'♯', '2':'𝄪'};
+
+// Dibuja uno o dos pentagramas y las notas dadas. notes: [{sp, cls}]
+// opts: {clef:'treble'|'bass'|'grand', width, height, showName}
+function renderStaff(svgEl, notes, opts){
+  opts = opts || {};
+  const W = opts.width || 300, S = opts.gap || 10;
+  const clef = opts.clef || 'treble';
+  const staves = clef === 'grand' ? ['treble','bass'] : [clef];
+  const staffH = 4 * S;
+  const pad = 4.5 * S; // espacio para líneas adicionales
+  const gapBetween = clef === 'grand' ? 3 * S : 0;
+  const H = staves.length * (staffH + 2 * pad) + gapBetween;
+  svgEl.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  svgEl.innerHTML = '';
+  const mk = (tag) => document.createElementNS('http://www.w3.org/2000/svg', tag);
+  const bottomLinePos = { treble: 2, bass: -10 }; // E4 y G2
+  const info = {};
+  staves.forEach((c, i) => {
+    const top = pad + i * (staffH + 2 * pad + gapBetween);
+    const bottomY = top + staffH;
+    for(let l = 0; l < 5; l++){
+      const ln = mk('line');
+      ln.setAttribute('x1', 8); ln.setAttribute('x2', W - 8);
+      ln.setAttribute('y1', top + l * S); ln.setAttribute('y2', top + l * S);
+      ln.setAttribute('class', 'staff-line');
+      svgEl.appendChild(ln);
+    }
+    const g = mk('text');
+    g.setAttribute('x', 14); g.setAttribute('class', 'staff-clef');
+    if(c === 'treble'){ g.setAttribute('y', bottomY + S * 0.35); g.setAttribute('font-size', S * 6.6); g.textContent = '𝄞'; }
+    else { g.setAttribute('y', bottomY - S * 0.9); g.setAttribute('font-size', S * 4.4); g.textContent = '𝄢'; }
+    svgEl.appendChild(g);
+    info[c] = { top, bottomY, base: bottomLinePos[c] };
+  });
+  const yFor = (c, pos) => info[c].bottomY - (pos - info[c].base) * S / 2;
+  const n = notes.length;
+  notes.forEach((item, idx) => {
+    const sp = item.sp;
+    const c = item.clef || (staves.length === 1 ? staves[0] : (sp.midi < 60 ? 'bass' : 'treble'));
+    if(!info[c]) return;
+    const pos = diatonicPos(sp);
+    const x = W * 0.42 + (n > 1 ? (idx - (n - 1) / 2) * S * 3.2 : 0);
+    const y = yFor(c, pos);
+    const rel = pos - info[c].base;
+    // líneas adicionales
+    if(rel < 0){ for(let p = -2; p >= rel; p -= 2){ const l = mk('line'); l.setAttribute('x1', x - S * 1.1); l.setAttribute('x2', x + S * 1.1); l.setAttribute('y1', yFor(c, info[c].base + p)); l.setAttribute('y2', yFor(c, info[c].base + p)); l.setAttribute('class','staff-ledger'); svgEl.appendChild(l); } }
+    if(rel > 8){ for(let p = 10; p <= rel; p += 2){ const l = mk('line'); l.setAttribute('x1', x - S * 1.1); l.setAttribute('x2', x + S * 1.1); l.setAttribute('y1', yFor(c, info[c].base + p)); l.setAttribute('y2', yFor(c, info[c].base + p)); l.setAttribute('class','staff-ledger'); svgEl.appendChild(l); } }
+    if(sp.acc){
+      const a = mk('text');
+      a.setAttribute('x', x - S * 1.5); a.setAttribute('y', y + S * 0.42);
+      a.setAttribute('text-anchor', 'end'); a.setAttribute('font-size', S * 1.7);
+      a.setAttribute('class', 'staff-acc');
+      a.textContent = ACC_GLYPH[String(sp.acc)];
+      svgEl.appendChild(a);
+    }
+    const head = mk('ellipse');
+    head.setAttribute('cx', x); head.setAttribute('cy', y);
+    head.setAttribute('rx', S * 0.68); head.setAttribute('ry', S * 0.48);
+    head.setAttribute('transform', `rotate(-20 ${x} ${y})`);
+    head.setAttribute('class', 'staff-note' + (item.cls ? ' ' + item.cls : ''));
+    svgEl.appendChild(head);
+    const stemUp = rel < 4;
+    const stem = mk('line');
+    const sx = stemUp ? x + S * 0.62 : x - S * 0.62;
+    stem.setAttribute('x1', sx); stem.setAttribute('x2', sx);
+    stem.setAttribute('y1', y); stem.setAttribute('y2', stemUp ? y - S * 3.4 : y + S * 3.4);
+    stem.setAttribute('class', 'staff-stem');
+    svgEl.appendChild(stem);
+    if(opts.showName){
+      const t = mk('text');
+      t.setAttribute('x', x); t.setAttribute('y', info[c].bottomY + pad - 2);
+      t.setAttribute('text-anchor', 'middle'); t.setAttribute('class', 'staff-name');
+      t.textContent = sp.name;
+      svgEl.appendChild(t);
+    }
+  });
+}
+
+// Mini pentagrama junto a la nota objetivo de la escala.
+function renderMiniStaff(step){
+  const el = $('miniStaff');
+  if(!el || !step) return;
+  const items = step.notes.map(x => ({ sp: spellFromName(x.name, x.n), clef: x.hand === 'lh' ? 'bass' : 'treble', cls: x.hand === 'lh' ? 'lh' : '' }));
+  const clef = items.length > 1 ? 'grand' : items[0].clef;
+  renderStaff(el, items, { clef, width: 200, gap: 7, showName: false });
+}
+
+// ===== Lectura: la nota aparece en el pentagrama y la tocas =====
+const READING_LEVELS = [
+  {id:'t5',   name:'Clave de Sol · 5 dedos',        clef:'treble', lo:60, hi:67,  acc:false, tip:'Do4 a Sol4: la posición de la mano derecha en Estrellita y el Himno a la alegría. Mi4 está en la primera línea, Do4 cuelga de una línea adicional.'},
+  {id:'t8',   name:'Clave de Sol · una octava',     clef:'treble', lo:60, hi:72,  acc:false, tip:'Truco: las líneas de abajo a arriba son Mi–Sol–Si–Re–Fa y los espacios Fa–La–Do–Mi. Hasta que lo memorices, cuenta desde Mi4.'},
+  {id:'tl',   name:'Clave de Sol · líneas extra',   clef:'treble', lo:57, hi:79,  acc:false, tip:'Por encima y por debajo del pentagrama se agregan líneas cortas. Cada línea adicional = una tercera más (La5 arriba, La3 abajo).'},
+  {id:'b5',   name:'Clave de Fa · 5 dedos',         clef:'bass',   lo:48, hi:55,  acc:false, tip:'La mano izquierda lee en clave de Fa. Do3 está en el segundo espacio contando desde arriba; Fa3 en la línea de arriba… ¡no en la de los dos puntos! Los dos puntos marcan Fa2.'},
+  {id:'b8',   name:'Clave de Fa · una octava',      clef:'bass',   lo:43, hi:60,  acc:false, tip:'Líneas: Sol–Si–Re–Fa–La; espacios: La–Do–Mi–Sol. Do4 (Do central) va arriba con una línea adicional.'},
+  {id:'g',    name:'Ambas claves',                  clef:'grand',  lo:43, hi:79,  acc:false, tip:'Como en una partitura de piano: arriba clave de Sol (derecha), abajo clave de Fa (izquierda). El Do central es el puente entre las dos.'},
+  {id:'ga',   name:'Con alteraciones',              clef:'grand',  lo:48, hi:76,  acc:true,  tip:'♯ sube medio tono (tecla negra a la derecha), ♭ baja medio tono (a la izquierda). Ojo: Mi♯ es la tecla de Fa y Do♭ la de Si.'},
+];
+let readingLevel = 0;
+let reading = null; // {sp, askedAt, missed}
+let readingSessionStats = { asked: 0, first: 0 };
+try { const rl = parseInt(localStorage.getItem('readingLevel'), 10); if(!isNaN(rl) && rl >= 0 && rl < READING_LEVELS.length) readingLevel = rl; } catch(e){}
+
+function renderReadingTabs(){
+  const cont = $('readingLevelTabs');
+  cont.innerHTML = '';
+  READING_LEVELS.forEach((lv, i) => {
+    const b = document.createElement('button');
+    const st = typeof readingLevelStats === 'function' ? readingLevelStats(lv.id) : null;
+    b.className = 'mode-tab sub' + (i === readingLevel ? ' active' : '');
+    b.textContent = (i + 1) + '. ' + lv.name + (st && st.mastered ? ' ✓' : '');
+    b.addEventListener('click', () => {
+      readingLevel = i;
+      try { localStorage.setItem('readingLevel', i); } catch(e){}
+      renderReadingTabs();
+      nextReadingNote();
+    });
+    cont.appendChild(b);
+  });
+}
+function pickReadingNote(){
+  const lv = READING_LEVELS[readingLevel];
+  const pool = [];
+  for(let n = lv.lo; n <= lv.hi; n++){
+    const isWhite = !BLACK_SET.has(n % 12);
+    if(lv.acc || isWhite) pool.push(n);
+  }
+  let n;
+  do { n = pool[Math.floor(Math.random() * pool.length)]; } while(reading && pool.length > 1 && n === reading.sp.midi);
+  let sp;
+  if(lv.acc && BLACK_SET.has(n % 12)) sp = spellMidi(n, Math.random() < 0.5);
+  else if(lv.acc && Math.random() < 0.18 && n % 12 !== 5 && n % 12 !== 0) sp = spellMidi(n, true); // ej. Mi♭ en vez de Re♯... solo si hay negra
+  else sp = spellMidi(n, false);
+  return sp;
+}
+function nextReadingNote(){
+  const lv = READING_LEVELS[readingLevel];
+  reading = { sp: pickReadingNote(), askedAt: performance.now(), missed: false, hinted: false };
+  clearAllHighlights();
+  const clef = lv.clef === 'grand' ? 'grand' : lv.clef;
+  renderStaff($('readingStaff'), [{ sp: reading.sp }], { clef, width: 300, gap: 10 });
+  const fb = $('readingFeedback');
+  fb.textContent = 'Toca la nota que ves.';
+  fb.className = 'reading-big';
+  $('readingTip').innerHTML = '<b>' + lv.name + ':</b> ' + lv.tip;
+  renderReadingStats();
+}
+function renderReadingStats(){
+  const lv = READING_LEVELS[readingLevel];
+  const st = typeof readingLevelStats === 'function' ? readingLevelStats(lv.id) : { attempts:0, first:0, avgMs:0, mastered:false };
+  const pct = st.attempts ? Math.round(st.first / st.attempts * 100) : 0;
+  $('readingStats').innerHTML =
+    'Esta sesión: <b>' + readingSessionStats.first + '</b> / ' + readingSessionStats.asked + ' a la primera<br>' +
+    'Nivel en total: <b>' + pct + '%</b> (' + st.attempts + ' notas) · tiempo medio <b>' + (st.avgMs ? (st.avgMs / 1000).toFixed(1) + ' s' : '—') + '</b>' +
+    (st.mastered ? '<br><b>Nivel dominado</b> — pasa al siguiente.' : (st.attempts >= 20 ? '<br>Meta: 85% a la primera en 20 notas o más.' : ''));
+}
+function startReading(){
+  renderReadingTabs();
+  readingSessionStats = { asked: 0, first: 0 };
+  nextReadingNote();
+}
+function stopReading(){ reading = null; }
+function checkReading(playedNote){
+  if(!reading) return;
+  const fb = $('readingFeedback');
+  const target = reading.sp.midi;
+  if(playedNote === target){
+    const ms = performance.now() - reading.askedAt;
+    readingSessionStats.asked++;
+    if(!reading.missed && !reading.hinted) readingSessionStats.first++;
+    if(typeof recordReading === 'function') recordReading(READING_LEVELS[readingLevel].id, !reading.missed && !reading.hinted, ms);
+    fb.textContent = '¡Sí! Era ' + reading.sp.name + ' (' + SOLFA_NAMES[target % 12] + ')';
+    fb.className = 'reading-big correct';
+    renderStaff($('readingStaff'), [{ sp: reading.sp, cls: 'correct' }], { clef: READING_LEVELS[readingLevel].clef, width: 300, gap: 10 });
+    const r = getRect(target); if(r) r.classList.add('correct');
+    reading = null;
+    setTimeout(nextReadingNote, 700);
+  } else {
+    reading.missed = true;
+    const played = spellMidi(playedNote, false);
+    fb.textContent = 'Esa es ' + played.name + '. La nota es más ' + (playedNote < target ? 'aguda ↑' : 'grave ↓');
+    fb.className = 'reading-big wrong';
+    const wr = getRect(playedNote); if(wr){ wr.classList.add('wrong'); setTimeout(() => wr.classList.remove('wrong'), 350); }
+  }
+}
+registerNoteHandler('reading', checkReading);
+$('readingHintBtn').addEventListener('click', () => {
+  if(!reading) return;
+  reading.hinted = true;
+  const r = getRect(reading.sp.midi);
+  if(r) r.classList.add('target');
+  $('readingFeedback').textContent = 'Es ' + reading.sp.name + ' (' + SOLFA_NAMES[reading.sp.midi % 12] + ') — está marcada abajo.';
+  scrollToTargets();
+});
+$('readingSkipBtn').addEventListener('click', () => { if(reading) nextReadingNote(); });
+
+// ===== Metrónomo (Web Audio, programado por adelantado para que no tiemble) =====
+const metro = { on:false, bpm:80, meter:4, beat:0, nextTime:0, timer:null, refPerf:null };
+try { const b = parseInt(localStorage.getItem('metroBpm'), 10); if(!isNaN(b) && b >= 40 && b <= 208) metro.bpm = b; } catch(e){}
+const metroDot = $('metroDot'), metroBpmEl = $('metroBpm'), metroToggle = $('metroToggle');
+function metroRender(){
+  metroBpmEl.textContent = metro.bpm;
+  metroToggle.textContent = metro.on ? '■' : '▶';
+  metroToggle.classList.toggle('on', metro.on);
+  try { localStorage.setItem('metroBpm', metro.bpm); } catch(e){}
+}
+function metroClick(time, accent){
+  const ctx = audioCtx;
+  const osc = ctx.createOscillator();
+  const g = ctx.createGain();
+  osc.type = 'square';
+  osc.frequency.value = accent ? 1400 : 900;
+  g.gain.setValueAtTime(0.0001, time);
+  g.gain.exponentialRampToValueAtTime(accent ? 0.35 : 0.22, time + 0.003);
+  g.gain.exponentialRampToValueAtTime(0.0001, time + 0.06);
+  osc.connect(g); g.connect(ctx.destination);
+  osc.start(time); osc.stop(time + 0.08);
+}
+function metroFlash(accent){
+  metroDot.classList.add('beat');
+  metroDot.classList.toggle('accent', accent);
+  setTimeout(() => metroDot.classList.remove('beat', 'accent'), 90);
+}
+function metroScheduler(){
+  const ctx = audioCtx;
+  while(metro.nextTime < ctx.currentTime + 0.12){
+    const accent = metro.beat === 0;
+    metroClick(metro.nextTime, accent);
+    const perfT = performance.now() + (metro.nextTime - ctx.currentTime) * 1000;
+    metro.refPerf = perfT;
+    setTimeout(() => metroFlash(accent), Math.max(0, perfT - performance.now()));
+    metro.nextTime += 60 / metro.bpm;
+    metro.beat = (metro.beat + 1) % metro.meter;
+  }
+}
+function metroStart(){
+  const ctx = ensureAudioCtx();
+  if(!ctx) return;
+  metro.on = true;
+  metro.beat = 0;
+  metro.nextTime = ctx.currentTime + 0.08;
+  metro.timer = setInterval(metroScheduler, 25);
+  metroScheduler();
+  metroRender();
+  if(typeof renderTimingBox === 'function') renderTimingBox();
+}
+function metroStop(){
+  metro.on = false;
+  if(metro.timer) clearInterval(metro.timer);
+  metro.timer = null;
+  metro.refPerf = null;
+  metroRender();
+  if(typeof renderTimingBox === 'function') renderTimingBox();
+}
+// Desfase (ms) de un instante respecto al pulso más cercano: negativo = antes.
+function metroOffsetMs(tPerf){
+  if(!metro.on || metro.refPerf === null) return null;
+  const period = 60000 / metro.bpm;
+  let off = ((tPerf - metro.refPerf) % period + period) % period;
+  if(off > period / 2) off -= period;
+  return off;
+}
+metroToggle.addEventListener('click', () => { if(metro.on) metroStop(); else metroStart(); });
+document.querySelectorAll('.metro-step').forEach(b => b.addEventListener('click', () => {
+  metro.bpm = Math.max(40, Math.min(208, metro.bpm + parseInt(b.dataset.bpm, 10)));
+  metroRender();
+  if(typeof renderTimingBox === 'function') renderTimingBox();
+}));
+$('metroMeter').addEventListener('change', (e) => { metro.meter = parseInt(e.target.value, 10); metro.beat = 0; });
+metroRender();
+
+// ===== Progreso persistente =====
+const PROGRESS_KEY = 'pianoProgress1';
+function emptyProgress(){
+  return { v:1, days:{}, scales:{}, chords:{}, intervals:{}, ear:{}, reading:{}, drills:{}, songs:{}, cascade:{} };
+}
+let progress = emptyProgress();
+try {
+  const raw = localStorage.getItem(PROGRESS_KEY);
+  if(raw){ const p = JSON.parse(raw); if(p && p.v === 1) progress = Object.assign(emptyProgress(), p); }
+} catch(e){}
+let saveTimer = null;
+function saveProgress(){
+  if(saveTimer) clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => { try { localStorage.setItem(PROGRESS_KEY, JSON.stringify(progress)); } catch(e){} }, 300);
+}
+function dateKey(d){
+  d = d || new Date();
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+function dayRec(key){
+  key = key || dateKey();
+  if(!progress.days[key]) progress.days[key] = { sec:0, notes:0, scales:0, chords:0, intervals:0, ear:0, reading:0, drills:0, songs:0, cascade:0 };
+  return progress.days[key];
+}
+function bump(field, n){ dayRec()[field] = (dayRec()[field] || 0) + (n || 1); saveProgress(); }
+
+// Tiempo de práctica real: suma 15 s cada 15 s solo si hubo actividad en el último minuto.
+let lastActivity = 0;
+function markActivity(){ lastActivity = performance.now(); }
+document.addEventListener('pointerdown', markActivity, true);
+document.addEventListener('keydown', markActivity, true);
+setInterval(() => {
+  if(performance.now() - lastActivity < 60000){
+    dayRec().sec += 15;
+    saveProgress();
+    renderSessionBox();
+  }
+}, 15000);
+let noteCounter = 0;
+function recordAnyNote(){ noteCounter++; if(noteCounter % 10 === 0){ bump('notes', 10); } }
+
+function minutesOf(key){ return Math.round((progress.days[key] ? progress.days[key].sec : 0) / 60); }
+function practicedDay(key){ return (progress.days[key] ? progress.days[key].sec : 0) >= 180; }
+function currentStreak(){
+  let streak = 0;
+  const d = new Date();
+  if(!practicedDay(dateKey(d))) d.setDate(d.getDate() - 1);
+  while(practicedDay(dateKey(d))){ streak++; d.setDate(d.getDate() - 1); }
+  return streak;
+}
+function renderSessionBox(){
+  const min = minutesOf(dateKey());
+  $('sessionTime').textContent = min + ' min';
+  const s = currentStreak();
+  $('sessionStreak').textContent = s >= 2 ? '🔥 ' + s + ' días seguidos' : '';
+}
+renderSessionBox();
+
+function recordScaleRun(run, okPct){
+  const key = run.scaleId + ':' + run.hand;
+  const r = progress.scales[key] || { runs:0, clean:0, best2:0, bestTiming:null, lastDay:null };
+  r.runs++;
+  if(run.mistakes === 0){ r.clean++; if(run.octaves === 2) r.best2++; }
+  if(okPct !== null && (r.bestTiming === null || okPct > r.bestTiming)) r.bestTiming = okPct;
+  r.lastDay = dateKey();
+  progress.scales[key] = r;
+  bump('scales');
+}
+function recordChord(name, inv){
+  const r = progress.chords[name] || { runs:0, inv:0, lastDay:null };
+  r.runs++; if(inv) r.inv++; r.lastDay = dateKey();
+  progress.chords[name] = r;
+  bump('chords');
+}
+function recordInterval(idx){
+  const r = progress.intervals[idx] || { runs:0, lastDay:null };
+  r.runs++; r.lastDay = dateKey(); progress.intervals[idx] = r;
+  bump('intervals');
+}
+function recordEar(idx, ok){
+  const r = progress.ear[idx] || { asked:0, right:0, lastDay:null };
+  r.asked++; if(ok) r.right++;
+  r.lastDay = dateKey(); progress.ear[idx] = r;
+  bump('ear');
+}
+function recordReading(levelId, first, ms){
+  const r = progress.reading[levelId] || { attempts:0, first:0, sumMs:0, lastDay:null };
+  r.attempts++; if(first) r.first++; r.sumMs += Math.min(ms, 15000); r.lastDay = dateKey();
+  progress.reading[levelId] = r;
+  bump('reading');
+}
+function readingLevelStats(levelId){
+  const r = progress.reading[levelId] || { attempts:0, first:0, sumMs:0 };
+  const pct = r.attempts ? r.first / r.attempts : 0;
+  return { attempts:r.attempts, first:r.first, avgMs: r.attempts ? r.sumMs / r.attempts : 0, mastered: r.attempts >= 20 && pct >= 0.85 };
+}
+function recordPracticeDone(){
+  if(practiceFamily === 'agility'){
+    const r = progress.drills[currentFragment.id] || { runs:0, lastDay:null };
+    r.runs++; r.lastDay = dateKey(); progress.drills[currentFragment.id] = r; bump('drills');
+  } else {
+    const r = progress.songs[currentFragment.id] || { runs:0, lastDay:null };
+    r.runs++; r.lastDay = dateKey(); progress.songs[currentFragment.id] = r; bump('songs');
+  }
+}
+function recordCascadeResult(pct){
+  const r = progress.cascade[currentFragment.id] || { runs:0, best:0, lastDay:null };
+  r.runs++; r.best = Math.max(r.best, pct); r.lastDay = dateKey();
+  progress.cascade[currentFragment.id] = r; bump('cascade');
+}
+
+// ===== Plan de hoy =====
+let todayPlan = null;
+function scaleKeyStats(id, hand){ return progress.scales[id + ':' + hand] || { runs:0, clean:0, lastDay:null }; }
+function scaleUnlocked(order){
+  // la siguiente escala se "abre" cuando la anterior está limpia 3 veces con cada mano
+  for(let i = 0; i < order.length; i++){
+    const id = order[i];
+    if(scaleKeyStats(id, 'rh').clean < 3 || scaleKeyStats(id, 'lh').clean < 3) return { id, index:i };
+  }
+  return { id: order[order.length - 1], index: order.length - 1, all:true };
+}
+function leastPracticed(items, store, k){
+  const sorted = items.slice().sort((a, b) => ((store[a[k]] || {}).runs || 0) - ((store[b[k]] || {}).runs || 0));
+  return sorted;
+}
+function buildTodayPlan(seed){
+  const rnd = (n) => Math.floor(((seed * 9301 + 49297) % 233280) / 233280 * n);
+  const items = [];
+  const today = dateKey();
+
+  const drills = leastPracticed(AGILITY_DRILLS, progress.drills, 'id');
+  const drill = drills[Math.min(rnd(2), drills.length - 1)];
+  items.push({ key:'drill', min:4, title:'Calentar: ' + drill.name, sub:'Agilidad. Lento y parejo, sin mirar la mano si puedes.',
+    done: () => (progress.drills[drill.id] || {}).lastDay === today,
+    go: () => { selectCategory('agility'); pickFragmentById(drill.id); } });
+
+  const maj = scaleUnlocked(MAJOR_ORDER);
+  const sc = SCALES[maj.id];
+  const rhC = scaleKeyStats(maj.id, 'rh').clean, lhC = scaleKeyStats(maj.id, 'lh').clean;
+  const hand = rhC >= 3 && lhC >= 3 ? 'both' : (lhC < rhC ? 'lh' : 'rh');
+  const handTxt = hand === 'rh' ? 'mano derecha' : hand === 'lh' ? 'mano izquierda' : 'ambas manos';
+  items.push({ key:'scale', min:6, title:'Escala: ' + sc.label + ' · ' + handTxt,
+    sub: (maj.all ? 'Ya abriste todas las mayores. Mantén la que menos limpia te sale.' : 'Meta: 3 pasadas limpias con cada mano para abrir la siguiente. Llevas D ' + rhC + '/3 · I ' + lhC + '/3.') + ' Con dedos marcados.',
+    done: () => scaleKeyStats(maj.id, hand).lastDay === today,
+    go: () => { scaleFamily = 'major'; currentScaleId = maj.id; scaleHand = hand; if(refreshScaleHand) refreshScaleHand(); saveScaleOpts(); selectCategory('scales'); } });
+
+  const groupA = CHORDS.slice(0, 6), groupB = CHORDS.slice(6);
+  const aDone = groupA.every(c => ((progress.chords[c.name] || {}).runs || 0) >= 3);
+  const pool = aDone ? groupB : groupA;
+  const chordsPick = leastPracticed(pool, progress.chords, 'name').slice(0, 3);
+  items.push({ key:'chords', min:4, title:'Acordes: ' + chordsPick.map(c => c.name).join(', '),
+    sub: aDone ? 'Ya dominas los seis básicos: ahora los de sostenidos. Prueba también en 1ª inversión.' : 'Los seis que más se usan (C, G, F, Am, Em, Dm). Fundamental, con dedos 1-3-5.',
+    done: () => chordsPick.every(c => (progress.chords[c.name] || {}).lastDay === today),
+    go: () => { selectCategory('chords'); practiceIndex = CHORDS.indexOf(chordsPick[0]); startChordStep(); } });
+
+  let lvIdx = READING_LEVELS.findIndex(lv => !readingLevelStats(lv.id).mastered);
+  if(lvIdx < 0) lvIdx = READING_LEVELS.length - 1;
+  const lv = READING_LEVELS[lvIdx];
+  items.push({ key:'reading', min:4, title:'Lectura: ' + lv.name, sub:'10 notas. Meta del nivel: 85% a la primera.',
+    done: () => (dayRec().reading || 0) >= 10,
+    go: () => { readingLevel = lvIdx; selectCategory('reading'); } });
+
+  if(maj.index >= 1 || rnd(3) === 0){
+    items.push({ key:'ear', min:3, title:'Oído: intervalos', sub:'La app toca dos notas; encuentra la segunda. Empieza por 5ª justa y octava, que se reconocen fácil.',
+      done: () => (dayRec().ear || 0) >= 5,
+      go: () => { selectCategory('intervals'); if(!earMode) $('earModeBtn').click(); } });
+  }
+
+  const songs = leastPracticed(SONGS, progress.songs, 'id');
+  const song = songs[Math.min(rnd(2), songs.length - 1)];
+  items.push({ key:'song', min:5, title:'Pieza: ' + song.name, sub:'Primero manos separadas, después juntas. Termina con una pasada en modo cascada.',
+    done: () => (progress.songs[song.id] || {}).lastDay === today || (progress.cascade[song.id] || {}).lastDay === today,
+    go: () => { selectCategory('fragments'); pickFragmentById(song.id); } });
+
+  return items;
+}
+function pickFragmentById(id){
+  const btn = [...fragSubTabs.querySelectorAll('.mode-tab')].find(b => b.dataset.frag === id);
+  if(btn) btn.click();
+}
+let todaySeed = 1;
+function renderToday(){
+  if(!todayPlan) todayPlan = buildTodayPlan(todaySeed);
+  const list = $('todayList');
+  list.innerHTML = '';
+  let total = 0, doneMin = 0;
+  todayPlan.forEach((it, i) => {
+    const done = it.done();
+    total += it.min; if(done) doneMin += it.min;
+    const li = document.createElement('li');
+    li.className = 'today-item' + (done ? ' done' : '');
+    li.innerHTML = '<span class="today-check">' + (done ? '✓' : (i + 1)) + '</span>' +
+      '<div><div class="today-title">' + it.title + '<span class="today-min">' + it.min + ' min</span></div><div class="today-sub">' + it.sub + '</div></div>';
+    const go = document.createElement('button');
+    go.className = 'ghost-btn today-go' + (done ? '' : ' active');
+    go.textContent = done ? 'Repetir' : 'Ir →';
+    go.addEventListener('click', it.go);
+    li.appendChild(go);
+    list.appendChild(li);
+  });
+  const min = minutesOf(dateKey());
+  $('todayTitle').textContent = 'Plan de hoy · ' + total + ' min';
+  const streak = currentStreak();
+  $('todayTip').innerHTML = '<b>Hoy llevas ' + min + ' min.</b> ' +
+    (doneMin >= total ? '¡Plan completo! Si te quedan ganas, cascada en la pieza o una escala nueva.' :
+      'Más vale 15 minutos todos los días que 2 horas el sábado: la memoria muscular se construye durmiendo entre sesiones.') +
+    (streak >= 2 ? ' Vas por <b>' + streak + ' días seguidos</b>.' : '');
+}
+$('todayRegen').addEventListener('click', () => { todaySeed = (todaySeed * 7 + 3) % 1000 + 1; todayPlan = buildTodayPlan(todaySeed); renderToday(); });
+
+// ===== Panel de progreso =====
+function masteryRows(){
+  const avg = (arr) => arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
+  const clampScale = (id, hand, n) => Math.min(scaleKeyStats(id, hand).clean, n) / n;
+  const rows = [];
+  rows.push(['Escalas mayores', avg(MAJOR_ORDER.flatMap(id => [clampScale(id, 'rh', 3), clampScale(id, 'lh', 3)]))]);
+  rows.push(['Escalas menores', avg(MINOR_ORDER.flatMap(id => [clampScale(id, 'rh', 3), clampScale(id, 'lh', 3)]))]);
+  rows.push(['Acordes', avg(CHORDS.map(c => Math.min((progress.chords[c.name] || {}).runs || 0, 3) / 3))]);
+  rows.push(['Intervalos', avg(INTERVALS.map((iv, i) => Math.min((progress.intervals[i] || {}).runs || 0, 3) / 3))]);
+  rows.push(['Oído', avg(INTERVALS.map((iv, i) => { const r = progress.ear[i]; return r && r.asked >= 3 ? r.right / r.asked : 0; }))]);
+  rows.push(['Lectura', avg(READING_LEVELS.map(lv => { const s = readingLevelStats(lv.id); return s.mastered ? 1 : Math.min(s.attempts, 20) / 20 * (s.attempts ? s.first / s.attempts : 0); }))]);
+  rows.push(['Agilidad', avg(AGILITY_DRILLS.map(d => Math.min((progress.drills[d.id] || {}).runs || 0, 5) / 5))]);
+  rows.push(['Fragmentos', avg(SONGS.map(s => Math.min((progress.songs[s.id] || {}).runs || 0, 3) / 3))]);
+  rows.push(['Cascada', avg(SONGS.map(s => ((progress.cascade[s.id] || {}).best || 0) / 100))]);
+  return rows;
+}
+function renderProgress(){
+  const days = Object.keys(progress.days);
+  const totalMin = Math.round(days.reduce((a, k) => a + progress.days[k].sec, 0) / 60);
+  const totalNotes = days.reduce((a, k) => a + (progress.days[k].notes || 0), 0);
+  const practiced = days.filter(practicedDay).length;
+  $('progressStats').innerHTML = [
+    [currentStreak(), 'días seguidos'], [totalMin, 'minutos en total'], [practiced, 'días practicados'], [totalNotes.toLocaleString('es'), 'notas tocadas'],
+  ].map(([v, l]) => '<div class="stat-tile"><div class="stat-val">' + v + '</div><div class="stat-lbl">' + l + '</div></div>').join('');
+
+  const grid = $('heatGrid');
+  grid.innerHTML = '';
+  const today = new Date();
+  const start = new Date(today); start.setDate(today.getDate() - 83 - today.getDay());
+  const todayK = dateKey(today);
+  for(let i = 0; i < 84 + today.getDay() + 1; i++){
+    const d = new Date(start); d.setDate(start.getDate() + i);
+    if(d > today) break;
+    const k = dateKey(d), m = minutesOf(k);
+    const lvl = m === 0 ? 0 : m < 5 ? 1 : m < 10 ? 2 : m < 20 ? 3 : 4;
+    const c = document.createElement('span');
+    c.className = 'heat-cell l' + lvl + (k === todayK ? ' today' : '');
+    c.title = k + ': ' + m + ' min';
+    grid.appendChild(c);
+  }
+  $('masteryList').innerHTML = masteryRows().map(([name, v]) => {
+    const pct = Math.round(v * 100);
+    return '<div class="mastery-item"><span class="mastery-name">' + name + '</span><div class="mastery-bar"><div class="mastery-fill" style="width:' + pct + '%"></div></div><span class="mastery-pct">' + pct + '%</span></div>';
+  }).join('');
+}
+$('exportBtn').addEventListener('click', () => {
+  const blob = new Blob([JSON.stringify(progress, null, 2)], { type:'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'piano-progreso-' + dateKey() + '.json';
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+});
+$('importFile').addEventListener('change', (e) => {
+  const f = e.target.files && e.target.files[0];
+  if(!f) return;
+  const rd = new FileReader();
+  rd.onload = () => {
+    try {
+      const p = JSON.parse(rd.result);
+      if(!p || p.v !== 1 || !p.days) throw new Error('formato');
+      progress = Object.assign(emptyProgress(), p);
+      saveProgress(); todayPlan = null; renderProgress(); renderSessionBox();
+      alert('Progreso importado.');
+    } catch(err){ alert('Ese archivo no es un respaldo válido de esta app.'); }
+  };
+  rd.readAsText(f);
+  e.target.value = '';
+});
+$('resetBtn').addEventListener('click', () => {
+  if(!confirm('¿Borrar todo el progreso guardado en este navegador? Exporta un respaldo antes si no estás seguro.')) return;
+  progress = emptyProgress(); saveProgress(); todayPlan = null; renderProgress(); renderSessionBox();
+});
+
+// Arranque: pestaña "Hoy" con el plan del día.
+selectCategory('today');
+</script>
+</body>
+</html>
