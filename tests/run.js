@@ -316,6 +316,53 @@ check(handsBar.style.display === 'flex' && window.localStorage.getItem('handsSho
 ev('#handsToggleBtn');
 check(handsBar.style.display === 'none' && window.localStorage.getItem('handsShown') === '0', 'se cierra y se recuerda');
 
+section('Salir de la cascada devuelve el teclado');
+const kbWrapEl = doc.getElementById('keyboardWrap');
+ev('#mainTabs [data-cat="fragments"]');
+ev('#cascadeBtn');
+check(W('cascadeOn') === true && kbWrapEl.style.display === 'none', 'con la cascada abierta el teclado grande se esconde');
+ev('#mainTabs [data-cat="scales"]');   // se sale por otro camino, no por el botón
+check(kbWrapEl.style.display === '', 'al cambiar de práctica el teclado vuelve solo');
+check(W('cascadeOn') === false && doc.getElementById('cascadeWrap').style.display === 'none', 'la cascada queda apagada y cerrada');
+ev('#mainTabs [data-cat="agility"]');
+ev('#cascadeBtn');
+check(kbWrapEl.style.display === 'none', 'vuelve a esconderse al reabrirla');
+ev('#cascadeBtn');
+check(kbWrapEl.style.display === '' && W('cascadeOn') === false, 'y vuelve al cerrarla con el botón');
+
+section('El nombre del piano se muestra una sola vez');
+W('window.__mk = (names) => ({ inputs: new Map(names.map((n,i) => [i, { name:n, onmidimessage:null }])), onstatechange:null });');
+function visibleText(root){
+  let out = '';
+  (function walk(el){
+    if(el.nodeType === 3){ out += el.textContent; return; }
+    if(el.nodeType !== 1) return;
+    if(el.style && el.style.display === 'none') return;
+    [...el.childNodes].forEach(walk);
+  })(root);
+  return out;
+}
+const header = doc.querySelector('header');
+const countIn = (txt, needle) => txt.split(needle).length - 1;
+W('onMIDISuccess(window.__mk(["Digital Piano"]))');
+check(doc.getElementById('deviceBadge').textContent === 'Digital Piano', 'el distintivo toma el nombre real del piano');
+check(countIn(visibleText(header), 'Digital Piano') === 1, 'el nombre aparece UNA vez en el encabezado, no tres');
+check(doc.getElementById('statusText').style.display === 'none', 'el texto "Conectado: ..." ya no se repite');
+check(doc.getElementById('connectBtn').style.display === 'none', 'el botón de conectar se va cuando ya está conectado');
+check(doc.getElementById('connectionPanel').style.display === 'none' && doc.getElementById('deviceSelect').style.display === 'none', 'con un solo piano no queda caja vacía ni selector');
+check(W('currentInput.name') === 'Digital Piano', 'quedó enganchado a ese puerto');
+
+W('onMIDISuccess(window.__mk(["Digital Piano","Digital Piano","Digital Piano"]))');
+const opts = [...doc.getElementById('deviceSelect').options].map(o => o.textContent);
+check(opts.join(' | ') === 'Digital Piano · 1 | Digital Piano · 2 | Digital Piano · 3', 'varios puertos con el mismo nombre se numeran');
+check(doc.getElementById('deviceSelect').style.display === '' && doc.getElementById('connectionPanel').style.display === 'flex', 'con varios puertos sí aparece el selector');
+check(doc.getElementById('statusText').style.display === 'none', 'aun con varios puertos, el estado no repite el nombre');
+
+W('onMIDISuccess(window.__mk([]))');
+check(W('currentInput') === null, 'al desaparecer el piano se suelta el puerto');
+check(doc.getElementById('deviceBadge').textContent === 'Práctica Piano' && !doc.getElementById('deviceBadge').classList.contains('live'), 'el distintivo vuelve a su estado sin conexión');
+check(doc.getElementById('connectBtn').style.display === '' && doc.getElementById('connectionPanel').style.display === 'flex', 'y reaparece el botón para reintentar');
+
 console.log(`\n${passes} pruebas OK, ${failures} fallos`);
 if(errors.length) console.log('Errores de consola:', errors);
 process.exit(failures || errors.length ? 1 : 0);

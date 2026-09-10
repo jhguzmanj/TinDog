@@ -91,7 +91,11 @@ Orden dentro del `<script>`:
 - Tramo: `cascadeFrom/cascadeTo` (pasos 1-based) + `cascadeLoop`. Los `<select>`
   se rellenan en `refreshCascadeRange()`; el rango se resetea al cambiar de pieza.
 - Al abrir la cascada se **esconde el teclado grande** (`#keyboardWrap`) para que
-  haya un solo teclado; el mini-teclado se puede tocar con el mouse.
+  haya un solo teclado; el mini-teclado se puede tocar con el mouse. Encender y
+  apagar pasa SIEMPRE por `openCascade()` / `closeCascade()`, y `enterMode`
+  llama a `closeCascade()` al salir de fragmentos/agilidad. Antes apagaba la
+  cascada a mano sin devolver el teclado y este quedaba oculto en el resto de
+  las prácticas. **No apagar la cascada por fuera de `closeCascade()`.**
 - Progreso: `recordCascadeResult(pct, mode)` guarda `best` (a tempo) y `bestWait`
   (espera) por separado.
 
@@ -173,6 +177,18 @@ ahora — desde ~1 m y con las manos en el piano. Todo lo demás es secundario.
   que `C = Do ?`, persiste en `handsShown`): cerrada no ocupa nada y se abre
   justo donde están los números dibujados en las teclas.
 - Si se toca tipografía: **subir tamaños, nunca bajarlos** (Jorge es corto de vista).
+
+## Conexión MIDI
+`renderConnection()` es el único sitio que pinta el estado. El nombre del piano
+se muestra **una sola vez**, en el distintivo del encabezado (`#deviceBadge`, en
+verde con `.live`). Antes salía tres veces a la vez — distintivo, texto de estado
+y opción del selector — y parecía que hubiera tres pianos. Reglas:
+- Conectado: se ocultan `#statusText` y `#connectBtn`; con un solo puerto se
+  oculta también toda la caja `#connectionPanel`.
+- `#deviceSelect` solo aparece si hay **más de un** puerto. Si varios comparten
+  nombre (algunos pianos publican 2-3), se numeran `Nombre · 1`, `· 2`, `· 3`.
+- Al reconectar (`onstatechange`) se respeta el puerto ya enganchado si sigue
+  presente; si desaparecen todos, se suelta `currentInput` y vuelve el botón.
 
 ## Cosas ya resueltas — no "arreglar" de nuevo
 - Doble sonido con el piano conectado (solo `src:'ui'` sintetiza).

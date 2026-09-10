@@ -891,7 +891,7 @@
         <div class="conn" id="connectionPanel">
           <span class="status-dot" id="statusDot"></span>
           <span class="status-text" id="statusText">Sin conectar</span>
-          <select id="deviceSelect" disabled><option>Sin dispositivos</option></select>
+          <select id="deviceSelect" disabled style="display:none;"><option>Sin dispositivos</option></select>
           <button id="connectBtn">Conectar MIDI</button>
         </div>
         <div class="metro" id="metroBox" title="Metrónomo de la app (Web Audio). También puedes usar el del P-45: FUNCTION + E3 según el manual.">
@@ -1375,6 +1375,8 @@ function stopNoteSound(note){
   delete activeVoices[note];
 }
 
+const connBox = document.getElementById('connectionPanel');
+const deviceBadge = document.getElementById('deviceBadge');
 const statusDot = document.getElementById('statusDot');
 const statusText = document.getElementById('statusText');
 const deviceSelect = document.getElementById('deviceSelect');
@@ -1398,34 +1400,60 @@ if(!navigator.requestMIDIAccess){
   });
 }
 
+// El nombre del piano se escribe en UN solo sitio: el distintivo del
+// encabezado. Antes salía tres veces a la vez — distintivo, texto de estado y
+// opción del selector — y parecía que hubiera tres pianos conectados.
+function renderConnection(){
+  const inputs = midiInputsNow;
+  const many = inputs.length > 1;   // el selector solo aparece si hay que elegir
+  const on = !!currentInput;
+  deviceSelect.style.display = many ? '' : 'none';
+  statusText.style.display = on ? 'none' : '';
+  connectBtn.style.display = on ? 'none' : '';
+  // conectado y con un solo piano no queda nada que mostrar aquí: el nombre
+  // ya está arriba, en verde, junto al título.
+  connBox.style.display = (on && !many) ? 'none' : 'flex';
+  statusDot.classList.toggle('connected', on);
+  if(deviceBadge){
+    deviceBadge.textContent = on ? currentInput.name : 'Práctica Piano';
+    deviceBadge.classList.toggle('live', on);
+    deviceBadge.title = on ? 'Piano conectado por MIDI' : 'Sin conexión MIDI';
+  }
+}
+
 function onMIDISuccess(midiAccess){
   const inputs = Array.from(midiAccess.inputs.values());
+  midiInputsNow = inputs;
   deviceSelect.innerHTML = '';
   if(inputs.length === 0){
+    if(currentInput) currentInput.onmidimessage = null;
+    currentInput = null;
     deviceSelect.innerHTML = '<option>No se detectó ningún piano</option>';
     statusText.textContent = 'Conecta el piano por USB e intenta de nuevo';
-    statusDot.classList.remove('connected');
-    const badge0 = document.getElementById('deviceBadge');
-    if(badge0){
-      badge0.textContent = 'Práctica Piano';
-      badge0.classList.remove('live');
-      badge0.title = 'Sin conexión MIDI';
-    }
-    currentInput = null;
+    renderConnection();
     return;
   }
+  // Algunos pianos publican varios puertos con el mismo nombre; se numeran
+  // para poder distinguirlos en vez de repetir la misma línea tal cual.
+  const total = {};
+  inputs.forEach(inp => { total[inp.name] = (total[inp.name] || 0) + 1; });
+  const seen = {};
   inputs.forEach((input, i) => {
+    const n = (seen[input.name] = (seen[input.name] || 0) + 1);
     const opt = document.createElement('option');
     opt.value = i;
-    opt.textContent = input.name;
+    opt.textContent = total[input.name] > 1 ? input.name + ' · ' + n : input.name;
     deviceSelect.appendChild(opt);
   });
   deviceSelect.disabled = false;
-  attachInput(inputs[0]);
+  // si ya había uno enganchado y sigue presente, se respeta
+  const keep = inputs.indexOf(currentInput);
+  const pick = keep >= 0 ? keep : 0;
+  attachInput(inputs[pick]);
+  deviceSelect.value = String(pick);
 
   // onstatechange vuelve a llamar a esta función: el listener del select se
   // registra una sola vez y lee la lista vigente, para no acumular copias.
-  midiInputsNow = inputs;
   if(!deviceSelectBound){
     deviceSelectBound = true;
     deviceSelect.addEventListener('change', () => {
@@ -1443,16 +1471,8 @@ function attachInput(input){
   if(currentInput) currentInput.onmidimessage = null;
   currentInput = input;
   currentInput.onmidimessage = handleMIDIMessage;
-  statusDot.classList.add('connected');
-  statusText.textContent = 'Conectado: ' + input.name;
-  // el nombre real que reporta el piano pasa al encabezado
-  const badge = document.getElementById('deviceBadge');
-  if(badge){
-    badge.textContent = input.name;
-    badge.classList.add('live');
-    badge.title = 'Piano conectado por MIDI';
-  }
   modePanel.style.display = 'block';
+  renderConnection();
 }
 
 function handleMIDIMessage(msg){
@@ -2021,11 +2041,8 @@ function enterMode(mode){
   show(todayPanel, mode === 'today');
   show(readingPanel, mode === 'reading');
   show(progressPanel, mode === 'progress');
-  if(mode !== 'fragments' && mode !== 'agility' && typeof exitCascade === 'function'){
-    exitCascade();
-    cascadeOn = false;
-    if(cascadeBtn) cascadeBtn.classList.remove('active');
-    if(cascadeWrap) cascadeWrap.style.display = 'none';
+  if(mode !== 'fragments' && mode !== 'agility' && typeof closeCascade === 'function'){
+    closeCascade();
   }
   if(mode !== 'reading' && typeof stopReading === 'function') stopReading();
   const noPractice = ['free','functions','today','reading','progress'];
@@ -3348,23 +3365,35 @@ cascadeToSel.addEventListener('change', () => {
   setupCascadeKeyboard(); exitCascade();
 });
 
+// Apagar la cascada pasa SIEMPRE por aquí: mientras está abierta se esconde el
+// teclado grande, y si se apaga por otro camino (cambiar de pestaña) hay que
+// devolverlo. Antes el teclado quedaba oculto y había que ir a buscarlo.
+function closeCascade(){
+  cascadeOn = false;
+  cascadeBtn.classList.remove('active');
+  cascadeWrap.style.display = 'none';
+  exitCascade();
+  if(keyboardWrapEl) keyboardWrapEl.style.display = '';
+}
+function openCascade(){
+  cascadeOn = true;
+  cascadeBtn.classList.add('active');
+  cascadeWrap.style.display = 'block';
+  practiceInfo.style.display = 'none';
+  clearAllHighlights(); // borra la marca del modo paso a paso
+  if(keyboardWrapEl) keyboardWrapEl.style.display = 'none'; // un solo teclado en pantalla
+  refreshCascadeRange();
+  setupCascadeKeyboard();
+}
 cascadeBtn.addEventListener('click', () => {
-  cascadeOn = !cascadeOn;
-  cascadeBtn.classList.toggle('active', cascadeOn);
-  cascadeWrap.style.display = cascadeOn ? 'block' : 'none';
   if(cascadeOn){
-    practiceInfo.style.display = 'none';
-    clearAllHighlights(); // borra la marca del modo paso a paso
-    if(keyboardWrapEl) keyboardWrapEl.style.display = 'none'; // un solo teclado en pantalla
-    refreshCascadeRange();
-    setupCascadeKeyboard();
-  } else {
-    exitCascade();
-    if(keyboardWrapEl) keyboardWrapEl.style.display = '';
+    closeCascade();
     if(currentMode === 'fragments' || currentMode === 'agility'){
       practiceInfo.style.display = 'flex';
       startFragmentStep(); // vuelve a marcar el paso actual
     }
+  } else {
+    openCascade();
   }
 });
 
