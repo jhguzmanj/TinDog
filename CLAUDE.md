@@ -119,7 +119,7 @@ lookahead). `metroOffsetMs(tPerf)` devuelve el desfase en ms al pulso más cerca
 ## Otras preferencias persistidas
 `kbZoom2`, `labelStyle`, `labelsShown` (ahora sí se recuerda; por defecto visible),
 `solfaShown`, `cascadeSpeed`, `scaleOpts` (mano/octavas/sentido/dedos/variante menor),
-`metroBpm`, `readingLevel`.
+`metroBpm`, `readingLevel`, `handsShown`.
 
 ## Diseño (jerarquía deliberada)
 Regla que manda: el 90% del tiempo Jorge mira **una sola cosa** — qué tecla toca
@@ -157,6 +157,21 @@ ahora — desde ~1 m y con las manos en el piano. Todo lo demás es secundario.
   Sol), cada uno con etiqueta de mano. Apilados no se leían.
 - **Mapa de calor**: verde por minutos, rojo apagado (`.heat-cell.missed`) los
   días pasados sin práctica; hoy solo se contornea.
+- **Izquierda antes que derecha, siempre.** Selectores de mano (`lh, rh, both`),
+  octavas de Agilidad, etiquetas `IZQ/DER`, digitación del consejo de escala,
+  pentagramas y texto de los ejercicios: todo se lee en el orden en que se ve el
+  teclado. `buildScaleRun` genera `rh` primero por comodidad de cálculo, así que
+  lo que se MUESTRA pasa por `leftFirst(notes)`. Hay pruebas que lo fijan.
+- **`.reg-group`** envuelve cada etiqueta con su selector dentro de una
+  `.reg-bar`. Sin eso, al ajustarse la fila el título se quedaba solo al final y
+  sus botones saltaban a la siguiente línea. Un par nuevo va envuelto igual.
+- **Guía de dedos** (`buildHandSvg(side)` + `#handsBar`): dos manos vistas desde
+  arriba, en la misma posición en que Jorge ve las suyas, con los pulgares (1)
+  mirándose en el centro. Silueta de una pieza: los rectángulos van dentro de un
+  `<g class="hand-body">` con opacidad **de grupo**, si no los solapes se
+  oscurecen y se ven tubos sueltos. Vive plegada encima del piano (mismo patrón
+  que `C = Do ?`, persiste en `handsShown`): cerrada no ocupa nada y se abre
+  justo donde están los números dibujados en las teclas.
 - Si se toca tipografía: **subir tamaños, nunca bajarlos** (Jorge es corto de vista).
 
 ## Cosas ya resueltas — no "arreglar" de nuevo

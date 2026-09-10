@@ -651,6 +651,9 @@
   }
   .reg-bar .reg-btn.disabled{ opacity:0.28; }
   .reg-label{ font-size:12.5px; letter-spacing:1.4px; text-transform:uppercase; }
+  /* la etiqueta y sus botones se ajustan como una sola pieza: antes el título
+     se quedaba solo al final de una fila y el selector saltaba a la siguiente */
+  .reg-group{ display:inline-flex; align-items:center; gap:10px; flex:0 0 auto; }
 
   /* --- Pestañas agrupadas: plan / ejercicios / consulta --- */
   #mainTabs{ align-items:center; gap:6px; }
@@ -804,6 +807,39 @@
   /* al presionar cualquier botón se nota */
   button:active{ transform:scale(0.96); filter:brightness(1.25); }
   .mode-tab:hover:not(.active){ background:rgba(255,255,255,0.05); }
+
+  /* =====================================================================
+     Guía de dedos: dos manos vistas desde arriba, como las tuyas sobre el
+     teclado. Vive plegada encima del piano (mismo patrón que "C = Do ?"),
+     así no ocupa nada hasta que la pides, y aparece justo donde están los
+     números de dedo dibujados en las teclas.
+     ===================================================================== */
+  .hands-bar{
+    display:flex; align-items:center; justify-content:center;
+    gap:clamp(18px,5vw,64px); flex-wrap:wrap;
+    margin:9px 0 3px; padding:12px 16px; border-radius:10px;
+    border:1px solid var(--panel-border); background:rgba(255,255,255,0.02);
+  }
+  .hands-fig{ width:142px; height:auto; flex:0 0 auto; }
+  .hand-body{ opacity:0.34; }
+  .hands-fig.lh .hand-body{ fill:var(--lh); }
+  .hands-fig.rh .hand-body{ fill:var(--rh); }
+  .hand-num{
+    font-family:'Source Sans 3',sans-serif; font-size:16px; font-weight:700;
+    text-anchor:middle; pointer-events:none;
+  }
+  .hands-fig.lh .hand-num{ fill:var(--lh); }
+  .hands-fig.rh .hand-num{ fill:var(--rh); }
+  .hand-cap{
+    font-family:'Source Sans 3',sans-serif; font-size:12px; font-weight:600;
+    letter-spacing:1.2px; text-anchor:middle; fill:var(--text-dim);
+  }
+  .hands-note{
+    flex:1 1 240px; max-width:340px; font-size:15.5px;
+    color:var(--text-dim); line-height:1.6;
+  }
+  .hands-note b{ color:var(--ivory); }
+  .hands-note .n{ color:var(--brass); font-weight:700; }
 </style>
 </head>
 <body>
@@ -900,28 +936,28 @@
     </div>
     <div class="mode-tabs sub-tabs scroll-tabs" id="scaleSubTabs" style="display:none;"></div>
     <div id="scaleOptBar" class="reg-bar" style="display:none;">
-      <span class="reg-label g-hand">Mano</span>
+      <span class="reg-group"><span class="reg-label g-hand">Mano</span>
       <div class="reg-picker g-hand" id="scaleHandPicker">
         <button class="reg-btn" data-shand="lh">Izquierda</button>
         <button class="reg-btn active" data-shand="rh">Derecha</button>
         <button class="reg-btn" data-shand="both">Ambas</button>
-      </div>
-      <span class="reg-label g-oct">Octavas</span>
+      </div></span>
+      <span class="reg-group"><span class="reg-label g-oct">Octavas</span>
       <div class="reg-picker g-oct" id="scaleOctPicker">
         <button class="reg-btn active" data-soct="1">1</button>
         <button class="reg-btn" data-soct="2">2</button>
-      </div>
-      <span class="reg-label g-dir">Sentido</span>
+      </div></span>
+      <span class="reg-group"><span class="reg-label g-dir">Sentido</span>
       <div class="reg-picker g-dir" id="scaleDirPicker">
         <button class="reg-btn" data-sdir="up">Subida</button>
         <button class="reg-btn active" data-sdir="updown">Subida y bajada</button>
-      </div>
-      <span class="reg-label g-type" id="minorVarLabel" style="display:none;">Tipo</span>
+      </div></span>
+      <span class="reg-group"><span class="reg-label g-type" id="minorVarLabel" style="display:none;">Tipo</span>
       <div class="reg-picker g-type" id="minorVarPicker" style="display:none;">
         <button class="reg-btn active" data-mvar="natural">Natural</button>
         <button class="reg-btn" data-mvar="harmonic">Armónica</button>
-      </div>
-      <button id="scaleFingerBtn" class="ghost-btn active">☝ Dedos</button>
+      </div></span>
+      <button id="scaleFingerBtn" class="ghost-btn active" title="Dibuja el número de dedo sobre cada tecla marcada.">☝ Ver dedos</button>
       <button id="scaleTempoBtn" class="ghost-btn">⏱ Con metrónomo</button>
     </div>
 
@@ -945,20 +981,20 @@
       <div class="reg-picker" id="chordPicker"></div>
     </div>
     <div id="chordOctaveBar" class="reg-bar" style="display:none;">
-      <span class="reg-label g-oct">Octava</span>
-      <div class="reg-picker g-oct" id="chordOctavePicker"></div>
+      <span class="reg-group"><span class="reg-label g-oct">Octava</span>
+      <div class="reg-picker g-oct" id="chordOctavePicker"></div></span>
       <button id="chordRandomOct" class="ghost-btn">🎲 Octava al azar</button>
-      <span class="reg-label g-type">Posición</span>
+      <span class="reg-group"><span class="reg-label g-type">Posición</span>
       <div class="reg-picker g-type" id="chordInvPicker">
         <button class="reg-btn active" data-inv="0">Fundamental</button>
         <button class="reg-btn" data-inv="1">1ª inversión</button>
         <button class="reg-btn" data-inv="2">2ª inversión</button>
-      </div>
-      <span class="reg-label g-hand">Mano</span>
+      </div></span>
+      <span class="reg-group"><span class="reg-label g-hand">Mano</span>
       <div class="reg-picker g-hand" id="chordHandPicker">
         <button class="reg-btn" data-chand="lh">Izquierda</button>
         <button class="reg-btn active" data-chand="rh">Derecha</button>
-      </div>
+      </div></span>
       <button id="chordStrictBtn" class="ghost-btn" title="Exige las notas exactas marcadas (con la inversión y octava elegidas). Apagado: acepta el acorde en cualquier octava/posición.">🎯 Notas exactas</button>
     </div>
     <div id="chordTip" class="tip" style="display:none;">
@@ -969,10 +1005,10 @@
       <div class="reg-picker" id="intervalPicker"></div>
     </div>
     <div id="intervalRootBar" class="reg-bar" style="display:none;">
-      <span class="reg-label g-type">Nota de partida</span>
-      <div class="reg-picker g-type" id="intervalRootPicker"></div>
-      <span class="reg-label g-oct">Octava</span>
-      <div class="reg-picker g-oct" id="intervalOctavePicker"></div>
+      <span class="reg-group"><span class="reg-label g-type">Nota de partida</span>
+      <div class="reg-picker g-type" id="intervalRootPicker"></div></span>
+      <span class="reg-group"><span class="reg-label g-oct">Octava</span>
+      <div class="reg-picker g-oct" id="intervalOctavePicker"></div></span>
       <button id="intervalRandomRoot" class="ghost-btn">🎲 Al azar</button>
       <button id="earModeBtn" class="ghost-btn" title="La app toca el intervalo y tú lo tienes que encontrar en el piano.">👂 De oído</button>
     </div>
@@ -987,10 +1023,10 @@
     <div id="fragmentsPanel" style="display:none;">
       <div class="mode-tabs sub-tabs scroll-tabs" id="fragSubTabs"></div>
       <div id="agilOctaveBar" class="reg-bar" style="display:none;">
-        <span class="reg-label g-oct">Octava mano derecha</span>
-        <div class="reg-picker g-oct" id="agilRhOctavePicker"></div>
-        <span class="reg-label g-oct">Octava mano izquierda</span>
-        <div class="reg-picker g-oct" id="agilLhOctavePicker"></div>
+        <span class="reg-group"><span class="reg-label g-oct">Octava mano izquierda</span>
+        <div class="reg-picker g-oct" id="agilLhOctavePicker"></div></span>
+        <span class="reg-group"><span class="reg-label g-oct">Octava mano derecha</span>
+        <div class="reg-picker g-oct" id="agilRhOctavePicker"></div></span>
       </div>
       <div class="frag-bar">
         <div class="hand-picker g-hand">
@@ -1099,8 +1135,10 @@
       <button id="toggleLabelsBtn" class="ghost-btn">Mostrar nombres de notas</button>
       <button id="labelStyleBtn" class="ghost-btn">Do Re Mi</button>
       <button id="solfaToggleBtn" class="ghost-btn">C = Do ?</button>
+      <button id="handsToggleBtn" class="ghost-btn" title="Dibujo de las dos manos con el número de cada dedo. Se abre y se cierra; cerrado no ocupa nada.">✋ Dedo 1-5 ?</button>
     </div>
     <div class="solfa-bar" id="solfaBar" style="display:none;"></div>
+    <div class="hands-bar" id="handsBar" style="display:none;"></div>
     <svg id="pianoSvg" viewBox="0 0 1040 130" role="img" aria-label="Teclado de piano" style="touch-action:none;"></svg>
   </div>
 
@@ -1701,7 +1739,7 @@ const AGILITY_DRILLS = [
   {
     id:'cinco-dedos',
     name:'Posición de 5 dedos',
-    tip:'La posición más básica que existe: pulgar en la raíz, cada dedo en una tecla blanca. Con "ambas manos" tocas el mismo dibujo con las dos a la vez — mano derecha 1-2-3-4-5, izquierda en espejo 5-4-3-2-1. Sube y baja sin mirar el teclado si puedes.',
+    tip:'La posición más básica que existe: pulgar en la raíz, cada dedo en una tecla blanca. Con "ambas manos" tocas el mismo dibujo con las dos a la vez — mano izquierda 5-4-3-2-1, derecha en espejo 1-2-3-4-5. Sube y baja sin mirar el teclado si puedes.',
     tempo:70,
     pattern:[
       {deg:0, dur:1, label:'1 (pulgar)'}, {deg:2, dur:1, label:'2'},
@@ -2101,6 +2139,12 @@ function drawFingerNum(note, finger, hand){
   svg.appendChild(t);
   fingerEls.push(t);
 }
+// Todo lo que se LEE va en el orden en que se ve el teclado: izquierda antes
+// que derecha. (buildScaleRun genera rh primero por comodidad de cálculo.)
+function leftFirst(notes){
+  return notes.slice().sort((a, b) => (a.hand === 'lh' ? 0 : 1) - (b.hand === 'lh' ? 0 : 1));
+}
+
 function markTarget(note, hand){
   const r = getRect(note);
   if(!r) return;
@@ -2114,7 +2158,7 @@ function renderScaleTip(scale){
   const accs = scale.names.slice(0,7).filter(n => n.length > 1).join(', ') || 'ninguna';
   const rhF = scale.rh.split('').join(' '), lhF = scale.lh.split('').join(' ');
   let html = '<b>' + scale.label + '</b> — alteraciones: ' + accs + '. ' +
-    '<span class="hand-tag rh">DER</span>' + rhF + ' &nbsp; <span class="hand-tag lh">IZQ</span>' + lhF + '.';
+    '<span class="hand-tag lh">IZQ</span>' + lhF + ' &nbsp; <span class="hand-tag rh">DER</span>' + rhF + '.';
   if(scale.family === 'major'){
     html += ' <b>Orden recomendado:</b> Do, Sol, Fa, Re, Sib, La, Mib, Mi, Lab, Si, Reb, Fa#.';
     if(scale.warn) html += ' <b>Sol# mayor</b> es un ejercicio teórico de notación (con Fx doble sostenido); en la práctica se usa Lab mayor, que suena igual.';
@@ -2151,7 +2195,7 @@ function startScaleStep(){
   targetNoteLabel.textContent = scaleHand === 'both' ? step.name : (step.name + oct);
   const handTxt = scaleHand === 'rh' ? 'mano derecha' : scaleHand === 'lh' ? 'mano izquierda' : 'ambas manos';
   targetSubLabel.textContent = scale.label + ' · ' + handTxt + (step.up ? ' ↑' : ' ↓') +
-    (showFingers ? ' · dedo ' + step.notes.map(x => (scaleHand === 'both' ? (x.hand === 'rh' ? 'D' : 'I') : '') + x.finger).join(' / ') : '');
+    (showFingers ? ' · dedo ' + leftFirst(step.notes).map(x => (scaleHand === 'both' ? (x.hand === 'rh' ? 'D' : 'I') : '') + x.finger).join(' / ') : '');
   step.notes.forEach(x => {
     markTarget(x.n, x.hand);
     if(showFingers) drawFingerNum(x.n, x.finger, x.hand);
@@ -3111,6 +3155,58 @@ renderFuncDetail();
     applySolfa();
   });
   applySolfa();
+})();
+
+
+// ===== Guía de dedos (dos manos con los números 1-5) =====
+// Se dibujan vistas DESDE ARRIBA, en la misma posición en que Jorge ve sus
+// manos sobre el teclado: la izquierda a la izquierda, la derecha a la
+// derecha, y los dos pulgares (el 1) mirándose en el centro. Esa es la regla
+// que hay que recordar; los números crecen hacia afuera hasta el meñique.
+function buildHandSvg(side){
+  const W = 120, H = 140, mirror = side === 'lh';
+  const rx = (x, w) => mirror ? W - x - w : x;   // rectángulos en espejo
+  const tx = (x) => mirror ? W - x : x;          // textos y centros de giro
+  const shape = (x, y, w, h, r, rot) =>
+    '<rect x="' + rx(x, w) + '" y="' + y + '" width="' + w + '" height="' + h +
+    '" rx="' + r + '"' + (rot ? ' transform="rotate(' + (mirror ? -rot[0] : rot[0]) + ' ' + tx(rot[1]) + ' ' + rot[2] + ')"' : '') + '/>';
+  const num = (x, y, n) => '<text class="hand-num" x="' + tx(x) + '" y="' + y + '">' + n + '</text>';
+
+  return '<svg class="hands-fig ' + side + '" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="Números de los dedos de la mano ' +
+    (mirror ? 'izquierda' : 'derecha') + ': 1 pulgar, 2 índice, 3 medio, 4 anular, 5 meñique">' +
+    '<g class="hand-body">' +
+    shape(28, 62, 76, 58, 18) +          // palma
+    shape(10, 64, 14, 46, 7, [-32, 17, 87]) + // pulgar, inclinado hacia el centro
+    shape(38, 30, 15, 58, 7.5) +         // índice
+    shape(56, 20, 15, 68, 7.5) +         // medio
+    shape(74, 26, 15, 62, 7.5) +         // anular
+    shape(90, 44, 13, 44, 6.5) +         // meñique
+    '</g>' +
+    num(9, 79, 1) + num(45.5, 46, 2) + num(63.5, 36, 3) + num(81.5, 42, 4) + num(96.5, 60, 5) +
+    '<text class="hand-cap" x="' + (W / 2) + '" y="136">' + (mirror ? 'IZQUIERDA' : 'DERECHA') + '</text>' +
+    '</svg>';
+}
+
+(function buildHandsBar(){
+  const bar = document.getElementById('handsBar');
+  const btn = document.getElementById('handsToggleBtn');
+  bar.innerHTML =
+    buildHandSvg('lh') +
+    '<p class="hands-note">Los dos <b>pulgares</b> son el <span class="n">1</span> y se miran en el centro del teclado. ' +
+    'De ahí los números crecen hacia afuera hasta el <b>meñique</b>, que siempre es el <span class="n">5</span>. ' +
+    'Es igual en las dos manos, solo que en espejo.</p>' +
+    buildHandSvg('rh');
+
+  let handsShown = false;
+  try { handsShown = localStorage.getItem('handsShown') === '1'; } catch(e){}
+  function applyHands(){
+    bar.style.display = handsShown ? 'flex' : 'none';
+    btn.classList.toggle('active', handsShown);
+    btn.textContent = handsShown ? 'Ocultar dedos 1-5' : '✋ Dedo 1-5 ?';
+    try { localStorage.setItem('handsShown', handsShown ? '1' : '0'); } catch(e){}
+  }
+  btn.addEventListener('click', () => { handsShown = !handsShown; applyHands(); });
+  applyHands();
 })();
 
 

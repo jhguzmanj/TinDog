@@ -280,6 +280,42 @@ ev('#mainTabs [data-cat="progress"]');
 check(doc.querySelectorAll('#heatGrid .heat-cell.missed').length >= 80, 'días pasados sin práctica marcados en rojo apagado');
 check(doc.querySelector('#heatGrid .heat-cell.today') !== null && !doc.querySelector('#heatGrid .heat-cell.today').classList.contains('missed'), 'hoy no se marca como perdido');
 
+section('Orden izquierda antes que derecha');
+const bar = doc.getElementById('agilOctaveBar');
+const pickers = [...bar.querySelectorAll('.reg-picker')].map(x => x.id);
+check(pickers[0] === 'agilLhOctavePicker' && pickers[1] === 'agilRhOctavePicker', 'agilidad: octava izquierda antes que la derecha');
+const handIds = (sel) => [...doc.querySelectorAll(sel)].map(b => b.dataset.shand || b.dataset.chand || b.dataset.hand);
+check(handIds('#scaleHandPicker .reg-btn').join() === 'lh,rh,both', 'escalas: izquierda, derecha, ambas');
+check(handIds('#chordHandPicker .reg-btn').join() === 'lh,rh', 'acordes: izquierda, derecha');
+check(handIds('.hand-picker .hand-btn').join() === 'lh,rh,both', 'fragmentos: izquierda, derecha, ambas');
+check(W("leftFirst([{hand:'rh',finger:1},{hand:'lh',finger:5}]).map(x=>x.hand).join()") === 'lh,rh', 'leftFirst pone la izquierda primero');
+ev('#mainTabs [data-cat="scales"]');
+W("scaleHand='both'; refreshScaleHand(); startScaleRun()");
+const sub = doc.getElementById('targetSubLabel').textContent;
+check(sub.indexOf('I') < sub.indexOf('D') || !sub.includes('dedo'), 'escalas: el dedo izquierdo se lee antes que el derecho (' + sub + ')');
+const tip = doc.getElementById('scaleTip').textContent;
+check(tip.indexOf('IZQ') < tip.indexOf('DER'), 'consejo de escala: IZQ antes que DER');
+// cada etiqueta viaja pegada a sus botones
+const groups = [...doc.querySelectorAll('.reg-bar .reg-group')];
+check(groups.length >= 8 && groups.every(g => g.querySelector('.reg-label') && g.querySelector('.reg-picker')), 'cada etiqueta va agrupada con su selector');
+
+section('Guía de dedos');
+const handsBar = doc.getElementById('handsBar');
+check(handsBar.style.display === 'none', 'cerrada al arrancar: no ocupa espacio');
+const figs = handsBar.querySelectorAll('.hands-fig');
+check(figs.length === 2 && figs[0].classList.contains('lh') && figs[1].classList.contains('rh'), 'mano izquierda dibujada a la izquierda');
+const nums = (fig) => [...fig.querySelectorAll('.hand-num')].map(t => t.textContent).join();
+check(nums(figs[0]) === '1,2,3,4,5' && nums(figs[1]) === '1,2,3,4,5', 'los cinco dedos numerados en cada mano');
+const thumbX = (fig) => parseFloat([...fig.querySelectorAll('.hand-num')].find(t => t.textContent === '1').getAttribute('x'));
+const pinkyX = (fig) => parseFloat([...fig.querySelectorAll('.hand-num')].find(t => t.textContent === '5').getAttribute('x'));
+check(thumbX(figs[0]) > 60 && thumbX(figs[1]) < 60, 'los dos pulgares (1) se miran en el centro');
+check(pinkyX(figs[0]) < 60 && pinkyX(figs[1]) > 60, 'los dos meñiques (5) quedan hacia afuera');
+check(figs[0].querySelectorAll('.hand-body rect').length === 6 && figs[1].querySelectorAll('.hand-body rect').length === 6, 'silueta de una pieza: palma y cinco dedos');
+ev('#handsToggleBtn');
+check(handsBar.style.display === 'flex' && window.localStorage.getItem('handsShown') === '1', 'se abre y se recuerda');
+ev('#handsToggleBtn');
+check(handsBar.style.display === 'none' && window.localStorage.getItem('handsShown') === '0', 'se cierra y se recuerda');
+
 console.log(`\n${passes} pruebas OK, ${failures} fallos`);
 if(errors.length) console.log('Errores de consola:', errors);
 process.exit(failures || errors.length ? 1 : 0);
