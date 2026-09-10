@@ -212,6 +212,19 @@ cuesta descargas: el sintetizador Web Audio queda solo para practicar sin piano.
   terminar o el piano se queda sonando solo.**
 - `#soundOutBtn` solo aparece si hay salida; la elección persiste en
   `soundTarget`. El metrónomo sigue sonando por el computador a propósito.
+
+### Sintetizador del computador (solo sin piano conectado)
+Imita las cuatro cosas que hacen que algo suene a piano y no a órgano:
+decae desde el golpe (`noteLife()`: un La0 dura mucho más que un Do8), seis
+armónicos con los agudos apagándose antes que el fundamental, inarmonicidad
+(los armónicos **no** son múltiplos exactos), y golpe de martillo con un filtro
+que se cierra mientras la nota muere. El fundamental son dos osciladores
+desafinados unos cents: ese batido es lo que lo hace sonar vivo. Todo generado
+al vuelo, cero descargas. `ensureAudioBus()` añade reverberación corta y un
+compresor para que un acorde de cuatro notas no sature.
+**`buildVoice(ctx, dest, send, note, vel, t0)` recibe el contexto por parámetro
+a propósito**: así se puede renderizar en un `OfflineAudioContext` y medir la
+forma de onda (decaimiento, pico, registro) en vez de confiar en el oído.
 - Canal 1 (`MIDI_OUT_CH = 0`), velocidad fija `MIDI_OUT_VEL`. La velocidad real
   de lo que toca Jorge todavía se ignora: sigue pendiente.
 

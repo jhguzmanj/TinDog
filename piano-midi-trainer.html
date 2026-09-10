@@ -1396,8 +1396,31 @@ function applySoundTarget(){
 })();
 window.addEventListener('beforeunload', allNotesOff);
 
+// ===== Sintetizador de piano del computador =====
+// Solo suena cuando NO hay piano conectado (o si eliges "computador"). El
+// anterior era una onda triangular con un armónico y volumen plano mientras
+// mantenías la tecla: sonaba a órgano barato y era difícil seguirlo de oído.
+// Este imita las cuatro cosas que hacen que algo suene a piano:
+//   1. Decae desde el golpe, y las cuerdas graves duran mucho más que las agudas.
+//   2. Varios armónicos, y los agudos se apagan antes que el fundamental.
+//   3. Inarmonicidad: en una cuerda real los armónicos NO son múltiplos exactos.
+//   4. Golpe de martillo y un filtro que se cierra mientras la nota muere.
+// Todo generado al vuelo: cero descargas, el archivo sigue siendo uno solo.
 let audioCtx = null;
+let audioBus = null;          // { master, send } construido una vez por contexto
+let noiseBuf = null;          // ruido del martillo, compartido
 const activeVoices = {};
+
+// mul = armónico; gain = cuánto pesa; decay = qué fracción de la vida dura
+const SYNTH_PARTIALS = [
+  { mul:1, gain:1.00, decay:1.00 },
+  { mul:2, gain:0.36, decay:0.66 },
+  { mul:3, gain:0.19, decay:0.48 },
+  { mul:4, gain:0.10, decay:0.36 },
+  { mul:5, gain:0.055, decay:0.28 },
+  { mul:6, gain:0.03, decay:0.22 },
+];
+
 function ensureAudioCtx(){
   if(!audioCtx){
     const AC = window.AudioContext || window.webkitAudioContext;
@@ -1407,52 +1430,148 @@ function ensureAudioCtx(){
   if(audioCtx.state === 'suspended') audioCtx.resume();
   return audioCtx;
 }
+
+// Reverberación corta generada con ruido decreciente: da aire sin descargar
+// ningún archivo. Sin esto las notas suenan pegadas a la cara.
+function makeImpulse(ctx, seconds, decay){
+  const len = Math.max(1, Math.floor(ctx.sampleRate * seconds));
+  const buf = ctx.createBuffer(2, len, ctx.sampleRate);
+  for(let c = 0; c < 2; c++){
+    const d = buf.getChannelData(c);
+    for(let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, decay);
+  }
+  return buf;
+}
+function makeNoise(ctx){
+  const len = Math.max(1, Math.floor(ctx.sampleRate * 0.03));
+  const buf = ctx.createBuffer(1, len, ctx.sampleRate);
+  const d = buf.getChannelData(0);
+  for(let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 3);
+  return buf;
+}
+
+// Un acorde son 3-4 notas a la vez: el compresor evita que saturen juntas.
+function ensureAudioBus(ctx){
+  if(audioBus && audioBus.ctx === ctx) return audioBus;
+  const comp = ctx.createDynamicsCompressor();
+  comp.threshold.value = -16; comp.knee.value = 22; comp.ratio.value = 4;
+  comp.attack.value = 0.004; comp.release.value = 0.22;
+  comp.connect(ctx.destination);
+  const master = ctx.createGain();
+  master.gain.value = 0.85;
+  master.connect(comp);
+  let send = null;
+  if(ctx.createConvolver){
+    const conv = ctx.createConvolver();
+    conv.buffer = makeImpulse(ctx, 1.5, 2.8);
+    send = ctx.createGain();
+    send.gain.value = 0.14;
+    send.connect(conv);
+    conv.connect(comp);
+  }
+  audioBus = { ctx, master, send };
+  return audioBus;
+}
+
+// Cuánto dura la nota, en segundos. Un La0 retumba muchísimo más que un Do8.
+function noteLife(note){
+  return 0.8 + 13 * Math.pow(0.5, (note - 21) / 30);
+}
+
+// Construye una voz completa. Recibe el contexto por parámetro para poder
+// renderizarla en un OfflineAudioContext y comprobar la forma del sonido.
+function buildVoice(ctx, dest, send, note, vel, t0){
+  const v = Math.max(0.22, Math.min(1, (vel || 80) / 108));
+  const f0 = 440 * Math.pow(2, (note - 69) / 12);
+  const life = noteLife(note);
+  const B = 0.0004 * Math.pow(2, (note - 60) / 22);   // inarmonicidad de la cuerda
+
+  const voiceGain = ctx.createGain();
+  voiceGain.gain.setValueAtTime(0.0001, t0);
+  voiceGain.gain.exponentialRampToValueAtTime(0.30 * v, t0 + 0.005);  // ataque
+  voiceGain.connect(dest);
+  if(send) voiceGain.connect(send);
+
+  const filt = ctx.createBiquadFilter();
+  filt.type = 'lowpass';
+  filt.Q.value = 0.6;
+  const open = Math.min(15000, f0 * (5 + 11 * v));
+  filt.frequency.setValueAtTime(open, t0);
+  filt.frequency.exponentialRampToValueAtTime(Math.max(300, f0 * 2.4), t0 + Math.min(2.4, life * 0.55));
+  filt.connect(voiceGain);
+
+  const oscs = [];
+  const nyq = ctx.sampleRate / 2.2;
+  const addOsc = (freq, gain, secs, detune) => {
+    if(freq > nyq) return;
+    const osc = ctx.createOscillator();
+    osc.type = 'sine';
+    osc.frequency.value = freq;
+    if(detune) osc.detune.value = detune;
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(Math.max(gain, 0.0001), t0);
+    g.gain.exponentialRampToValueAtTime(0.0004, t0 + Math.max(0.25, secs));
+    osc.connect(g); g.connect(filt);
+    osc.start(t0);
+    osc.stop(t0 + life + 0.4);
+    oscs.push(osc);
+  };
+
+  SYNTH_PARTIALS.forEach(p => {
+    const n = p.mul;
+    const freq = f0 * n * Math.sqrt(1 + B * n * n);  // no son múltiplos exactos
+    if(n === 1){
+      // un piano tiene 2-3 cuerdas por nota, levemente desafinadas: ese batido
+      // es buena parte de lo que hace que suene "vivo" y no a pitido
+      addOsc(freq, p.gain * 0.55, life * p.decay, -3);
+      addOsc(freq, p.gain * 0.55, life * p.decay, 3);
+    } else {
+      addOsc(freq, p.gain, life * p.decay, 0);
+    }
+  });
+
+  // golpe del martillo: un chasquido corto antes de que aparezca la nota
+  if(ctx.createBufferSource){
+    if(!noiseBuf || noiseBuf.sampleRate !== ctx.sampleRate) noiseBuf = makeNoise(ctx);
+    const src = ctx.createBufferSource();
+    src.buffer = noiseBuf;
+    const nf = ctx.createBiquadFilter();
+    nf.type = 'bandpass';
+    nf.frequency.value = Math.min(7000, f0 * 4);
+    nf.Q.value = 0.7;
+    const ng = ctx.createGain();
+    ng.gain.value = 0.09 * v;
+    src.connect(nf); nf.connect(ng); ng.connect(voiceGain);
+    src.start(t0);
+  }
+
+  return { oscs, gain: voiceGain, life };
+}
+
 function playNoteSound(note, vel){
   if(!soundEnabled) return;
   if(usingPiano()){ midiNoteOn(note, vel); return; }
   const ctx = ensureAudioCtx();
   if(!ctx) return;
-  const freq = 440 * Math.pow(2, (note-69)/12);
-  const now = ctx.currentTime;
-
-  const gain = ctx.createGain();
-  gain.gain.setValueAtTime(0, now);
-  gain.gain.linearRampToValueAtTime(0.3, now+0.008);
-  gain.gain.exponentialRampToValueAtTime(0.11, now+0.4);
-  gain.connect(ctx.destination);
-
-  const osc1 = ctx.createOscillator();
-  osc1.type = 'triangle';
-  osc1.frequency.value = freq;
-  osc1.connect(gain);
-
-  const osc2 = ctx.createOscillator();
-  osc2.type = 'sine';
-  osc2.frequency.value = freq*2;
-  const gain2 = ctx.createGain();
-  gain2.gain.value = 0.12;
-  osc2.connect(gain2);
-  gain2.connect(gain);
-
-  osc1.start(now);
-  osc2.start(now);
+  const bus = ensureAudioBus(ctx);
   if(activeVoices[note]) stopNoteSound(note);
-  activeVoices[note] = { osc1, osc2, gain };
+  activeVoices[note] = buildVoice(ctx, bus.master, bus.send, note, vel, ctx.currentTime);
 }
+
 function stopNoteSound(note){
   // si la nota salió por el piano, se apaga por el mismo camino
   if(midiSounding.has(note)){ midiNoteOff(note); return; }
   const v = activeVoices[note];
   if(!v || !audioCtx) return;
   const now = audioCtx.currentTime;
-  v.gain.gain.cancelScheduledValues(now);
-  v.gain.gain.setValueAtTime(Math.max(v.gain.gain.value, 0.0001), now);
-  v.gain.gain.exponentialRampToValueAtTime(0.0001, now+0.22);
-  v.osc1.stop(now+0.26);
-  v.osc2.stop(now+0.26);
+  // soltar la tecla baja el apagador: corta rápido, pero no de golpe
+  const g = v.gain.gain;
+  g.cancelScheduledValues(now);
+  g.setValueAtTime(Math.max(g.value, 0.0001), now);
+  g.exponentialRampToValueAtTime(0.0001, now + 0.16);
+  v.oscs.forEach(o => { try { o.stop(now + 0.2); } catch(e){} });
   delete activeVoices[note];
 }
-
 const connBox = document.getElementById('connectionPanel');
 const deviceBadge = document.getElementById('deviceBadge');
 const statusDot = document.getElementById('statusDot');
