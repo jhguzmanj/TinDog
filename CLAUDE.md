@@ -126,7 +126,7 @@ lookahead). `metroOffsetMs(tPerf)` devuelve el desfase en ms al pulso más cerca
 ## Otras preferencias persistidas
 `kbZoom2`, `labelStyle`, `labelsShown` (ahora sí se recuerda; por defecto visible),
 `solfaShown`, `cascadeSpeed`, `scaleOpts` (mano/octavas/sentido/dedos/variante menor),
-`metroBpm`, `readingLevel`, `handsShown`.
+`metroBpm`, `readingLevel`, `handsShown`, `soundTarget`.
 
 ## Diseño (jerarquía deliberada)
 Regla que manda: el 90% del tiempo Jorge mira **una sola cosa** — qué tecla toca
@@ -193,6 +193,28 @@ y opción del selector — y parecía que hubiera tres pianos. Reglas:
 - Al reconectar (`onstatechange`) se respeta el puerto ya enganchado si sigue
   presente; si desaparecen todos, se suelta `currentInput` y vuelve el botón.
 
+## Sonido: sale por el piano, no por el computador
+El P-45 trae sus propios samples de Yamaha, así que con el piano conectado todo
+lo que toca la APP (Escuchar, el oído, los clics en el teclado dibujado) se le
+manda por **MIDI out** en vez de sintetizarlo. Es el mejor sonido posible y no
+cuesta descargas: el sintetizador Web Audio queda solo para practicar sin piano.
+- `usingPiano()` manda: `playNoteSound(note, vel)` sale por `midiNoteOn()` y
+  `stopNoteSound()` cierra por el mismo camino (`midiSounding` recuerda cuáles
+  salieron por MIDI, así un cambio de ruta a media nota no deja nada colgado).
+- **Las notas que toca Jorge (`src:'midi'`) NO se reenvían.** Sonarían dos veces.
+- `pickMidiOut()` empareja la salida con la entrada conectada: nombre exacto,
+  luego primera palabra, luego la primera de la lista. `refreshMidiOut()` se
+  llama en cada `onstatechange`, **después** de decidir la entrada.
+- `allNotesOff()` es la red de seguridad contra notas colgadas en el piano
+  (note-off de lo pendiente + CC 123). Se llama al cambiar de práctica, al
+  cerrar la cascada, al terminar "Escuchar", al apagar el sonido, al cambiar de
+  ruta y en `beforeunload`. **Cualquier reproducción nueva debe llamarlo al
+  terminar o el piano se queda sonando solo.**
+- `#soundOutBtn` solo aparece si hay salida; la elección persiste en
+  `soundTarget`. El metrónomo sigue sonando por el computador a propósito.
+- Canal 1 (`MIDI_OUT_CH = 0`), velocidad fija `MIDI_OUT_VEL`. La velocidad real
+  de lo que toca Jorge todavía se ignora: sigue pendiente.
+
 ## Cosas ya resueltas — no "arreglar" de nuevo
 - Doble sonido con el piano conectado (solo `src:'ui'` sintetiza).
 - Listener duplicado del `<select>` de dispositivos MIDI (`deviceSelectBound`).
@@ -210,4 +232,9 @@ y opción del selector — y parecía que hubiera tres pianos. Reglas:
 - Progresiones de acordes con metrónomo (I–V–vi–IV a tempo).
 - Lectura de dos notas simultáneas / intervalos escritos.
 - Grabar y reproducir lo que tocó (MIDI in → buffer) para autoescucha.
+- **Usar la velocidad MIDI**: hoy se lee y se descarta. Serviría para medir la
+  uniformidad del toque, que es justo lo que piden "Notas repetidas" y "Arpegio
+  de Do" sin poder comprobarlo.
+- Mejorar el sintetizador para cuando no hay piano (decaimiento real, más
+  armónicos, filtro que se cierra, ruido de martillo).
 - Sincronizar progreso entre dispositivos (hoy es localStorage + respaldo JSON).

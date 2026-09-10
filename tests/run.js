@@ -1,4 +1,6 @@
 // Pruebas funcionales con jsdom (misma convención que se usó todo el proyecto).
+// Si una prueba pisa una función global (espías), GUÁRDALA en window y
+// restáurala al terminar, o las pruebas siguientes fallan sin explicación.
 //   node tests/run.js
 // Carga el HTML real, ejecuta el <script> y simula clics/notas.
 const fs = require('fs');
@@ -175,12 +177,17 @@ W('metro.on = false; metro.refPerf = null');
 check(W('metroOffsetMs(1000)') === null, 'sin metrónomo no mide');
 
 section('MIDI no duplica sonido');
-W('window.__played = 0; const _orig = playNoteSound; playNoteSound = (n) => { window.__played++; };');
+// el espía se guarda en window y se DESHACE al final: con `const` dentro de
+// eval el original se perdía y playNoteSound quedaba pisado para siempre,
+// rompiendo en silencio cualquier prueba posterior que lo usara.
+W('window.__played = 0; window.__origPlay = playNoteSound; playNoteSound = (n) => { window.__played++; };');
 ev('#mainTabs [data-cat="free"]');
 W("noteOn(60, 'midi'); noteOff(60)");
 check(W('window.__played') === 0, 'nota del piano real no dispara el sintetizador');
 W("noteOn(60, 'ui'); noteOff(60)");
 check(W('window.__played') === 1, 'clic en el teclado dibujado sí suena');
+W('playNoteSound = window.__origPlay;');
+check(W('typeof playNoteSound === "function" && playNoteSound !== window.__origPlay') === false, 'el sintetizador real queda restaurado');
 
 section('Fragmentos y agilidad siguen funcionando');
 ev('#mainTabs [data-cat="agility"]');
@@ -331,7 +338,8 @@ ev('#cascadeBtn');
 check(kbWrapEl.style.display === '' && W('cascadeOn') === false, 'y vuelve al cerrarla con el botón');
 
 section('El nombre del piano se muestra una sola vez');
-W('window.__mk = (names) => ({ inputs: new Map(names.map((n,i) => [i, { name:n, onmidimessage:null }])), onstatechange:null });');
+W('window.__sent = [];');
+W('window.__mk = (names, outs) => ({ inputs: new Map(names.map((n,i) => [i, { name:n, onmidimessage:null }])), outputs: new Map((outs || []).map((n,i) => [i, { name:n, send:(b) => window.__sent.push(b.slice ? b.slice() : b) }])), onstatechange:null });');
 function visibleText(root){
   let out = '';
   (function walk(el){
@@ -385,6 +393,44 @@ check(W('earStats.asked') === wrongBefore && W('earAwaiting') === true, 'tocar l
 W(`noteOn(${pRoot + 7}); noteOff(${pRoot + 7})`);
 check(W('earAwaiting') === false, 'y la respuesta real sigue funcionando');
 ev('#earModeBtn');
+
+section('El sonido sale por los altavoces del piano');
+ev('#mainTabs [data-cat="free"]');   // sin práctica de por medio
+W('window.__sent = [];');
+W('onMIDISuccess(window.__mk(["Digital Piano"], ["Otro cacharro", "Digital Piano"]))');
+check(W('midiOut.name') === 'Digital Piano', 'empareja la salida con el piano, no coge la primera de la lista');
+check(W('usingPiano()') === true, 'con el piano conectado, suena por el piano por defecto');
+const outBtn = doc.getElementById('soundOutBtn');
+check(outBtn.style.display === '' && outBtn.classList.contains('active'), 'aparece el botón de ruta y sale encendido');
+
+W('soundEnabled = true; window.__sent = [];');
+W('playNoteSound(60)');
+check(JSON.stringify(W('window.__sent')) === '[[144,60,80]]', 'la nota se le manda al piano en vez de sintetizarla');
+W('stopNoteSound(60)');
+check(JSON.stringify(W('window.__sent[1]')) === '[128,60,0]', 'y se apaga por el mismo camino');
+
+W('window.__sent = []; activeNotes.clear();');
+W("noteOn(64, 'midi'); noteOff(64)");
+check(W('window.__sent.length') === 0, 'lo que tocas TÚ en el piano no se le reenvía: sonaría dos veces');
+W("noteOn(64, 'ui'); noteOff(64)");
+check(W('window.__sent.length') === 2, 'el clic en el teclado dibujado sí suena por el piano');
+
+W('window.__sent = []; playNoteSound(72); allNotesOff();');
+const offMsgs = W('window.__sent');
+check(offMsgs.some(m => m[0] === 128 && m[1] === 72), 'allNotesOff apaga las notas que quedaron sonando');
+check(offMsgs.some(m => m[0] === 176 && m[1] === 123), 'y manda el "all notes off" por si acaso');
+check(W('midiSounding.size') === 0, 'no quedan notas colgadas en el piano');
+
+ev('#soundOutBtn');
+check(W('usingPiano()') === false && window.localStorage.getItem('soundTarget') === 'pc', 'se puede pasar al sonido del computador, y se recuerda');
+W('window.__sent = []; playNoteSound(60); stopNoteSound(60);');
+check(W('window.__sent.length') === 0, 'en modo computador no se le manda nada al piano');
+ev('#soundOutBtn');
+check(W('usingPiano()') === true, 'y se vuelve al piano');
+
+W('onMIDISuccess(window.__mk([]))');
+check(W('midiOut') === null && outBtn.style.display === 'none', 'sin piano no hay salida ni botón que elegir');
+W('soundEnabled = false;');
 
 console.log(`\n${passes} pruebas OK, ${failures} fallos`);
 if(errors.length) console.log('Errores de consola:', errors);

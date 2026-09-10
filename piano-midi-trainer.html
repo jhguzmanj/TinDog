@@ -1132,6 +1132,7 @@
       <span id="zoomValue" class="zoom-value">100%</span>
       <button class="ghost-btn zoom-btn" data-zoom="1">+</button>
       <button id="toggleSoundBtn" class="ghost-btn active" title="Sonido de la app para el teclado dibujado y para 'Escuchar'. Las notas que vienen del piano real no se duplican.">🔊 Sonido</button>
+      <button id="soundOutBtn" class="ghost-btn" style="display:none;">🎹 Suena en el piano</button>
       <button id="toggleLabelsBtn" class="ghost-btn">Mostrar nombres de notas</button>
       <button id="labelStyleBtn" class="ghost-btn">Do Re Mi</button>
       <button id="solfaToggleBtn" class="ghost-btn">C = Do ?</button>
@@ -1317,9 +1318,83 @@ const toggleSoundBtn = document.getElementById('toggleSoundBtn');
 let soundEnabled = true;
 toggleSoundBtn.addEventListener('click', () => {
   soundEnabled = !soundEnabled;
+  if(!soundEnabled && typeof allNotesOff === 'function') allNotesOff();
   toggleSoundBtn.classList.toggle('active', soundEnabled);
   toggleSoundBtn.textContent = soundEnabled ? '🔊 Sonido' : '🔇 Sonido';
 });
+
+// ===== Salida MIDI: que suene el piano de verdad =====
+// El P-45 trae sus propios samples de Yamaha. Con el piano conectado, todo lo
+// que toca la APP (Escuchar, el oído, los clics en el teclado dibujado) se le
+// manda al piano en vez de sintetizarlo aquí: es el mejor sonido posible y no
+// cuesta ni un byte de descarga. Sin piano, se usa el sintetizador de siempre.
+// Ojo: las notas que vienen del piano (src 'midi') NO se reenvían, sonarían dos
+// veces.
+const MIDI_OUT_CH = 0;      // canal 1 en la numeración del manual del P-45
+const MIDI_OUT_VEL = 80;
+let midiOut = null;
+let midiOutsNow = [];
+let soundTarget = 'piano';  // 'piano' = por el piano si lo hay; 'pc' = sintetizador
+const midiSounding = new Set();
+try { const t = localStorage.getItem('soundTarget'); if(t === 'piano' || t === 'pc') soundTarget = t; } catch(e){}
+
+function usingPiano(){ return soundTarget === 'piano' && !!midiOut; }
+function sendMidi(bytes){ if(midiOut){ try { midiOut.send(bytes); } catch(e){} } }
+function midiNoteOn(note, vel){
+  sendMidi([0x90 | MIDI_OUT_CH, note, vel || MIDI_OUT_VEL]);
+  midiSounding.add(note);
+}
+function midiNoteOff(note){
+  sendMidi([0x80 | MIDI_OUT_CH, note, 0]);
+  midiSounding.delete(note);
+}
+// Red de seguridad contra notas colgadas en el piano: si una reproducción se
+// corta a la mitad, el piano se quedaría sonando solo hasta que lo apagues.
+function allNotesOff(){
+  midiSounding.forEach(n => sendMidi([0x80 | MIDI_OUT_CH, n, 0]));
+  midiSounding.clear();
+  sendMidi([0xb0 | MIDI_OUT_CH, 123, 0]); // "all notes off"
+}
+
+// La salida que corresponde al piano conectado: primero por nombre exacto,
+// después por la primera palabra (algunos drivers nombran distinto entrada y
+// salida del mismo aparato), y si no, la primera disponible.
+function pickMidiOut(){
+  if(!midiOutsNow.length) return null;
+  if(currentInput){
+    const exact = midiOutsNow.find(o => o.name === currentInput.name);
+    if(exact) return exact;
+    const head = currentInput.name.split(' ')[0];
+    const near = midiOutsNow.find(o => o.name.split(' ')[0] === head);
+    if(near) return near;
+  }
+  return midiOutsNow[0];
+}
+function refreshMidiOut(outs){
+  midiOutsNow = outs || [];
+  midiOut = pickMidiOut();
+  applySoundTarget();
+}
+function applySoundTarget(){
+  const btn = document.getElementById('soundOutBtn');
+  if(!btn) return;
+  btn.style.display = midiOut ? '' : 'none';   // sin piano no hay nada que elegir
+  btn.classList.toggle('active', usingPiano());
+  btn.title = 'Encendido: lo que toca la app suena por los altavoces del piano, '
+            + 'con el sonido real del Yamaha. Apagado: suena por el computador.';
+  try { localStorage.setItem('soundTarget', soundTarget); } catch(e){}
+}
+(function bindSoundOut(){
+  const btn = document.getElementById('soundOutBtn');
+  if(!btn) return;
+  btn.addEventListener('click', () => {
+    allNotesOff();
+    soundTarget = usingPiano() ? 'pc' : 'piano';
+    applySoundTarget();
+  });
+  applySoundTarget();
+})();
+window.addEventListener('beforeunload', allNotesOff);
 
 let audioCtx = null;
 const activeVoices = {};
@@ -1332,8 +1407,9 @@ function ensureAudioCtx(){
   if(audioCtx.state === 'suspended') audioCtx.resume();
   return audioCtx;
 }
-function playNoteSound(note){
+function playNoteSound(note, vel){
   if(!soundEnabled) return;
+  if(usingPiano()){ midiNoteOn(note, vel); return; }
   const ctx = ensureAudioCtx();
   if(!ctx) return;
   const freq = 440 * Math.pow(2, (note-69)/12);
@@ -1364,6 +1440,8 @@ function playNoteSound(note){
   activeVoices[note] = { osc1, osc2, gain };
 }
 function stopNoteSound(note){
+  // si la nota salió por el piano, se apaga por el mismo camino
+  if(midiSounding.has(note)){ midiNoteOff(note); return; }
   const v = activeVoices[note];
   if(!v || !audioCtx) return;
   const now = audioCtx.currentTime;
@@ -1428,6 +1506,8 @@ function onMIDISuccess(midiAccess){
   if(inputs.length === 0){
     if(currentInput) currentInput.onmidimessage = null;
     currentInput = null;
+    allNotesOff();
+    refreshMidiOut([]);       // sin piano no hay a dónde mandar el sonido
     deviceSelect.innerHTML = '<option>No se detectó ningún piano</option>';
     statusText.textContent = 'Conecta el piano por USB e intenta de nuevo';
     renderConnection();
@@ -1451,6 +1531,8 @@ function onMIDISuccess(midiAccess){
   const pick = keep >= 0 ? keep : 0;
   attachInput(inputs[pick]);
   deviceSelect.value = String(pick);
+  // la salida se elige DESPUÉS de saber qué entrada quedó, para emparejarlas
+  refreshMidiOut(midiAccess.outputs ? Array.from(midiAccess.outputs.values()) : []);
 
   // onstatechange vuelve a llamar a esta función: el listener del select se
   // registra una sola vez y lee la lista vigente, para no acumular copias.
@@ -2022,6 +2104,7 @@ function show(el, on, disp){ if(el) el.style.display = on ? (disp || 'block') : 
 function enterMode(mode){
   currentMode = mode;
   practiceIndex = 0;
+  if(typeof allNotesOff === 'function') allNotesOff(); // nada colgado en el piano
   clearAllHighlights();
   const isScale = !!SCALES[mode];
   show(chordTip, mode === 'chords');
@@ -2732,6 +2815,7 @@ async function playFragment(){
   }
 
   soundEnabled = wasSound;
+  allNotesOff();
   isPlayingBack = false;
   listenBtn.textContent = '▶ Escuchar';
   practiceIndex = 0;
@@ -3373,6 +3457,7 @@ cascadeToSel.addEventListener('change', () => {
 // teclado grande, y si se apaga por otro camino (cambiar de pestaña) hay que
 // devolverlo. Antes el teclado quedaba oculto y había que ir a buscarlo.
 function closeCascade(){
+  allNotesOff();
   cascadeOn = false;
   cascadeBtn.classList.remove('active');
   cascadeWrap.style.display = 'none';
