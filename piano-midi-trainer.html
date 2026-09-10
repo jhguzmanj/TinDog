@@ -2840,7 +2840,9 @@ function checkInterval(playedNote){
   const top = Math.min(root + iv.semitones, MAX_NOTE);
   if(earMode){
     if(!earAwaiting) return;
-    if(playedNote === root) return; // la nota de partida ya está dada
+    // El acierto se comprueba ANTES de descartar la nota de partida. En el
+    // unísono la respuesta correcta ES esa misma tecla (top === root): si se
+    // descartaba primero, tocarla no hacía nada y la práctica se atascaba.
     if(playedNote === top){
       earAwaiting = false;
       if(!earStats.missedThis){
@@ -2854,6 +2856,8 @@ function checkInterval(playedNote){
       distanceBox.style.display = 'block';
       updateEarScore();
       setTimeout(() => { practiceIndex = Math.floor(Math.random() * INTERVALS.length); startIntervalStep(); }, 1400);
+    } else if(playedNote === root){
+      return; // la de partida ya está dada y sonó: no es acierto ni fallo
     } else {
       feedbackText.textContent = playedNote < top ? 'Más arriba…' : 'Más abajo…';
       feedbackText.className = 'feedback wrong';

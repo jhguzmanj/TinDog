@@ -363,6 +363,29 @@ check(W('currentInput') === null, 'al desaparecer el piano se suelta el puerto')
 check(doc.getElementById('deviceBadge').textContent === 'Práctica Piano' && !doc.getElementById('deviceBadge').classList.contains('live'), 'el distintivo vuelve a su estado sin conexión');
 check(doc.getElementById('connectBtn').style.display === '' && doc.getElementById('connectionPanel').style.display === 'flex', 'y reaparece el botón para reintentar');
 
+section('Oído: el unísono se puede contestar');
+ev('#mainTabs [data-cat="intervals"]');
+if(!W('earMode')) ev('#earModeBtn');
+check(W('earMode') === true, 'modo de oído encendido');
+W('activeNotes.clear(); practiceIndex = 0; startIntervalStep()');   // 0 = unísono
+check(W('INTERVALS[0].semitones') === 0 && W('earAwaiting') === true, 'pregunta el unísono y espera respuesta');
+const uRoot = W('currentIntervalRoot()');
+const rightBefore = W('earStats.right');
+W(`noteOn(${uRoot}); noteOff(${uRoot})`);
+check(W('earStats.right') === rightBefore + 1, 'tocar la misma tecla acierta el unísono');
+check(doc.getElementById('feedbackText').classList.contains('correct'), 'lo dice como acierto, no como fallo');
+check(W('earAwaiting') === false, 'la pregunta queda cerrada y la práctica avanza');
+
+// en los demás intervalos la nota de partida sigue sin contar como error
+W('activeNotes.clear(); practiceIndex = 7; startIntervalStep()');   // 5ª justa
+const wrongBefore = W('earStats.asked');
+const pRoot = W('currentIntervalRoot()');
+W(`noteOn(${pRoot}); noteOff(${pRoot})`);
+check(W('earStats.asked') === wrongBefore && W('earAwaiting') === true, 'tocar la de partida en una 5ª no cuenta como fallo');
+W(`noteOn(${pRoot + 7}); noteOff(${pRoot + 7})`);
+check(W('earAwaiting') === false, 'y la respuesta real sigue funcionando');
+ev('#earModeBtn');
+
 console.log(`\n${passes} pruebas OK, ${failures} fallos`);
 if(errors.length) console.log('Errores de consola:', errors);
 process.exit(failures || errors.length ? 1 : 0);

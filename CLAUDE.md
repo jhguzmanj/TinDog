@@ -64,6 +64,9 @@ Orden dentro del `<script>`:
   acierto/fallo por intervalo. Cada intervalo trae `ref` (cómo reconocerlo de oído,
   va en el cuadro de distancia) y `tip` (qué practicar / dónde cae en el teclado,
   va en `#intervalTip`). No volver a poner un texto genérico ahí.
+  **Unísono en modo oído:** `top === root`, así que el acierto se comprueba
+  **antes** de descartar la nota de partida. Si se descarta primero (como estaba),
+  tocar la tecla correcta no hace nada y la práctica se atasca sin poder avanzar.
 - **Lectura**: `READING_LEVELS` (7 niveles, clave de Sol / Fa / ambas / alteraciones).
   `renderStaff(svg, [{sp, cls, clef}], {clef, width, gap, showName})`; `sp` viene de
   `spellMidi(midi, preferFlat)` o `spellFromName('B#', 60)` (respeta octava de la letra).
