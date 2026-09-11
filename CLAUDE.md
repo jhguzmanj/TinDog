@@ -148,7 +148,34 @@ lookahead). `metroOffsetMs(tPerf)` devuelve el desfase en ms al pulso más cerca
   (la primera mayor que no tenga 3 pasadas limpias por mano; sugiere la mano más
   floja; con las dos limpias propone ambas manos), 3 acordes menos practicados (grupo
   C G F Am Em Dm hasta dominarlo), nivel de lectura vigente, oído, pieza menos hecha.
-- Exportar/importar JSON desde la pestaña Progreso.
+- Exportar/importar JSON desde la pestaña Progreso. **Dentro del visor de
+  artifacts un `<a download>` no hace nada** (el visor bloquea descargas): el
+  botón intenta primero `claude.use('downloads')` y solo cae al `<a>` fuera del
+  visor. Si la capacidad existe pero la descarga se rechaza, NO se cae al `<a>`:
+  no arreglaría nada.
+
+### Respaldo automático (`initCloudBackup`, capacidad `db`)
+El progreso vivía solo en localStorage y el botón de exportar no funcionaba en
+el artifact: limpiar los datos del navegador borraba meses. Si hay
+`window.claude`, el mismo objeto `progress` se guarda en `backup/progress` y se
+fusiona al abrir; **todo va detrás de guardas**, así que el archivo suelto y
+cualquier otro navegador funcionan igual que antes (`cloudState: 'off'`).
+- **`mergeProgress` fusiona por MÁXIMO campo a campo, nunca sumando.** Todo el
+  esquema son contadores que solo suben o un `lastDay` `'YYYY-MM-DD'` (compara
+  bien como texto). Sumar inflaría: sincronizar dos veces lo mismo contaría
+  doble. **La fusión tiene que ser idempotente y hay pruebas que lo fijan** —
+  un campo nuevo que no sea "máximo" (un promedio, un último valor) rompe eso y
+  necesita su propio caso.
+- Solo se leen las secciones conocidas (`PROGRESS_SECTIONS` + `days`): lo que
+  venga de más en el documento remoto se ignora, y un `v` distinto de 1 se
+  descarta entero en vez de pisar el progreso.
+- `cloudSave()` tiene 4 s de espera: `saveProgress()` se dispara casi por nota.
+- El panel de Progreso dice dónde está guardado (`#cloudState`). No es adorno:
+  si Jorge no ve que está respaldado, para el caso no lo está.
+- Declarar `db` vuelve el artifact **interno de la organización** (ya no se
+  puede compartir públicamente) y el documento es compartido entre viewers, no
+  privado por persona: `data/users/{self}` necesitaría la capacidad `user`, que
+  esta cuenta no tiene.
 
 ## Otras preferencias persistidas
 `kbZoom2`, `labelStyle`, `labelsShown` (ahora sí se recuerda; por defecto visible),
@@ -284,4 +311,5 @@ forma de onda (decaimiento, pico, registro) en vez de confiar en el oído.
   de Do" sin poder comprobarlo.
 - Mejorar el sintetizador para cuando no hay piano (decaimiento real, más
   armónicos, filtro que se cierra, ruido de martillo).
-- Sincronizar progreso entre dispositivos (hoy es localStorage + respaldo JSON).
+- Avisar cuando lleve mucho sin respaldo manual (hoy el automático lo cubre
+  dentro de claude.ai, pero en el archivo suelto sigue sin red).

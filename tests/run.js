@@ -543,6 +543,75 @@ W('stopReadingSound()');
 W('onMIDISuccess(window.__mk([]))');
 W('soundEnabled = false;');
 
-console.log(`\n${passes} pruebas OK, ${failures} fallos`);
-if(errors.length) console.log('Errores de consola:', errors);
-process.exit(failures || errors.length ? 1 : 0);
+section('Respaldo: la fusión no puede borrar ni inflar');
+// Esto es lo único que puede ARRUINAR meses de práctica si está mal, así que
+// se prueba a fondo. Todo el esquema son contadores que suben o un 'lastDay'.
+const A = { v:1, days:{ '2026-01-01': {sec:600, notes:50}, '2026-01-02': {sec:300, notes:10} },
+            scales:{ 'cmajor:rh': {runs:5, clean:3, bestTiming:null, lastDay:'2026-01-02'} },
+            chords:{}, intervals:{}, ear:{}, reading:{}, drills:{}, songs:{}, cascade:{} };
+const B = { v:1, days:{ '2026-01-01': {sec:900, notes:20}, '2026-01-05': {sec:120, notes:8} },
+            scales:{ 'cmajor:rh': {runs:2, clean:4, bestTiming:80, lastDay:'2026-01-05'},
+                     'gmajor:lh': {runs:1, clean:0, lastDay:'2026-01-05'} },
+            chords:{}, intervals:{}, ear:{}, reading:{}, drills:{}, songs:{}, cascade:{} };
+W(`window.__A = ${JSON.stringify(A)}; window.__B = ${JSON.stringify(B)}; window.__M = mergeProgress(window.__A, window.__B);`);
+
+check(W("window.__M.days['2026-01-01'].sec") === 900, 'un día que está en los dos se queda con el mayor, no con la suma');
+check(W("window.__M.days['2026-01-01'].notes") === 50, 'campo a campo: cada uno toma su propio máximo');
+check(W("window.__M.days['2026-01-02'].sec") === 300, 'un día que solo está aquí no se pierde');
+check(W("window.__M.days['2026-01-05'].sec") === 120, 'y uno que solo está en el servidor se trae');
+check(W("window.__M.scales['cmajor:rh'].runs") === 5 && W("window.__M.scales['cmajor:rh'].clean") === 4,
+  'los contadores de escala también van por máximo');
+check(W("window.__M.scales['cmajor:rh'].bestTiming") === 80, 'un null local se deja reemplazar por el dato real');
+check(W("window.__M.scales['cmajor:rh'].lastDay") === '2026-01-05', 'lastDay se queda con la fecha más reciente');
+check(W("window.__M.scales['gmajor:lh'].runs") === 1, 'una escala que solo existe en el servidor se trae entera');
+
+// Idempotencia: sincronizar dos veces lo mismo no puede inflar nada. Si esto
+// falla, cada apertura de la app le regalaría minutos de práctica que no hizo.
+W('window.__M2 = mergeProgress(window.__M, window.__B); window.__M3 = mergeProgress(window.__M2, window.__B);');
+check(JSON.stringify(W('window.__M2')) === JSON.stringify(W('window.__M3')),
+  'fusionar otra vez no cambia nada: los números no se van inflando solos');
+check(W("window.__M3.days['2026-01-01'].sec") === 900, 'y los segundos del día siguen siendo los mismos');
+
+check(JSON.stringify(W('window.__A')) === JSON.stringify(A), 'la fusión no modifica el objeto original');
+
+W("window.__X = mergeProgress(window.__A, { v:2, days:{ '2026-01-01': {sec:99999} } });");
+check(W("window.__X.days['2026-01-01'].sec") === 600, 'un respaldo de otra versión se ignora en vez de pisar el progreso');
+W("window.__Y = mergeProgress(window.__A, Object.assign({}, window.__B, { basura:{ x:1 }, savedAt:'2026-01-05' }));");
+check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefined,
+  'lo que venga de más en el documento remoto no se cuela en el progreso');
+
+(async () => {
+  section('Respaldo: se guarda y se vuelve a leer');
+  // window.claude no existe en jsdom (ni en el archivo local): se simula para
+  // comprobar que al abrir se fusiona lo del servidor y que se vuelve a subir.
+  W(`
+    window.__cloud = { doc: null, writes: 0 };
+    window.claude = { use: async (n) => n === 'db' ? {
+      doc: () => ({
+        get: async () => ({ exists: window.__cloud.doc !== null, data: () => window.__cloud.doc }),
+        set: async (d) => { window.__cloud.doc = d; window.__cloud.writes++; },
+      })
+    } : null };
+    progress = JSON.parse(JSON.stringify(window.__A));
+    window.__cloud.doc = JSON.parse(JSON.stringify(window.__B));
+  `);
+  await W('initCloudBackup()');
+  check(W("progress.days['2026-01-01'].sec") === 900 && W("progress.days['2026-01-05'].sec") === 120,
+    'al abrir se trae lo que había en el servidor y se junta con lo de aquí');
+  check(W("JSON.parse(localStorage.getItem('pianoProgress1')).days['2026-01-05'].sec") === 120,
+    'y queda guardado también en este navegador');
+  check(W('cloudState') === 'ok' && doc.getElementById('cloudState').className.indexOf('ok') >= 0,
+    'el panel dice que está respaldado: si no se ve, es como no tenerlo');
+
+  W('cloudSave()');
+  await new Promise(r => setTimeout(r, 4300));
+  check(W('window.__cloud.writes') >= 1, 'los cambios se suben al servidor');
+  check(W("window.__cloud.doc.days['2026-01-02'].sec") === 300, 'y lo subido lleva lo que solo estaba aquí');
+  check(typeof W('window.__cloud.doc.savedAt') === 'string', 'con la fecha de cuándo se guardó');
+
+  W('delete window.claude; cloudDoc = null;');
+
+  console.log(`\n${passes} pruebas OK, ${failures} fallos`);
+  if(errors.length) console.log('Errores de consola:', errors);
+  process.exit(failures || errors.length ? 1 : 0);
+})();

@@ -553,6 +553,12 @@
   .mastery-fill{ height:100%; background:linear-gradient(90deg, var(--brass-soft), var(--brass)); }
   .mastery-pct{ color:var(--text-dim); font-variant-numeric:tabular-nums; text-align:right; }
   .prog-actions{ display:flex; gap:8px; flex-wrap:wrap; margin-top:16px; }
+  /* Dónde vive el progreso. Tiene que verse sin buscarlo: si Jorge no SABE
+     que está respaldado, para el caso es como si no lo estuviera. */
+  #cloudState{ font-style:normal; font-size:15px; }
+  #cloudState.ok{ color:#7fc4a8; }
+  #cloudState.sync{ color:var(--text-dim); }
+  #cloudState.off, #cloudState.error{ color:#dba14f; }
   .ghost-btn.danger{ border-color:rgba(224,101,95,0.45); color:#e0655f; }
   .ghost-btn.danger:hover{ background:#e0655f; color:#0c0a06; }
   label.ghost-btn{ display:inline-block; }
@@ -1108,7 +1114,7 @@
 
     <div id="progressPanel" class="info-panel" style="display:none;">
       <h3>Tu progreso</h3>
-      <p class="info-note">Todo se guarda en este navegador (localStorage). Exporta un respaldo de vez en cuando; si cambias de computador, impórtalo allá.</p>
+      <p class="info-note" id="cloudState">Comprobando dónde se está guardando tu progreso…</p>
       <div class="stat-row" id="progressStats"></div>
       <h4 class="prog-h4">Últimas 12 semanas</h4>
       <div class="heat-wrap"><div class="heat-grid" id="heatGrid"></div><div class="heat-legend"><span class="heat-cell l0 missed"></span> sin práctica &nbsp; <span class="heat-cell l1"></span><span class="heat-cell l2"></span><span class="heat-cell l3"></span><span class="heat-cell l4"></span> de 1 a 20+ min</div></div>
@@ -4382,6 +4388,7 @@ let saveTimer = null;
 function saveProgress(){
   if(saveTimer) clearTimeout(saveTimer);
   saveTimer = setTimeout(() => { try { localStorage.setItem(PROGRESS_KEY, JSON.stringify(progress)); } catch(e){} }, 300);
+  if(typeof cloudSave === 'function') cloudSave();
 }
 function dateKey(d){
   d = d || new Date();
@@ -4481,6 +4488,99 @@ function recordCascadeResult(pct, mode){
   else r.best = Math.max(r.best, pct);
   r.lastDay = dateKey();
   progress.cascade[currentFragment.id] = r; bump('cascade');
+}
+
+// ===== Respaldo automático (solo cuando la página corre en claude.ai) =====
+// El progreso vivía SOLO en el localStorage de este navegador, y dentro del
+// visor de artifacts el botón de exportar no hace nada (el visor bloquea las
+// descargas): bastaba con limpiar los datos del navegador para perder meses.
+// Si hay capacidades de Claude, el mismo objeto `progress` se guarda también
+// en el servidor y se fusiona al abrir. Fuera de ahí (archivo local, otro
+// navegador) no existe `window.claude` y todo funciona exactamente igual.
+const CLOUD_DOC = 'backup/progress';
+const PROGRESS_SECTIONS = ['scales','chords','intervals','ear','reading','drills','songs','cascade'];
+let cloudDoc = null, cloudTimer = null, cloudState = 'off';
+
+// Fusión por MÁXIMOS, campo a campo. Todo el esquema son contadores que solo
+// suben (runs, clean, sec, asked...) o un `lastDay` en 'YYYY-MM-DD', que
+// compara bien como texto. El máximo no borra ni infla; sumar sí inflaría:
+// sincronizar dos veces lo mismo contaría el doble.
+function mergeRecords(a, b){
+  const out = Object.assign({}, a);
+  Object.keys(b || {}).forEach(k => {
+    const av = out[k], bv = b[k];
+    if(typeof bv === 'number') out[k] = typeof av === 'number' ? Math.max(av, bv) : bv;
+    else if(typeof bv === 'string') out[k] = (typeof av === 'string' && av > bv) ? av : bv;
+    else if(av === undefined || av === null) out[k] = bv;
+  });
+  return out;
+}
+function mergeSection(a, b){
+  const out = Object.assign({}, a);
+  Object.keys(b || {}).forEach(k => {
+    out[k] = (a && a[k]) ? mergeRecords(a[k], b[k]) : b[k];
+  });
+  return out;
+}
+// Solo se leen las secciones conocidas: lo que venga de más en el documento
+// remoto se ignora en vez de colarse en el progreso.
+function mergeProgress(local, remote){
+  if(!remote || remote.v !== 1) return local;
+  const out = emptyProgress();
+  out.days = mergeSection(local.days, remote.days);
+  PROGRESS_SECTIONS.forEach(sec => { out[sec] = mergeSection(local[sec], remote[sec]); });
+  return out;
+}
+
+const CLOUD_TEXT = {
+  off:   'Tu progreso se guarda solo en este navegador. Exporta un respaldo de vez en cuando: si borras los datos del navegador, se pierde.',
+  ok:    '✓ Respaldado en tu cuenta de Claude. Se guarda solo y se junta con lo que practiques en otro dispositivo.',
+  sync:  '⟳ Guardando el respaldo…',
+  error: '⚠ No se pudo guardar el respaldo en línea. Exporta uno a mano para no quedarte sin copia.',
+};
+function renderCloudState(){
+  const el = $('cloudState');
+  if(!el) return;
+  el.textContent = CLOUD_TEXT[cloudState] || CLOUD_TEXT.off;
+  el.className = 'info-note ' + cloudState;
+}
+
+function cloudSave(){
+  if(!cloudDoc) return;
+  if(cloudTimer) clearTimeout(cloudTimer);
+  // 4 s de espera: practicar dispara saveProgress() muy seguido y no hay que
+  // castigar el límite de escrituras por cada nota.
+  cloudTimer = setTimeout(async () => {
+    cloudTimer = null;
+    cloudState = 'sync'; renderCloudState();
+    try {
+      await cloudDoc.set(Object.assign({}, progress, { savedAt: new Date().toISOString() }));
+      cloudState = 'ok';
+    } catch(e){ cloudState = 'error'; }
+    renderCloudState();
+  }, 4000);
+}
+
+async function initCloudBackup(){
+  if(!(window.claude && typeof window.claude.use === 'function')){ renderCloudState(); return; }
+  let db = null;
+  try { db = await window.claude.use('db'); } catch(e){}
+  if(!db){ renderCloudState(); return; }   // sin permiso: se sigue igual que antes
+  cloudDoc = db.doc(CLOUD_DOC);
+  try {
+    const snap = await cloudDoc.get();
+    if(snap.exists){
+      progress = mergeProgress(progress, snap.data());
+      try { localStorage.setItem(PROGRESS_KEY, JSON.stringify(progress)); } catch(e){}
+      todayPlan = null;
+      renderSessionBox();
+      if(currentCategory === 'progress') renderProgress();
+      if(currentCategory === 'today') renderToday();
+    }
+    cloudState = 'ok';
+  } catch(e){ cloudState = 'error'; }
+  renderCloudState();
+  cloudSave();   // deja el servidor al día con lo que ya había en este navegador
 }
 
 // ===== Plan de hoy =====
@@ -4629,11 +4729,23 @@ function renderProgress(){
     return '<div class="mastery-item"><span class="mastery-name">' + name + '</span><div class="mastery-bar"><div class="mastery-fill" style="width:' + pct + '%"></div></div><span class="mastery-pct">' + pct + '%</span></div>';
   }).join('');
 }
-$('exportBtn').addEventListener('click', () => {
-  const blob = new Blob([JSON.stringify(progress, null, 2)], { type:'application/json' });
+$('exportBtn').addEventListener('click', async () => {
+  const text = JSON.stringify(progress, null, 2);
+  const name = 'piano-progreso-' + dateKey() + '.json';
+  // Dentro del visor de artifacts un <a download> es papel mojado: la descarga
+  // tiene que pedirse por la capacidad `downloads`, que además le pregunta.
+  if(window.claude && typeof window.claude.use === 'function'){
+    let dl = null;
+    try { dl = await window.claude.use('downloads'); } catch(e){}
+    if(dl){
+      try { await dl.save({ filename: name, data: text }); } catch(e){}
+      return;   // dijo que no o falló: caer al <a> no arreglaría nada
+    }
+  }
+  const blob = new Blob([text], { type:'application/json' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = 'piano-progreso-' + dateKey() + '.json';
+  a.download = name;
   document.body.appendChild(a); a.click(); a.remove();
   setTimeout(() => URL.revokeObjectURL(a.href), 2000);
 });
@@ -4660,6 +4772,7 @@ $('resetBtn').addEventListener('click', () => {
 
 // Arranque: pestaña "Hoy" con el plan del día.
 selectCategory('today');
+initCloudBackup();
 </script>
 </body>
 </html>
