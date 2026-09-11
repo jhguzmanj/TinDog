@@ -796,6 +796,14 @@
     box-shadow:0 0 6px var(--brass-glow);
   }
   .ghost-btn.active:hover{ background:rgba(226,185,100,0.26); }
+  /* Un botón de acción tiene que acusar recibo. Sin esto, "Escuchar" sonaba
+     900 ms y no cambiaba ni un pixel: si el volumen estaba bajo parecía roto. */
+  .ghost-btn.busy{
+    background:rgba(226,185,100,0.18); color:var(--brass);
+    border-color:var(--brass); font-weight:700;
+  }
+  /* ya se usó en esta nota (y por eso ya no cuenta "a la primera") */
+  .ghost-btn.used{ border-color:var(--brass-soft); color:var(--brass-soft); }
   /* agotado (la última pista ya se dio): tiene que leerse apagado, y el hover
      no puede encenderlo o parecería que todavía hace algo */
   .ghost-btn:disabled{ opacity:0.4; cursor:default; }
@@ -4183,7 +4191,9 @@ function pickReadingNote(){
 function nextReadingNote(){
   const lv = READING_LEVELS[readingLevel];
   stopReadingSound();
-  reading = { sp: pickReadingNote(), askedAt: performance.now(), missed: false, hinted: false };
+  reading = { sp: pickReadingNote(), askedAt: performance.now(), missed: false, hinted: false, answered: false };
+  const hb = $('readingHintBtn');
+  if(hb) hb.classList.remove('used');
   clearAllHighlights();
   const clef = lv.clef === 'grand' ? 'grand' : lv.clef;
   renderStaff($('readingStaff'), [{ sp: reading.sp }], { clef, width: 300, gap: 10 });
@@ -4214,9 +4224,16 @@ function stopReading(){ stopReadingSound(); reading = null; }
 // altavoces (playNoteSound enruta solo). No descuenta del marcador: oírla no
 // dice qué tecla es, y para acertar "a la primera" hay que no fallar antes.
 let readingSounding = null, readingSoundTimer = null;
+function setReadingPlayBusy(on){
+  const b = $('readingPlayBtn');
+  if(!b) return;
+  b.classList.toggle('busy', on);
+  b.textContent = on ? '♪ Sonando…' : '🔊 Escuchar';
+}
 function stopReadingSound(){
   if(readingSoundTimer){ clearTimeout(readingSoundTimer); readingSoundTimer = null; }
   if(readingSounding !== null){ stopNoteSound(readingSounding); readingSounding = null; }
+  setReadingPlayBusy(false);
 }
 function playReadingNote(){
   if(!reading) return;
@@ -4228,11 +4245,15 @@ function playReadingNote(){
     if(!usingPiano() && !ensureAudioCtx()) return;
     playNoteSound(n);
     readingSounding = n;
+    setReadingPlayBusy(true);
     readingSoundTimer = setTimeout(stopReadingSound, 900);
   } finally { soundEnabled = wasSound; }
 }
 function checkReading(playedNote){
-  if(!reading) return;
+  // `answered` en vez de anular `reading`: entre acertar y la nota siguiente
+  // hay 700 ms en los que 🔊 Escuchar quedaba muerto — justo cuando más ganas
+  // dan de volver a oír la nota que acabas de leer.
+  if(!reading || reading.answered) return;
   const fb = $('readingFeedback');
   const target = reading.sp.midi;
   if(playedNote === target){
@@ -4244,7 +4265,7 @@ function checkReading(playedNote){
     fb.className = 'reading-big correct';
     renderStaff($('readingStaff'), [{ sp: reading.sp, cls: 'correct' }], { clef: READING_LEVELS[readingLevel].clef, width: 300, gap: 10 });
     const r = getRect(target); if(r) r.classList.add('correct');
-    reading = null;
+    reading.answered = true;
     setTimeout(nextReadingNote, 700);
   } else {
     reading.missed = true;
@@ -4256,12 +4277,18 @@ function checkReading(playedNote){
 }
 registerNoteHandler('reading', checkReading);
 $('readingHintBtn').addEventListener('click', () => {
-  if(!reading) return;
+  if(!reading || reading.answered) return;
   reading.hinted = true;
+  $('readingHintBtn').classList.add('used');
   const r = getRect(reading.sp.midi);
   if(r) r.classList.add('target');
   $('readingFeedback').textContent = 'Es ' + reading.sp.name + ' (' + SOLFA_NAMES[reading.sp.midi % 12] + ') — está marcada abajo.';
   scrollToTargets();
+  // El pentagrama es alto y empuja el teclado fuera de la pantalla: decir
+  // "está marcada abajo" no sirve si "abajo" no se ve. scrollToTargets() solo
+  // mueve el scroll horizontal DENTRO del teclado, no baja la página.
+  const kb = $('keyboardWrap');
+  if(kb && typeof kb.scrollIntoView === 'function') kb.scrollIntoView({ behavior:'smooth', block:'nearest' });
 });
 $('readingSkipBtn').addEventListener('click', () => { if(reading) nextReadingNote(); });
 $('readingPlayBtn').addEventListener('click', playReadingNote);

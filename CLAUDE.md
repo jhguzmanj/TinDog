@@ -91,6 +91,13 @@ Orden dentro del `<script>`:
   sigue siendo honesto. `stopReadingSound()` (con `readingSounding`/`readingSoundTimer`)
   la apaga a los 900 ms, al pasar de nota y al salir de la práctica — sin eso el
   piano se quedaba sonando solo.
+  **`reading.answered` en vez de `reading = null` al acertar.** Entre el acierto y
+  la nota siguiente hay 700 ms; anulando `reading` los dos botones quedaban muertos
+  justo cuando dan ganas de volver a oír la nota recién leída. `checkReading` y la
+  pista salen con `reading.answered`, pero `🔊 Escuchar` sigue vivo.
+  La pista hace `scrollIntoView` del teclado: decir "está marcada abajo" no sirve si
+  "abajo" quedó fuera de pantalla, y `scrollToTargets()` solo mueve el scroll
+  horizontal DENTRO del teclado, no baja la página.
 - **Fragmentos / Agilidad**: sin cambios de fondo (ver abajo). `checkFragment` compara
   notas exactas; la detección de "completado" se decide **antes** de
   `advanceToPlayableStep()` (que vuelve a 0 y antes ocultaba el final).
@@ -160,8 +167,13 @@ ahora — desde ~1 m y con las manos en el piano. Todo lo demás es secundario.
   grid de dos columnas, nota grande a la izquierda (`clamp(34px,4.2vw,56px)`),
   a su lado progreso + puntos, texto de mano/dedos y retroalimentación; mini
   pentagramas al lado. No volver a apilar todo en vertical: medía el doble.
-- **`.ghost-btn:disabled`** se ve al 40% y el hover no lo enciende: un botón
-  agotado (la última pista ya dada) tiene que leerse apagado.
+- **Estados de botón, con vocabulario separado.** `.active` = interruptor
+  encendido (y solo eso). `.busy` = está trabajando AHORA (🔊 Escuchar mientras
+  suena, 900 ms, con el texto en "♪ Sonando…"): sin esto el botón no cambiaba un
+  pixel y con el volumen bajo parecía roto. `.used` = ya se gastó en esta ronda
+  (💡 Pista de lectura, se limpia en `nextReadingNote`). `:disabled` se ve al 40%
+  y el hover no lo enciende: un botón agotado (la última pista ya dada) tiene que
+  leerse apagado. **Todo botón de acción debe acusar recibo de alguna forma.**
 - **Botones interruptor** (`.ghost-btn.active`): relleno dorado tenue + borde
   dorado + punto. Hover es solo un gris leve (antes hover = encendido y no se
   distinguía). Los botones de **acción** (Empezar, Escuchar de nuevo) usan

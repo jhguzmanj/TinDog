@@ -506,6 +506,40 @@ check(W('readingSounding') === null && W('readingSoundTimer') === null, 'y no qu
 W('window.__sent = []; playReadingNote(); stopReading();');
 check(W('midiSounding.size') === 0, 'salir de la práctica también la apaga');
 
+// Un botón de acción que no acusa recibo parece roto: sonaba 900 ms sin
+// cambiar un pixel, y con el volumen bajo no había forma de saber si funcionó.
+ev('#mainTabs [data-cat="reading"]');
+const playBtn = doc.getElementById('readingPlayBtn');
+const rdHintBtn = doc.getElementById('readingHintBtn');
+check(playBtn.classList.contains('busy') === false, 'en reposo el botón de escuchar está apagado');
+ev('#readingPlayBtn');
+check(playBtn.classList.contains('busy') && playBtn.textContent.indexOf('Sonando') >= 0,
+  'mientras suena la nota el botón lo dice');
+W('stopReadingSound()');
+check(playBtn.classList.contains('busy') === false && playBtn.textContent.indexOf('Escuchar') >= 0,
+  'y al terminar vuelve a su estado normal');
+
+check(rdHintBtn.classList.contains('used') === false, 'la pista arranca sin marcar');
+ev('#readingHintBtn');
+check(rdHintBtn.classList.contains('used') && W('reading.hinted') === true,
+  'al pedirla queda marcada: ya no cuenta como "a la primera"');
+W('nextReadingNote()');
+check(rdHintBtn.classList.contains('used') === false, 'y se limpia con la nota siguiente');
+
+// Entre acertar y la nota siguiente hay 700 ms. Antes `reading` se anulaba ahí
+// y los botones quedaban muertos justo cuando dan ganas de reoír la nota.
+const answerMidi = W('reading.sp.midi');
+W(`activeNotes.clear(); noteOn(${answerMidi}); noteOff(${answerMidi})`);
+check(W('reading && reading.answered') === true, 'la nota contestada sigue viva hasta que llega la siguiente');
+W('window.__sent = [];');
+ev('#readingPlayBtn');
+check(W('window.__sent').some(m => m[0] === 144 && m[1] === answerMidi),
+  'tras acertar todavía se puede volver a oír la nota que acabas de leer');
+W('window.__sent = []; activeNotes.clear();');
+W(`noteOn(${answerMidi}); noteOff(${answerMidi})`);
+check(W('readingSessionStats.asked') === 1, 'pero la misma nota no se cuenta dos veces');
+W('stopReadingSound()');
+
 W('onMIDISuccess(window.__mk([]))');
 W('soundEnabled = false;');
 
