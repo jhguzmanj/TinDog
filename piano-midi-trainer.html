@@ -796,6 +796,10 @@
     box-shadow:0 0 6px var(--brass-glow);
   }
   .ghost-btn.active:hover{ background:rgba(226,185,100,0.26); }
+  /* agotado (la última pista ya se dio): tiene que leerse apagado, y el hover
+     no puede encenderlo o parecería que todavía hace algo */
+  .ghost-btn:disabled{ opacity:0.4; cursor:default; }
+  .ghost-btn:disabled:hover{ background:transparent; color:var(--text-dim); border-color:var(--panel-border); }
   /* botones de acción (Empezar, Escuchar de nuevo): siempre rellenos, no son interruptores */
   .ghost-btn.primary{ background:var(--brass-soft); color:#0c0a06; border-color:transparent; font-weight:700; }
   .ghost-btn.primary:hover{ background:var(--brass); color:#0c0a06; }
@@ -1014,6 +1018,7 @@
     </div>
     <div id="earBar" class="ear-bar" style="display:none;">
       <button id="earPlayBtn" class="ghost-btn primary">▶ Escuchar de nuevo</button>
+      <button id="earHintBtn" class="ghost-btn" title="Primero te dice cómo suena el intervalo; si la pides otra vez, la distancia para contarla en el teclado. Pedir pista cuenta como fallo.">💡 Pista</button>
       <span class="reg-label" id="earHint">Escucha las dos notas. La primera es la nota de partida (está marcada). Toca la segunda.</span>
       <span class="reg-label" id="earScore"></span>
     </div>
@@ -1084,6 +1089,7 @@
           <div class="reading-big" id="readingFeedback">Toca la nota que ves.</div>
           <div class="reading-stats" id="readingStats"></div>
           <div class="reading-actions">
+            <button id="readingPlayBtn" class="ghost-btn">🔊 Escuchar</button>
             <button id="readingHintBtn" class="ghost-btn">💡 Pista</button>
             <button id="readingSkipBtn" class="ghost-btn">Saltar →</button>
           </div>
@@ -2967,7 +2973,9 @@ function startIntervalStep(){
   const root = currentIntervalRoot();
   let top = root + iv.semitones;
   if(top > MAX_NOTE){ top = MAX_NOTE; }
-  progressText.textContent = `Intervalo ${practiceIndex+1} / ${INTERVALS.length}`;
+  // "Intervalo 7 / 13" (y los puntos que salen de ahí) dicen el ÍNDICE, y de
+  // oído el índice ES la respuesta. Con la pregunta abierta no se numera.
+  progressText.textContent = earMode ? 'De oído' : `Intervalo ${practiceIndex+1} / ${INTERVALS.length}`;
   const rootRect = getRect(root);
   const topRect = getRect(top);
   if(earMode){
@@ -2976,8 +2984,10 @@ function startIntervalStep(){
     targetSubLabel.textContent = 'Desde ' + noteLabel(root) + ' — escucha y toca la nota que sigue';
     if(rootRect) rootRect.classList.add('target');
     distanceBox.style.display = 'none';
+    resetEarHint();
     earAwaiting = true;
     earStats.missedThis = false;
+    refreshIntervalPicker();   // ya con la pregunta abierta: tapa cuál es
     updateEarScore();
     scrollToTargets();
     playEarInterval();
@@ -2991,6 +3001,7 @@ function startIntervalStep(){
   renderDistanceBox(iv, root, top);
   distanceBox.style.display = 'block';
   intervalTip.innerHTML = '<b>' + iv.name + ':</b> ' + iv.tip;
+  intervalTip.style.display = 'block'; // el modo de oído lo esconde: hay que devolverlo
   scrollToTargets();
 }
 
@@ -3057,6 +3068,7 @@ function checkInterval(playedNote){
       [root, top].forEach(n => { const r = getRect(n); if(r){ r.classList.remove('target'); r.classList.add('correct'); } });
       renderDistanceBox(iv, root, top);
       distanceBox.style.display = 'block';
+      refreshIntervalPicker();   // ya se puede decir cuál era
       updateEarScore();
       setTimeout(() => { practiceIndex = Math.floor(Math.random() * INTERVALS.length); startIntervalStep(); }, 1400);
     } else if(playedNote === root){
@@ -3131,6 +3143,51 @@ $('earModeBtn').addEventListener('click', () => {
 });
 $('earPlayBtn').addEventListener('click', () => { if(earMode) playEarInterval(); });
 
+// Pistas de oído, escalonadas y con costo. La primera dice CÓMO SUENA, que es
+// justo la habilidad que entrena el modo; la segunda da la distancia para
+// contarla en el teclado. Ninguna marca la tecla: encontrarla es el ejercicio.
+// Pedir pista cuenta igual que equivocarse — gratis, el marcador de aciertos
+// dejaría de significar nada.
+let earHintLevel = 0;
+function resetEarHint(){
+  earHintLevel = 0;
+  // en modo de oído el consejo arranca vacío: si no, queda el del intervalo
+  // anterior a la vista y delata la respuesta.
+  intervalTip.innerHTML = '';
+  intervalTip.style.display = 'none';
+  const b = $('earHintBtn');
+  if(b){ b.textContent = '💡 Pista'; b.disabled = false; }
+}
+function earCountMiss(){
+  if(earStats.missedThis) return;
+  earStats.missedThis = true;
+  earStats.asked++;
+  if(typeof recordEar === 'function') recordEar(practiceIndex, false);
+  updateEarScore();
+}
+function showEarHint(){
+  if(!earMode || !earAwaiting) return;
+  const iv = INTERVALS[practiceIndex];
+  const root = currentIntervalRoot();
+  const top = Math.min(root + iv.semitones, MAX_NOTE);
+  earCountMiss();
+  const b = $('earHintBtn');
+  if(earHintLevel === 0){
+    earHintLevel = 1;
+    intervalTip.innerHTML = '<b>Cómo suena:</b> ' + iv.ref;
+    intervalTip.style.display = 'block';
+    if(b) b.textContent = '💡 Otra pista';
+  } else {
+    earHintLevel = 2;
+    renderDistanceBox(iv, root, top);
+    distanceBox.style.display = 'block';
+    intervalTip.innerHTML = '<b>' + iv.name + ':</b> ' + iv.tip;
+    intervalTip.style.display = 'block';
+    if(b){ b.textContent = '💡 Ya no hay más'; b.disabled = true; }
+  }
+}
+$('earHintBtn').addEventListener('click', showEarHint);
+
 
 // ===== Selección directa: acordes e intervalos =====
 let chordDoneSet = new Set();
@@ -3177,9 +3234,12 @@ function buildIntervalPicker(){
 }
 function refreshIntervalPicker(){
   const cont = document.getElementById('intervalPicker');
+  // De oído el intervalo se elige al azar: marcar cuál es en la lista sería
+  // escribir la respuesta encima de la pregunta. Se destapa al contestar.
+  const hide = earMode && earAwaiting;
   [...cont.children].forEach((b, i) => {
-    b.classList.toggle('current', i === practiceIndex);
-    b.classList.toggle('done', intervalDoneSet.has(i) && i !== practiceIndex);
+    b.classList.toggle('current', !hide && i === practiceIndex);
+    b.classList.toggle('done', intervalDoneSet.has(i) && (hide || i !== practiceIndex));
   });
 }
 
@@ -4122,6 +4182,7 @@ function pickReadingNote(){
 }
 function nextReadingNote(){
   const lv = READING_LEVELS[readingLevel];
+  stopReadingSound();
   reading = { sp: pickReadingNote(), askedAt: performance.now(), missed: false, hinted: false };
   clearAllHighlights();
   const clef = lv.clef === 'grand' ? 'grand' : lv.clef;
@@ -4146,7 +4207,30 @@ function startReading(){
   readingSessionStats = { asked: 0, first: 0 };
   nextReadingNote();
 }
-function stopReading(){ reading = null; }
+function stopReading(){ stopReadingSound(); reading = null; }
+
+// El piano real ya suena cuando Jorge toca: lo único que la app necesita sonar
+// es la nota que todavía no encuentra. Con el piano conectado sale por sus
+// altavoces (playNoteSound enruta solo). No descuenta del marcador: oírla no
+// dice qué tecla es, y para acertar "a la primera" hay que no fallar antes.
+let readingSounding = null, readingSoundTimer = null;
+function stopReadingSound(){
+  if(readingSoundTimer){ clearTimeout(readingSoundTimer); readingSoundTimer = null; }
+  if(readingSounding !== null){ stopNoteSound(readingSounding); readingSounding = null; }
+}
+function playReadingNote(){
+  if(!reading) return;
+  stopReadingSound();
+  const n = reading.sp.midi;
+  const wasSound = soundEnabled;
+  soundEnabled = true;
+  try {
+    if(!usingPiano() && !ensureAudioCtx()) return;
+    playNoteSound(n);
+    readingSounding = n;
+    readingSoundTimer = setTimeout(stopReadingSound, 900);
+  } finally { soundEnabled = wasSound; }
+}
 function checkReading(playedNote){
   if(!reading) return;
   const fb = $('readingFeedback');
@@ -4180,6 +4264,7 @@ $('readingHintBtn').addEventListener('click', () => {
   scrollToTargets();
 });
 $('readingSkipBtn').addEventListener('click', () => { if(reading) nextReadingNote(); });
+$('readingPlayBtn').addEventListener('click', playReadingNote);
 
 // ===== Metrónomo (Web Audio, programado por adelantado para que no tiemble) =====
 const metro = { on:false, bpm:80, meter:4, beat:0, nextTime:0, timer:null, refPerf:null };

@@ -432,6 +432,83 @@ W('onMIDISuccess(window.__mk([]))');
 check(W('midiOut') === null && outBtn.style.display === 'none', 'sin piano no hay salida ni botón que elegir');
 W('soundEnabled = false;');
 
+section('Oído: pistas escalonadas que cuestan');
+ev('#mainTabs [data-cat="intervals"]');
+if(!W('earMode')) ev('#earModeBtn');
+const hintBtn = doc.getElementById('earHintBtn');
+const ivTip = doc.getElementById('intervalTip');
+const distBox = doc.getElementById('distanceBox');
+
+// El consejo del intervalo anterior no puede quedar a la vista: delataba la respuesta.
+ev('#earModeBtn');                                  // a modo normal: se escribe el consejo
+W('activeNotes.clear(); practiceIndex = 4; startIntervalStep()');   // 3ª mayor
+check(ivTip.style.display === 'block' && ivTip.textContent.length > 0, 'en modo normal el consejo del intervalo se ve');
+ev('#earModeBtn');                                  // y de vuelta a oído
+W('activeNotes.clear(); practiceIndex = 5; startIntervalStep()');   // 4ª justa
+check(ivTip.style.display === 'none' && ivTip.textContent === '', 'al preguntar de oído el consejo anterior desaparece');
+check(distBox.style.display === 'none', 'y la distancia tampoco se regala');
+check(hintBtn.disabled === false && hintBtn.textContent.indexOf('Pista') >= 0, 'el botón de pista vuelve a estar disponible');
+
+// El selector "Ir directo a" marcaba el intervalo preguntado: era escribir la
+// respuesta encima de la pregunta y volvía inútil toda la práctica de oído.
+const pickBtns = () => [...doc.getElementById('intervalPicker').children];
+check(pickBtns().every(b => !b.classList.contains('current')),
+  'de oído, la lista de intervalos no delata cuál se está preguntando');
+check(/\d+\s*\/\s*\d+/.test(doc.getElementById('progressText').textContent) === false,
+  'ni el rótulo de progreso, cuyo número es justo el índice del intervalo');
+check(doc.getElementById('stepDots').children.length === 0, 'y sin puntos, que salen del mismo número');
+
+const hRoot = W('currentIntervalRoot()');
+const askedBefore = W('earStats.asked'), rightBefore2 = W('earStats.right');
+ev('#earHintBtn');
+check(ivTip.style.display === 'block' && ivTip.textContent.indexOf(W('INTERVALS[5].ref')) >= 0,
+  'la primera pista dice cómo suena, que es la habilidad que se entrena');
+check(distBox.style.display === 'none', 'pero todavía no da la distancia');
+check(W('earStats.asked') === askedBefore + 1 && W('earStats.missedThis') === true,
+  'pedir pista cuenta como fallo: si fuera gratis el marcador no significaría nada');
+check(W(`getRect(${hRoot + 5}).classList.contains('target')`) === false,
+  'ninguna pista marca la tecla de la respuesta: encontrarla es el ejercicio');
+
+ev('#earHintBtn');
+check(distBox.style.display === 'block' && distBox.textContent.indexOf('5 semitonos') >= 0,
+  'la segunda pista sí da la distancia para contarla en el teclado');
+check(distBox.textContent.indexOf(W(`noteLabel(${hRoot + 5})`)) < 0, 'sin nombrar la nota de llegada: hay que contar');
+check(hintBtn.disabled === true, 'y ya no quedan más pistas');
+check(W('earStats.asked') === askedBefore + 1, 'la segunda pista no vuelve a descontar');
+
+check(W('earAwaiting') === true, 'después de las pistas la pregunta sigue abierta');
+W(`noteOn(${hRoot + 5}); noteOff(${hRoot + 5})`);
+check(W('earStats.right') === rightBefore2, 'acertar con pista no suma acierto');
+check(W('earAwaiting') === false, 'pero deja avanzar a la siguiente');
+check(pickBtns()[5].classList.contains('current'), 'al contestar sí se destapa cuál era');
+ev('#earModeBtn');
+W('activeNotes.clear(); practiceIndex = 5; startIntervalStep()');
+check(pickBtns()[5].classList.contains('current'), 'fuera del modo de oído la lista vuelve a marcar el actual');
+
+section('Lectura: la nota se puede escuchar');
+W('window.__sent = [];');
+W('onMIDISuccess(window.__mk(["Digital Piano"], ["Digital Piano"]))');
+ev('#mainTabs [data-cat="reading"]');
+check(W('usingPiano()') === true, 'con el piano conectado la nota sale por sus altavoces');
+W('window.__sent = [];');
+const readMidi = W('reading.sp.midi');
+ev('#readingPlayBtn');
+check(JSON.stringify(W('window.__sent')) === JSON.stringify([[144, readMidi, 80]]),
+  'el botón manda al piano justo la nota del pentagrama');
+check(W('reading.hinted') === false && W('reading.missed') === false,
+  'oírla no cuenta como pista: no dice qué tecla es, y fallar antes sigue descontando');
+
+W('window.__sent = []; nextReadingNote();');
+check(W('window.__sent').some(m => m[0] === 128 && m[1] === readMidi),
+  'al pasar a la siguiente nota se apaga la anterior: nada colgado en el piano');
+check(W('readingSounding') === null && W('readingSoundTimer') === null, 'y no queda temporizador suelto');
+
+W('window.__sent = []; playReadingNote(); stopReading();');
+check(W('midiSounding.size') === 0, 'salir de la práctica también la apaga');
+
+W('onMIDISuccess(window.__mk([]))');
+W('soundEnabled = false;');
+
 console.log(`\n${passes} pruebas OK, ${failures} fallos`);
 if(errors.length) console.log('Errores de consola:', errors);
 process.exit(failures || errors.length ? 1 : 0);

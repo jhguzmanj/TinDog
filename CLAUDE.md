@@ -67,10 +67,30 @@ Orden dentro del `<script>`:
   **Unísono en modo oído:** `top === root`, así que el acierto se comprueba
   **antes** de descartar la nota de partida. Si se descarta primero (como estaba),
   tocar la tecla correcta no hace nada y la práctica se atasca sin poder avanzar.
+  **De oído no se puede filtrar el índice.** `practiceIndex` ES la respuesta, así
+  que con la pregunta abierta (`earAwaiting`) se tapan las tres cosas que lo
+  decían: el `.current` del selector "Ir directo a" (`refreshIntervalPicker`),
+  el rótulo `Intervalo 7 / 13` (pasa a decir `De oído`) y los puntos de progreso,
+  que salen de ese mismo número. Se destapa al contestar. Cualquier cosa nueva
+  que muestre `practiceIndex` va con el mismo cuidado.
+  **Pistas de oído** (`showEarHint`, botón `#earHintBtn`): dos niveles. La 1ª da
+  `iv.ref` (cómo suena — la habilidad que entrena el modo), la 2ª el cuadro de
+  distancia + `iv.tip` para contar las teclas. Ninguna marca la tecla: encontrarla
+  es el ejercicio, y `renderDistanceBox` a propósito **no** nombra la nota de
+  llegada. Pedir pista cuenta como fallo (`earCountMiss`, mismo camino que una
+  nota equivocada); gratis, el marcador de aciertos no significaría nada.
+  `resetEarHint()` vacía `#intervalTip` al preguntar: si no, quedaba a la vista
+  el consejo del intervalo anterior.
 - **Lectura**: `READING_LEVELS` (7 niveles, clave de Sol / Fa / ambas / alteraciones).
   `renderStaff(svg, [{sp, cls, clef}], {clef, width, gap, showName})`; `sp` viene de
   `spellMidi(midi, preferFlat)` o `spellFromName('B#', 60)` (respeta octava de la letra).
   Nivel dominado = ≥20 notas y ≥85% a la primera.
+  **`🔊 Escuchar` (`playReadingNote`)** suena la nota del pentagrama por el piano
+  para ligar símbolo y sonido. **No descuenta**: oírla no dice qué tecla es, y
+  cazarla a tientas ya marca `missed` en el primer error, así que el "a la primera"
+  sigue siendo honesto. `stopReadingSound()` (con `readingSounding`/`readingSoundTimer`)
+  la apaga a los 900 ms, al pasar de nota y al salir de la práctica — sin eso el
+  piano se quedaba sonando solo.
 - **Fragmentos / Agilidad**: sin cambios de fondo (ver abajo). `checkFragment` compara
   notas exactas; la detección de "completado" se decide **antes** de
   `advanceToPlayableStep()` (que vuelve a 0 y antes ocultaba el final).
@@ -140,6 +160,8 @@ ahora — desde ~1 m y con las manos en el piano. Todo lo demás es secundario.
   grid de dos columnas, nota grande a la izquierda (`clamp(34px,4.2vw,56px)`),
   a su lado progreso + puntos, texto de mano/dedos y retroalimentación; mini
   pentagramas al lado. No volver a apilar todo en vertical: medía el doble.
+- **`.ghost-btn:disabled`** se ve al 40% y el hover no lo enciende: un botón
+  agotado (la última pista ya dada) tiene que leerse apagado.
 - **Botones interruptor** (`.ghost-btn.active`): relleno dorado tenue + borde
   dorado + punto. Hover es solo un gris leve (antes hover = encendido y no se
   distinguía). Los botones de **acción** (Empezar, Escuchar de nuevo) usan
