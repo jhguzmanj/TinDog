@@ -424,6 +424,7 @@
     padding:8px 12px; border-radius:12px;
     border:1px solid var(--panel-border); background:rgba(0,0,0,0.35);
   }
+  .metro-label{ font-size:12px; letter-spacing:1.4px; text-transform:uppercase; color:var(--text-dim); }
   .metro-btn{
     width:38px; height:38px; border-radius:50%; padding:0; font-size:15px;
     display:inline-flex; align-items:center; justify-content:center;
@@ -439,7 +440,6 @@
   .metro-bpm{ font-family:'Fraunces',serif; font-size:24px; color:var(--ivory); font-variant-numeric:tabular-nums; min-width:44px; text-align:center; }
   .metro-unit{ font-size:12px; letter-spacing:1px; color:var(--text-dim); margin-left:-4px; }
   .metro-step{ padding:5px 10px; font-size:16px; }
-  .metro select{ font-size:14px; padding:6px 8px; }
   .session-box{
     display:flex; align-items:baseline; gap:8px;
     padding:8px 14px; border-radius:12px;
@@ -912,17 +912,13 @@
           <select id="deviceSelect" disabled style="display:none;"><option>Sin dispositivos</option></select>
           <button id="connectBtn">Conectar MIDI</button>
         </div>
-        <div class="metro" id="metroBox" title="Metrónomo de la app (Web Audio). También puedes usar el del P-45: FUNCTION + E3 según el manual.">
+        <div class="metro" id="metroBox" title="Metrónomo: marca el pulso con un clic. Pulsa ▶ para encenderlo y usa – / + para más lento o más rápido.">
+          <span class="metro-label">Metrónomo</span>
           <button id="metroToggle" class="metro-btn" aria-label="Encender o apagar el metrónomo">▶</button>
           <span class="metro-dot" id="metroDot"></span>
-          <button class="ghost-btn metro-step" data-bpm="-5" aria-label="Bajar 5 BPM">–</button>
+          <button class="ghost-btn metro-step" data-bpm="-5" aria-label="Más lento">–</button>
           <span class="metro-bpm" id="metroBpm">80</span><span class="metro-unit">BPM</span>
-          <button class="ghost-btn metro-step" data-bpm="5" aria-label="Subir 5 BPM">+</button>
-          <select id="metroMeter" aria-label="Compás">
-            <option value="4">4/4</option>
-            <option value="3">3/4</option>
-            <option value="2">2/4</option>
-          </select>
+          <button class="ghost-btn metro-step" data-bpm="5" aria-label="Más rápido">+</button>
         </div>
         <div class="session-box" title="Tiempo real de práctica de hoy: cuenta solo mientras tocas o usas la app.">
           <span class="session-label">Hoy</span>
@@ -4371,7 +4367,6 @@ document.querySelectorAll('.metro-step').forEach(b => b.addEventListener('click'
   metroRender();
   if(typeof renderTimingBox === 'function') renderTimingBox();
 }));
-$('metroMeter').addEventListener('change', (e) => { metro.meter = parseInt(e.target.value, 10); metro.beat = 0; });
 metroRender();
 
 // ===== Progreso persistente =====

@@ -134,6 +134,14 @@ Web Audio con programación por adelantado (`metroScheduler` cada 25 ms, 120 ms 
 lookahead). `metroOffsetMs(tPerf)` devuelve el desfase en ms al pulso más cercano
 (negativo = adelantado). Escalas "Con metrónomo" clasifican cada nota:
 `ok` ≤90 ms, `early/late` hasta 250 ms, `miss` más allá. BPM persiste en localStorage.
+**Caja del encabezado simplificada a propósito:** etiqueta `Metrónomo` visible (antes
+era solo íconos sin nombre, no se entendía qué era esa fila) + ▶/■ + puntito + – 80
+BPM +. **Se quitó el selector de compás** (`4/4 3/4 2/4`): para alguien sin
+conocimiento previo una fracción así no dice nada, y solo cambiaba en qué pulso cae
+el acento del clic — nada más dependía de él (la cascada usa su propio
+`BEATS_PER_BAR=4` fijo, no `metro.meter`). `metro.meter` queda fijo en 4 en el código
+en vez de configurable; si algún día hace falta compás real, que sea una opción
+explicada, no una fracción suelta en el encabezado sticky.
 
 ## Progreso (localStorage `pianoProgress1`)
 ```
