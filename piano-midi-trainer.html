@@ -4840,9 +4840,13 @@ $('importFile').addEventListener('change', (e) => {
     try {
       const p = JSON.parse(rd.result);
       if(!p || p.v !== 1 || !p.days) throw new Error('formato');
-      progress = Object.assign(emptyProgress(), p);
+      // Se FUSIONA, no se pisa. Antes era `Object.assign(emptyProgress(), p)`:
+      // importar el respaldo del otro computador borraba lo practicado en este.
+      // Es la misma fusión por máximos que usa la nube, así que importar dos
+      // veces el mismo archivo da igual que importarlo una.
+      progress = mergeProgress(progress, p);
       saveProgress(); todayPlan = null; renderProgress(); renderSessionBox();
-      alert('Progreso importado.');
+      alert('Respaldo unido con lo que ya había en este navegador: de cada cosa se queda lo más avanzado. No se borró nada.');
     } catch(err){ alert('Ese archivo no es un respaldo válido de esta app.'); }
   };
   rd.readAsText(f);

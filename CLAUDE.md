@@ -177,8 +177,13 @@ explicada, no una fracción suelta en el encabezado sticky.
   primera que no esté limpia. Sugiere la mano más floja; con las dos limpias
   propone ambas manos), 3 acordes menos practicados (grupo
   C G F Am Em Dm hasta dominarlo), nivel de lectura vigente, oído, pieza menos hecha.
-- Exportar/importar JSON desde la pestaña Progreso. **Dentro del visor de
-  artifacts un `<a download>` no hace nada** (el visor bloquea descargas): el
+- Exportar/importar JSON desde la pestaña Progreso. **Importar FUSIONA, no pisa**
+  (`mergeProgress(progress, p)`, la misma fusión por máximos de la nube). Antes
+  hacía `Object.assign(emptyProgress(), p)`: traer el respaldo del otro
+  computador borraba lo practicado en este, que es justo el caso de uso. Como la
+  fusión es idempotente, importar el mismo archivo dos veces da igual que una.
+  Hay una prueba que mete un `File` en el `<input>` y comprueba que lo local
+  sobrevive. **Dentro del visor de artifacts un `<a download>` no hace nada** (el visor bloquea descargas): el
   botón intenta primero `claude.use('downloads')` y solo cae al `<a>` fuera del
   visor. Si la capacidad existe pero la descarga se rechaza, NO se cae al `<a>`:
   no arreglaría nada.

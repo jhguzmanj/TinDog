@@ -664,6 +664,31 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
 
   W('delete window.claude; cloudDoc = null;');
 
+  section('Importar un respaldo no borra lo de este computador');
+  // El caso real: Jorge practica en el PC de la casa, importa el respaldo que
+  // sacó del PC del trabajo y NO puede perder lo de la casa. Antes el import
+  // hacía Object.assign sobre un progreso vacío y se comía lo local.
+  const alertReal = window.alert;
+  window.alert = () => {};
+  W(`progress = emptyProgress();
+     progress.days['2026-04-01'] = {sec:1200, notes:200};
+     progress.scales['cmajor:lh'] = {runs:4, clean:4, lastDay:'2026-04-01'};`);
+  const backup = { v:1, days:{ '2026-03-01': {sec:900, notes:80} },
+    scales:{ 'cpenta:rh': {runs:9, clean:9, lastDay:'2026-03-01'} },
+    chords:{}, intervals:{}, ear:{}, reading:{}, drills:{}, songs:{}, cascade:{} };
+  const fileInput = doc.getElementById('importFile');
+  Object.defineProperty(fileInput, 'files', {
+    value: [new window.File([JSON.stringify(backup)], 'respaldo.json', { type:'application/json' })],
+    configurable: true,
+  });
+  fileInput.dispatchEvent(new window.Event('change'));
+  await new Promise(r => setTimeout(r, 100));
+  check(W("(progress.days['2026-04-01']||{}).sec") === 1200, 'lo practicado en este navegador sigue ahí después de importar');
+  check(W("(progress.scales['cmajor:lh']||{}).runs") === 4, 'y sus escalas también');
+  check(W("(progress.days['2026-03-01']||{}).sec") === 900, 'lo que traía el respaldo se suma al historial');
+  check(W("(progress.scales['cpenta:rh']||{}).runs") === 9, 'las escalas de los dos computadores conviven');
+  window.alert = alertReal;
+
   console.log(`\n${passes} pruebas OK, ${failures} fallos`);
   if(errors.length) console.log('Errores de consola:', errors);
   process.exit(failures || errors.length ? 1 : 0);
