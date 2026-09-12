@@ -55,6 +55,21 @@ Orden dentro del `<script>`:
   paso, con dedo). Digitación de 2 octavas: derecha = 7 primeros dedos ×2 + último;
   izquierda = primer dedo + 7 siguientes ×2 (`fingerSeq`, probado en tests).
   La derecha arranca en la octava 4 (Do central), la izquierda en la 3.
+- **Sentido y modo de ataque** (opciones de escala): `scaleDir` es
+  `up | down | updown` (**Bajada sola** existe: la digitación es la de subida al
+  revés) y `scaleBlockMode` es el ejercicio **En bloque**, que en vez de una nota
+  por paso pide **todas las que caen bajo la mano, presionadas a la vez**.
+  `blockGroups(asc, hand)` corta donde el dedo "se reinicia", que es justo donde
+  la mano se mueve: derecha, dedo **menor** que el anterior (pasa el pulgar);
+  izquierda, dedo **mayor** (cruza por encima). Sale solo del string de
+  digitación, así que una escala nueva no necesita datos extra. Do mayor derecha
+  da `[Do Re Mi][Fa Sol La Si Do]`; la pentatónica izquierda, `[Do Re Mi Sol La][Do]`.
+  El motor ya sabía exigir varias notas a la vez (lo usaba "ambas manos"):
+  `checkScaleStep` pide que **todas** estén en `activeNotes`.
+  **Una pasada en bloque NO suma `clean`** (`recordScaleRun` mira `run.blocks`):
+  son 2 pulsaciones contra 8 notas, y si contara abriría la escala siguiente sin
+  haberla tocado nunca seguida. Sí suma `runs`, tiempo y `lastDay`.
+  `scaleRunKey()` incluye el modo, o cambiarlo no reconstruiría la corrida.
 - **Pentatónicas** (`family:'pentatonic'`, tercera pestaña, tarea de la academia):
   5 notas por octava, patrón `[2,2,3,2,3]` y **sin ningún semitono** — por eso
   todo lo que suene ahí "pega". El motor dejó de asumir 7 grados: `spellScale`
@@ -257,6 +272,11 @@ ahora — desde ~1 m y con las manos en el piano. Todo lo demás es secundario.
   `--mauve`). El par mano izquierda/derecha se usa igual en teclas, números de
   dedo, etiquetas `IZQ/DER`, pentagrama y cascada. Nada saturado: Jorge pidió
   sobriedad.
+- **Acordes en el pentagrama** (`renderStaff(..., {stack:true})`): las notas van
+  en la misma vertical en vez de una tras otra, con **un solo palo** para todas
+  (uno por cabeza se ve como una reja) y las segundas corridas a un lado, como se
+  escribe de verdad. Lo usa el modo En bloque; sin `stack` el comportamiento es
+  el de siempre (notas en fila), que es lo que necesita Lectura.
 - **Pentagrama en escalas**: con ambas manos son **dos** pentagramas lado a lado
   (`#miniStaff` = izquierda en clave de Fa, `#miniStaff2` = derecha en clave de
   Sol), cada uno con etiqueta de mano. Apilados no se leían.

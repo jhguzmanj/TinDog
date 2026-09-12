@@ -965,6 +965,7 @@
       <span class="reg-group"><span class="reg-label g-dir">Sentido</span>
       <div class="reg-picker g-dir" id="scaleDirPicker">
         <button class="reg-btn" data-sdir="up">Subida</button>
+        <button class="reg-btn" data-sdir="down">Bajada</button>
         <button class="reg-btn active" data-sdir="updown">Subida y bajada</button>
       </div></span>
       <span class="reg-group"><span class="reg-label g-type" id="minorVarLabel" style="display:none;">Tipo</span>
@@ -973,6 +974,7 @@
         <button class="reg-btn" data-mvar="harmonic">Armónica</button>
       </div></span>
       <button id="scaleFingerBtn" class="ghost-btn active" title="Dibuja el número de dedo sobre cada tecla marcada.">☝ Ver dedos</button>
+      <button id="scaleBlockBtn" class="ghost-btn" title="En vez de una nota a la vez, presiona juntas todas las que caen bajo la mano antes de cambiar de posición. Sirve para sentir la posición y el cruce.">🖐 En bloque</button>
       <button id="scaleTempoBtn" class="ghost-btn">⏱ Con metrónomo</button>
     </div>
 
@@ -1866,11 +1868,27 @@ function fingerSeq(fStr, hand, octaves){
   if(hand === 'rh') return f.slice(0,n).concat(f.slice(0,n), [f[n]]);
   return [f[0]].concat(f.slice(1,n+1), f.slice(1,n+1));
 }
-function buildScaleRun(scale, hand, octaves, dir){
+// Corta la escala en las posiciones de mano: un bloque nuevo empieza donde el
+// dedo "se reinicia", que es exactamente donde la mano se mueve. Subiendo, la
+// derecha numera hacia arriba dentro de una posición (1 2 3) y vuelve atrás al
+// pasar el pulgar; la izquierda numera hacia abajo (5 4 3 2 1) y salta hacia
+// arriba al cruzar. Por eso el corte es al revés en cada mano.
+function blockGroups(asc, hand){
+  const groups = [];
+  asc.forEach((item, i) => {
+    const prev = asc[i-1];
+    const nueva = !prev || (hand === 'rh' ? item.finger < prev.finger : item.finger > prev.finger);
+    if(nueva) groups.push([]);
+    groups[groups.length - 1].push(item);
+  });
+  return groups;
+}
+function buildScaleRun(scale, hand, octaves, dir, blocks){
   const hands = hand === 'both' ? ['rh','lh'] : [hand];
   const perOct = scale.steps.length;
   const count = perOct * octaves + 1;
   const perHand = {};
+  let ascLen = 0;   // cuántos pasos dura la subida, antes de aplicar el sentido
   hands.forEach(h => {
     const root = (h === 'rh' ? 60 : 48) + scale.rootPc;
     const fingers = fingerSeq(scale[h], h, octaves);
@@ -1880,18 +1898,25 @@ function buildScaleRun(scale, hand, octaves, dir){
       const semis = oct * 12 + scale.steps.slice(0, deg).reduce((a,b) => a+b, 0);
       asc.push({ n: root + semis, finger: fingers[i], name: scale.names[deg === 0 && i === count - 1 ? perOct : deg], hand: h });
     }
-    let seq = asc;
-    if(dir === 'updown') seq = asc.concat(asc.slice(0, -1).reverse());
+    // En bloque el paso es un grupo de notas; nota a nota es un grupo de una.
+    const up = blocks ? blockGroups(asc, h) : asc.map(x => [x]);
+    ascLen = up.length;
+    let seq = up;
+    if(dir === 'down') seq = up.slice().reverse();
+    else if(dir === 'updown') seq = up.concat(up.slice(0, -1).reverse());
     perHand[h] = seq;
   });
-  const len = perHand[hands[0]].length;
+  // Con las digitaciones estándar las dos manos cruzan las mismas veces, así
+  // que dan el mismo número de bloques; el mínimo es una red por si alguna
+  // digitación futura no cumple, para no indexar fuera del arreglo.
+  const len = Math.min(...hands.map(h => perHand[h].length));
   const steps = [];
   for(let i = 0; i < len; i++){
-    const notes = hands.map(h => perHand[h][i]);
-    const goingUp = dir === 'up' || i < count - 1;
+    const notes = [].concat(...hands.map(h => perHand[h][i]));
+    const goingUp = dir === 'down' ? false : (dir === 'up' || i < ascLen - 1);
     steps.push({ notes, name: notes[0].name, up: goingUp });
   }
-  return { scaleId: scale.id, hand, octaves, dir, steps, mistakes: 0, timing: [], startedAt: null };
+  return { scaleId: scale.id, hand, octaves, dir, blocks: !!blocks, steps, mistakes: 0, timing: [], startedAt: null };
 }
 
 const CHORDS = [
@@ -2221,17 +2246,18 @@ let scaleFamily = 'major';
 let minorVariant = 'natural';
 let currentScaleId = 'cmajor';
 let scaleHand = 'rh', scaleOctaves = 1, scaleDir = 'updown';
-let showFingers = true, scaleTempoMode = false;
+let showFingers = true, scaleTempoMode = false, scaleBlockMode = false;
 try {
   const so = JSON.parse(localStorage.getItem('scaleOpts') || '{}');
   if(so.hand) scaleHand = so.hand;
   if(so.octaves) scaleOctaves = so.octaves;
   if(so.dir) scaleDir = so.dir;
   if(typeof so.fingers === 'boolean') showFingers = so.fingers;
+  if(typeof so.blocks === 'boolean') scaleBlockMode = so.blocks;
   if(so.variant) minorVariant = so.variant;
 } catch(e){}
 function saveScaleOpts(){
-  try { localStorage.setItem('scaleOpts', JSON.stringify({hand:scaleHand, octaves:scaleOctaves, dir:scaleDir, fingers:showFingers, variant:minorVariant})); } catch(e){}
+  try { localStorage.setItem('scaleOpts', JSON.stringify({hand:scaleHand, octaves:scaleOctaves, dir:scaleDir, fingers:showFingers, blocks:scaleBlockMode, variant:minorVariant})); } catch(e){}
 }
 rebuildScales(minorVariant);
 
@@ -2409,6 +2435,12 @@ $('scaleFingerBtn').addEventListener('click', () => {
   if(SCALES[currentMode]) startScaleStep();
 });
 $('scaleFingerBtn').classList.toggle('active', showFingers);
+$('scaleBlockBtn').addEventListener('click', () => {
+  scaleBlockMode = !scaleBlockMode; saveScaleOpts();
+  $('scaleBlockBtn').classList.toggle('active', scaleBlockMode);
+  if(SCALES[currentMode]) startScaleRun();
+});
+$('scaleBlockBtn').classList.toggle('active', scaleBlockMode);
 $('scaleTempoBtn').addEventListener('click', () => {
   scaleTempoMode = !scaleTempoMode;
   $('scaleTempoBtn').classList.toggle('active', scaleTempoMode);
@@ -2454,7 +2486,7 @@ function markTarget(note, hand){
   if(hand === 'lh') r.classList.add('lh');
 }
 
-function scaleRunKey(){ return currentMode + ':' + scaleHand + ':' + scaleOctaves + ':' + scaleDir; }
+function scaleRunKey(){ return currentMode + ':' + scaleHand + ':' + scaleOctaves + ':' + scaleDir + ':' + (scaleBlockMode ? 'b' : 'n'); }
 
 function renderScaleTip(scale){
   const accs = scale.names.slice(0, scale.steps.length).filter(n => n.length > 1).join(', ') || 'ninguna';
@@ -2479,6 +2511,7 @@ function renderScaleTip(scale){
     html += ' <b>Menor natural</b> = las mismas teclas que su relativa mayor, empezando dos notas más abajo. <b>Armónica</b> = sube el 7º grado un semitono para que "pida" volver a la tónica.';
   }
   if(scaleHand === 'both') html += ' <b>Ambas manos:</b> las dos suben y bajan a la vez, una octava aparte; el cruce de pulgar cae en lugares distintos en cada mano — ahí es donde se traba todo el mundo, ve lento.';
+  if(scaleBlockMode) html += ' <b>En bloque:</b> presiona a la vez todas las notas que caen bajo la mano y suéltalas antes de cambiar de posición. Sirve para sentir la posición entera y ver de un golpe dónde está el cruce. Cuenta como práctica, pero no como pasada limpia: eso se gana tocando la escala nota por nota.';
   if(scaleTempoMode) html += ' <b>Con metrónomo:</b> una nota por pulso. Verde = a tiempo, azul = adelantado, naranja = atrasado.';
   scaleTip.innerHTML = html;
 }
@@ -2486,7 +2519,7 @@ function renderScaleTip(scale){
 function startScaleRun(){
   const scale = SCALES[currentMode];
   if(!scale) return;
-  scaleRun = buildScaleRun(scale, scaleHand, scaleOctaves, scaleDir);
+  scaleRun = buildScaleRun(scale, scaleHand, scaleOctaves, scaleDir, scaleBlockMode);
   scaleRun.key = scaleRunKey();
   practiceIndex = 0;
   renderScaleTip(scale);
@@ -2503,12 +2536,30 @@ function startScaleStep(){
   if(!scaleRun || scaleRun.key !== scaleRunKey()) { startScaleRun(); return; }
   const steps = scaleRun.steps;
   const step = steps[practiceIndex];
-  progressText.textContent = `Nota ${practiceIndex+1} / ${steps.length}`;
+  progressText.textContent = (scaleBlockMode ? 'Bloque ' : 'Nota ') + `${practiceIndex+1} / ${steps.length}`;
   const oct = Math.floor(step.notes[0].n / 12) - 1;
-  targetNoteLabel.textContent = scaleHand === 'both' ? step.name : (step.name + oct);
+  if(scaleBlockMode){
+    // el bloque entero es el objetivo, no su primera nota: se nombran todas,
+    // sin repetir cuando las dos manos tocan las mismas letras
+    const one = step.notes.filter(x => x.hand === step.notes[0].hand);
+    targetNoteLabel.textContent = one.map(x => x.name).join(' ');
+  } else {
+    targetNoteLabel.textContent = scaleHand === 'both' ? step.name : (step.name + oct);
+  }
   const handTxt = scaleHand === 'rh' ? 'mano derecha' : scaleHand === 'lh' ? 'mano izquierda' : 'ambas manos';
-  targetSubLabel.textContent = scale.label + ' · ' + handTxt + (step.up ? ' ↑' : ' ↓') +
-    (showFingers ? ' · dedo ' + leftFirst(step.notes).map(x => (scaleHand === 'both' ? (x.hand === 'rh' ? 'D' : 'I') : '') + x.finger).join(' / ') : '');
+  let fingerTxt = '';
+  if(showFingers){
+    if(scaleBlockMode){
+      // agrupado por mano: "I 5 4 3 2 1 / D 1 2 3" se lee; ocho pares sueltos no
+      const por = (h) => step.notes.filter(x => x.hand === h).map(x => x.finger).join(' ');
+      fingerTxt = ' · dedos ' + (scaleHand === 'both'
+        ? 'I ' + por('lh') + ' / D ' + por('rh')
+        : por(step.notes[0].hand));
+    } else {
+      fingerTxt = ' · dedo ' + leftFirst(step.notes).map(x => (scaleHand === 'both' ? (x.hand === 'rh' ? 'D' : 'I') : '') + x.finger).join(' / ');
+    }
+  }
+  targetSubLabel.textContent = scale.label + ' · ' + handTxt + (step.up ? ' ↑' : ' ↓') + fingerTxt;
   step.notes.forEach(x => {
     markTarget(x.n, x.hand);
     if(showFingers) drawFingerNum(x.n, x.finger, x.hand);
@@ -2534,7 +2585,7 @@ function checkScaleStep(playedNote){
     return;
   }
   if(!expected.every(n => activeNotes.has(n))){
-    feedbackText.textContent = 'Falta la otra mano';
+    feedbackText.textContent = scaleRun.blocks ? 'Presiónalas todas a la vez' : 'Falta la otra mano';
     feedbackText.className = 'feedback';
     return;
   }
@@ -4158,12 +4209,24 @@ function renderStaff(svgEl, notes, opts){
     svgEl.appendChild(lb);
   }
   const n = notes.length;
+  // `stack`: todas en la misma vertical (un acorde) en vez de una tras otra.
+  // Dos notas seguidas del pentagrama chocarían cabeza con cabeza, así que la
+  // segunda se corre a un lado, como se escribe de verdad.
+  let prevPos = null, shifted = false;
+  const chord = {};
   notes.forEach((item, idx) => {
     const sp = item.sp;
     const c = item.clef || (staves.length === 1 ? staves[0] : (sp.midi < 60 ? 'bass' : 'treble'));
     if(!info[c]) return;
     const pos = diatonicPos(sp);
-    const x = W * 0.42 + (n > 1 ? (idx - (n - 1) / 2) * S * 3.2 : 0);
+    let x;
+    if(opts.stack){
+      shifted = (prevPos !== null && Math.abs(pos - prevPos) === 1) ? !shifted : false;
+      prevPos = pos;
+      x = W * 0.42 + (shifted ? S * 1.3 : 0);
+    } else {
+      x = W * 0.42 + (n > 1 ? (idx - (n - 1) / 2) * S * 3.2 : 0);
+    }
     const y = yFor(c, pos);
     const rel = pos - info[c].base;
     // líneas adicionales
@@ -4183,13 +4246,19 @@ function renderStaff(svgEl, notes, opts){
     head.setAttribute('transform', `rotate(-20 ${x} ${y})`);
     head.setAttribute('class', 'staff-note' + (item.cls ? ' ' + item.cls : ''));
     svgEl.appendChild(head);
-    const stemUp = rel < 4;
-    const stem = mk('line');
-    const sx = stemUp ? x + S * 0.62 : x - S * 0.62;
-    stem.setAttribute('x1', sx); stem.setAttribute('x2', sx);
-    stem.setAttribute('y1', y); stem.setAttribute('y2', stemUp ? y - S * 3.4 : y + S * 3.4);
-    stem.setAttribute('class', 'staff-stem');
-    svgEl.appendChild(stem);
+    if(opts.stack){
+      // un acorde lleva UN palo para todas las cabezas; uno por cabeza se ve
+      // como una reja. Se dibuja al final, cuando se sabe hasta dónde llega.
+      (chord[c] = chord[c] || []).push({ y, rel });
+    } else {
+      const stemUp = rel < 4;
+      const stem = mk('line');
+      const sx = stemUp ? x + S * 0.62 : x - S * 0.62;
+      stem.setAttribute('x1', sx); stem.setAttribute('x2', sx);
+      stem.setAttribute('y1', y); stem.setAttribute('y2', stemUp ? y - S * 3.4 : y + S * 3.4);
+      stem.setAttribute('class', 'staff-stem');
+      svgEl.appendChild(stem);
+    }
     if(opts.showName){
       const t = mk('text');
       t.setAttribute('x', x); t.setAttribute('y', info[c].bottomY + pad - 2);
@@ -4197,6 +4266,19 @@ function renderStaff(svgEl, notes, opts){
       t.textContent = sp.name;
       svgEl.appendChild(t);
     }
+  });
+  Object.keys(chord).forEach(c => {
+    const ys = chord[c].map(h => h.y);
+    const loY = Math.max(...ys), hiY = Math.min(...ys);   // y grande = nota grave
+    const rels = chord[c].map(h => h.rel);
+    const stemUp = (Math.min(...rels) + Math.max(...rels)) / 2 < 4;
+    const sx = W * 0.42 + (stemUp ? S * 0.62 : -S * 0.62);
+    const stem = mk('line');
+    stem.setAttribute('x1', sx); stem.setAttribute('x2', sx);
+    stem.setAttribute('y1', stemUp ? loY : hiY);
+    stem.setAttribute('y2', stemUp ? hiY - S * 3.4 : loY + S * 3.4);
+    stem.setAttribute('class', 'staff-stem');
+    svgEl.appendChild(stem);
   });
 }
 
@@ -4208,15 +4290,19 @@ function renderMiniStaff(step){
   const s1 = $('miniStaff'), s2 = $('miniStaff2');
   if(!s1 || !step) return;
   const item = (x) => ({ sp: spellFromName(x.name, x.n), clef: x.hand === 'lh' ? 'bass' : 'treble', cls: x.hand === 'lh' ? 'lh' : '' });
-  const lh = step.notes.find(x => x.hand === 'lh');
-  const rh = step.notes.find(x => x.hand === 'rh');
-  if(lh && rh){
-    renderStaff(s1, [item(lh)], { clef:'bass',   width: 200, gap: 9, label:'IZQ', labelCls:'lh' });
-    renderStaff(s2, [item(rh)], { clef:'treble', width: 200, gap: 9, label:'DER', labelCls:'rh' });
+  // un bloque son varias notas a la vez: se apilan como acorde. Quedarse con
+  // la primera (lo que hacía `find`) dibujaría algo que no es lo que se toca.
+  const lh = step.notes.filter(x => x.hand === 'lh');
+  const rh = step.notes.filter(x => x.hand === 'rh');
+  const stack = step.notes.length > (lh.length && rh.length ? 2 : 1);
+  if(lh.length && rh.length){
+    renderStaff(s1, lh.map(item), { clef:'bass',   width: 200, gap: 9, label:'IZQ', labelCls:'lh', stack });
+    renderStaff(s2, rh.map(item), { clef:'treble', width: 200, gap: 9, label:'DER', labelCls:'rh', stack });
     s2.style.display = '';
   } else {
-    const x = lh || rh || step.notes[0];
-    renderStaff(s1, [item(x)], { clef: x.hand === 'lh' ? 'bass' : 'treble', width: 200, gap: 9, label: x.hand === 'lh' ? 'IZQ' : 'DER', labelCls: x.hand });
+    const g = lh.length ? lh : rh.length ? rh : [step.notes[0]];
+    const x = g[0];
+    renderStaff(s1, g.map(item), { clef: x.hand === 'lh' ? 'bass' : 'treble', width: 200, gap: 9, label: x.hand === 'lh' ? 'IZQ' : 'DER', labelCls: x.hand, stack });
     s2.style.display = 'none';
   }
 }
@@ -4510,7 +4596,10 @@ function recordScaleRun(run, okPct){
   const key = run.scaleId + ':' + run.hand;
   const r = progress.scales[key] || { runs:0, clean:0, best2:0, bestTiming:null, lastDay:null };
   r.runs++;
-  if(run.mistakes === 0){ r.clean++; if(run.octaves === 2) r.best2++; }
+  // En bloque son 2 pulsaciones en vez de 8 notas: cuenta como práctica (runs,
+  // lastDay, tiempo) pero NO como pasada limpia, o abriría la escala siguiente
+  // sin haberla tocado nunca seguida.
+  if(run.mistakes === 0 && !run.blocks){ r.clean++; if(run.octaves === 2) r.best2++; }
   if(okPct !== null && (r.bestTiming === null || okPct > r.bestTiming)) r.bestTiming = okPct;
   r.lastDay = dateKey();
   progress.scales[key] = r;

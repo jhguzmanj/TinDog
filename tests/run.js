@@ -111,6 +111,76 @@ run = W("buildScaleRun(SCALES.cpenta, 'both', 1, 'updown')");
 check(run.steps.length === 11, 'pentatónica subida y bajada = 11 pasos');
 check(run.steps.every(s => s.notes[1].n === s.notes[0].n - 12), 'ambas manos: izquierda una octava abajo');
 
+section('Bajada sola');
+run = W("buildScaleRun(SCALES.cpenta, 'rh', 1, 'down')");
+check(run.steps.length === 6, 'bajada de 1 octava = 6 pasos');
+check(run.steps[0].notes[0].n === 72 && run.steps[5].notes[0].n === 60, 'empieza arriba (Do5) y termina abajo (Do4)');
+check(run.steps.map(s => s.notes[0].finger).join('') === '321321', 'los dedos van al revés: 3 2 1 3 2 1');
+check(run.steps.every(s => s.up === false), 'todos los pasos van marcados como bajando');
+run = W("buildScaleRun(SCALES.cmajor, 'lh', 1, 'down')");
+check(run.steps[0].notes[0].n === 60 && run.steps[0].notes[0].finger === 1, 'Do mayor izquierda bajando arranca en Do4 con el pulgar');
+
+section('En bloque: las notas de cada posición de mano, a la vez');
+run = W("buildScaleRun(SCALES.cpenta, 'rh', 1, 'up', true)");
+check(run.steps.length === 2, 'la pentatónica derecha son 2 posiciones de mano');
+check(run.steps[0].notes.map(x => x.name).join('') === 'CDE' && run.steps[1].notes.map(x => x.name).join('') === 'GAC',
+  'los bloques cortan donde pasa el pulgar: Do-Re-Mi y Sol-La-Do');
+check(run.steps.every(s => s.notes.map(x => x.finger).join('') === '123'), 'cada bloque usa los dedos 1 2 3');
+run = W("buildScaleRun(SCALES.cpenta, 'lh', 1, 'up', true)");
+check(run.steps.length === 2 && run.steps[0].notes.length === 5 && run.steps[1].notes.length === 1,
+  'izquierda: los cinco dedos juntos y después la nota del cruce');
+check(run.steps[0].notes.map(x => x.finger).join('') === '54321', 'el bloque grande es 5 4 3 2 1');
+// en las mayores el corte también cae donde la mano se mueve
+run = W("buildScaleRun(SCALES.cmajor, 'rh', 1, 'up', true)");
+check(run.steps.length === 2 && run.steps[0].notes.length === 3 && run.steps[1].notes.length === 5,
+  'Do mayor derecha: bloque de 3 (1 2 3) y bloque de 5 (1 2 3 4 5)');
+run = W("buildScaleRun(SCALES.cmajor, 'lh', 1, 'up', true)");
+check(run.steps.length === 2 && run.steps[0].notes.length === 5 && run.steps[1].notes.length === 3,
+  'Do mayor izquierda: bloque de 5 y bloque de 3');
+// esto es lo que sostiene el Math.min de buildScaleRun: si alguna digitación
+// diera distinto número de bloques por mano, la corrida se truncaría en silencio
+check(W(`SCALE_DEFS.every(d => [1,2].every(oct => {
+  if(d.family === 'pentatonic' && oct === 2) return true;
+  const a = buildScaleRun(SCALES[d.id], 'rh', oct, 'up', true).steps.length;
+  const b = buildScaleRun(SCALES[d.id], 'lh', oct, 'up', true).steps.length;
+  return a === b;
+}))`), 'las dos manos dan el mismo número de bloques en todas las escalas');
+run = W("buildScaleRun(SCALES.cpenta, 'rh', 1, 'updown', true)");
+check(run.steps.length === 3, 'bloques subiendo y bajando: 2 + 1, sin repetir el de arriba');
+check(run.steps[0].up === true && run.steps[2].up === false, 'el primero sube y el último baja');
+run = W("buildScaleRun(SCALES.cpenta, 'both', 1, 'up', true)");
+check(run.steps[0].notes.length === 8, 'con ambas manos el bloque junta las notas de las dos (3 + 5)');
+
+section('En bloque: hay que presionarlas todas');
+ev('#mainTabs [data-cat="scales"]');
+W("scaleFamily='pentatonic'; currentScaleId='cpenta'; renderScaleSubTabs(); enterMode('cpenta');");
+W("scaleHand='rh'; scaleDir='up'; scaleBlockMode=true; startScaleRun()");
+check(W('scaleRun.steps.length') === 2, 'la práctica corre en bloques');
+check(doc.querySelectorAll('#pianoSvg .white-key.target, #pianoSvg .black-key.target').length === 3,
+  'las tres teclas del bloque quedan marcadas a la vez');
+W('noteOn(60); noteOn(62)');
+check(W('practiceIndex') === 0 && W('scaleRun.mistakes') === 0,
+  'con dos de las tres no avanza, y no es un error: falta apretar');
+check(doc.getElementById('feedbackText').textContent === 'Presiónalas todas a la vez', 'y lo dice con esas palabras');
+W('noteOn(64)');
+check(W('practiceIndex') === 1, 'al completar el bloque avanza');
+W('noteOff(60); noteOff(62); noteOff(64)');
+W('noteOn(65)'); W('noteOff(65)');
+check(W('scaleRun.mistakes') === 1, 'una nota que no es del bloque sí cuenta como error');
+// una pasada en bloque es práctica, pero no abre la escala siguiente
+const scalesDelDia = W('dayRec().scales || 0');   // se restaura abajo
+W("progress.scales['cpenta:rh'] = {runs:0, clean:0, best2:0, bestTiming:null, lastDay:null}");
+W("recordScaleRun({scaleId:'cpenta', hand:'rh', octaves:1, blocks:true, mistakes:0}, null)");
+check(W("progress.scales['cpenta:rh'].runs") === 1 && W("progress.scales['cpenta:rh'].clean") === 0,
+  'en bloque suma práctica pero no pasada limpia');
+W("recordScaleRun({scaleId:'cpenta', hand:'rh', octaves:1, blocks:false, mistakes:0}, null)");
+check(W("progress.scales['cpenta:rh'].clean") === 1, 'nota por nota sí cuenta como limpia');
+// devolver el estado como estaba: las pruebas siguientes esperan Do mayor y
+// cuentan las escalas del día desde cero
+W(`dayRec().scales = ${scalesDelDia}`);
+W("scaleBlockMode=false; scaleDir='updown'; saveScaleOpts();");
+W("scaleFamily='major'; currentScaleId='cmajor'; renderScaleSubTabs(); enterMode('cmajor');");
+
 section('La pentatónica se practica en una octava');
 W("scaleOctaves = 2; currentMode = 'cpenta'; ensureValidOctaves()");
 check(W('scaleOctaves') === 1, 'entrar a una pentatónica con 2 octavas puestas la baja a 1');
