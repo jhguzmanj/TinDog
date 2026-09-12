@@ -2085,8 +2085,8 @@ const AGILITY_DRILLS = [
     tip:'Solo dos dedos, solo dos notas. Sirve para practicar el "rebote" de la muñeca sin preocuparte de dónde va cada dedo — ese movimiento suelto es la base de la agilidad real.',
     tempo:88,
     pattern:[
-      {deg:0,dur:1},{deg:4,dur:1},{deg:0,dur:1},{deg:4,dur:1},
-      {deg:0,dur:1},{deg:4,dur:1},{deg:0,dur:1},{deg:4,dur:1.5},
+      {deg:0,dur:1,label:'1'},{deg:4,dur:1,label:'2'},{deg:0,dur:1,label:'1'},{deg:4,dur:1,label:'2'},
+      {deg:0,dur:1,label:'1'},{deg:4,dur:1,label:'2'},{deg:0,dur:1,label:'1'},{deg:4,dur:1.5,label:'2'},
     ]
   },
   {
@@ -2107,9 +2107,9 @@ const AGILITY_DRILLS = [
     tip:'La raíz, la 2ª y la 3ª una y otra vez, sin parar entre repeticiones. Cuando esto te salga fluido y sin pausas raras entre la última nota y la siguiente vuelta, ya diste un paso real en agilidad.',
     tempo:100,
     pattern:[
-      {deg:0,dur:0.5},{deg:2,dur:0.5},{deg:4,dur:0.5},
-      {deg:0,dur:0.5},{deg:2,dur:0.5},{deg:4,dur:0.5},
-      {deg:0,dur:0.5},{deg:2,dur:0.5},{deg:4,dur:1},
+      {deg:0,dur:0.5,label:'1'},{deg:2,dur:0.5,label:'2'},{deg:4,dur:0.5,label:'3'},
+      {deg:0,dur:0.5,label:'1'},{deg:2,dur:0.5,label:'2'},{deg:4,dur:0.5,label:'3'},
+      {deg:0,dur:0.5,label:'1'},{deg:2,dur:0.5,label:'2'},{deg:4,dur:1,label:'3'},
     ]
   },
   {
@@ -2142,6 +2142,14 @@ const AGILITY_DRILLS = [
   },
 ];
 
+// Digitación (lhF/rhF, paralela a lh/rh): no viene del profesor de Jorge,
+// es una digitación razonable inventada para tener referencia en el teclado,
+// igual que en Escalas y Acordes. Convención usada en las 5 piezas: acorde
+// de la izquierda en posición fundamental = 5-3-1 (igual que CHORD_FINGERS),
+// nota grave suelta de la izquierda = dedo 5, acordes de la derecha
+// reutilizan CHORD_FINGERS.rh por inversión, y la melodía de la derecha va
+// en posición de 5 dedos (Do=1 Re=2 Mi=3 Fa=4 Sol=5) estirando el 5 para
+// notas que caen un grado más arriba de Sol.
 const SONGS = [
   {
     id:'cuatro-acordes',
@@ -2149,10 +2157,10 @@ const SONGS = [
     tip:'La progresión Do–Sol–Lam–Fa. Está en cientos de canciones pop. La izquierda hace el acorde completo, la derecha toca la nota más alta como melodía. Si te sale esto, ya puedes acompañar muchísimas canciones.',
     tempo:76,
     steps:[
-      {lh:[48,52,55], rh:[72], dur:2, label:'Do (C)'},
-      {lh:[43,47,50], rh:[71], dur:2, label:'Sol (G)'},
-      {lh:[45,48,52], rh:[72], dur:2, label:'Lam (Am)'},
-      {lh:[41,45,48], rh:[69], dur:2, label:'Fa (F)'},
+      {lh:[48,52,55], lhF:[5,3,1], rh:[72], rhF:[5], dur:2, label:'Do (C)'},
+      {lh:[43,47,50], lhF:[5,3,1], rh:[71], rhF:[5], dur:2, label:'Sol (G)'},
+      {lh:[45,48,52], lhF:[5,3,1], rh:[72], rhF:[5], dur:2, label:'Lam (Am)'},
+      {lh:[41,45,48], lhF:[5,3,1], rh:[69], rhF:[5], dur:2, label:'Fa (F)'},
     ]
   },
   {
@@ -2161,14 +2169,14 @@ const SONGS = [
     tip:'Beethoven. Melodía en la derecha, bajo simple en la izquierda. Toda la melodía cabe en 5 dedos sin mover la mano: por eso es la primera pieza real de casi todo estudiante de piano.',
     tempo:92,
     steps:[
-      {lh:[48], rh:[64], dur:1}, {lh:[], rh:[64], dur:1},
-      {lh:[], rh:[65], dur:1},  {lh:[], rh:[67], dur:1},
-      {lh:[48], rh:[67], dur:1}, {lh:[], rh:[65], dur:1},
-      {lh:[], rh:[64], dur:1},  {lh:[], rh:[62], dur:1},
-      {lh:[48], rh:[60], dur:1}, {lh:[], rh:[60], dur:1},
-      {lh:[], rh:[62], dur:1},  {lh:[], rh:[64], dur:1},
-      {lh:[48], rh:[64], dur:1.5}, {lh:[], rh:[62], dur:0.5},
-      {lh:[], rh:[62], dur:2},
+      {lh:[48], lhF:[5], rh:[64], rhF:[3], dur:1}, {lh:[], rh:[64], rhF:[3], dur:1},
+      {lh:[], rh:[65], rhF:[4], dur:1},  {lh:[], rh:[67], rhF:[5], dur:1},
+      {lh:[48], lhF:[5], rh:[67], rhF:[5], dur:1}, {lh:[], rh:[65], rhF:[4], dur:1},
+      {lh:[], rh:[64], rhF:[3], dur:1},  {lh:[], rh:[62], rhF:[2], dur:1},
+      {lh:[48], lhF:[5], rh:[60], rhF:[1], dur:1}, {lh:[], rh:[60], rhF:[1], dur:1},
+      {lh:[], rh:[62], rhF:[2], dur:1},  {lh:[], rh:[64], rhF:[3], dur:1},
+      {lh:[48], lhF:[5], rh:[64], rhF:[3], dur:1.5}, {lh:[], rh:[62], rhF:[2], dur:0.5},
+      {lh:[], rh:[62], rhF:[2], dur:2},
     ]
   },
   {
@@ -2177,14 +2185,14 @@ const SONGS = [
     tip:'La que ya te había recomendado. Melodía de 5 notas en la derecha, acordes largos en la izquierda. Buen primer ejercicio de coordinación entre manos porque la izquierda se mueve poco.',
     tempo:88,
     steps:[
-      {lh:[48,52,55], rh:[60], dur:1}, {lh:[], rh:[60], dur:1},
-      {lh:[41,45,48], rh:[67], dur:1}, {lh:[], rh:[67], dur:1},
-      {lh:[], rh:[69], dur:1},         {lh:[], rh:[69], dur:1},
-      {lh:[48,52,55], rh:[67], dur:2},
-      {lh:[41,45,48], rh:[65], dur:1}, {lh:[], rh:[65], dur:1},
-      {lh:[48,52,55], rh:[64], dur:1}, {lh:[], rh:[64], dur:1},
-      {lh:[43,47,50], rh:[62], dur:1}, {lh:[], rh:[62], dur:1},
-      {lh:[48,52,55], rh:[60], dur:2},
+      {lh:[48,52,55], lhF:[5,3,1], rh:[60], rhF:[1], dur:1}, {lh:[], rh:[60], rhF:[1], dur:1},
+      {lh:[41,45,48], lhF:[5,3,1], rh:[67], rhF:[5], dur:1}, {lh:[], rh:[67], rhF:[5], dur:1},
+      {lh:[], rh:[69], rhF:[5], dur:1},         {lh:[], rh:[69], rhF:[5], dur:1},
+      {lh:[48,52,55], lhF:[5,3,1], rh:[67], rhF:[5], dur:2},
+      {lh:[41,45,48], lhF:[5,3,1], rh:[65], rhF:[4], dur:1}, {lh:[], rh:[65], rhF:[4], dur:1},
+      {lh:[48,52,55], lhF:[5,3,1], rh:[64], rhF:[3], dur:1}, {lh:[], rh:[64], rhF:[3], dur:1},
+      {lh:[43,47,50], lhF:[5,3,1], rh:[62], rhF:[2], dur:1}, {lh:[], rh:[62], rhF:[2], dur:1},
+      {lh:[48,52,55], lhF:[5,3,1], rh:[60], rhF:[1], dur:2},
     ]
   },
   {
@@ -2193,10 +2201,10 @@ const SONGS = [
     tip:'El "punto final" de la música occidental: Do–Fa–Sol–Do. Suena a conclusión. Vale la pena que la reconozcas de oído, porque termina casi todas las piezas clásicas que vas a estudiar.',
     tempo:66,
     steps:[
-      {lh:[48], rh:[60,64,67], dur:2, label:'I  — Do'},
-      {lh:[41], rh:[60,65,69], dur:2, label:'IV — Fa'},
-      {lh:[43], rh:[59,62,67], dur:2, label:'V  — Sol'},
-      {lh:[48], rh:[60,64,67], dur:3, label:'I  — Do'},
+      {lh:[48], lhF:[5], rh:[60,64,67], rhF:[1,3,5], dur:2, label:'I  — Do'},
+      {lh:[41], lhF:[5], rh:[60,65,69], rhF:[1,3,5], dur:2, label:'IV — Fa'},
+      {lh:[43], lhF:[5], rh:[59,62,67], rhF:[1,2,5], dur:2, label:'V  — Sol'},
+      {lh:[48], lhF:[5], rh:[60,64,67], rhF:[1,3,5], dur:3, label:'I  — Do'},
     ]
   },
   {
@@ -2205,13 +2213,13 @@ const SONGS = [
     tip:'Las mismas 3 notas del acorde de Do, pero una a la vez en vez de juntas. Es como suena un acorde "desarmado" — muy usado en baladas. Practica que suene parejo, sin que una nota salga más fuerte.',
     tempo:80,
     steps:[
-      {lh:[48], rh:[60], dur:1}, {lh:[], rh:[64], dur:1},
-      {lh:[], rh:[67], dur:1},   {lh:[], rh:[72], dur:1},
-      {lh:[], rh:[67], dur:1},   {lh:[], rh:[64], dur:1},
-      {lh:[43], rh:[62], dur:1}, {lh:[], rh:[65], dur:1},
-      {lh:[], rh:[67], dur:1},   {lh:[], rh:[71], dur:1},
-      {lh:[], rh:[67], dur:1},   {lh:[], rh:[65], dur:1},
-      {lh:[48], rh:[64], dur:3},
+      {lh:[48], lhF:[5], rh:[60], rhF:[1], dur:1}, {lh:[], rh:[64], rhF:[2], dur:1},
+      {lh:[], rh:[67], rhF:[3], dur:1},   {lh:[], rh:[72], rhF:[5], dur:1},
+      {lh:[], rh:[67], rhF:[3], dur:1},   {lh:[], rh:[64], rhF:[2], dur:1},
+      {lh:[43], lhF:[5], rh:[62], rhF:[1], dur:1}, {lh:[], rh:[65], rhF:[2], dur:1},
+      {lh:[], rh:[67], rhF:[3], dur:1},   {lh:[], rh:[71], rhF:[5], dur:1},
+      {lh:[], rh:[67], rhF:[3], dur:1},   {lh:[], rh:[65], rhF:[2], dur:1},
+      {lh:[48], lhF:[5], rh:[64], rhF:[2], dur:3},
     ]
   },
 ];
@@ -2932,6 +2940,18 @@ const fragmentsPanel = document.getElementById('fragmentsPanel');
 const listenBtn = document.getElementById('listenBtn');
 const agilOctaveBar = document.getElementById('agilOctaveBar');
 
+// El dedo de la derecha viene del número al frente de `label` (ya lo trae
+// cada patrón de AGILITY_DRILLS); el de la izquierda es su espejo: 6 - dedo.
+// Es la misma regla que usa la digitación de escalas de dos manos (p.ej.
+// Do mayor rh '12312345' / lh '54321321' — dedo a dedo, 6 menos el de la
+// derecha), así que no hay que inventar una digitación aparte para el cruce
+// de pulgar: sale sola de la que ya trae cada paso.
+function parseFingerLabel(label){
+  const m = /^(\d)/.exec(label || '');
+  return m ? Number(m[1]) : null;
+}
+function mirrorFinger(f){ return f ? 6 - f : null; }
+
 // Convierte un patrón relativo (semitonos desde la raíz) en pasos concretos
 // para ambas manos, cada una en su propia octava. Las dos manos siempre
 // quedan generadas — es el selector "Ambas/Derecha/Izquierda" (vía
@@ -2939,12 +2959,17 @@ const agilOctaveBar = document.getElementById('agilOctaveBar');
 function materializeAgilitySteps(shape, rhOct, lhOct){
   const rhRoot = (rhOct + 1) * 12;
   const lhRoot = (lhOct + 1) * 12;
-  return shape.pattern.map(p => ({
-    lh: [lhRoot + p.deg],
-    rh: [rhRoot + p.deg],
-    dur: p.dur,
-    label: p.label
-  }));
+  return shape.pattern.map(p => {
+    const rhFinger = parseFingerLabel(p.label);
+    return {
+      lh: [lhRoot + p.deg],
+      rh: [rhRoot + p.deg],
+      dur: p.dur,
+      label: p.label,
+      rhF: rhFinger ? [rhFinger] : [],
+      lhF: rhFinger ? [mirrorFinger(rhFinger)] : [],
+    };
+  });
 }
 
 function shapeOctaveValid(oct, shape){
@@ -3122,8 +3147,14 @@ function startFragmentStep(){
   if(step.label) sub = step.label + ' &nbsp;—&nbsp; ' + sub;
   targetSubLabel.innerHTML = sub;
 
-  if(currentHand !== 'rh') step.lh.forEach(n => markTarget(n, 'lh'));
-  if(currentHand !== 'lh') step.rh.forEach(n => markTarget(n, 'rh'));
+  if(currentHand !== 'rh') step.lh.forEach((n, i) => {
+    markTarget(n, 'lh');
+    if(step.lhF && step.lhF[i]) drawFingerNum(n, step.lhF[i], 'lh');
+  });
+  if(currentHand !== 'lh') step.rh.forEach((n, i) => {
+    markTarget(n, 'rh');
+    if(step.rhF && step.rhF[i]) drawFingerNum(n, step.rhF[i], 'rh');
+  });
 }
 
 function checkFragment(){

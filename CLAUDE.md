@@ -180,6 +180,33 @@ Orden dentro del `<script>`:
 - **Fragmentos / Agilidad**: sin cambios de fondo (ver abajo). `checkFragment` compara
   notas exactas; la detección de "completado" se decide **antes** de
   `advanceToPlayableStep()` (que vuelve a 0 y antes ocultaba el final).
+  **Número de dedo en el teclado** (`lhF`/`rhF`, paralelos a `lh`/`rh`): antes solo
+  Escalas y Acordes lo dibujaban (`drawFingerNum`); Jorge lo pidió como referencia
+  en **todas** las prácticas que marcan tecla. Agilidad y Fragmentos no traían esa
+  digitación. Reglas usadas (ninguna viene del profesor — es una digitación
+  razonable inventada, igual que en Acordes):
+  - **Agilidad** (`materializeAgilitySteps`): cada paso de `AGILITY_DRILLS` ya trae
+    un dedo de mano derecha al frente del `label` (p.ej. `'1 (pulgar)'`); el de la
+    izquierda es su **espejo**, `mirrorFinger = 6 - dedo`. Es la misma regla que ya
+    usa la digitación de escalas a dos manos (Do mayor rh `12312345` / lh
+    `54321321`, dedo a dedo suman 6), así que el patrón de cruce de pulgar
+    (`cruce-pulgar`, que es literalmente una escala de una octava) no necesitó
+    digitación aparte: el espejo solo la reproduce. `alterna-pulgar-indice` y
+    `escalera-corta` no traían `label` (nada que espejar); se les agregó
+    (`1,2` alternado y `1,2,3` repetido) porque el nombre y el tip ya decían qué
+    dedos son.
+  - **Fragmentos** (`SONGS`): no hay patrón que derivar (son piezas reales, no
+    posiciones fijas), así que `lhF`/`rhF` se escribieron a mano por nota.
+    Convención: acorde de la izquierda en posición fundamental = `5-3-1` (igual
+    que `CHORD_FINGERS`), nota grave suelta de la izquierda = dedo `5`, acordes de
+    la derecha reutilizan `CHORD_FINGERS.rh` por inversión, y la melodía de la
+    derecha va en posición de 5 dedos (Do=1 Re=2 Mi=3 Fa=4 Sol=5, estirando el 5
+    para el La de "Estrellita"). El arpegio de Do usa el patrón estándar 1-2-3-5.
+  - **Intervalos y Lectura quedan fuera a propósito.** Intervalos no tiene mano
+    fija (`currentHand` no existe ahí): forzar un dedo inventaría una restricción
+    que hoy no tiene el ejercicio. Lectura **nunca** marca la tecla objetivo — es
+    a propósito (sight-reading, ver más abajo) — así que no hay tecla sobre la
+    cual dibujar un número.
 - **P-45**: el manual numera las octavas una posición abajo (su C3 = C4/Do central);
   `manualToMidi()` hace esa conversión. Mapa extraído del PDF, no adivinar.
 

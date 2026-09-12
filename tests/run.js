@@ -339,15 +339,41 @@ section('Fragmentos y agilidad siguen funcionando');
 ev('#mainTabs [data-cat="agility"]');
 check(W('currentMode') === 'agility' && W("practiceFamily") === 'agility', 'agilidad carga');
 W("currentHand='rh'; practiceIndex=0; startFragmentStep()");
+check(doc.querySelectorAll('#pianoSvg .finger-num').length === 1, 'agilidad también dibuja el número de dedo');
 const first = W('stepNotes(currentFragment.steps[0], "rh")[0]');
 W(`noteOn(${first})`); W(`noteOff(${first})`);
 check(W('practiceIndex') === 1, 'la nota correcta avanza en agilidad');
 ev('#mainTabs [data-cat="fragments"]');
 check(W("currentFragment.id") === 'cuatro-acordes', 'fragmentos carga la primera pieza');
+check(doc.querySelectorAll('#pianoSvg .finger-num').length === 4, 'fragmentos dibuja un dedo por nota (3 izq + 1 der)');
 W('practiceIndex = currentFragment.steps.length - 1; currentHand = "rh"; startFragmentStep()');
 const last = W('stepNotes(currentFragment.steps[currentFragment.steps.length-1], "rh")[0]');
 W(`noteOn(${last})`); W(`noteOff(${last})`);
 check(W("progress.songs['cuatro-acordes'].runs") === 1, 'terminar una pieza se registra');
+
+section('Digitación en agilidad y fragmentos: datos consistentes');
+// Toda la digitación de agilidad sale de un solo número al frente del label
+// (derecha) más su espejo (6 - dedo) para la izquierda — no hay datos sueltos.
+const agilFingerCheck = W(`
+  AGILITY_DRILLS.every(shape => shape.pattern.every(p => {
+    const m = /^(\\d)/.exec(p.label || '');
+    if(!m) return false;
+    const rh = Number(m[1]);
+    return rh >= 1 && rh <= 5;
+  }))
+`);
+check(agilFingerCheck, 'cada paso de agilidad trae un dedo de mano derecha válido (1-5) en su label');
+check(W("mirrorFinger(1) === 5 && mirrorFinger(5) === 1 && mirrorFinger(3) === 3"), 'el espejo de dedo es 6 - dedo');
+const materialized = W("JSON.stringify(materializeAgilitySteps(AGILITY_DRILLS[0], 4, 3).map(s => [s.rhF[0], s.lhF[0]]))");
+check(JSON.parse(materialized).every(([rh, lh]) => rh + lh === 6), 'agilidad: cada paso materializado trae rhF/lhF espejados (suman 6)');
+// Cada nota de SONGS trae su dedo: los arreglos lhF/rhF calzan en tamaño con lh/rh.
+const songsFingerCheck = W(`
+  SONGS.every(song => song.steps.every(st =>
+    (st.lh.length === 0 || (st.lhF && st.lhF.length === st.lh.length)) &&
+    (st.rh.length === 0 || (st.rhF && st.rhF.length === st.rh.length))
+  ))
+`);
+check(songsFingerCheck, 'en fragmentos, cada nota (lh/rh) tiene su dedo (lhF/rhF) del mismo tamaño');
 
 section('Plan de hoy y progreso');
 ev('#mainTabs [data-cat="today"]');
