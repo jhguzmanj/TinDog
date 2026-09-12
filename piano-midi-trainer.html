@@ -659,7 +659,13 @@
   .reg-label{ font-size:12.5px; letter-spacing:1.4px; text-transform:uppercase; }
   /* la etiqueta y sus botones se ajustan como una sola pieza: antes el título
      se quedaba solo al final de una fila y el selector saltaba a la siguiente */
-  .reg-group{ display:inline-flex; align-items:center; gap:10px; flex:0 0 auto; }
+  /* El grupo puede encogerse (si no, "Ascendente y descendente" se salía de la
+     pantalla en el teléfono), pero la etiqueta NUNCA: lo que se parte es la
+     fila de botones, dentro del bloque segmentado, y el título se queda pegado
+     a los suyos. Eso era lo que `flex:0 0 auto` protegía. */
+  .reg-group{ display:inline-flex; align-items:center; gap:10px; flex:0 1 auto; min-width:0; }
+  .reg-group > .reg-label{ flex:0 0 auto; }
+  .reg-group > .reg-picker{ min-width:0; }
 
   /* --- Pestañas agrupadas: plan / ejercicios / consulta --- */
   #mainTabs{ align-items:center; gap:6px; }
@@ -964,9 +970,9 @@
       </div></span>
       <span class="reg-group"><span class="reg-label g-dir">Sentido</span>
       <div class="reg-picker g-dir" id="scaleDirPicker">
-        <button class="reg-btn" data-sdir="up">Subida</button>
-        <button class="reg-btn" data-sdir="down">Bajada</button>
-        <button class="reg-btn active" data-sdir="updown">Subida y bajada</button>
+        <button class="reg-btn" data-sdir="up">Ascendente</button>
+        <button class="reg-btn" data-sdir="down">Descendente</button>
+        <button class="reg-btn active" data-sdir="updown">Ascendente y descendente</button>
       </div></span>
       <span class="reg-group"><span class="reg-label g-type" id="minorVarLabel" style="display:none;">Tipo</span>
       <div class="reg-picker g-type" id="minorVarPicker" style="display:none;">

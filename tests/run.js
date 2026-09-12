@@ -72,13 +72,13 @@ check(W("fingerSeq('32143213','lh',2).join('')") === '321432132143213', 'izquier
 
 section('Secuencia de práctica de escala');
 let run = W("buildScaleRun(SCALES.cmajor, 'both', 1, 'updown')");
-check(run.steps.length === 15, 'subida y bajada de 1 octava = 15 pasos');
+check(run.steps.length === 15, 'ascendente y descendente de 1 octava = 15 pasos');
 check(run.steps.every(s => s.notes.length === 2 && s.notes[1].n === s.notes[0].n - 12), 'ambas manos: izquierda una octava abajo');
 check(run.steps[0].notes[0].finger === 1 && run.steps[0].notes[1].finger === 5, 'primer paso: pulgar derecha, meñique izquierda');
 check(run.steps[7].notes[0].n === 72 && run.steps[7].notes[0].finger === 5, 'tope de la escala: Do5 con el 5');
 check(run.steps[14].notes[0].n === 60 && run.steps[14].notes[0].finger === 1, 'vuelve a Do4 con el pulgar');
 run = W("buildScaleRun(SCALES.cmajor, 'rh', 2, 'up')");
-check(run.steps.length === 15 && run.steps[14].notes[0].n === 84, '2 octavas subida: 15 notas hasta Do6');
+check(run.steps.length === 15 && run.steps[14].notes[0].n === 84, '2 octavas ascendente: 15 notas hasta Do6');
 run = W("buildScaleRun(SCALES.bbmajor, 'lh', 1, 'up')");
 check(run.steps[0].notes[0].n === 58 && run.steps[0].notes[0].finger === 3, 'Sib M izquierda arranca en Sib3 con el 3');
 
@@ -101,24 +101,24 @@ check(W(`PENTA_ORDER.every(id => ['rh','lh'].every(h => {
 check(W("fingerSeq('123123','rh',1).join('')") === '123123', 'derecha pentatónica 1 oct = 1 2 3 1 2 3');
 check(W("fingerSeq('543212','lh',1).join('')") === '543212', 'izquierda pentatónica 1 oct = 5 4 3 2 1 2');
 run = W("buildScaleRun(SCALES.cpenta, 'rh', 1, 'up')");
-check(run.steps.length === 6, 'subida de 1 octava pentatónica = 6 pasos');
+check(run.steps.length === 6, 'ascendente de 1 octava pentatónica = 6 pasos');
 check(run.steps.map(s => s.notes[0].finger).join('') === '123123', 'dedos derecha 1 2 3 1 2 3');
 check(run.steps[3].notes[0].n === 67, 'el 4º paso es Sol4 (se salta el Fa)');
 run = W("buildScaleRun(SCALES.cpenta, 'lh', 1, 'up')");
 check(run.steps[0].notes[0].n === 48 && run.steps.map(s => s.notes[0].finger).join('') === '543212',
   'izquierda arranca en Do3 con dedos 5 4 3 2 1 2');
 run = W("buildScaleRun(SCALES.cpenta, 'both', 1, 'updown')");
-check(run.steps.length === 11, 'pentatónica subida y bajada = 11 pasos');
+check(run.steps.length === 11, 'pentatónica ascendente y descendente = 11 pasos');
 check(run.steps.every(s => s.notes[1].n === s.notes[0].n - 12), 'ambas manos: izquierda una octava abajo');
 
-section('Bajada sola');
+section('Descendente sola');
 run = W("buildScaleRun(SCALES.cpenta, 'rh', 1, 'down')");
-check(run.steps.length === 6, 'bajada de 1 octava = 6 pasos');
+check(run.steps.length === 6, 'descendente de 1 octava = 6 pasos');
 check(run.steps[0].notes[0].n === 72 && run.steps[5].notes[0].n === 60, 'empieza arriba (Do5) y termina abajo (Do4)');
 check(run.steps.map(s => s.notes[0].finger).join('') === '321321', 'los dedos van al revés: 3 2 1 3 2 1');
-check(run.steps.every(s => s.up === false), 'todos los pasos van marcados como bajando');
+check(run.steps.every(s => s.up === false), 'todos los pasos van marcados como descendentes');
 run = W("buildScaleRun(SCALES.cmajor, 'lh', 1, 'down')");
-check(run.steps[0].notes[0].n === 60 && run.steps[0].notes[0].finger === 1, 'Do mayor izquierda bajando arranca en Do4 con el pulgar');
+check(run.steps[0].notes[0].n === 60 && run.steps[0].notes[0].finger === 1, 'Do mayor izquierda descendente arranca en Do4 con el pulgar');
 
 section('En bloque: las notas de cada posición de mano, a la vez');
 run = W("buildScaleRun(SCALES.cpenta, 'rh', 1, 'up', true)");
@@ -146,7 +146,7 @@ check(W(`SCALE_DEFS.every(d => [1,2].every(oct => {
   return a === b;
 }))`), 'las dos manos dan el mismo número de bloques en todas las escalas');
 run = W("buildScaleRun(SCALES.cpenta, 'rh', 1, 'updown', true)");
-check(run.steps.length === 3, 'bloques subiendo y bajando: 2 + 1, sin repetir el de arriba');
+check(run.steps.length === 3, 'bloques ascendentes y descendentes: 2 + 1, sin repetir el de arriba');
 check(run.steps[0].up === true && run.steps[2].up === false, 'el primero sube y el último baja');
 run = W("buildScaleRun(SCALES.cpenta, 'both', 1, 'up', true)");
 check(run.steps[0].notes.length === 8, 'con ambas manos el bloque junta las notas de las dos (3 + 5)');

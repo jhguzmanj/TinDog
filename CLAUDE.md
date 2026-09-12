@@ -56,8 +56,11 @@ Orden dentro del `<script>`:
   izquierda = primer dedo + 7 siguientes ×2 (`fingerSeq`, probado en tests).
   La derecha arranca en la octava 4 (Do central), la izquierda en la 3.
 - **Sentido y modo de ataque** (opciones de escala): `scaleDir` es
-  `up | down | updown` (**Bajada sola** existe: la digitación es la de subida al
-  revés) y `scaleBlockMode` es el ejercicio **En bloque**, que en vez de una nota
+  `up | down | updown`, rotulados **Ascendente / Descendente / Ascendente y
+  descendente** — así los llama el profesor de Jorge, y la app tiene que hablar
+  el idioma de la clase (los valores internos siguen en inglés: cambiarlos
+  rompería el `scaleOpts` ya guardado). Descendente sola existe: la digitación es
+  la de subida al revés y `scaleBlockMode` es el ejercicio **En bloque**, que en vez de una nota
   por paso pide **todas las que caen bajo la mano, presionadas a la vez**.
   `blockGroups(asc, hand)` corta donde el dedo "se reinicia", que es justo donde
   la mano se mueve: derecha, dedo **menor** que el anterior (pasa el pulgar);
@@ -290,6 +293,13 @@ ahora — desde ~1 m y con las manos en el piano. Todo lo demás es secundario.
 - **`.reg-group`** envuelve cada etiqueta con su selector dentro de una
   `.reg-bar`. Sin eso, al ajustarse la fila el título se quedaba solo al final y
   sus botones saltaban a la siguiente línea. Un par nuevo va envuelto igual.
+  El grupo **sí puede encogerse** (`flex:0 1 auto; min-width:0`) y la etiqueta
+  **no** (`flex:0 0 auto`): así lo que se parte es la fila de botones *dentro*
+  del bloque segmentado y el título sigue pegado a los suyos. Con el grupo
+  rígido, "Ascendente y descendente" sacaba la página entera de la pantalla en
+  el teléfono (390 px: 576 px de ancho). jsdom no mide diseño, así que **esto no
+  lo cubre ninguna prueba**: al tocar etiquetas largas, medir con Chromium
+  `scrollWidth` vs `clientWidth` del `documentElement`.
 - **Guía de dedos** (`buildHandSvg(side)` + `#handsBar`): dos manos vistas desde
   arriba, en la misma posición en que Jorge ve las suyas, con los pulgares (1)
   mirándose en el centro. Silueta de una pieza: los rectángulos van dentro de un
