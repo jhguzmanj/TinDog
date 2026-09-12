@@ -1601,6 +1601,15 @@ const noMidiMsg = document.getElementById('noMidiMsg');
 let currentInput = null;
 let activeNotes = new Set();
 
+// Dentro de una vista incrustada (como el artifact de Claude, en un iframe)
+// el navegador casi siempre bloquea el MIDI aunque el navegador SÍ lo
+// soporte: el permiso de la API hay que delegarlo desde la página que
+// contiene el iframe, y esta app no la controla. No hay forma de arreglar
+// esto desde el código de la página — el aviso solo evita que Jorge le dé
+// vueltas pensando que algo está roto.
+let inEmbeddedFrame = false;
+try { inEmbeddedFrame = window.self !== window.top; } catch(e){ inEmbeddedFrame = true; }
+
 if(!navigator.requestMIDIAccess){
   noMidiMsg.style.display = 'block';
   connectBtn.disabled = true;
@@ -1608,7 +1617,13 @@ if(!navigator.requestMIDIAccess){
   connectBtn.addEventListener('click', () => {
     ensureAudioCtx();
     navigator.requestMIDIAccess().then(onMIDISuccess, () => {
-      statusText.textContent = 'Acceso MIDI denegado';
+      if(inEmbeddedFrame){
+        statusText.textContent = 'MIDI bloqueado aquí';
+        statusText.title = 'Esta vista (el artifact de Claude) no puede pedir permiso de MIDI: es una restricción del navegador, no un error de la app. Para conectar el piano por USB, abre piano-midi-trainer.html directo en tu navegador.';
+      } else {
+        statusText.textContent = 'Acceso MIDI denegado';
+        statusText.title = '';
+      }
     });
   });
 }

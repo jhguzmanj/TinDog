@@ -262,6 +262,17 @@ y opción del selector — y parecía que hubiera tres pianos. Reglas:
 - Al reconectar (`onstatechange`) se respeta el puerto ya enganchado si sigue
   presente; si desaparecen todos, se suelta `currentInput` y vuelve el botón.
 
+**El MIDI no funciona dentro del artifact de Claude (ni de ningún iframe).**
+El permiso de Web MIDI lo delega la página que envuelve al iframe, y esta app
+no la controla — no es un bug que se arregle editando el HTML. `inEmbeddedFrame`
+(`window.self !== window.top`) lo detecta al cargar; si `requestMIDIAccess()`
+es rechazado estando embebido, `#statusText` dice **"MIDI bloqueado aquí"** en
+vez del genérico "Acceso MIDI denegado", con un `title` que explica por qué y
+manda a abrir `piano-midi-trainer.html` directo en el navegador. Para conectar
+el Yamaha por USB de verdad, Jorge tiene que usar el archivo suelto (o una
+copia servida fuera de un iframe) — el artifact sirve para practicar sin el
+piano (clic/touch) y para el respaldo de progreso, no para tocar por MIDI.
+
 ## Sonido: sale por el piano, no por el computador
 El P-45 trae sus propios samples de Yamaha, así que con el piano conectado todo
 lo que toca la APP (Escuchar, el oído, los clics en el teclado dibujado) se le
