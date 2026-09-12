@@ -55,6 +55,25 @@ Orden dentro del `<script>`:
   paso, con dedo). Digitación de 2 octavas: derecha = 7 primeros dedos ×2 + último;
   izquierda = primer dedo + 7 siguientes ×2 (`fingerSeq`, probado en tests).
   La derecha arranca en la octava 4 (Do central), la izquierda en la 3.
+- **Pentatónicas** (`family:'pentatonic'`, tercera pestaña, tarea de la academia):
+  5 notas por octava, patrón `[2,2,3,2,3]` y **sin ningún semitono** — por eso
+  todo lo que suene ahí "pega". El motor dejó de asumir 7 grados: `spellScale`
+  recibe `steps` de largo variable y un `LETTER_STEPS` paralelo (`[1,1,2,1,2]`)
+  porque la escala **se salta letras** (Do Re Mi **Sol** La). Sin ese salto,
+  Sol pentatónica se deletrearía `Sol La Si Do## Re##`. `fingerSeq` y
+  `buildScaleRun` sacan los grados de `scale.steps.length`, así que una familia
+  nueva de N notas no necesita tocar nada más.
+  Digitación de la academia: derecha `123123`, izquierda `543212`. Los cuatro
+  tonos incluidos (Do, Sol, Fa, Re) son justo los que la mantienen literal, con
+  **el pulgar siempre en tecla blanca** — hay una prueba que lo fija. Si se
+  agregan La o Fa# (las 5 negras) esa digitación ya no aplica tal cual.
+  **La pentatónica está limitada a UNA octava a propósito** (`ensureValidOctaves`
+  apaga el botón de 2 y baja el valor si venía puesto): la digitación de clase
+  termina en un dedo de *llegada*, no en el que arranca el ciclo siguiente. En
+  las mayores el ciclo se repite porque la octava cae en el pulgar (derecha) o
+  deja el pulgar listo para el cruce (izquierda); aquí `fingerSeq` daría
+  izquierda `Do(2) Re(4)`, que subiendo es físicamente imposible. Antes que
+  inventar digitación, se bloquea la opción. **No "arreglar" habilitándola.**
 - **Acordes**: `CHORDS` (24 tríadas). `chordVoicing(chord, inv, octave)` da las notas
   exactas de fundamental / 1ª / 2ª inversión. `checkChord` es octave-agnostic salvo
   con `chordStrict` (se enciende solo al elegir una inversión, si no no se distingue).
@@ -153,8 +172,10 @@ explicada, no una fracción suelta en el encabezado sticky.
 - Tiempo de práctica: cada 15 s se suman 15 s si hubo actividad (nota o clic) en el
   último minuto. Un día cuenta como practicado con ≥3 min (racha).
 - Plan de "Hoy" (`buildTodayPlan`): calentamiento (drill menos hecho), escala del día
-  (la primera mayor que no tenga 3 pasadas limpias por mano; sugiere la mano más
-  floja; con las dos limpias propone ambas manos), 3 acordes menos practicados (grupo
+  (**mientras la pentatónica de la clase no tenga 3 pasadas limpias por mano manda
+  ella**, que es la tarea; después sigue la progresión de mayores donde iba: la
+  primera que no esté limpia. Sugiere la mano más floja; con las dos limpias
+  propone ambas manos), 3 acordes menos practicados (grupo
   C G F Am Em Dm hasta dominarlo), nivel de lectura vigente, oído, pieza menos hecha.
 - Exportar/importar JSON desde la pestaña Progreso. **Dentro del visor de
   artifacts un `<a download>` no hace nada** (el visor bloquea descargas): el
@@ -217,6 +238,9 @@ ahora — desde ~1 m y con las manos en el piano. Todo lo demás es secundario.
   `progressText` ("Nota 3 / 15") se convierte en puntos (`#stepDots`), y
   `targetNoteLabel` se achica solo (`.sm` >12 chars, `.xs` >22) porque algunos
   modos escriben frases ahí. **Modo nuevo no necesita hacer nada para esto.**
+- **`.reg-btn.disabled` ya no responde al clic** (`bindPicker` lo ignora). Se veía
+  apagado y con cursor de "no", pero aplicaba la opción igual y quedaba apagado Y
+  activo a la vez. Cualquier opción que se deshabilite depende de esto.
 - **Controles segmentados**: `.reg-bar .reg-picker` y `.hand-picker` son un solo
   bloque con segmentos, no botones sueltos. Los pickers largos (`#chordPicker`,
   `#intervalPicker`, `#funcCatPicker`) quedan fuera a propósito: son listas.

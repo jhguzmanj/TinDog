@@ -947,6 +947,7 @@
     <div class="mode-tabs sub-tabs" id="scaleFamilyTabs" style="display:none;">
       <button class="mode-tab sub active" data-family="major">Mayores</button>
       <button class="mode-tab sub" data-family="minor">Menores</button>
+      <button class="mode-tab sub" data-family="pentatonic">Pentatónicas</button>
     </div>
     <div class="mode-tabs sub-tabs scroll-tabs" id="scaleSubTabs" style="display:none;"></div>
     <div id="scaleOptBar" class="reg-bar" style="display:none;">
@@ -1756,25 +1757,36 @@ function noteOff(note){
 const LETTERS = ['C','D','E','F','G','A','B'];
 const LETTER_PC = [0,2,4,5,7,9,11];
 const STEP_PATTERNS = {
-  major:    [2,2,1,2,2,2,1],
-  natural:  [2,1,2,2,1,2,2],
-  harmonic: [2,1,2,2,1,3,1],
+  major:      [2,2,1,2,2,2,1],
+  natural:    [2,1,2,2,1,2,2],
+  harmonic:   [2,1,2,2,1,3,1],
+  pentatonic: [2,2,3,2,3],
+};
+// Cuántas LETRAS avanza cada paso. Las de 7 notas usan una letra por grado
+// (Do Re Mi Fa...), pero la pentatónica se salta dos: Do Re Mi **Sol** La. Sin
+// esto, Sol pentatónica saldría deletreada Sol La Si Do## Re## en vez de
+// Sol La Si Re Mi. Lo que no está aquí avanza de a una letra.
+const LETTER_STEPS = {
+  pentatonic: [1,1,2,1,2],
 };
 function accText(diff){
   return diff === 0 ? '' : diff === 1 ? '#' : diff === -1 ? 'b' : diff === 2 ? 'x' : 'bb';
 }
-function spellScale(rootLetter, rootPc, steps){
+function spellScale(rootLetter, rootPc, steps, letterSteps){
+  const n = steps.length;              // 7 en las diatónicas, 5 en la pentatónica
+  const ls = letterSteps || steps.map(() => 1);
   const names = [], pcs = [], semis = [];
-  let pc = rootPc, cum = 0;
-  for(let i = 0; i <= 7; i++){
-    const li = (rootLetter + i) % 7;
-    let diff = ((pc - LETTER_PC[li]) % 12 + 12) % 12;
+  let pc = rootPc, cum = 0, li = rootLetter;
+  for(let i = 0; i <= n; i++){
+    const l = li % 7;
+    let diff = ((pc - LETTER_PC[l]) % 12 + 12) % 12;
     if(diff > 6) diff -= 12;
-    names.push(LETTERS[li] + accText(diff));
+    names.push(LETTERS[l] + accText(diff));
     pcs.push(((pc % 12) + 12) % 12);
     semis.push(cum);
-    cum += steps[i % 7];
-    pc += steps[i % 7];
+    cum += steps[i % n];
+    pc += steps[i % n];
+    li += ls[i % n];
   }
   return { names, pcs, semis };
 }
@@ -1809,13 +1821,27 @@ const SCALE_DEFS = [
   {id:'gsminor', label:'Sol# menor', short:'Sol# m', rootLetter:4, rootPc:8,  family:'minor', rh:'34123123', lh:'32143213'},
   {id:'bbminor', label:'Sib menor',  short:'Sib m',  rootLetter:6, rootPc:10, family:'minor', rh:'41231234', lh:'21321432'},
   {id:'ebminor', label:'Mib menor',  short:'Mib m',  rootLetter:2, rootPc:3,  family:'minor', rh:'31234123', lh:'21432132'},
+
+  // Pentatónicas mayores (5 notas + octava). Digitación de la academia:
+  // derecha 1 2 3 1 2 3, izquierda 5 4 3 2 1 2. Los cuatro tonos elegidos son
+  // los que mantienen esa digitación tal cual: el pulgar nunca cae en negra.
+  // Re es el único con negra (Fa#) y le toca al 3, que es donde va cómodo.
+  {id:'cpenta', label:'Do pentatónica mayor',  short:'Do',  rootLetter:0, rootPc:0, family:'pentatonic', rh:'123123', lh:'543212'},
+  {id:'gpenta', label:'Sol pentatónica mayor', short:'Sol', rootLetter:4, rootPc:7, family:'pentatonic', rh:'123123', lh:'543212'},
+  {id:'fpenta', label:'Fa pentatónica mayor',  short:'Fa',  rootLetter:3, rootPc:5, family:'pentatonic', rh:'123123', lh:'543212'},
+  {id:'dpenta', label:'Re pentatónica mayor',  short:'Re',  rootLetter:1, rootPc:2, family:'pentatonic', rh:'123123', lh:'543212'},
 ];
 const MAJOR_ORDER = SCALE_DEFS.filter(d => d.family === 'major' && !d.warn).map(d => d.id);
 const MINOR_ORDER = SCALE_DEFS.filter(d => d.family === 'minor').map(d => d.id);
+const PENTA_ORDER = SCALE_DEFS.filter(d => d.family === 'pentatonic').map(d => d.id);
+const FAMILY_ORDER = { major: MAJOR_ORDER, minor: MINOR_ORDER, pentatonic: PENTA_ORDER };
 
 function buildScale(def, variant){
-  const steps = def.family === 'major' ? STEP_PATTERNS.major : STEP_PATTERNS[variant || 'natural'];
-  const sp = spellScale(def.rootLetter, def.rootPc, steps);
+  const key = def.family === 'major' ? 'major'
+            : def.family === 'pentatonic' ? 'pentatonic'
+            : (variant || 'natural');
+  const steps = STEP_PATTERNS[key];
+  const sp = spellScale(def.rootLetter, def.rootPc, steps, LETTER_STEPS[key]);
   const root = 60 + def.rootPc; // la raíz vive en la octava del Do central (mano derecha)
   return {
     id: def.id, label: def.label + (def.family === 'minor' ? (variant === 'harmonic' ? ' armónica' : ' natural') : ''),
@@ -1833,24 +1859,26 @@ rebuildScales('natural');
 
 // Secuencia concreta de una práctica de escala: mano, octavas y sentido.
 // Cada paso trae las notas que deben sonar A LA VEZ (una por mano) con su dedo.
-function fingerSeq(f8, hand, octaves){
-  const f = f8.split('').map(Number);
+function fingerSeq(fStr, hand, octaves){
+  const f = fStr.split('').map(Number);
+  const n = f.length - 1;              // grados por octava: 7 diatónica, 5 pentatónica
   if(octaves === 1) return f.slice();
-  if(hand === 'rh') return f.slice(0,7).concat(f.slice(0,7), [f[7]]);
-  return [f[0]].concat(f.slice(1,8), f.slice(1,8));
+  if(hand === 'rh') return f.slice(0,n).concat(f.slice(0,n), [f[n]]);
+  return [f[0]].concat(f.slice(1,n+1), f.slice(1,n+1));
 }
 function buildScaleRun(scale, hand, octaves, dir){
   const hands = hand === 'both' ? ['rh','lh'] : [hand];
-  const count = 7 * octaves + 1;
+  const perOct = scale.steps.length;
+  const count = perOct * octaves + 1;
   const perHand = {};
   hands.forEach(h => {
     const root = (h === 'rh' ? 60 : 48) + scale.rootPc;
     const fingers = fingerSeq(scale[h], h, octaves);
     const asc = [];
     for(let i = 0; i < count; i++){
-      const oct = Math.floor(i / 7), deg = i % 7;
+      const oct = Math.floor(i / perOct), deg = i % perOct;
       const semis = oct * 12 + scale.steps.slice(0, deg).reduce((a,b) => a+b, 0);
-      asc.push({ n: root + semis, finger: fingers[i], name: scale.names[deg === 0 && i === count - 1 ? 7 : deg], hand: h });
+      asc.push({ n: root + semis, finger: fingers[i], name: scale.names[deg === 0 && i === count - 1 ? perOct : deg], hand: h });
     }
     let seq = asc;
     if(dir === 'updown') seq = asc.concat(asc.slice(0, -1).reverse());
@@ -2279,6 +2307,7 @@ function enterMode(mode){
   }
   if(mode !== 'reading' && typeof stopReading === 'function') stopReading();
   const noPractice = ['free','functions','today','reading','progress'];
+  if(isScale && typeof ensureValidOctaves === 'function') ensureValidOctaves();
   if(noPractice.includes(mode)){
     practiceInfo.style.display = 'none';
   } else {
@@ -2334,7 +2363,7 @@ scaleFamilyTabs.querySelectorAll('.mode-tab').forEach(t => {
   t.addEventListener('click', () => {
     scaleFamily = t.dataset.family;
     const inFamily = SCALE_DEFS.some(d => d.family === scaleFamily && d.id === currentScaleId);
-    if(!inFamily) currentScaleId = (scaleFamily === 'major' ? MAJOR_ORDER : MINOR_ORDER)[0];
+    if(!inFamily) currentScaleId = (FAMILY_ORDER[scaleFamily] || MAJOR_ORDER)[0];
     renderScaleSubTabs();
     enterMode(currentScaleId);
   });
@@ -2343,13 +2372,36 @@ function bindPicker(containerId, attr, getter, setter){
   const cont = $(containerId);
   if(!cont) return;
   const refresh = () => cont.querySelectorAll('.reg-btn').forEach(b => b.classList.toggle('active', b.dataset[attr] === String(getter())));
-  cont.querySelectorAll('.reg-btn').forEach(b => b.addEventListener('click', () => { setter(b.dataset[attr]); refresh(); }));
+  // `.disabled` ya se veía apagado y con cursor de "no", pero seguía respondiendo
+  // al clic: la opción se aplicaba igual y el botón quedaba apagado Y activo.
+  cont.querySelectorAll('.reg-btn').forEach(b => b.addEventListener('click', () => {
+    if(b.classList.contains('disabled')) return;
+    setter(b.dataset[attr]); refresh();
+  }));
   refresh();
   return refresh;
 }
 const refreshScaleHand = bindPicker('scaleHandPicker', 'shand', () => scaleHand, v => { scaleHand = v; saveScaleOpts(); if(SCALES[currentMode]) startScaleRun(); });
 const refreshScaleOct = bindPicker('scaleOctPicker', 'soct', () => scaleOctaves, v => { scaleOctaves = parseInt(v,10); saveScaleOpts(); if(SCALES[currentMode]) startScaleRun(); });
 const refreshScaleDir = bindPicker('scaleDirPicker', 'sdir', () => scaleDir, v => { scaleDir = v; saveScaleOpts(); if(SCALES[currentMode]) startScaleRun(); });
+
+// La digitación pentatónica de la academia (der. 1 2 3 1 2 3 / izq. 5 4 3 2 1 2)
+// es de UNA octava: termina en un dedo de llegada. En las mayores el ciclo se
+// repite porque la octava cae en el pulgar (derecha) o el pulgar queda listo
+// para el cruce (izquierda); aquí no, y `fingerSeq` produciría izq. Do(2) Re(4),
+// que es físicamente imposible subiendo. Antes que inventar una digitación, se
+// bloquea la opción de 2 octavas mientras la escala sea pentatónica.
+function ensureValidOctaves(){
+  const scale = SCALES[currentMode];
+  const lock = !!(scale && scale.family === 'pentatonic');
+  if(lock && scaleOctaves !== 1){ scaleOctaves = 1; saveScaleOpts(); }
+  const b2 = document.querySelector('#scaleOctPicker [data-soct="2"]');
+  if(b2){
+    b2.classList.toggle('disabled', lock);
+    b2.title = lock ? 'La pentatónica se practica en una octava: la digitación de la clase termina en un dedo de llegada y no sirve para seguir subiendo. Pregúntale al profe la de dos octavas.' : '';
+  }
+  if(refreshScaleOct) refreshScaleOct();
+}
 bindPicker('minorVarPicker', 'mvar', () => minorVariant, v => { minorVariant = v; saveScaleOpts(); rebuildScales(minorVariant); if(SCALES[currentMode]) startScaleRun(); });
 $('scaleFingerBtn').addEventListener('click', () => {
   showFingers = !showFingers; saveScaleOpts();
@@ -2405,11 +2457,22 @@ function markTarget(note, hand){
 function scaleRunKey(){ return currentMode + ':' + scaleHand + ':' + scaleOctaves + ':' + scaleDir; }
 
 function renderScaleTip(scale){
-  const accs = scale.names.slice(0,7).filter(n => n.length > 1).join(', ') || 'ninguna';
+  const accs = scale.names.slice(0, scale.steps.length).filter(n => n.length > 1).join(', ') || 'ninguna';
   const rhF = scale.rh.split('').join(' '), lhF = scale.lh.split('').join(' ');
   let html = '<b>' + scale.label + '</b> — alteraciones: ' + accs + '. ' +
     '<span class="hand-tag lh">IZQ</span>' + lhF + ' &nbsp; <span class="hand-tag rh">DER</span>' + rhF + '.';
-  if(scale.family === 'major'){
+  if(scale.family === 'pentatonic'){
+    const n = scale.names;
+    const solfa = scale.notes.map(x => SOLFA_NAMES[x % 12]).join(' ');
+    html += ' <b>5 notas, sin semitonos:</b> ' + n.join(' ') + ' (' + solfa + ').' +
+      ' Distancias: tono, tono, <b>tono y medio</b>, tono, <b>tono y medio</b>. Esos dos saltos (' +
+      n[2] + '→' + n[3] + ' y ' + n[4] + '→' + n[5] + ') son las teclas que te saltas, y es justo ahí donde cambia la mano:' +
+      ' <span class="hand-tag rh">DER</span>el pulgar pasa por debajo del 3 para llegar a ' + n[3] + ';' +
+      ' <span class="hand-tag lh">IZQ</span>el 2 pasa por encima del pulgar para llegar a ' + n[5] + '.' +
+      ' Prepara el cruce ANTES de necesitarlo: el pulgar se va acercando mientras suenan las dos notas anteriores.' +
+      ' <b>La misma escala en otro tono</b> son las mismas distancias: pruébala en Sol, Fa y Re (pestañas de arriba).' +
+      ' Y prueba las cinco teclas negras seguidas — Fa# Sol# La# Do# Re# — que son esta misma escala: por eso todo lo que toques ahí suena bien.';
+  } else if(scale.family === 'major'){
     html += ' <b>Orden recomendado:</b> Do, Sol, Fa, Re, Sib, La, Mib, Mi, Lab, Si, Reb, Fa#.';
     if(scale.warn) html += ' <b>Sol# mayor</b> es un ejercicio teórico de notación (con Fx doble sostenido); en la práctica se usa Lab mayor, que suena igual.';
   } else {
@@ -4619,15 +4682,24 @@ function buildTodayPlan(seed){
     done: () => (progress.drills[drill.id] || {}).lastDay === today,
     go: () => { selectCategory('agility'); pickFragmentById(drill.id); } });
 
+  // La escala del día: mientras la pentatónica de la clase no esté limpia (3
+  // pasadas con cada mano) manda ella, porque es la tarea que dejó el profe;
+  // después el plan vuelve a la progresión de mayores donde iba.
+  const penta = SCALES[PENTA_ORDER[0]];
   const maj = scaleUnlocked(MAJOR_ORDER);
-  const sc = SCALES[maj.id];
-  const rhC = scaleKeyStats(maj.id, 'rh').clean, lhC = scaleKeyStats(maj.id, 'lh').clean;
+  const pentaRh = scaleKeyStats(penta.id, 'rh').clean, pentaLh = scaleKeyStats(penta.id, 'lh').clean;
+  const pentaPending = pentaRh < 3 || pentaLh < 3;
+  const sc = pentaPending ? penta : SCALES[maj.id];
+  const rhC = pentaPending ? pentaRh : scaleKeyStats(maj.id, 'rh').clean;
+  const lhC = pentaPending ? pentaLh : scaleKeyStats(maj.id, 'lh').clean;
   const hand = rhC >= 3 && lhC >= 3 ? 'both' : (lhC < rhC ? 'lh' : 'rh');
   const handTxt = hand === 'rh' ? 'mano derecha' : hand === 'lh' ? 'mano izquierda' : 'ambas manos';
   items.push({ key:'scale', min:6, title:'Escala: ' + sc.label + ' · ' + handTxt,
-    sub: (maj.all ? 'Ya abriste todas las mayores. Mantén la que menos limpia te sale.' : 'Meta: 3 pasadas limpias con cada mano para abrir la siguiente. Llevas D ' + rhC + '/3 · I ' + lhC + '/3.') + ' Con dedos marcados.',
-    done: () => scaleKeyStats(maj.id, hand).lastDay === today,
-    go: () => { scaleFamily = 'major'; currentScaleId = maj.id; scaleHand = hand; if(refreshScaleHand) refreshScaleHand(); saveScaleOpts(); selectCategory('scales'); } });
+    sub: (pentaPending ? 'Tarea de la academia: izquierda, derecha y al final las dos juntas. Llevas D ' + rhC + '/3 · I ' + lhC + '/3.'
+        : maj.all ? 'Ya abriste todas las mayores. Mantén la que menos limpia te sale.'
+        : 'Meta: 3 pasadas limpias con cada mano para abrir la siguiente. Llevas D ' + rhC + '/3 · I ' + lhC + '/3.') + ' Con dedos marcados.',
+    done: () => scaleKeyStats(sc.id, hand).lastDay === today,
+    go: () => { scaleFamily = sc.family; currentScaleId = sc.id; scaleHand = hand; if(refreshScaleHand) refreshScaleHand(); saveScaleOpts(); selectCategory('scales'); } });
 
   const groupA = CHORDS.slice(0, 6), groupB = CHORDS.slice(6);
   const aDone = groupA.every(c => ((progress.chords[c.name] || {}).runs || 0) >= 3);
@@ -4698,6 +4770,7 @@ function masteryRows(){
   const avg = (arr) => arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
   const clampScale = (id, hand, n) => Math.min(scaleKeyStats(id, hand).clean, n) / n;
   const rows = [];
+  rows.push(['Escalas pentatónicas', avg(PENTA_ORDER.flatMap(id => [clampScale(id, 'rh', 3), clampScale(id, 'lh', 3)]))]);
   rows.push(['Escalas mayores', avg(MAJOR_ORDER.flatMap(id => [clampScale(id, 'rh', 3), clampScale(id, 'lh', 3)]))]);
   rows.push(['Escalas menores', avg(MINOR_ORDER.flatMap(id => [clampScale(id, 'rh', 3), clampScale(id, 'lh', 3)]))]);
   rows.push(['Acordes', avg(CHORDS.map(c => Math.min((progress.chords[c.name] || {}).runs || 0, 3) / 3))]);

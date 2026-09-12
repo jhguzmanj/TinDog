@@ -39,15 +39,19 @@ section('Datos de escalas');
 const defs = W('SCALE_DEFS');
 for(const d of defs){
   const sc = W(`SCALES['${d.id}']`);
-  const pattern = d.family === 'major' ? [2,2,1,2,2,2,1] : [2,1,2,2,1,2,2];
+  const pattern = d.family === 'major' ? [2,2,1,2,2,2,1]
+                : d.family === 'pentatonic' ? [2,2,3,2,3]
+                : [2,1,2,2,1,2,2];
+  const deg = pattern.length;           // 7 diatónicas, 5 pentatónica
   const semis = sc.notes.map(n => n - sc.notes[0]);
   const expect = pattern.reduce((acc, s) => acc.concat(acc[acc.length-1] + s), [0]);
   check(JSON.stringify(semis) === JSON.stringify(expect), d.id + ': patrón tono/semitono correcto');
-  check(sc.names.length === 8 && sc.names[0] === sc.names[7], d.id + ': 8 nombres, octava repetida');
-  check(/^[1-5]{8}$/.test(d.rh) && /^[1-5]{8}$/.test(d.lh), d.id + ': digitación de 8 dedos por mano');
-  // cada letra aparece una vez por octava (deletreo diatónico)
-  const letters = sc.names.slice(0,7).map(n => n[0]);
-  check(new Set(letters).size === 7, d.id + ': cada letra una sola vez (' + sc.names.join(' ') + ')');
+  check(sc.names.length === deg + 1 && sc.names[0] === sc.names[deg], d.id + ': ' + (deg+1) + ' nombres, octava repetida');
+  const fRe = new RegExp('^[1-5]{' + (deg + 1) + '}$');
+  check(fRe.test(d.rh) && fRe.test(d.lh), d.id + ': digitación de ' + (deg+1) + ' dedos por mano');
+  // ninguna letra se repite dentro de la octava (Do Re Mi Sol La, no Do Re Mi Fa## Sol##)
+  const letters = sc.names.slice(0, deg).map(n => n[0]);
+  check(new Set(letters).size === deg, d.id + ': cada letra una sola vez (' + sc.names.join(' ') + ')');
   sc.notes.forEach(n => check(n >= 21 && n <= 108, d.id + ': nota dentro del piano'));
 }
 check(W("SCALES.gsharp.names.join(' ')") === 'G# A# B# C# D# E# Fx G#', 'Sol# mayor deletreada con B# y Fx');
@@ -77,6 +81,47 @@ run = W("buildScaleRun(SCALES.cmajor, 'rh', 2, 'up')");
 check(run.steps.length === 15 && run.steps[14].notes[0].n === 84, '2 octavas subida: 15 notas hasta Do6');
 run = W("buildScaleRun(SCALES.bbmajor, 'lh', 1, 'up')");
 check(run.steps[0].notes[0].n === 58 && run.steps[0].notes[0].finger === 3, 'Sib M izquierda arranca en Sib3 con el 3');
+
+section('Pentatónicas (5 notas por octava)');
+check(W("SCALES.cpenta.names.join(' ')") === 'C D E G A C', 'Do pentatónica = Do Re Mi Sol La Do');
+check(W("SCALES.cpenta.notes.join(',')") === '60,62,64,67,69,72', 'Do pentatónica en MIDI: 60 62 64 67 69 72');
+// el salto de letra es lo que evita deletreos absurdos al transportar
+check(W("SCALES.gpenta.names.join(' ')") === 'G A B D E G', 'Sol pentatónica sin alteraciones (no Do##)');
+check(W("SCALES.fpenta.names.join(' ')") === 'F G A C D F', 'Fa pentatónica sin alteraciones');
+check(W("SCALES.dpenta.names.join(' ')") === 'D E F# A B D', 'Re pentatónica con Fa#, no Mi#');
+// las mismas distancias en cualquier tono: esa es la tarea de transportar
+check(W("PENTA_ORDER.every(id => JSON.stringify(SCALES[id].steps) === JSON.stringify([2,2,3,2,3]))"),
+  'todas las pentatónicas guardan el patrón 2-2-3-2-3');
+// el pulgar nunca cae en tecla negra con la digitación de la academia
+check(W(`PENTA_ORDER.every(id => ['rh','lh'].every(h => {
+  const r = buildScaleRun(SCALES[id], h, 1, 'up');
+  return r.steps.every(s => s.notes[0].finger !== 1 || ![1,3,6,8,10].includes(s.notes[0].n % 12));
+}))`), 'el pulgar nunca toca negra en las pentatónicas incluidas');
+
+check(W("fingerSeq('123123','rh',1).join('')") === '123123', 'derecha pentatónica 1 oct = 1 2 3 1 2 3');
+check(W("fingerSeq('543212','lh',1).join('')") === '543212', 'izquierda pentatónica 1 oct = 5 4 3 2 1 2');
+run = W("buildScaleRun(SCALES.cpenta, 'rh', 1, 'up')");
+check(run.steps.length === 6, 'subida de 1 octava pentatónica = 6 pasos');
+check(run.steps.map(s => s.notes[0].finger).join('') === '123123', 'dedos derecha 1 2 3 1 2 3');
+check(run.steps[3].notes[0].n === 67, 'el 4º paso es Sol4 (se salta el Fa)');
+run = W("buildScaleRun(SCALES.cpenta, 'lh', 1, 'up')");
+check(run.steps[0].notes[0].n === 48 && run.steps.map(s => s.notes[0].finger).join('') === '543212',
+  'izquierda arranca en Do3 con dedos 5 4 3 2 1 2');
+run = W("buildScaleRun(SCALES.cpenta, 'both', 1, 'updown')");
+check(run.steps.length === 11, 'pentatónica subida y bajada = 11 pasos');
+check(run.steps.every(s => s.notes[1].n === s.notes[0].n - 12), 'ambas manos: izquierda una octava abajo');
+
+section('La pentatónica se practica en una octava');
+W("scaleOctaves = 2; currentMode = 'cpenta'; ensureValidOctaves()");
+check(W('scaleOctaves') === 1, 'entrar a una pentatónica con 2 octavas puestas la baja a 1');
+check(doc.querySelector('#scaleOctPicker [data-soct="2"]').classList.contains('disabled'), 'el botón de 2 octavas queda deshabilitado');
+ev('#scaleOctPicker [data-soct="2"]');
+check(W('scaleOctaves') === 1, 'y el clic en un botón deshabilitado no hace nada');
+W("currentMode = 'cmajor'; ensureValidOctaves()");
+check(!doc.querySelector('#scaleOctPicker [data-soct="2"]').classList.contains('disabled'), 'en las mayores vuelve a habilitarse');
+ev('#scaleOctPicker [data-soct="2"]');
+check(W('scaleOctaves') === 2, 'y ahí sí se pueden elegir 2 octavas');
+W("scaleOctaves = 1; saveScaleOpts()");
 
 section('Práctica de escala: notas correctas y errores');
 ev('#mainTabs [data-cat="scales"]');
@@ -207,14 +252,20 @@ section('Plan de hoy y progreso');
 ev('#mainTabs [data-cat="today"]');
 const plan = W('todayPlan');
 check(plan.length >= 5 && plan.every(p => typeof p.go === 'function' && typeof p.done === 'function'), 'plan con acciones');
-check(plan[1].title.includes('Do mayor'), 'la escala del día es Do mayor al empezar');
+// la escala del día es la tarea de la academia hasta que esté limpia; después
+// el plan retoma la progresión de mayores donde iba
+check(plan[1].title.includes('pentatónica'), 'la escala del día arranca en la pentatónica de la clase');
+W("todayPlan[1].go()");
+check(W('currentMode') === 'cpenta' && W('scaleFamily') === 'pentatonic', 'el botón Ir abre la pentatónica en su propia pestaña');
+W("progress.scales['cpenta:rh'] = {runs:3, clean:3, lastDay:null}; progress.scales['cpenta:lh'] = {runs:3, clean:3, lastDay:null}; todayPlan = buildTodayPlan(1)");
+check(W('todayPlan[1].title').includes('Do mayor'), 'con la pentatónica limpia por mano, el plan vuelve a Do mayor');
 W("progress.scales['cmajor:rh'] = {runs:3, clean:3, lastDay:null}; progress.scales['cmajor:lh'] = {runs:3, clean:3, lastDay:null}; todayPlan = buildTodayPlan(1)");
 check(W('todayPlan[1].title').includes('Sol mayor'), 'con Do mayor limpia 3 veces por mano, propone Sol mayor');
 W("todayPlan[1].go()");
 check(W('currentMode') === 'gmajor', 'el botón Ir lleva a Sol mayor');
 ev('#mainTabs [data-cat="progress"]');
 check(doc.querySelectorAll('#heatGrid .heat-cell').length >= 84, 'mapa de calor de 12 semanas');
-check(doc.querySelectorAll('#masteryList .mastery-item').length === 9, '9 filas de dominio');
+check(doc.querySelectorAll('#masteryList .mastery-item').length === 10, '10 filas de dominio');
 check(JSON.parse(window.localStorage.getItem('pianoProgress1') || 'null') !== null || true, 'progreso persistido (con debounce)');
 
 section('Preferencias');
@@ -299,7 +350,9 @@ check(W("leftFirst([{hand:'rh',finger:1},{hand:'lh',finger:5}]).map(x=>x.hand).j
 ev('#mainTabs [data-cat="scales"]');
 W("scaleHand='both'; refreshScaleHand(); startScaleRun()");
 const sub = doc.getElementById('targetSubLabel').textContent;
-check(sub.indexOf('I') < sub.indexOf('D') || !sub.includes('dedo'), 'escalas: el dedo izquierdo se lee antes que el derecho (' + sub + ')');
+// solo el tramo de los dedos: el nombre de la escala puede empezar por D ("Do mayor")
+const fingerPart = sub.includes('dedo') ? sub.slice(sub.indexOf('dedo')) : '';
+check(!fingerPart || fingerPart.indexOf('I') < fingerPart.indexOf('D'), 'escalas: el dedo izquierdo se lee antes que el derecho (' + sub + ')');
 const tip = doc.getElementById('scaleTip').textContent;
 check(tip.indexOf('IZQ') < tip.indexOf('DER'), 'consejo de escala: IZQ antes que DER');
 // cada etiqueta viaja pegada a sus botones
