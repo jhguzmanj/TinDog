@@ -55,6 +55,20 @@ Orden dentro del `<script>`:
   paso, con dedo). Digitación de 2 octavas: derecha = 7 primeros dedos ×2 + último;
   izquierda = primer dedo + 7 siguientes ×2 (`fingerSeq`, probado en tests).
   La derecha arranca en la octava 4 (Do central), la izquierda en la 3.
+- **Escalera de tempo (`scaleStage`)**: dominar una escala son DOS pasos, no uno.
+  `step:1` las **notas** (3 pasadas seguidas sin errores, puede ser sin metrónomo),
+  `step:2` el **tiempo** (limpia y a tiempo subiendo `SCALE_TEMPOS = [60,70,80]`).
+  `scaleUnlocked` exige los dos con las dos manos: antes bastaban 3 pasadas
+  limpias y se acumulaban escalas a medio aprender sin haber tocado nunca una a
+  tempo. `bestTiming` (% de notas a tiempo) **no sirve solo**: 90% a 60 BPM y
+  90% a 100 no son lo mismo, por eso se guarda `bestBpm` aparte. El peldaño lo
+  da únicamente una pasada **seguida, limpia y con `okPct ≥ 80`**; el bloque no
+  cuenta (2 pulsaciones, no 8 notas) y sin metrónomo no hay BPM que acreditar.
+  `scaleRun.bpm` se fija **al empezar** la pasada: bajar el BPM a media escala no
+  debe acreditar el de antes. `bestBpm` es un máximo, así que la fusión por
+  máximos del respaldo lo maneja sin caso especial (hay prueba). `scaleMastery`
+  (mitad notas, mitad tempo) alimenta el panel de dominio: una escala limpia
+  pero nunca tocada a tiempo va por la mitad, no al 100%.
 - **Sentido y modo de ataque** (opciones de escala): `scaleDir` es
   `up | down | updown`, rotulados **Ascendente / Descendente / Ascendente y
   descendente** — así los llama el profesor de Jorge, y la app tiene que hablar
@@ -132,6 +146,20 @@ Orden dentro del `<script>`:
   nota equivocada); gratis, el marcador de aciertos no significaría nada.
   `resetEarHint()` vacía `#intervalTip` al preguntar: si no, quedaba a la vista
   el consejo del intervalo anterior.
+  **Escalera pedagógica (`INTERVAL_STAGES`, 6 niveles).** `INTERVALS` va en
+  orden **cromático** (semitonos 0..12) y **no se puede reordenar**: su índice
+  es la llave de lo guardado (`progress.intervals` / `progress.ear`), así que
+  moverlo le re-asignaría a Jorge lo practicado a otro intervalo. El orden de
+  práctica vive aparte, como lista de índices: anclas (unísono, 8ª, 5ª) →
+  terceras (alegre/triste) → pasos (2ªM, 4ªJ) → sextas → tensos (7ªm, 2ªm) →
+  7ªM y tritono. En cromático el **segundo** intervalo era la 2ª menor, de las
+  más difíciles de oír, y **de oído salía uno al azar entre los 13 desde el día
+  1**. Exacto avanza con `nextIntervalIdx` y el rótulo usa `intervalOrderPos`;
+  de oído `pickEarIndex()` pregunta dentro del nivel con 50% de repaso de los
+  anteriores. **Decir el conjunto de candidatos NO es soplar la respuesta**
+  (así se entrena el oído de verdad: se sabe entre qué elegir); decir
+  `practiceIndex` sí lo sería y se sigue tapando. Con más de 6 candidatos el
+  rótulo pasa a "entre todos los que llevas" en vez de listarlos.
 - **Lectura**: `READING_LEVELS` (7 niveles, clave de Sol / Fa / ambas / alteraciones).
   `renderStaff(svg, [{sp, cls, clef}], {clef, width, gap, showName})`; `sp` viene de
   `spellMidi(midi, preferFlat)` o `spellFromName('B#', 60)` (respeta octava de la letra).
@@ -203,12 +231,24 @@ explicada, no una fracción suelta en el encabezado sticky.
 ```
 - Tiempo de práctica: cada 15 s se suman 15 s si hubo actividad (nota o clic) en el
   último minuto. Un día cuenta como practicado con ≥3 min (racha).
-- Plan de "Hoy" (`buildTodayPlan`): calentamiento (drill menos hecho), escala del día
-  (**mientras la pentatónica de la clase no tenga 3 pasadas limpias por mano manda
-  ella**, que es la tarea; después sigue la progresión de mayores donde iba: la
-  primera que no esté limpia. Sugiere la mano más floja; con las dos limpias
-  propone ambas manos), 3 acordes menos practicados (grupo
-  C G F Am Em Dm hasta dominarlo), nivel de lectura vigente, oído, pieza menos hecha.
+- Plan de "Hoy" (`buildTodayPlan`): **dos bloques a propósito**, marcados con
+  `block` y rotulados en pantalla (`.today-block`, `BLOCK_LABELS`).
+  `core` = **escalas e intervalos**, que es lo que pidió el profesor de Jorge:
+  se lleva los minutos (17 de 30) y es lo que abre el paso siguiente.
+  `keep` = lectura, acordes y pieza, más cortos. **No se borran por estar fuera
+  del foco**: la lectura sobre todo muere si se deja (a los dos meses no sabe
+  leer y cada pieza nueva vuelve a ser memorizar de oído) y cuesta 3 minutos
+  mantenerla — foco no es abandono. El calentamiento (`warm`) va primero porque
+  va primero en el piano, no por prioridad.
+  Detalle de los puntos: escala del día (**mientras la pentatónica de la clase no
+  esté dominada manda ella**, que es la tarea; después sigue la progresión de
+  mayores donde iba. Sugiere la mano más floja por `scaleMastery`; con las dos
+  dominadas propone ambas manos, y el subtítulo dice en qué paso va y cuál es la
+  meta de BPM), intervalos exactos y oído **por nivel** de `INTERVAL_STAGES`,
+  nivel de lectura vigente, 3 acordes menos practicados (grupo C G F Am Em Dm
+  hasta dominarlo), pieza menos hecha.
+  **El `go` del paso 2 deja el metrónomo listo** en el BPM de la meta y enciende
+  `⏱ Con metrónomo`: si hay que ir a buscarlo a mano, no se usa.
 - Exportar/importar JSON desde la pestaña Progreso. **Importar FUSIONA, no pisa**
   (`mergeProgress(progress, p)`, la misma fusión por máximos de la nube). Antes
   hacía `Object.assign(emptyProgress(), p)`: traer el respaldo del otro

@@ -273,7 +273,7 @@ W('noteOn(60); noteOn(76)'); // Do4 + Mi5 = décima
 check(W('practiceIndex') === 4, 'Do4 + Mi5 NO aprueba como 3ª mayor');
 W('noteOff(76)');
 W('noteOn(64)');
-check(W('practiceIndex') === 5, 'Do4 + Mi4 aprueba');
+check(W('practiceIndex') === 3, 'Do4 + Mi4 aprueba y pasa a la 3ª menor (orden pedagógico, no cromático)');
 W('noteOff(60); noteOff(64)');
 
 section('Oído');
@@ -358,10 +358,15 @@ check(plan.length >= 5 && plan.every(p => typeof p.go === 'function' && typeof p
 check(plan[1].title.includes('pentatónica'), 'la escala del día arranca en la pentatónica de la clase');
 W("todayPlan[1].go()");
 check(W('currentMode') === 'cpenta' && W('scaleFamily') === 'pentatonic', 'el botón Ir abre la pentatónica en su propia pestaña');
-W("progress.scales['cpenta:rh'] = {runs:3, clean:3, lastDay:null}; progress.scales['cpenta:lh'] = {runs:3, clean:3, lastDay:null}; todayPlan = buildTodayPlan(1)");
-check(W('todayPlan[1].title').includes('Do mayor'), 'con la pentatónica limpia por mano, el plan vuelve a Do mayor');
-W("progress.scales['cmajor:rh'] = {runs:3, clean:3, lastDay:null}; progress.scales['cmajor:lh'] = {runs:3, clean:3, lastDay:null}; todayPlan = buildTodayPlan(1)");
-check(W('todayPlan[1].title').includes('Sol mayor'), 'con Do mayor limpia 3 veces por mano, propone Sol mayor');
+// Limpia pero sin tempo NO abre la siguiente: ese es el paso 2.
+W("progress.scales['cpenta:rh'] = {runs:3, clean:3, bestBpm:0, lastDay:null}; progress.scales['cpenta:lh'] = {runs:3, clean:3, bestBpm:0, lastDay:null}; todayPlan = buildTodayPlan(1)");
+check(W('todayPlan[1].title').includes('pentatónica'), 'limpia pero sin metrónomo sigue en la pentatónica');
+check(W('todayPlan[1].sub').includes('Paso 2 de 2'), 'y el plan dice que va en el paso del tiempo');
+check(W('todayPlan[1].sub').includes('60 BPM'), 'con el primer peldaño de tempo como meta');
+W("progress.scales['cpenta:rh'].bestBpm = 80; progress.scales['cpenta:lh'].bestBpm = 80; todayPlan = buildTodayPlan(1)");
+check(W('todayPlan[1].title').includes('Do mayor'), 'con la pentatónica limpia Y a 80 BPM, el plan vuelve a Do mayor');
+W("progress.scales['cmajor:rh'] = {runs:3, clean:3, bestBpm:80, lastDay:null}; progress.scales['cmajor:lh'] = {runs:3, clean:3, bestBpm:80, lastDay:null}; todayPlan = buildTodayPlan(1)");
+check(W('todayPlan[1].title').includes('Sol mayor'), 'con Do mayor dominada por mano, propone Sol mayor');
 W("todayPlan[1].go()");
 check(W('currentMode') === 'gmajor', 'el botón Ir lleva a Sol mayor');
 ev('#mainTabs [data-cat="progress"]');
@@ -789,6 +794,106 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
   check(W("(progress.days['2026-03-01']||{}).sec") === 900, 'lo que traía el respaldo se suma al historial');
   check(W("(progress.scales['cpenta:rh']||{}).runs") === 9, 'las escalas de los dos computadores conviven');
   window.alert = alertReal;
+
+  section('Paso a paso: escalera de tempo en escalas');
+  W("progress = emptyProgress()");
+  check(W("scaleStage('cpenta','rh').step") === 1, 'una escala sin tocar empieza en el paso 1 (las notas)');
+  check(W("scaleStage('cpenta','rh').done") === false, 'y no está dominada');
+  W("progress.scales['cpenta:rh'] = {runs:3, clean:3, bestBpm:0, lastDay:null}");
+  check(W("scaleStage('cpenta','rh').step") === 2, '3 pasadas limpias pasan al paso 2 (el tiempo)');
+  check(W("scaleStage('cpenta','rh').target") === 60, 'el primer peldaño de tempo es 60 BPM');
+  W("progress.scales['cpenta:rh'].bestBpm = 60");
+  check(W("scaleStage('cpenta','rh').target") === 70, 'con 60 hecho, la meta sube a 70');
+  check(W("scaleStage('cpenta','rh').done") === false, '70 todavía no es dominar');
+  W("progress.scales['cpenta:rh'].bestBpm = 80");
+  check(W("scaleStage('cpenta','rh').done") === true, 'a 80 BPM la escala está dominada con esa mano');
+  check(W("scaleDominated('cpenta')") === false, 'pero con una sola mano la escala no está dominada');
+  // El peldaño solo lo da una pasada SEGUIDA, LIMPIA y A TIEMPO.
+  W("progress = emptyProgress()");
+  W("recordScaleRun({scaleId:'cmajor', hand:'rh', mistakes:1, blocks:false, octaves:1, bpm:80}, 95)");
+  check(W("progress.scales['cmajor:rh'].bestBpm") === 0, 'una pasada con errores no da peldaño de tempo');
+  W("recordScaleRun({scaleId:'cmajor', hand:'rh', mistakes:0, blocks:true, octaves:1, bpm:80}, 95)");
+  check(W("progress.scales['cmajor:rh'].bestBpm") === 0, 'el ejercicio en bloque tampoco (son 2 pulsaciones, no 8 notas)');
+  W("recordScaleRun({scaleId:'cmajor', hand:'rh', mistakes:0, blocks:false, octaves:1, bpm:80}, 40)");
+  check(W("progress.scales['cmajor:rh'].bestBpm") === 0, 'limpia pero fuera de tiempo tampoco');
+  W("recordScaleRun({scaleId:'cmajor', hand:'rh', mistakes:0, blocks:false, octaves:1, bpm:null}, null)");
+  check(W("progress.scales['cmajor:rh'].bestBpm") === 0, 'sin metrónomo no hay BPM que acreditar');
+  W("recordScaleRun({scaleId:'cmajor', hand:'rh', mistakes:0, blocks:false, octaves:1, bpm:70}, 90)");
+  check(W("progress.scales['cmajor:rh'].bestBpm") === 70, 'limpia y a tiempo sí da el peldaño');
+  W("recordScaleRun({scaleId:'cmajor', hand:'rh', mistakes:0, blocks:false, octaves:1, bpm:60}, 100)");
+  check(W("progress.scales['cmajor:rh'].bestBpm") === 70, 'y es un máximo: una pasada más lenta no lo baja');
+  check(W("scaleMastery('cmajor','rh')") > 0.5 && W("scaleMastery('cmajor','rh')") < 1,
+    'el dominio va por la mitad: notas hechas, tempo a medias');
+
+  section('Paso a paso: escalera de intervalos');
+  check(W('INTERVAL_ORDER.length') === 13 && W('new Set(INTERVAL_ORDER).size') === 13,
+    'el orden de práctica cubre los 13 intervalos exactamente una vez');
+  check(W('INTERVAL_ORDER').every(i => i >= 0 && i < W('INTERVALS.length')),
+    'todos los índices existen en INTERVALS');
+  // INTERVALS NO se puede reordenar: su índice es la llave de lo guardado.
+  check(W('INTERVALS').every((iv, i) => iv.semitones === i),
+    'INTERVALS sigue en orden de semitonos (su índice es la llave del progreso)');
+  check(W('INTERVAL_ORDER')[1] !== 1,
+    'el segundo intervalo ya no es la 2ª menor (era lo que daba el orden cromático)');
+  check(W("INTERVAL_ORDER.slice(0,3).map(i => INTERVALS[i].semitones).join(',')") === '0,12,7',
+    'empieza por las anclas: unísono, octava y 5ª justa');
+  check(W("INTERVAL_ORDER.indexOf(6)") >= 10 && W("INTERVAL_ORDER.indexOf(11)") >= 10,
+    'el tritono y la 7ª mayor quedan para el final');
+  check(W('nextIntervalIdx(0)') === 12 && W('nextIntervalIdx(4)') === 3 && W('nextIntervalIdx(6)') === 0,
+    'el avance sigue el orden pedagógico y da la vuelta al terminar');
+  // De oído se pregunta dentro del nivel, no entre los 13 desde el primer día.
+  W("progress = emptyProgress()");
+  const pool = new Set();
+  for(let i = 0; i < 200; i++) pool.add(W('pickEarIndex()'));
+  check([...pool].every(i => W('INTERVAL_STAGES[0].ids').includes(i)),
+    'sin progreso, el oído solo pregunta el nivel 1: ' + [...pool].join(','));
+  W(`INTERVAL_STAGES[0].ids.forEach(i => { progress.ear[i] = {asked:8, right:8, lastDay:null}; });`);
+  check(W('earStageDone(INTERVAL_STAGES[0])') === true, '8 de 8 dan el nivel 1 por hecho');
+  W("progress.ear[INTERVAL_STAGES[0].ids[0]] = {asked:8, right:4, lastDay:null}");
+  check(W('earStageDone(INTERVAL_STAGES[0])') === false, '50% de aciertos no alcanza para pasar de nivel');
+  const pool2 = new Set();
+  W(`INTERVAL_STAGES[0].ids.forEach(i => { progress.ear[i] = {asked:8, right:8, lastDay:null}; });`);
+  for(let i = 0; i < 200; i++) pool2.add(W('pickEarIndex()'));
+  const s0 = W('INTERVAL_STAGES[0].ids'), s1 = W('INTERVAL_STAGES[1].ids');
+  check([...pool2].every(i => s0.includes(i) || s1.includes(i)) && s1.every(i => pool2.has(i)),
+    'con el nivel 1 hecho pregunta el 2 y repasa el 1, nada más adelante');
+
+  section('Paso a paso: el plan pone escalas e intervalos primero');
+  W("progress = emptyProgress(); todayPlan = buildTodayPlan(1); renderToday()");
+  const core = W('todayPlan.filter(it => it.block === "core").map(it => it.key)');
+  check(core.join(',') === 'scale,intervals,ear', 'el bloque central es escala, intervalos y oído, en ese orden');
+  const coreMin = W('todayPlan.filter(it => it.block === "core").reduce((a,it) => a + it.min, 0)');
+  const keepMin = W('todayPlan.filter(it => it.block === "keep").reduce((a,it) => a + it.min, 0)');
+  check(coreMin > keepMin, 'y se lleva más minutos que el mantenimiento (' + coreMin + ' vs ' + keepMin + ')');
+  check(W('todayPlan.filter(it => it.block === "keep").map(it => it.key)').join(',') === 'reading,chords,song',
+    'lectura, acordes y pieza siguen en el plan: foco no es abandono');
+  check(doc.querySelectorAll('#todayList .today-block').length === 2, 'los dos bloques se rotulan en pantalla');
+  check(W('todayPlan[2].title').includes('Anclas') && W('todayPlan[3].title').includes('Anclas'),
+    'intervalos y oído arrancan en el nivel 1');
+  W("todayPlan[2].go()");
+  check(W('currentMode') === 'intervals' && W('earMode') === false && W('practiceIndex') === W('INTERVAL_STAGES[0].ids[0]'),
+    'el botón Ir de intervalos abre el modo exacto en el primer intervalo del nivel');
+  // El paso 2 deja el metrónomo listo en el BPM de la meta: si hay que ir a
+  // buscarlo a mano, no se usa.
+  W(`progress = emptyProgress();
+     progress.scales['cpenta:rh'] = {runs:3, clean:3, bestBpm:0, lastDay:null};
+     progress.scales['cpenta:lh'] = {runs:3, clean:3, bestBpm:0, lastDay:null};
+     todayPlan = buildTodayPlan(1); todayPlan[1].go()`);
+  check(W('scaleTempoMode') === true && W('metro.bpm') === 60,
+    'Ir → en el paso 2 enciende el metrónomo en el primer peldaño');
+  W("if(scaleTempoMode) $('scaleTempoBtn').click(); if(metro.on) metroStop();");
+
+  section('Respaldo: el peldaño de tempo se fusiona sin inflarse');
+  W(`window.__P1 = { v:1, days:{}, scales:{ 'cmajor:rh': {runs:3, clean:3, bestBpm:70, lastDay:'2026-05-01'} },
+       chords:{}, intervals:{}, ear:{}, reading:{}, drills:{}, songs:{}, cascade:{} };
+     window.__P2 = { v:1, days:{}, scales:{ 'cmajor:rh': {runs:5, clean:4, bestBpm:60, lastDay:'2026-05-02'} },
+       chords:{}, intervals:{}, ear:{}, reading:{}, drills:{}, songs:{}, cascade:{} };
+     window.__PM = mergeProgress(window.__P1, window.__P2);`);
+  check(W("window.__PM.scales['cmajor:rh'].bestBpm") === 70, 'se queda el mejor BPM de los dos, no el último ni la suma');
+  W("window.__PM2 = mergeProgress(window.__PM, window.__P2);");
+  check(W("window.__PM2.scales['cmajor:rh'].bestBpm") === 70 && W("window.__PM2.scales['cmajor:rh'].runs") === 5,
+    'fusionar dos veces lo mismo da igual que una vez');
+  W("progress = emptyProgress()");
 
   console.log(`\n${passes} pruebas OK, ${failures} fallos`);
   if(errors.length) console.log('Errores de consola:', errors);

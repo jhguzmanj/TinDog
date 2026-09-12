@@ -533,6 +533,12 @@
   .today-sub{ font-size:14.5px; color:var(--text-dim); margin-top:2px; line-height:1.45; }
   .today-go{ white-space:nowrap; }
   .today-min{ font-size:13px; color:var(--brass); letter-spacing:0.5px; margin-left:8px; }
+  /* Separador de bloque: deja ver de un vistazo qué es el foco de ahora y qué
+     es mantenimiento. Sin viñeta ni borde: es un rótulo, no un punto del plan. */
+  .today-block{ list-style:none; font-size:13.5px; letter-spacing:0.6px; text-transform:uppercase;
+    color:var(--text-dim); margin:14px 0 6px; padding:0; display:flex; align-items:center; gap:10px; background:none; border:none; }
+  .today-block::after{ content:''; flex:1; height:1px; background:var(--line); }
+  .today-block.core{ color:var(--brass); }
 
   /* ===== Progreso ===== */
   .stat-row{ display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:10px; margin:6px 0 16px; }
@@ -1092,7 +1098,7 @@
       <div class="today-head">
         <div>
           <h3 id="todayTitle">Plan de hoy</h3>
-          <p class="info-note" id="todayNote">Sesión sugerida de ~20 minutos. Se arma sola con lo que menos has practicado y lo que te toca desbloquear.</p>
+          <p class="info-note" id="todayNote">Se arma sola con lo que menos has practicado y lo que te toca desbloquear. Si un día no da para todo, haz el bloque de escalas e intervalos y deja el resto.</p>
         </div>
         <button id="todayRegen" class="ghost-btn">↻ Otro plan</button>
       </div>
@@ -2242,6 +2248,73 @@ const INTERVALS = [
    tip:'Doce semitonos: misma letra, una vuelta completa del teclado. Pulgar y meñique bien abiertos. Si aún no llegas, es completamente normal al empezar: tócala con dos manos y ya.'},
 ];
 
+// Escalera PEDAGÓGICA de intervalos. `INTERVALS` va por semitonos (0..12) y su
+// ÍNDICE es la llave de lo guardado (`progress.intervals` / `progress.ear`):
+// reordenar ese array le re-asignaría a Jorge lo practicado a otro intervalo.
+// Por eso el orden de práctica vive aparte, como una lista de índices.
+// El criterio: primero los que se reconocen sin esfuerzo (anclas anchas y
+// estables), después el par que decide si algo suena alegre o triste — que es
+// la distinción más útil de toda la música —, y los tensos y ambiguos al final.
+// En orden cromático el SEGUNDO intervalo que tocaba era la 2ª menor, de los
+// más difíciles de oír; de oído salía uno al azar entre los 13 desde el día 1.
+const INTERVAL_STAGES = [
+  { name:'Anclas',           ids:[0, 12, 7],
+    tip:'Los tres que no se confunden con nada: la misma nota, la misma nota arriba, y el hueco abierto de la 5ª.' },
+  { name:'Alegre y triste',  ids:[4, 3],
+    tip:'Las dos terceras. Un solo semitono las separa y es lo que vuelve mayor o menor a un acorde: el intervalo más útil que vas a aprender.' },
+  { name:'Pasos',            ids:[2, 5],
+    tip:'El paso normal de la escala (2ª mayor) y la otra consonancia perfecta (4ª justa). Los tienes bajo los dedos en cada escala que practicas.' },
+  { name:'Abiertos',         ids:[9, 8],
+    tip:'Las sextas: dulces y anchas. Son las terceras dadas vuelta — si reconoces la 3ª, tienes media pista.' },
+  { name:'Tensos',           ids:[10, 1],
+    tip:'La 7ª menor (el sonido del blues) y la 2ª menor (la distancia más chica que hay). Piden resolver a algún lado.' },
+  { name:'Los más difíciles',ids:[11, 6],
+    tip:'La 7ª mayor roza contra la octava y el tritono parte la octava justo por la mitad. Si llegaste hasta aquí, ya oyes de verdad.' },
+];
+// Lista plana en orden de práctica. Cubre los 13 exactamente una vez (probado).
+const INTERVAL_ORDER = INTERVAL_STAGES.reduce((a, s) => a.concat(s.ids), []);
+function nextIntervalIdx(idx){
+  const p = INTERVAL_ORDER.indexOf(idx);
+  return INTERVAL_ORDER[(p + 1) % INTERVAL_ORDER.length];
+}
+function intervalOrderPos(idx){ return INTERVAL_ORDER.indexOf(idx) + 1; }
+
+// Un nivel se da por hecho cuando TODOS sus intervalos llegaron a la meta.
+// Exacto: 2 pasadas (es tocar una distancia, no adivinarla). De oído: 4
+// preguntas y 75% de aciertos — con menos, acertar una vez de dos no dice nada.
+const INTERVAL_RUNS_GOAL = 2, EAR_ASKED_GOAL = 4, EAR_RIGHT_GOAL = 0.75;
+function intervalStageDone(st){
+  return st.ids.every(i => (((typeof progress !== 'undefined' && progress.intervals[i]) || {}).runs || 0) >= INTERVAL_RUNS_GOAL);
+}
+function earStageDone(st){
+  return st.ids.every(i => {
+    const r = (typeof progress !== 'undefined' && progress.ear[i]) || null;
+    return !!r && r.asked >= EAR_ASKED_GOAL && r.right / r.asked >= EAR_RIGHT_GOAL;
+  });
+}
+function currentStageIdx(doneFn){
+  const i = INTERVAL_STAGES.findIndex(st => !doneFn(st));
+  return i < 0 ? INTERVAL_STAGES.length - 1 : i;
+}
+// De oído se pregunta dentro del nivel de ahora, con la mitad de las veces un
+// repaso de lo ya visto: sin repaso se olvida, y sin foco no se aprende.
+function pickEarIndex(){
+  const s = currentStageIdx(earStageDone);
+  const cur = INTERVAL_STAGES[s].ids;
+  const prev = INTERVAL_STAGES.slice(0, s).reduce((a, x) => a.concat(x.ids), []);
+  const pool = (prev.length && Math.random() < 0.5) ? prev : cur;
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+// Los candidatos posibles de la pregunta abierta. Decir el conjunto NO es
+// soplar la respuesta (es como se entrena el oído de verdad: se sabe entre qué
+// elegir); decir `practiceIndex` sí lo sería, y eso se sigue tapando.
+function earPoolNames(){
+  const s = currentStageIdx(earStageDone);
+  const ids = INTERVAL_STAGES.slice(0, s + 1).reduce((a, x) => a.concat(x.ids), []);
+  if(ids.length > 6) return 'entre todos los que llevas';
+  return 'entre: ' + ids.map(i => INTERVALS[i].name).join(', ');
+}
+
 const ROOT_NAMES = ['Do','Do#','Re','Mib','Mi','Fa','Fa#','Sol','Sol#','La','Sib','Si'];
 
 // nombre de la distancia en tonos: 2 semitonos = 1 tono
@@ -2554,6 +2627,8 @@ function startScaleRun(){
   if(!scale) return;
   scaleRun = buildScaleRun(scale, scaleHand, scaleOctaves, scaleDir, scaleBlockMode);
   scaleRun.key = scaleRunKey();
+  // se fija al empezar: bajar el BPM a media pasada no debe acreditar el de antes
+  scaleRun.bpm = (scaleTempoMode && typeof metro !== 'undefined') ? metro.bpm : null;
   practiceIndex = 0;
   renderScaleTip(scale);
   renderTimingBox();
@@ -2650,6 +2725,13 @@ function checkScaleStep(playedNote){
 
 // ---- tiempo (metrónomo) ----
 const TIMING_OK = 90, TIMING_FAR = 250;
+// Escalera de tempo de las escalas. Tocar sin errores no es dominar una escala:
+// es el primer paso. El segundo es tocarla A TIEMPO, y eso necesita saber a qué
+// BPM salió — `bestTiming` guarda el % de notas a tiempo, que sin el BPM no
+// dice nada (90% a 60 BPM y 90% a 100 no son lo mismo).
+const SCALE_TEMPOS = [60, 70, 80];   // peldaños que propone el plan
+const SCALE_TEMPO_GOAL = 80;         // a partir de aquí la escala está dominada
+const SCALE_TIMING_OK = 80;          // % mínimo de notas a tiempo para que cuente
 function timingClass(off){
   if(off === null || off === undefined) return '';
   if(Math.abs(off) <= TIMING_OK) return 'ok';
@@ -3147,13 +3229,15 @@ function startIntervalStep(){
   if(top > MAX_NOTE){ top = MAX_NOTE; }
   // "Intervalo 7 / 13" (y los puntos que salen de ahí) dicen el ÍNDICE, y de
   // oído el índice ES la respuesta. Con la pregunta abierta no se numera.
-  progressText.textContent = earMode ? 'De oído' : `Intervalo ${practiceIndex+1} / ${INTERVALS.length}`;
+  progressText.textContent = earMode ? 'De oído' : `Intervalo ${intervalOrderPos(practiceIndex)} / ${INTERVALS.length}`;
   const rootRect = getRect(root);
   const topRect = getRect(top);
   if(earMode){
     // De oído: solo se marca la nota de partida; la segunda hay que encontrarla.
     targetNoteLabel.textContent = '👂 ¿Cuál es la segunda nota?';
-    targetSubLabel.textContent = 'Desde ' + noteLabel(root) + ' — escucha y toca la nota que sigue';
+    const earStage = currentStageIdx(earStageDone);
+    targetSubLabel.textContent = 'Desde ' + noteLabel(root) + ' — Nivel ' + (earStage + 1) + ' de ' +
+      INTERVAL_STAGES.length + ', ' + earPoolNames();
     if(rootRect) rootRect.classList.add('target');
     distanceBox.style.display = 'none';
     resetEarHint();
@@ -3242,7 +3326,7 @@ function checkInterval(playedNote){
       distanceBox.style.display = 'block';
       refreshIntervalPicker();   // ya se puede decir cuál era
       updateEarScore();
-      setTimeout(() => { practiceIndex = Math.floor(Math.random() * INTERVALS.length); startIntervalStep(); }, 1400);
+      setTimeout(() => { practiceIndex = pickEarIndex(); startIntervalStep(); }, 1400);
     } else if(playedNote === root){
       return; // la de partida ya está dada y sonó: no es acierto ni fallo
     } else {
@@ -3265,11 +3349,11 @@ function checkInterval(playedNote){
     document.querySelectorAll('.target').forEach(r => { r.classList.remove('target'); r.classList.add('correct'); });
     intervalDoneSet.add(practiceIndex);
     if(typeof recordInterval === 'function') recordInterval(practiceIndex);
-    practiceIndex++;
-    if(practiceIndex >= INTERVALS.length){
+    const wrapped = intervalOrderPos(practiceIndex) === INTERVAL_ORDER.length;
+    practiceIndex = nextIntervalIdx(practiceIndex);
+    if(wrapped){
       setTimeout(() => {
         feedbackText.textContent = 'Repasaste los 13 intervalos — reiniciando';
-        practiceIndex = 0;
         setTimeout(startIntervalStep, 1000);
       }, 400);
     } else {
@@ -3310,7 +3394,7 @@ $('earModeBtn').addEventListener('click', () => {
   earMode = !earMode;
   $('earModeBtn').classList.toggle('active', earMode);
   show($('earBar'), earMode, 'flex');
-  if(earMode) practiceIndex = Math.floor(Math.random() * INTERVALS.length);
+  if(earMode) practiceIndex = pickEarIndex();
   startIntervalStep();
 });
 $('earPlayBtn').addEventListener('click', () => { if(earMode) playEarInterval(); });
@@ -4627,13 +4711,19 @@ renderSessionBox();
 
 function recordScaleRun(run, okPct){
   const key = run.scaleId + ':' + run.hand;
-  const r = progress.scales[key] || { runs:0, clean:0, best2:0, bestTiming:null, lastDay:null };
+  const r = progress.scales[key] || { runs:0, clean:0, best2:0, bestTiming:null, bestBpm:0, lastDay:null };
   r.runs++;
   // En bloque son 2 pulsaciones en vez de 8 notas: cuenta como práctica (runs,
   // lastDay, tiempo) pero NO como pasada limpia, o abriría la escala siguiente
   // sin haberla tocado nunca seguida.
   if(run.mistakes === 0 && !run.blocks){ r.clean++; if(run.octaves === 2) r.best2++; }
   if(okPct !== null && (r.bestTiming === null || okPct > r.bestTiming)) r.bestTiming = okPct;
+  // Peldaño de tempo: solo cuenta una pasada seguida, limpia y a tiempo. Es un
+  // máximo (nunca baja), así que la fusión por máximos del respaldo lo maneja
+  // sin caso especial.
+  if(okPct !== null && run.mistakes === 0 && !run.blocks && okPct >= SCALE_TIMING_OK && run.bpm){
+    if(run.bpm > (r.bestBpm || 0)) r.bestBpm = run.bpm;
+  }
   r.lastDay = dateKey();
   progress.scales[key] = r;
   bump('scales');
@@ -4780,12 +4870,35 @@ async function initCloudBackup(){
 
 // ===== Plan de hoy =====
 let todayPlan = null;
-function scaleKeyStats(id, hand){ return progress.scales[id + ':' + hand] || { runs:0, clean:0, lastDay:null }; }
+function scaleKeyStats(id, hand){ return progress.scales[id + ':' + hand] || { runs:0, clean:0, bestBpm:0, lastDay:null }; }
+
+// En qué peldaño va una escala con una mano. Dos pasos, en este orden:
+//   1. las NOTAS  — 3 pasadas seguidas sin errores (puede ser sin metrónomo)
+//   2. el TIEMPO  — limpia y a tiempo, subiendo 60 → 70 → 80 BPM
+// Separarlos es lo que vuelve el plan "paso a paso": nadie aprende a correr una
+// escala que todavía se le traba, y nadie toca música tocando notas correctas
+// a velocidad irregular. `target` es el BPM que toca intentar hoy.
+function scaleStage(id, hand){
+  const st = scaleKeyStats(id, hand);
+  const bpm = st.bestBpm || 0;
+  if(st.clean < 3) return { step:1, clean:st.clean, bpm, target:SCALE_TEMPOS[0], done:false };
+  return { step:2, clean:st.clean, bpm,
+           target: SCALE_TEMPOS.find(b => b > bpm) || null,
+           done: bpm >= SCALE_TEMPO_GOAL };
+}
+function scaleDominated(id){ return scaleStage(id, 'rh').done && scaleStage(id, 'lh').done; }
+// Cuánto le falta a una escala+mano para estar dominada, de 0 a 1. Mitad notas,
+// mitad tempo: una escala limpia pero nunca tocada a tiempo va por la mitad.
+function scaleMastery(id, hand){
+  const st = scaleStage(id, hand);
+  return 0.5 * Math.min(st.clean, 3) / 3 + 0.5 * Math.min(st.bpm, SCALE_TEMPO_GOAL) / SCALE_TEMPO_GOAL;
+}
 function scaleUnlocked(order){
-  // la siguiente escala se "abre" cuando la anterior está limpia 3 veces con cada mano
+  // La siguiente escala se abre cuando la anterior está DOMINADA con las dos
+  // manos: notas limpias Y a tiempo. Antes bastaban 3 pasadas limpias, y así se
+  // acumulaban escalas a medio aprender sin haber tocado nunca una a tempo.
   for(let i = 0; i < order.length; i++){
-    const id = order[i];
-    if(scaleKeyStats(id, 'rh').clean < 3 || scaleKeyStats(id, 'lh').clean < 3) return { id, index:i };
+    if(!scaleDominated(order[i])) return { id: order[i], index:i };
   }
   return { id: order[order.length - 1], index: order.length - 1, all:true };
 }
@@ -4793,6 +4906,14 @@ function leastPracticed(items, store, k){
   const sorted = items.slice().sort((a, b) => ((store[a[k]] || {}).runs || 0) - ((store[b[k]] || {}).runs || 0));
   return sorted;
 }
+// El plan del día tiene DOS bloques a propósito:
+//   core → escalas e intervalos, que es lo que pidió el profesor de Jorge.
+//          Se lleva los minutos y es lo que abre el paso siguiente.
+//   keep → lectura, acordes y pieza. NO se borran por estar fuera del foco:
+//          la lectura sobre todo muere si se deja (a los dos meses no sabe
+//          leer y cada pieza nueva vuelve a ser memorizar de oído), y cuesta
+//          3 minutos mantenerla. Foco no es abandono.
+// El calentamiento va primero porque va primero en el piano, no por prioridad.
 function buildTodayPlan(seed){
   const rnd = (n) => Math.floor(((seed * 9301 + 49297) % 233280) / 233280 * n);
   const items = [];
@@ -4800,54 +4921,91 @@ function buildTodayPlan(seed){
 
   const drills = leastPracticed(AGILITY_DRILLS, progress.drills, 'id');
   const drill = drills[Math.min(rnd(2), drills.length - 1)];
-  items.push({ key:'drill', min:4, title:'Calentar: ' + drill.name, sub:'Agilidad. Lento y parejo, sin mirar la mano si puedes.',
+  items.push({ key:'drill', min:3, block:'warm', title:'Calentar: ' + drill.name, sub:'Agilidad. Lento y parejo, sin mirar la mano si puedes.',
     done: () => (progress.drills[drill.id] || {}).lastDay === today,
     go: () => { selectCategory('agility'); pickFragmentById(drill.id); } });
 
-  // La escala del día: mientras la pentatónica de la clase no esté limpia (3
-  // pasadas con cada mano) manda ella, porque es la tarea que dejó el profe;
-  // después el plan vuelve a la progresión de mayores donde iba.
+  // La escala del día: mientras la pentatónica de la clase no esté dominada
+  // manda ella, porque es la tarea que dejó el profe; después el plan vuelve a
+  // la progresión de mayores donde iba.
   const penta = SCALES[PENTA_ORDER[0]];
   const maj = scaleUnlocked(MAJOR_ORDER);
-  const pentaRh = scaleKeyStats(penta.id, 'rh').clean, pentaLh = scaleKeyStats(penta.id, 'lh').clean;
-  const pentaPending = pentaRh < 3 || pentaLh < 3;
+  const pentaPending = !scaleDominated(penta.id);
   const sc = pentaPending ? penta : SCALES[maj.id];
-  const rhC = pentaPending ? pentaRh : scaleKeyStats(maj.id, 'rh').clean;
-  const lhC = pentaPending ? pentaLh : scaleKeyStats(maj.id, 'lh').clean;
-  const hand = rhC >= 3 && lhC >= 3 ? 'both' : (lhC < rhC ? 'lh' : 'rh');
+  const mRh = scaleMastery(sc.id, 'rh'), mLh = scaleMastery(sc.id, 'lh');
+  const stRh = scaleStage(sc.id, 'rh'), stLh = scaleStage(sc.id, 'lh');
+  const bothDone = stRh.done && stLh.done;
+  const hand = bothDone ? 'both' : (mLh < mRh ? 'lh' : 'rh');
   const handTxt = hand === 'rh' ? 'mano derecha' : hand === 'lh' ? 'mano izquierda' : 'ambas manos';
-  items.push({ key:'scale', min:6, title:'Escala: ' + sc.label + ' · ' + handTxt,
-    sub: (pentaPending ? 'Tarea de la academia: izquierda, derecha y al final las dos juntas. Llevas D ' + rhC + '/3 · I ' + lhC + '/3.'
-        : maj.all ? 'Ya abriste todas las mayores. Mantén la que menos limpia te sale.'
-        : 'Meta: 3 pasadas limpias con cada mano para abrir la siguiente. Llevas D ' + rhC + '/3 · I ' + lhC + '/3.') + ' Con dedos marcados.',
+  const st = scaleStage(sc.id, hand === 'both' ? 'rh' : hand);
+  let scaleSub;
+  if(bothDone){
+    scaleSub = 'Las dos manos ya te salen a tiempo por separado. Ahora júntalas: ahí se ve de verdad.';
+  } else if(st.step === 1){
+    scaleSub = 'Paso 1 de 2 — las NOTAS. Despacio, sin errores, el metrónomo viene después. ' +
+      'Llevas ' + st.clean + '/3 pasadas limpias.';
+  } else {
+    scaleSub = 'Paso 2 de 2 — el TIEMPO. Enciende ⏱ Con metrónomo y saca una pasada limpia a ' +
+      st.target + ' BPM' + (st.bpm ? ' (tu mejor marca va en ' + st.bpm + ')' : '') +
+      '. Con ' + SCALE_TEMPO_GOAL + ' BPM se abre la siguiente escala.';
+  }
+  items.push({ key:'scale', min:8, block:'core', title:'Escala: ' + sc.label + ' · ' + handTxt,
+    sub: scaleSub,
     done: () => scaleKeyStats(sc.id, hand).lastDay === today,
-    go: () => { scaleFamily = sc.family; currentScaleId = sc.id; scaleHand = hand; if(refreshScaleHand) refreshScaleHand(); saveScaleOpts(); selectCategory('scales'); } });
+    go: () => {
+      scaleFamily = sc.family; currentScaleId = sc.id; scaleHand = hand;
+      if(refreshScaleHand) refreshScaleHand();
+      saveScaleOpts();
+      selectCategory('scales');
+      // el paso 2 deja todo listo: metrónomo encendido y en el BPM de la meta
+      if(st.step === 2 && st.target){
+        metro.bpm = st.target; metroRender();
+        if(!scaleTempoMode) $('scaleTempoBtn').click();
+      }
+    } });
+
+  const ivIdx = currentStageIdx(intervalStageDone);
+  const ivSt = INTERVAL_STAGES[ivIdx];
+  const ivNames = ivSt.ids.map(i => INTERVALS[i].name).join(', ');
+  items.push({ key:'intervals', min:5, block:'core',
+    title:'Intervalos: nivel ' + (ivIdx + 1) + ' de ' + INTERVAL_STAGES.length + ' · ' + ivSt.name,
+    sub: ivSt.tip + ' Hoy: ' + ivNames + '. Tócalos en el piano, las dos notas juntas.',
+    done: () => ivSt.ids.every(i => (progress.intervals[i] || {}).lastDay === today),
+    go: () => {
+      selectCategory('intervals');
+      if(earMode) $('earModeBtn').click();
+      practiceIndex = ivSt.ids[0];
+      startIntervalStep();
+    } });
+
+  const earIdx = currentStageIdx(earStageDone);
+  const earSt = INTERVAL_STAGES[earIdx];
+  items.push({ key:'ear', min:4, block:'core',
+    title:'Oído: nivel ' + (earIdx + 1) + ' de ' + INTERVAL_STAGES.length + ' · ' + earSt.name,
+    sub:'La app toca dos notas y buscas la segunda. Se pregunta dentro de tu nivel, con repaso de lo anterior. ' +
+      'Para pasar de nivel: ' + EAR_ASKED_GOAL + ' preguntas y ' + Math.round(EAR_RIGHT_GOAL * 100) + '% de aciertos en cada intervalo.',
+    done: () => (dayRec().ear || 0) >= 8,
+    go: () => { selectCategory('intervals'); if(!earMode) $('earModeBtn').click(); } });
+
+  let lvIdx = READING_LEVELS.findIndex(lv => !readingLevelStats(lv.id).mastered);
+  if(lvIdx < 0) lvIdx = READING_LEVELS.length - 1;
+  const lv = READING_LEVELS[lvIdx];
+  items.push({ key:'reading', min:3, block:'keep', title:'Lectura: ' + lv.name, sub:'10 notas. Poco y todos los días: si la dejas, se pierde.',
+    done: () => (dayRec().reading || 0) >= 10,
+    go: () => { readingLevel = lvIdx; selectCategory('reading'); } });
 
   const groupA = CHORDS.slice(0, 6), groupB = CHORDS.slice(6);
   const aDone = groupA.every(c => ((progress.chords[c.name] || {}).runs || 0) >= 3);
   const pool = aDone ? groupB : groupA;
   const chordsPick = leastPracticed(pool, progress.chords, 'name').slice(0, 3);
-  items.push({ key:'chords', min:4, title:'Acordes: ' + chordsPick.map(c => c.name).join(', '),
+  items.push({ key:'chords', min:3, block:'keep', title:'Acordes: ' + chordsPick.map(c => c.name).join(', '),
     sub: aDone ? 'Ya dominas los seis básicos: ahora los de sostenidos. Prueba también en 1ª inversión.' : 'Los seis que más se usan (C, G, F, Am, Em, Dm). Fundamental, con dedos 1-3-5.',
     done: () => chordsPick.every(c => (progress.chords[c.name] || {}).lastDay === today),
     go: () => { selectCategory('chords'); practiceIndex = CHORDS.indexOf(chordsPick[0]); startChordStep(); } });
 
-  let lvIdx = READING_LEVELS.findIndex(lv => !readingLevelStats(lv.id).mastered);
-  if(lvIdx < 0) lvIdx = READING_LEVELS.length - 1;
-  const lv = READING_LEVELS[lvIdx];
-  items.push({ key:'reading', min:4, title:'Lectura: ' + lv.name, sub:'10 notas. Meta del nivel: 85% a la primera.',
-    done: () => (dayRec().reading || 0) >= 10,
-    go: () => { readingLevel = lvIdx; selectCategory('reading'); } });
-
-  if(maj.index >= 1 || rnd(3) === 0){
-    items.push({ key:'ear', min:3, title:'Oído: intervalos', sub:'La app toca dos notas; encuentra la segunda. Empieza por 5ª justa y octava, que se reconocen fácil.',
-      done: () => (dayRec().ear || 0) >= 5,
-      go: () => { selectCategory('intervals'); if(!earMode) $('earModeBtn').click(); } });
-  }
-
   const songs = leastPracticed(SONGS, progress.songs, 'id');
   const song = songs[Math.min(rnd(2), songs.length - 1)];
-  items.push({ key:'song', min:5, title:'Pieza: ' + song.name, sub:'Primero manos separadas, después juntas. Termina con una pasada en modo cascada.',
+  items.push({ key:'song', min:4, block:'keep', title:'Pieza: ' + song.name, sub:'Para que todo esto suene a música. Manos separadas primero.',
     done: () => (progress.songs[song.id] || {}).lastDay === today || (progress.cascade[song.id] || {}).lastDay === today,
     go: () => { selectCategory('fragments'); pickFragmentById(song.id); } });
 
@@ -4858,12 +5016,23 @@ function pickFragmentById(id){
   if(btn) btn.click();
 }
 let todaySeed = 1;
+const BLOCK_LABELS = {
+  core: 'Escalas e intervalos · el foco de ahora',
+  keep: 'Mantenimiento · para no perder lo ganado',
+};
 function renderToday(){
   if(!todayPlan) todayPlan = buildTodayPlan(todaySeed);
   const list = $('todayList');
   list.innerHTML = '';
-  let total = 0, doneMin = 0;
+  let total = 0, doneMin = 0, lastBlock = null;
   todayPlan.forEach((it, i) => {
+    if(it.block !== lastBlock && BLOCK_LABELS[it.block]){
+      const h = document.createElement('li');
+      h.className = 'today-block ' + it.block;
+      h.textContent = BLOCK_LABELS[it.block];
+      list.appendChild(h);
+    }
+    lastBlock = it.block;
     const done = it.done();
     total += it.min; if(done) doneMin += it.min;
     const li = document.createElement('li');
@@ -4890,11 +5059,11 @@ $('todayRegen').addEventListener('click', () => { todaySeed = (todaySeed * 7 + 3
 // ===== Panel de progreso =====
 function masteryRows(){
   const avg = (arr) => arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0;
-  const clampScale = (id, hand, n) => Math.min(scaleKeyStats(id, hand).clean, n) / n;
+  const clampScale = (id, hand) => scaleMastery(id, hand);
   const rows = [];
-  rows.push(['Escalas pentatónicas', avg(PENTA_ORDER.flatMap(id => [clampScale(id, 'rh', 3), clampScale(id, 'lh', 3)]))]);
-  rows.push(['Escalas mayores', avg(MAJOR_ORDER.flatMap(id => [clampScale(id, 'rh', 3), clampScale(id, 'lh', 3)]))]);
-  rows.push(['Escalas menores', avg(MINOR_ORDER.flatMap(id => [clampScale(id, 'rh', 3), clampScale(id, 'lh', 3)]))]);
+  rows.push(['Escalas pentatónicas', avg(PENTA_ORDER.flatMap(id => [clampScale(id, 'rh'), clampScale(id, 'lh')]))]);
+  rows.push(['Escalas mayores', avg(MAJOR_ORDER.flatMap(id => [clampScale(id, 'rh'), clampScale(id, 'lh')]))]);
+  rows.push(['Escalas menores', avg(MINOR_ORDER.flatMap(id => [clampScale(id, 'rh'), clampScale(id, 'lh')]))]);
   rows.push(['Acordes', avg(CHORDS.map(c => Math.min((progress.chords[c.name] || {}).runs || 0, 3) / 3))]);
   rows.push(['Intervalos', avg(INTERVALS.map((iv, i) => Math.min((progress.intervals[i] || {}).runs || 0, 3) / 3))]);
   rows.push(['Oído', avg(INTERVALS.map((iv, i) => { const r = progress.ear[i]; return r && r.asked >= 3 ? r.right / r.asked : 0; }))]);
