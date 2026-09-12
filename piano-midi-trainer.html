@@ -1768,14 +1768,16 @@ const STEP_PATTERNS = {
   major:      [2,2,1,2,2,2,1],
   natural:    [2,1,2,2,1,2,2],
   harmonic:   [2,1,2,2,1,3,1],
-  pentatonic: [2,2,3,2,3],
+  pentatonic:      [2,2,3,2,3],
+  pentatonicMinor: [3,2,2,3,2],   // las mismas teclas, empezando en la 6ª
 };
 // Cuántas LETRAS avanza cada paso. Las de 7 notas usan una letra por grado
 // (Do Re Mi Fa...), pero la pentatónica se salta dos: Do Re Mi **Sol** La. Sin
 // esto, Sol pentatónica saldría deletreada Sol La Si Do## Re## en vez de
 // Sol La Si Re Mi. Lo que no está aquí avanza de a una letra.
 const LETTER_STEPS = {
-  pentatonic: [1,1,2,1,2],
+  pentatonic:      [1,1,2,1,2],
+  pentatonicMinor: [2,1,1,2,1],
 };
 function accText(diff){
   return diff === 0 ? '' : diff === 1 ? '#' : diff === -1 ? 'b' : diff === 2 ? 'x' : 'bb';
@@ -1834,10 +1836,21 @@ const SCALE_DEFS = [
   // derecha 1 2 3 1 2 3, izquierda 5 4 3 2 1 2. Los cuatro tonos elegidos son
   // los que mantienen esa digitación tal cual: el pulgar nunca cae en negra.
   // Re es el único con negra (Fa#) y le toca al 3, que es donde va cómodo.
-  {id:'cpenta', label:'Do pentatónica mayor',  short:'Do',  rootLetter:0, rootPc:0, family:'pentatonic', rh:'123123', lh:'543212'},
-  {id:'gpenta', label:'Sol pentatónica mayor', short:'Sol', rootLetter:4, rootPc:7, family:'pentatonic', rh:'123123', lh:'543212'},
-  {id:'fpenta', label:'Fa pentatónica mayor',  short:'Fa',  rootLetter:3, rootPc:5, family:'pentatonic', rh:'123123', lh:'543212'},
-  {id:'dpenta', label:'Re pentatónica mayor',  short:'Re',  rootLetter:1, rootPc:2, family:'pentatonic', rh:'123123', lh:'543212'},
+  {id:'cpenta', label:'Do pentatónica mayor',  short:'Do M',  rootLetter:0, rootPc:0, family:'pentatonic', pattern:'pentatonic', rh:'123123', lh:'543212', rel:'apentam'},
+  {id:'gpenta', label:'Sol pentatónica mayor', short:'Sol M', rootLetter:4, rootPc:7, family:'pentatonic', pattern:'pentatonic', rh:'123123', lh:'543212', rel:'epentam'},
+  {id:'fpenta', label:'Fa pentatónica mayor',  short:'Fa M',  rootLetter:3, rootPc:5, family:'pentatonic', pattern:'pentatonic', rh:'123123', lh:'543212', rel:'dpentam'},
+  {id:'dpenta', label:'Re pentatónica mayor',  short:'Re M',  rootLetter:1, rootPc:2, family:'pentatonic', pattern:'pentatonic', rh:'123123', lh:'543212'},
+
+  // Pentatónicas menores: MISMAS teclas que su relativa mayor, empezando en la
+  // 6ª nota. Las tres incluidas son las relativas de Do, Sol y Fa, así que se
+  // pueden comparar de a pares. Digitación: la misma forma de la clase (der.
+  // 1 2 3 1 2 3, izq. 5 4 3 2 1 2), que aquí también deja el pulgar en blanca.
+  // OJO: es una extensión del patrón de la academia, no algo que el profe haya
+  // dado todavía — confirmarla en clase. Si menor se queda fuera porque su 4ª
+  // nota es Fa# y le tocaría el pulgar derecho.
+  {id:'apentam', label:'La pentatónica menor', short:'La m', rootLetter:5, rootPc:9, family:'pentatonic', pattern:'pentatonicMinor', rh:'123123', lh:'543212', rel:'cpenta'},
+  {id:'epentam', label:'Mi pentatónica menor', short:'Mi m', rootLetter:2, rootPc:4, family:'pentatonic', pattern:'pentatonicMinor', rh:'123123', lh:'543212', rel:'gpenta'},
+  {id:'dpentam', label:'Re pentatónica menor', short:'Re m', rootLetter:1, rootPc:2, family:'pentatonic', pattern:'pentatonicMinor', rh:'123123', lh:'543212', rel:'fpenta'},
 ];
 const MAJOR_ORDER = SCALE_DEFS.filter(d => d.family === 'major' && !d.warn).map(d => d.id);
 const MINOR_ORDER = SCALE_DEFS.filter(d => d.family === 'minor').map(d => d.id);
@@ -1845,16 +1858,16 @@ const PENTA_ORDER = SCALE_DEFS.filter(d => d.family === 'pentatonic').map(d => d
 const FAMILY_ORDER = { major: MAJOR_ORDER, minor: MINOR_ORDER, pentatonic: PENTA_ORDER };
 
 function buildScale(def, variant){
-  const key = def.family === 'major' ? 'major'
-            : def.family === 'pentatonic' ? 'pentatonic'
-            : (variant || 'natural');
+  // `pattern` manda cuando la definición lo trae (las dos pentatónicas comparten
+  // familia pero no patrón); si no, mayor fija y menor según la variante.
+  const key = def.pattern || (def.family === 'major' ? 'major' : (variant || 'natural'));
   const steps = STEP_PATTERNS[key];
   const sp = spellScale(def.rootLetter, def.rootPc, steps, LETTER_STEPS[key]);
   const root = 60 + def.rootPc; // la raíz vive en la octava del Do central (mano derecha)
   return {
     id: def.id, label: def.label + (def.family === 'minor' ? (variant === 'harmonic' ? ' armónica' : ' natural') : ''),
     short: def.short, family: def.family, warn: !!def.warn,
-    rootLetter: def.rootLetter, rootPc: def.rootPc, steps,
+    rootLetter: def.rootLetter, rootPc: def.rootPc, steps, rel: def.rel,
     notes: sp.semis.map(s => root + s), // 1 octava, mano derecha, compatibilidad con código previo
     names: sp.names, rh: def.rh, lh: def.lh,
   };
@@ -2501,15 +2514,29 @@ function renderScaleTip(scale){
     '<span class="hand-tag lh">IZQ</span>' + lhF + ' &nbsp; <span class="hand-tag rh">DER</span>' + rhF + '.';
   if(scale.family === 'pentatonic'){
     const n = scale.names;
+    const menor = scale.steps[0] === 3;
     const solfa = scale.notes.map(x => SOLFA_NAMES[x % 12]).join(' ');
+    // Los saltos y los cruces se sacan de los datos, NO se escriben a mano: en
+    // la menor no coinciden (el salto está al principio y el pulgar cruza en
+    // medio), y con el texto fijo de la mayor el consejo mentía.
+    const saltos = scale.steps.map((st, i) => st === 3 ? n[i] + '→' + n[i+1] : null).filter(Boolean);
+    const dist = scale.steps.map(st => st === 3 ? '<b>tono y medio</b>' : 'tono').join(', ');
+    const cruce = (h) => {
+      const f = scale[h].split('').map(Number);
+      for(let i = 1; i < f.length; i++) if(h === 'rh' ? f[i] < f[i-1] : f[i] > f[i-1]) return n[i];
+      return null;
+    };
     html += ' <b>5 notas, sin semitonos:</b> ' + n.join(' ') + ' (' + solfa + ').' +
-      ' Distancias: tono, tono, <b>tono y medio</b>, tono, <b>tono y medio</b>. Esos dos saltos (' +
-      n[2] + '→' + n[3] + ' y ' + n[4] + '→' + n[5] + ') son las teclas que te saltas, y es justo ahí donde cambia la mano:' +
-      ' <span class="hand-tag rh">DER</span>el pulgar pasa por debajo del 3 para llegar a ' + n[3] + ';' +
-      ' <span class="hand-tag lh">IZQ</span>el 2 pasa por encima del pulgar para llegar a ' + n[5] + '.' +
-      ' Prepara el cruce ANTES de necesitarlo: el pulgar se va acercando mientras suenan las dos notas anteriores.' +
-      ' <b>La misma escala en otro tono</b> son las mismas distancias: pruébala en Sol, Fa y Re (pestañas de arriba).' +
-      ' Y prueba las cinco teclas negras seguidas — Fa# Sol# La# Do# Re# — que son esta misma escala: por eso todo lo que toques ahí suena bien.';
+      ' Distancias: ' + dist + '. Los saltos (' + saltos.join(' y ') + ') son las teclas que te saltas.' +
+      ' <b>La mano cambia de sitio una vez por mano:</b>' +
+      ' <span class="hand-tag rh">DER</span>el pulgar pasa por debajo del 3 para llegar a ' + cruce('rh') + ';' +
+      ' <span class="hand-tag lh">IZQ</span>el 2 pasa por encima del pulgar para llegar a ' + cruce('lh') + '.' +
+      ' Prepara el cruce ANTES de necesitarlo: el pulgar se va acercando mientras suenan las dos notas anteriores.';
+    const relScale = scale.rel && SCALES[scale.rel];
+    if(relScale) html += ' <b>Ojo:</b> son exactamente las mismas teclas que <b>' + relScale.label + '</b>, empezando en otra nota. Tócalas seguidas y escucha: mismas teclas, ánimo distinto.';
+    html += menor
+      ? ' Es la escala del blues y del rock: casi todos los solos que conoces salen de aquí.'
+      : ' <b>La misma escala en otro tono</b> son las mismas distancias: pruébala en las otras pestañas. Y prueba las cinco teclas negras seguidas — Fa# Sol# La# Do# Re# — que son esta misma escala: por eso todo lo que toques ahí suena bien.';
   } else if(scale.family === 'major'){
     html += ' <b>Orden recomendado:</b> Do, Sol, Fa, Re, Sib, La, Mib, Mi, Lab, Si, Reb, Fa#.';
     if(scale.warn) html += ' <b>Sol# mayor</b> es un ejercicio teórico de notación (con Fx doble sostenido); en la práctica se usa Lab mayor, que suena igual.';
@@ -2517,7 +2544,7 @@ function renderScaleTip(scale){
     html += ' <b>Menor natural</b> = las mismas teclas que su relativa mayor, empezando dos notas más abajo. <b>Armónica</b> = sube el 7º grado un semitono para que "pida" volver a la tónica.';
   }
   if(scaleHand === 'both') html += ' <b>Ambas manos:</b> las dos suben y bajan a la vez, una octava aparte; el cruce de pulgar cae en lugares distintos en cada mano — ahí es donde se traba todo el mundo, ve lento.';
-  if(scaleBlockMode) html += ' <b>En bloque:</b> presiona a la vez todas las notas que caen bajo la mano y suéltalas antes de cambiar de posición. Sirve para sentir la posición entera y ver de un golpe dónde está el cruce. Cuenta como práctica, pero no como pasada limpia: eso se gana tocando la escala nota por nota.';
+  if(scaleBlockMode) html += ' <b>En bloque:</b> presiona a la vez todas las notas que caen bajo la mano y suéltalas antes de cambiar de posición. Sirve para sentir la posición entera y ver de un golpe dónde está el cruce. Cuenta como práctica, pero no como pasada limpia: eso se gana tocando la escala nota por nota. Si un bloque no te alcanza cómodo, <b>no fuerces la mano</b>: ese lo haces nota por nota.';
   if(scaleTempoMode) html += ' <b>Con metrónomo:</b> una nota por pulso. Verde = a tiempo, azul = adelantado, naranja = atrasado.';
   scaleTip.innerHTML = html;
 }

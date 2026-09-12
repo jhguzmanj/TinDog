@@ -40,6 +40,7 @@ const defs = W('SCALE_DEFS');
 for(const d of defs){
   const sc = W(`SCALES['${d.id}']`);
   const pattern = d.family === 'major' ? [2,2,1,2,2,2,1]
+                : d.pattern === 'pentatonicMinor' ? [3,2,2,3,2]
                 : d.family === 'pentatonic' ? [2,2,3,2,3]
                 : [2,1,2,2,1,2,2];
   const deg = pattern.length;           // 7 diatónicas, 5 pentatónica
@@ -90,8 +91,11 @@ check(W("SCALES.gpenta.names.join(' ')") === 'G A B D E G', 'Sol pentatónica si
 check(W("SCALES.fpenta.names.join(' ')") === 'F G A C D F', 'Fa pentatónica sin alteraciones');
 check(W("SCALES.dpenta.names.join(' ')") === 'D E F# A B D', 'Re pentatónica con Fa#, no Mi#');
 // las mismas distancias en cualquier tono: esa es la tarea de transportar
-check(W("PENTA_ORDER.every(id => JSON.stringify(SCALES[id].steps) === JSON.stringify([2,2,3,2,3]))"),
-  'todas las pentatónicas guardan el patrón 2-2-3-2-3');
+check(W(`PENTA_ORDER.every(id => {
+  const def = SCALE_DEFS.find(d => d.id === id);
+  const esperado = def.pattern === 'pentatonicMinor' ? [3,2,2,3,2] : [2,2,3,2,3];
+  return JSON.stringify(SCALES[id].steps) === JSON.stringify(esperado);
+})`), 'cada pentatónica guarda el patrón de su tipo en todos los tonos');
 // el pulgar nunca cae en tecla negra con la digitación de la academia
 check(W(`PENTA_ORDER.every(id => ['rh','lh'].every(h => {
   const r = buildScaleRun(SCALES[id], h, 1, 'up');
@@ -110,6 +114,33 @@ check(run.steps[0].notes[0].n === 48 && run.steps.map(s => s.notes[0].finger).jo
 run = W("buildScaleRun(SCALES.cpenta, 'both', 1, 'updown')");
 check(run.steps.length === 11, 'pentatónica ascendente y descendente = 11 pasos');
 check(run.steps.every(s => s.notes[1].n === s.notes[0].n - 12), 'ambas manos: izquierda una octava abajo');
+
+section('Pentatónicas menores');
+check(W("SCALES.apentam.names.join(' ')") === 'A C D E G A', 'La menor = La Do Re Mi Sol La');
+check(W("SCALES.epentam.names.join(' ')") === 'E G A B D E', 'Mi menor sin alteraciones');
+check(W("SCALES.dpentam.names.join(' ')") === 'D F G A C D', 'Re menor sin alteraciones');
+// lo que hace que valga la pena tenerlas juntas: son las MISMAS teclas
+const mismasTeclas = (a, b) => W(`(() => {
+  const pc = (id) => [...new Set(SCALES[id].notes.map(n => n % 12))].sort((x,y) => x-y).join(',');
+  return pc('${a}') === pc('${b}');
+})()`);
+check(mismasTeclas('apentam','cpenta'), 'La menor y Do mayor son el mismo grupo de teclas');
+check(mismasTeclas('epentam','gpenta'), 'Mi menor y Sol mayor también');
+check(mismasTeclas('dpentam','fpenta'), 'Re menor y Fa mayor también');
+check(W("SCALES.apentam.notes[0]") === 69 && W("SCALES.cpenta.notes[0]") === 60,
+  'pero empiezan en notas distintas: La4 contra Do4');
+// en la menor el salto NO cae donde cruza la mano; el consejo tiene que salir
+// de los datos o miente (el pulgar derecho llega a Mi, no a Do)
+W("scaleFamily='pentatonic'; currentScaleId='apentam'; renderScaleSubTabs(); enterMode('apentam');");
+const tipMenor = doc.getElementById('scaleTip').textContent;
+check(tipMenor.includes('tono y medio, tono, tono, tono y medio, tono'), 'las distancias de la menor salen en su orden: 3-2-2-3-2');
+check(tipMenor.includes('A→C') && tipMenor.includes('E→G'), 'nombra los saltos reales de la menor');
+check(tipMenor.includes('por debajo del 3 para llegar a E'), 'y el cruce de la derecha cae en Mi, no en el salto');
+check(tipMenor.includes('La pentatónica menor') || tipMenor.includes('Do pentatónica mayor'), 'menciona su relativa');
+run = W("buildScaleRun(SCALES.apentam, 'rh', 1, 'up', true)");
+check(run.steps.map(s => s.notes.map(x => x.name).join('')).join('|') === 'ACD|EGA',
+  'los bloques de la menor cortan donde cruza el pulgar: La-Do-Re y Mi-Sol-La');
+W("scaleFamily='major'; currentScaleId='cmajor'; renderScaleSubTabs(); enterMode('cmajor');");
 
 section('Descendente sola');
 run = W("buildScaleRun(SCALES.cpenta, 'rh', 1, 'down')");

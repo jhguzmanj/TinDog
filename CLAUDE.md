@@ -82,9 +82,23 @@ Orden dentro del `<script>`:
   `buildScaleRun` sacan los grados de `scale.steps.length`, así que una familia
   nueva de N notas no necesita tocar nada más.
   Digitación de la academia: derecha `123123`, izquierda `543212`. Los cuatro
-  tonos incluidos (Do, Sol, Fa, Re) son justo los que la mantienen literal, con
-  **el pulgar siempre en tecla blanca** — hay una prueba que lo fija. Si se
-  agregan La o Fa# (las 5 negras) esa digitación ya no aplica tal cual.
+  tonos mayores incluidos (Do, Sol, Fa, Re) son justo los que la mantienen
+  literal, con **el pulgar siempre en tecla blanca** — hay una prueba que lo
+  fija. Si se agregan La o Fa# (las 5 negras) esa digitación ya no aplica tal cual.
+  **Mayor y menor comparten familia pero no patrón**, así que la definición trae
+  `pattern` (`pentatonic` = `[2,2,3,2,3]`, `pentatonicMinor` = `[3,2,2,3,2]`) y
+  `buildScale` lo prefiere sobre la familia. Las menores incluidas (La, Mi, Re)
+  son las **relativas** de Do, Sol y Fa: mismas teclas, otra nota de partida —
+  `rel` enlaza el par y hay pruebas que comparan los grupos de clases de nota.
+  Si menor queda fuera: su 4ª nota es Fa# y le tocaría el pulgar derecho.
+  Su digitación es **una extensión del patrón de la academia, no algo que el
+  profe haya dado** — si en clase dan otra, esta se cambia. Ojo con el bloque
+  izquierdo: la menor abarca una 7ª menor (10 semitonos) contra la 6ª mayor (9)
+  de la mayor, así que estirar los cinco dedos a la vez cuesta más.
+  **El consejo (`renderScaleTip`) calcula saltos y cruces de los datos**, no los
+  escribe a mano: en la menor el salto NO cae donde cruza la mano (salto al
+  principio, pulgar por debajo en medio), y el texto fijo de la mayor mentía.
+  Los cruces salen de la digitación con la misma regla que `blockGroups`.
   **La pentatónica está limitada a UNA octava a propósito** (`ensureValidOctaves`
   apaga el botón de 2 y baja el valor si venía puesto): la digitación de clase
   termina en un dedo de *llegada*, no en el que arranca el ciclo siguiente. En
