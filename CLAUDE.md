@@ -194,7 +194,14 @@ Orden dentro del `<script>`:
     digitación aparte: el espejo solo la reproduce. `alterna-pulgar-indice` y
     `escalera-corta` no traían `label` (nada que espejar); se les agregó
     (`1,2` alternado y `1,2,3` repetido) porque el nombre y el tip ya decían qué
-    dedos son.
+    dedos son. **`escalera-doblada` y `espejo-menique`** salen de un método real
+    ("Primer Nivel", altopianista.com) que Jorge compartió en PDF: son ritmo +
+    dedo sobre la posición de 5 dedos, **sin alturas fijas** — por eso se
+    pudieron copiar con confianza total (a diferencia de una melodía real, aquí
+    no hay tono que verificar: el patrón es relativo a la raíz que elija cada
+    octava). `escalera-doblada` dobla cada nota (1-1-2-2-3-4-5, la última a 2
+    tiempos); `espejo-menique` arranca en el meñique y baja al pulgar antes de
+    volver a subir — lo contrario de cómo empiezan los demás ejercicios.
   - **Fragmentos** (`SONGS`): no hay patrón que derivar (son piezas reales, no
     posiciones fijas), así que `lhF`/`rhF` se escribieron a mano por nota.
     Convención: acorde de la izquierda en posición fundamental = `5-3-1` (igual
