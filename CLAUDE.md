@@ -251,6 +251,21 @@ Orden dentro del `<script>`:
     ritmo). Las cinco usan posición de 5 dedos sin cambios, solo una nota de la
     izquierda en cada compás (Do tónica), así que el foco es la melodía sin
     complicación de coordinación.
+    **"Aleluya" y "La Colegiala"** salen de tutoriales de YouTube por letras
+    (AnthonyCalva), no de partitura. **Esa fuente sí se puede usar con confianza
+    para las ALTURAS** porque trae la melodía escrita DOS veces —por nombre de
+    nota y por número de tecla— y las dos se pueden cruzar: el video pone el
+    mapa (Colegiala `1=Fa 2=Sol 3=La 4=Sib 5=Do 6=Re 7=Mib`; Aleluya
+    `1=Do … 6=La`), se traducen los números y tienen que dar exactamente la
+    misma lista que las letras. En las dos coincidió nota por nota. **Lo que
+    esa fuente NO da es el ritmo**, y eso se dice en el `tip` en vez de
+    disimularlo: van con valores parejos para aprender las teclas y el groove se
+    saca de la canción. La izquierda (una nota grave por frase) también es
+    añadida, no del tutorial. **La Colegiala es la primera pieza con teclas
+    negras dentro de la melodía** (Sib y Mib); las dos tienen un cambio de
+    posición marcado con `label`, como Cumpleaños feliz y Bella Ciao.
+    Ojo con el nombre: `aleluya` (la famosa, tutorial) y `hallelujah`
+    (el coro de Händel, del songbook) son piezas distintas y conviven.
     **Cómo transcribir una partitura en PDF (método que funciona, reutilizable).**
     Con "Bella Ciao" y "Espíritu de Dios" se automatizó lo que en "Dios está
     aquí" se hizo a ojo, y sale mucho mejor:
