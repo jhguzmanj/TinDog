@@ -251,6 +251,49 @@ Orden dentro del `<script>`:
     ritmo). Las cinco usan posición de 5 dedos sin cambios, solo una nota de la
     izquierda en cada compás (Do tónica), así que el foco es la melodía sin
     complicación de coordinación.
+    **Cómo transcribir una partitura en PDF (método que funciona, reutilizable).**
+    Con "Bella Ciao" y "Espíritu de Dios" se automatizó lo que en "Dios está
+    aquí" se hizo a ojo, y sale mucho mejor:
+    1. `pdftoppm -r 300 -png` (si el pentagrama es chico, subir a 480 — el
+       detector se calibra solo, ver abajo).
+    2. **Líneas del pentagrama**: filas con >60% de píxeles oscuros a lo ancho.
+       Salen en grupos de 5; cada par de grupos es un sistema (Sol + Fa).
+    3. **Cabezas de nota**: dos pasadas. Las *rellenas* son corridas verticales
+       oscuras de largo 0.45L–1.4L (L = separación entre líneas); las *huecas*
+       son blancos ENCERRADOS (agujeros) — sin esa segunda pasada se pierden
+       todas las blancas y redondas. Todos los umbrales se escalan con L, así
+       que el mismo código sirve para cualquier resolución o tamaño de página.
+       Filtro clave: **el agujero de una cabeza es más ancho que alto**; el de
+       un silencio de negra no — sin esa regla los silencios entran como notas.
+    4. **Altura → nota**: `k = (línea_inferior − y) / (L/2)` y de ahí la letra.
+       Descartar lo que caiga a más de 0.25 de una posición (es basura, no nota).
+    5. **Barras de compás**: columna oscura de alto completo **que no sobresale
+       por arriba** (si sobresale es la plica de una nota grave) **y que sí baja
+       hacia el pentagrama de Fa** (en piano la barra cruza los dos).
+    6. Ritmo: eso sí a ojo, pero solo hay que mirar plicas/banderas/barras sobre
+       un recorte anotado. **La verificación que vale**: sumar las duraciones y
+       comprobar que dan 4 por compás. Las dos piezas nuevas cuadran EXACTO
+       (Bella 33.5 tiempos = 36 − 2.5 de silencios; Espíritu 62.5 = 68 − 5.5).
+       Si no cuadra, hay una nota mal leída — en Bella el descuadre de 0.5
+       destapó un par que parecía de semicorcheas y era de corcheas (lo que se
+       veía como doble barra era la barra + una línea del pentagrama).
+    7. Segunda verificación gratis: **el bajo tiene que dar los acordes**. En
+       Espíritu las redondas de la izquierda salieron Si–Mim–Mim–Re–Re–Do–Do–Si,
+       idénticas a los cifrados impresos — eso confirma de una que el mapeo de
+       alturas es correcto.
+    El script quedó en el scratchpad de esa sesión (no en el repo, es de un solo
+    uso), pero con estos pasos se rehace en minutos.
+    **"Bella Ciao"** (partitura de itemfunes.com) por fin entró: es la versión
+    de melodía simple que faltaba las dos veces anteriores. La menor, casi todo
+    en blancas. **Dos posiciones de mano**: pulgar en Mi4 y, desde los tres Mi5
+    de "bella ciao", pulgar en Do5; los pasos marcados avisan (mismo patrón que
+    Cumpleaños feliz). La izquierda alterna La–Mi y al final baja Mi–Re–Do–Si–La.
+    **"Espíritu de Dios"** (Ariel Arnhold, itemfunes.com, ♩=70 del original):
+    Mi menor, única negra Fa# más un Re# en la entrada. La izquierda son
+    **redondas, una por compás** — de lo más cómodo que hay para empezar a
+    coordinar manos. El original repite cada mitad; aquí va de corrido una vez
+    porque `SONGS` no tiene repeticiones, y los `label` marcan dónde empieza
+    cada frase y dónde estaba el "vuelve al principio".
     **"Dios está aquí"** (partitura real de un PDF, Instituto Técnico de Estudios
     Musicales) se transcribió pixel por pixel: se extrajo el PDF a PNG de alta
     resolución (`pdftoppm -r 300`), se detectaron las líneas del pentagrama por
