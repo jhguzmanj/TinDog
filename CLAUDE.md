@@ -241,6 +241,16 @@ Orden dentro del `<script>`:
     Fragmentos aunque se leyera perfecto, y leer los tonos exactos con
     confianza desde una página tan densa no era seguro. Falta una versión de
     **melodía simple** (letra de notas o partitura fácil) antes de agregarla.
+    **Cinco piezas infantiles del PDF "Easy Piano Songs for Beginners"** (Angela
+    Marshall, 2022) se agregaron como nivel 1–2 de la app: **Hot Cross Buns**
+    (tres notas: Do Re Mi, ultra sencilla), **Au Clair de la Lune** (francesa,
+    patrón de seis notas que se repite), **Twinkle Twinkle Little Star** (hexacordio
+    ascendente–descendente, melodía más larga pero simétrica), **Hallelujah Chorus**
+    (Händel, nota larga al inicio que marca el tiempo, cinco notas sin La),
+    **Jingle Bells** (navideña, comenzando con tres notas repetidas para marcar
+    ritmo). Las cinco usan posición de 5 dedos sin cambios, solo una nota de la
+    izquierda en cada compás (Do tónica), así que el foco es la melodía sin
+    complicación de coordinación.
   - **Intervalos y Lectura quedan fuera a propósito.** Intervalos no tiene mano
     fija (`currentHand` no existe ahí): forzar un dedo inventaría una restricción
     que hoy no tiene el ejercicio. Lectura **nunca** marca la tecla objetivo — es
