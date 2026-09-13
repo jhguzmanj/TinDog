@@ -251,6 +251,24 @@ Orden dentro del `<script>`:
     ritmo). Las cinco usan posición de 5 dedos sin cambios, solo una nota de la
     izquierda en cada compás (Do tónica), así que el foco es la melodía sin
     complicación de coordinación.
+    **"Dios está aquí"** (partitura real de un PDF, Instituto Técnico de Estudios
+    Musicales) se transcribió pixel por pixel: se extrajo el PDF a PNG de alta
+    resolución (`pdftoppm -r 300`), se detectaron las líneas del pentagrama por
+    análisis de columnas oscuras, y se dibujaron líneas de referencia por cada
+    posición diatónica (línea/espacio) superpuestas a la imagen para leer cada
+    cabeza de nota por su posición Y exacta en vez de a ojo. **Las alturas
+    (pitches) tienen alta confianza** con este método. **El ritmo exacto de
+    2-3 compases NO se pudo verificar al 100%**: hay una partitura con puntillos
+    dobles inusuales, dieciseisavos agrupados, y al menos un compás donde la
+    suma de duraciones no cuadraba exactamente a 4/4 por más pixel-forensics
+    que se hizo (posible error de lectura en una nota puntillada o silencio no
+    detectado). Se optó por una duración razonable en vez de seguir invirtiendo
+    tiempo indefinidamente, y el usuario fue avisado y aceptó ese trade-off
+    explícitamente. **Dividida en 5 frases con `label`** (Frase 1-4 + Fin) para
+    practicar por partes con "Tramo" en cascada, que fue el pedido explícito
+    ("agrégamela para aprenderla por partes"). Si al tocarla algo suena raro
+    rítmicamente, es la parte a ajustar de oído — las notas (qué tecla tocar)
+    deberían estar bien.
   - **Intervalos y Lectura quedan fuera a propósito.** Intervalos no tiene mano
     fija (`currentHand` no existe ahí): forzar un dedo inventaría una restricción
     que hoy no tiene el ejercicio. Lectura **nunca** marca la tecla objetivo — es
