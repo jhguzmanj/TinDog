@@ -215,6 +215,12 @@ Orden dentro del `<script>`:
     (`cruce-pulgar`); Bella Ciao no se agregó por no poder verificar la melodía
     nota por nota contra una fuente confiable en esa sesión — no adivinar una
     melodía conocida, se nota si está mal.
+    **"María tenía un corderito"** se agregó como pieza fácil y segura dentro
+    de la pentatónica: usa solo Do Re Mi Sol (ni siquiera necesita el La),
+    cabe entera en la posición de 5 dedos y aquí la izquierda solo marca el
+    Do en cada compás (no repite el patrón de acorde largo de Estrellita).
+    Se eligió sobre Cumpleaños feliz/Bella Ciao por tener rango de mano y
+    confianza de transcripción altísimos (melodía de 3-4 notas, ultraconocida).
   - **Intervalos y Lectura quedan fuera a propósito.** Intervalos no tiene mano
     fija (`currentHand` no existe ahí): forzar un dedo inventaría una restricción
     que hoy no tiene el ejercicio. Lectura **nunca** marca la tecla objetivo — es
