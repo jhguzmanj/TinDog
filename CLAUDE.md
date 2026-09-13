@@ -221,6 +221,19 @@ Orden dentro del `<script>`:
     Do en cada compás (no repite el patrón de acorde largo de Estrellita).
     Se eligió sobre Cumpleaños feliz/Bella Ciao por tener rango de mano y
     confianza de transcripción altísimos (melodía de 3-4 notas, ultraconocida).
+    **"Cumpleaños feliz" sí sale de la posición fija de 5 dedos, a propósito**:
+    es la primera pieza de Fragmentos con cambio de posición completo de mano
+    (no solo cruce de pulgar). Va en dos posiciones — pulgar en Sol4 (Sol4-Re5)
+    para las dos primeras frases, pulgar en Do5 (Do5-Sol5) para el salto agudo
+    de "cumpleaños a ti" — con `label` avisando en qué paso se mueve la mano
+    ("Mano sube…" / "Mano baja…"), igual que "(cruza)" en `cruce-pulgar`. La
+    izquierda se queda simple (Do3 de referencia en cada frase, sin acordes).
+    **Bella Ciao se pidió otra vez con una partitura (PDF) y se descartó de
+    nuevo**: el PDF era un arreglo avanzado (arpegios, octavas dobladas,
+    adornos, "sad and slow" de YouTube) que no calza con el formato de
+    Fragmentos aunque se leyera perfecto, y leer los tonos exactos con
+    confianza desde una página tan densa no era seguro. Falta una versión de
+    **melodía simple** (letra de notas o partitura fácil) antes de agregarla.
   - **Intervalos y Lectura quedan fuera a propósito.** Intervalos no tiene mano
     fija (`currentHand` no existe ahí): forzar un dedo inventaría una restricción
     que hoy no tiene el ejercicio. Lectura **nunca** marca la tecla objetivo — es
