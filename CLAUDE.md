@@ -202,6 +202,19 @@ Orden dentro del `<script>`:
     la derecha reutilizan `CHORD_FINGERS.rh` por inversión, y la melodía de la
     derecha va en posición de 5 dedos (Do=1 Re=2 Mi=3 Fa=4 Sol=5, estirando el 5
     para el La de "Estrellita"). El arpegio de Do usa el patrón estándar 1-2-3-5.
+    **"Himno a la alegría" son dos frases, a propósito** (Jorge pidió ir
+    construyendo la pieza por partes): la 1ª queda "en el aire" (termina en Mi,
+    grado 3), la 2ª responde y resuelve en Do. Las dos caben en la MISMA posición
+    de 5 dedos, así que no hace falta digitación nueva — es literalmente la
+    frase 1 con el final cambiado. `label:'Frase 1'/'Frase 2'` en el último paso
+    de cada una sirve de ancla para el selector de Tramo del modo cascada, para
+    practicar una frase sin la otra. **Cumpleaños feliz y Bella Ciao se pidieron
+    y quedaron pendientes**: Cumpleaños feliz sale de la posición de 5 dedos (la
+    melodía sube hasta una 9ª desde el Do de referencia) y necesitaría un cambio
+    de posición de mano que Fragmentos hoy no maneja fuera de Agilidad
+    (`cruce-pulgar`); Bella Ciao no se agregó por no poder verificar la melodía
+    nota por nota contra una fuente confiable en esa sesión — no adivinar una
+    melodía conocida, se nota si está mal.
   - **Intervalos y Lectura quedan fuera a propósito.** Intervalos no tiene mano
     fija (`currentHand` no existe ahí): forzar un dedo inventaría una restricción
     que hoy no tiene el ejercicio. Lectura **nunca** marca la tecla objetivo — es
