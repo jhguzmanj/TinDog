@@ -1173,6 +1173,7 @@
       <button class="ghost-btn zoom-btn" data-zoom="1">+</button>
       <button id="toggleSoundBtn" class="ghost-btn active" title="Sonido de la app para el teclado dibujado y para 'Escuchar'. Las notas que vienen del piano real no se duplican.">🔊 Sonido</button>
       <button id="soundOutBtn" class="ghost-btn" style="display:none;">🎹 Suena en el piano</button>
+      <button id="soundFallbackBtn" class="ghost-btn" title="Actívalo SOLO si tocas una tecla y NO sale ningún sonido (pasa en algunos iPhone). Con esto encendido cada nota se graba en silencio por adelantado y se reproduce como un audio normal, en vez de tocarse en vivo — más lento la primera vez que suena cada tecla, pero funciona donde el sonido en vivo no.">🔈 Sonido alternativo</button>
       <button id="toggleLabelsBtn" class="ghost-btn">Mostrar nombres de notas</button>
       <button id="labelStyleBtn" class="ghost-btn">Do Re Mi</button>
       <button id="solfaToggleBtn" class="ghost-btn">C = Do ?</button>
@@ -1363,6 +1364,21 @@ toggleSoundBtn.addEventListener('click', () => {
   toggleSoundBtn.textContent = soundEnabled ? '🔊 Sonido' : '🔇 Sonido';
 });
 
+// Sonido alternativo (ver `playNoteSoundFallback` más abajo): declarado acá
+// arriba, junto a `soundEnabled`, porque el botón se conecta acá — si viviera
+// junto a las funciones de render (más abajo en el archivo) el `let` no
+// estaría inicializado todavía cuando este bloque corre (temporal dead zone).
+let audioFallback = false;
+try { audioFallback = localStorage.getItem('audioFallback') === '1'; } catch(e){}
+const soundFallbackBtn = document.getElementById('soundFallbackBtn');
+soundFallbackBtn.classList.toggle('active', audioFallback);
+soundFallbackBtn.addEventListener('click', () => {
+  audioFallback = !audioFallback;
+  if(typeof allNotesOff === 'function') allNotesOff(); // no dejar nada sonando al cambiar de camino
+  soundFallbackBtn.classList.toggle('active', audioFallback);
+  try { localStorage.setItem('audioFallback', audioFallback ? '1' : '0'); } catch(e){}
+});
+
 // ===== Salida MIDI: que suene el piano de verdad =====
 // El P-45 trae sus propios samples de Yamaha. Con el piano conectado, todo lo
 // que toca la APP (Escuchar, el oído, los clics en el teclado dibujado) se le
@@ -1394,6 +1410,7 @@ function allNotesOff(){
   midiSounding.forEach(n => sendMidi([0x80 | MIDI_OUT_CH, n, 0]));
   midiSounding.clear();
   sendMidi([0xb0 | MIDI_OUT_CH, 123, 0]); // "all notes off"
+  if(typeof allNotesOffFallback === 'function') allNotesOffFallback();
 }
 
 // La salida que corresponde al piano conectado: primero por nombre exacto,
@@ -1447,7 +1464,7 @@ window.addEventListener('beforeunload', allNotesOff);
 //   4. Golpe de martillo y un filtro que se cierra mientras la nota muere.
 // Todo generado al vuelo: cero descargas, el archivo sigue siendo uno solo.
 let audioCtx = null;
-let audioBus = null;          // { master, send } construido una vez por contexto
+const audioBuses = new WeakMap();   // ctx -> {master, send}: uno por contexto, no uno solo
 let noiseBuf = null;          // ruido del martillo, compartido
 const activeVoices = {};
 
@@ -1509,8 +1526,16 @@ function makeNoise(ctx){
 }
 
 // Un acorde son 3-4 notas a la vez: el compresor evita que saturen juntas.
+// Un bus por CONTEXTO (WeakMap), no uno solo global: el respaldo de sonido
+// (ver más abajo) renderiza cada nota en un OfflineAudioContext propio y
+// efímero, y con una sola variable compartida cada render pisaba el bus del
+// contexto en vivo — la próxima nota tocada en vivo sonaba con un bus que ya
+// no era el suyo (se reconstruía solo, pero de más, y por un instante quedaba
+// mal referenciado). Un WeakMap deja que cada contexto tenga el suyo y se
+// libere solo cuando el contexto (offline, de usar y tirar) deja de citarse.
 function ensureAudioBus(ctx){
-  if(audioBus && audioBus.ctx === ctx) return audioBus;
+  const cached = audioBuses.get(ctx);
+  if(cached) return cached;
   const comp = ctx.createDynamicsCompressor();
   comp.threshold.value = -16; comp.knee.value = 22; comp.ratio.value = 4;
   comp.attack.value = 0.004; comp.release.value = 0.22;
@@ -1527,8 +1552,9 @@ function ensureAudioBus(ctx){
     send.connect(conv);
     conv.connect(comp);
   }
-  audioBus = { ctx, master, send };
-  return audioBus;
+  const bus = { master, send };
+  audioBuses.set(ctx, bus);
+  return bus;
 }
 
 // Cuánto dura la nota, en segundos. Un La0 retumba muchísimo más que un Do8.
@@ -1609,6 +1635,7 @@ function buildVoice(ctx, dest, send, note, vel, t0){
 function playNoteSound(note, vel){
   if(!soundEnabled) return;
   if(usingPiano()){ midiNoteOn(note, vel); return; }
+  if(audioFallback){ playNoteSoundFallback(note, vel); return; }
   const ctx = ensureAudioCtx();
   if(!ctx) return;
   const bus = ensureAudioBus(ctx);
@@ -1619,6 +1646,7 @@ function playNoteSound(note, vel){
 function stopNoteSound(note){
   // si la nota salió por el piano, se apaga por el mismo camino
   if(midiSounding.has(note)){ midiNoteOff(note); return; }
+  if(audioFallback){ stopNoteSoundFallback(note); return; }
   const v = activeVoices[note];
   if(!v || !audioCtx) return;
   const now = audioCtx.currentTime;
@@ -1629,6 +1657,103 @@ function stopNoteSound(note){
   g.exponentialRampToValueAtTime(0.0001, now + 0.16);
   v.oscs.forEach(o => { try { o.stop(now + 0.2); } catch(e){} });
   delete activeVoices[note];
+}
+
+// ===== Sonido alternativo: para el puñado de teléfonos donde Web Audio EN
+// VIVO no suena nada, pero el audio normal sí. Confirmado con una prueba
+// aparte (misma página, mismo momento): un tono por Web Audio no sonó, un
+// <audio> con un clip grabado sí. La causa exacta en ese teléfono no se pudo
+// aislar sin tenerlo en la mano (no era el interruptor de silencio, ni el
+// volumen, ni las protecciones de privacidad de Safari que se pudieron
+// revisar) — en vez de seguir adivinando, se evita el camino que falla:
+// cada nota se renderiza EN SILENCIO con OfflineAudioContext (eso no pide
+// permiso de altavoz, solo calcula números) y se reproduce como un <audio>
+// normal, la técnica que sí sonó. Apagado por defecto: es un rodeo para un
+// caso raro, no hace falta para casi nadie. (`audioFallback` se declara más
+// arriba, junto al botón que lo prende — acá solo las funciones.)
+const noteClipCache = {};    // note -> HTMLAudioElement ya renderizado (se reusa)
+const noteClipPending = {};  // note -> Promise, mientras se renderiza la primera vez
+const noteClipPlaying = {};  // note -> HTMLAudioElement sonando ahora mismo
+
+// AudioBuffer -> WAV de 16 bits: lo mínimo para que un <audio> lo reproduzca
+// sin depender de que el navegador sepa codificar nada él solo.
+function audioBufferToWavBlob(buf){
+  const chans = buf.numberOfChannels, len = buf.length, sr = buf.sampleRate;
+  const blockAlign = chans * 2, dataSize = len * blockAlign;
+  const out = new ArrayBuffer(44 + dataSize);
+  const dv = new DataView(out);
+  const writeStr = (o, s) => { for(let i = 0; i < s.length; i++) dv.setUint8(o + i, s.charCodeAt(i)); };
+  writeStr(0, 'RIFF'); dv.setUint32(4, 36 + dataSize, true); writeStr(8, 'WAVE');
+  writeStr(12, 'fmt '); dv.setUint32(16, 16, true); dv.setUint16(20, 1, true);
+  dv.setUint16(22, chans, true); dv.setUint32(24, sr, true);
+  dv.setUint32(28, sr * blockAlign, true); dv.setUint16(32, blockAlign, true);
+  dv.setUint16(34, 16, true); writeStr(36, 'data'); dv.setUint32(40, dataSize, true);
+  const chData = []; for(let c = 0; c < chans; c++) chData.push(buf.getChannelData(c));
+  let off = 44;
+  for(let i = 0; i < len; i++){
+    for(let c = 0; c < chans; c++){
+      const s = Math.max(-1, Math.min(1, chData[c][i]));
+      dv.setInt16(off, s < 0 ? s * 0x8000 : s * 0x7fff, true);
+      off += 2;
+    }
+  }
+  return new Blob([out], { type: 'audio/wav' });
+}
+
+// Cachea por NOTA, no por (nota, velocidad): todo lo que toca la app desde
+// clic/touch llama a playNoteSound sin velocidad (buildVoice usa 80 fija en
+// ese caso), así que una sola versión por tecla alcanza — sin esto se
+// re-renderizaría en silencio cada vez, con un salto perceptible cada toque.
+function renderNoteClip(note, vel){
+  if(noteClipCache[note]) return Promise.resolve(noteClipCache[note]);
+  if(noteClipPending[note]) return noteClipPending[note];
+  const OAC = window.OfflineAudioContext || window.webkitOfflineAudioContext;
+  if(!OAC) return Promise.resolve(null);
+  const sr = 44100;
+  const dur = Math.min(noteLife(note) + 0.4, 6);
+  const octx = new OAC(2, Math.ceil(dur * sr), sr);
+  const bus = ensureAudioBus(octx);
+  buildVoice(octx, bus.master, bus.send, note, vel, 0);
+  const p = octx.startRendering().then(buf => {
+    const audioEl = new Audio(URL.createObjectURL(audioBufferToWavBlob(buf)));
+    audioEl.preload = 'auto';
+    noteClipCache[note] = audioEl;
+    delete noteClipPending[note];
+    return audioEl;
+  }).catch(() => { delete noteClipPending[note]; return null; });
+  noteClipPending[note] = p;
+  return p;
+}
+
+function playNoteSoundFallback(note, vel){
+  if(noteClipPlaying[note]) stopNoteSoundFallback(note);
+  renderNoteClip(note, vel).then(audioEl => {
+    if(!audioEl) return;
+    audioEl.currentTime = 0;
+    audioEl.volume = 1;
+    noteClipPlaying[note] = audioEl;
+    audioEl.play().catch(() => {});
+  });
+}
+
+// Igual que stopNoteSound: soltar la tecla corta rápido pero no de golpe —
+// aquí no hay envolvente que reprogramar (es un clip ya grabado), así que el
+// desvanecido se hace bajando el volumen del <audio> a mano en unos pasos.
+function stopNoteSoundFallback(note){
+  const audioEl = noteClipPlaying[note];
+  if(!audioEl) return;
+  delete noteClipPlaying[note];
+  const steps = 8, stepMs = 20, startVol = audioEl.volume;
+  let i = 0;
+  const fade = setInterval(() => {
+    i++;
+    audioEl.volume = Math.max(0, startVol * (1 - i / steps));
+    if(i >= steps){ clearInterval(fade); try { audioEl.pause(); } catch(e){} }
+  }, stepMs);
+}
+function allNotesOffFallback(){
+  Object.keys(noteClipPlaying).forEach(n => { try { noteClipPlaying[n].pause(); } catch(e){} });
+  for(const n in noteClipPlaying) delete noteClipPlaying[n];
 }
 const connBox = document.getElementById('connectionPanel');
 const deviceBadge = document.getElementById('deviceBadge');

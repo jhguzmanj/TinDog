@@ -498,7 +498,7 @@ cualquier otro navegador funcionan igual que antes (`cloudState: 'off'`).
 
 ## Otras preferencias persistidas
 `kbZoom2`, `labelStyle`, `labelsShown` (ahora sí se recuerda; por defecto visible),
-`fragCat` (categoría de Fragmentos),
+`fragCat` (categoría de Fragmentos), `audioFallback` (sonido alternativo, ver más abajo),
 `solfaShown`, `cascadeSpeed`, `scaleOpts` (mano/octavas/sentido/dedos/variante menor),
 `metroBpm`, `readingLevel`, `handsShown`, `soundTarget`.
 
@@ -636,9 +636,67 @@ en todos los sentidos**: no hay excepción, la UI responde normal, y el único
 síntoma es que no sale sonido — por eso costó diagnosticarlo por chat en vez
 de con el dispositivo en la mano. Probado con un `AudioContext` falso en
 jsdom (hay prueba): fija que se agenda un buffer al crear el contexto y que
-NO se repite en la siguiente nota. **No se pudo probar en un iPhone real**
-(sin acceso a uno) — la corrección es el fix estándar y documentado para
-este síntoma exacto, pero falta la confirmación de Jorge en su teléfono.
+NO se repite en la siguiente nota.
+**Esto NO arregló el caso de Jorge.** Con el desbloqueo puesto, seguía sin
+sonar en su iPhone (Safari y Chrome). Se aisló más con una página de prueba
+aparte, sin nada del piano: en el MISMO toque, un tono por Web Audio no
+sonó y un `<audio>` con un clip grabado sí sonó. Revisó "Protección
+avanzada contra rastreo y huella digital" de Safari y Modo Aislado
+(Lockdown Mode) — ninguno era la causa. La causa exacta de fondo **quedó
+sin identificar** (no hay forma de aislarla más por chat, sin el aparato en
+la mano); lo que sí quedó confirmado con certeza, en su teléfono real, es
+el patrón: Web Audio en vivo muda, `<audio>` funciona. Ver "Sonido
+alternativo" más abajo, que es la solución que sí quedó resuelta.
+
+### Sonido alternativo (`audioFallback`): para cuando Web Audio en vivo no suena
+En vez de seguir adivinando la causa de fondo del caso de arriba, se evitó
+el camino que falla. Botón `#soundFallbackBtn` en la barra del teclado
+("🔈 Sonido alternativo"), apagado por defecto — es un rodeo para un caso
+raro, no algo que necesite casi nadie. Con esto encendido:
+- `playNoteSoundFallback(note, vel)` reemplaza a `buildVoice` tocando en
+  vivo: la nota se renderiza **en silencio** con `OfflineAudioContext`
+  (`renderNoteClip`) — eso no pide permiso de altavoz, solo calcula
+  números — usando el **mismo** `buildVoice`/`ensureAudioBus` que el
+  camino en vivo (mismo timbre, misma reverberación), y el resultado se
+  convierte a WAV (`audioBufferToWavBlob`, cabecera de 44 bytes a mano,
+  sin depender de que el navegador sepa codificar nada) y se reproduce con
+  un `<audio>` normal — la técnica que **sí** sonó en la prueba aislada.
+- **Se cachea por NOTA, no por (nota, velocidad)**: todo lo que toca la
+  app desde clic/touch llama a `playNoteSound` sin velocidad (`buildVoice`
+  usa 80 fija en ese caso), así que una sola versión por tecla alcanza.
+  La primera vez que suena una tecla hay un salto perceptible (hay que
+  renderizar); de ahí en adelante es instantáneo.
+- `stopNoteSoundFallback` no tiene envolvente que reprogramar (es un clip
+  ya grabado, no una voz en vivo): el corte al soltar la tecla se hace
+  bajando `audioEl.volume` a mano en 8 pasos de 20 ms — mismo espíritu que
+  el "corta rápido pero no de golpe" del camino en vivo, sin el chasquido
+  de un `.pause()` en seco.
+- `allNotesOff()` llama también a `allNotesOffFallback()`: la red de
+  seguridad contra notas colgadas tiene que cubrir este camino igual que
+  cubre MIDI, o quedaría sonando algo si el fallback estaba prendido.
+- **`ensureAudioBus` pasó de una variable global a un `WeakMap` por
+  contexto.** Antes había un solo `audioBus` compartido; cada nota del
+  fallback crea su propio `OfflineAudioContext` efímero (uno por nota, de
+  usar y tirar), y con la variable única cada render de fondo pisaba el
+  bus del contexto EN VIVO — la siguiente nota tocada en vivo sonaba con
+  un bus que ya no era el suyo. El WeakMap deja que cada contexto (el
+  `audioCtx` en vivo, y cada `OfflineAudioContext` de turno) tenga el suyo
+  sin chocar.
+- **Solo cubre notas, no el metrónomo.** El metrónomo (`metroClick`) sigue
+  tocando en vivo por `audioCtx` a propósito: depende de un scheduler con
+  lookahead para caer justo en el pulso (`metroScheduler`), y forzar cada
+  clic por un `<audio>` pre-renderizado metería el mismo jitter que un
+  metrónomo no se puede permitir. Si algún día hace falta, es un problema
+  aparte — no extender este mecanismo ahí sin pensarlo de nuevo.
+- Probado con un `OfflineAudioContext`/`Audio` falsos en jsdom (cubre todo
+  lo que `buildVoice`/`ensureAudioBus` tocan): primera vez renderiza,
+  segunda vez usa caché, soltar la tecla desvanece y saca de "sonando",
+  `allNotesOff` también corta el fallback, y la cabecera del WAV mide lo
+  que debe. **Además probado con Chromium real** (no fakes): toque táctil
+  real de principio a fin, nota entra a `noteClipPlaying`, suena
+  (`paused:false`), se desvanece al soltar — sin errores de consola.
+  **Seguía sin poder probarse en el iPhone real de Jorge** en el momento
+  de escribir esto; falta su confirmación.
 
 ### Sintetizador del computador (solo sin piano conectado)
 Imita las cuatro cosas que hacen que algo suene a piano y no a órgano:

@@ -999,6 +999,88 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
   check(W('window.__starts') === 1, 'y solo una vez: la segunda llamada reusa el contexto sin re-desbloquear');
   W('audioCtx = null; delete window.AudioContext; delete window.webkitAudioContext;');
 
+  section('Sonido alternativo (cuando Web Audio en vivo no suena)');
+  W('soundEnabled = true;'); // secciones anteriores lo dejan apagado
+  // jsdom no tiene OfflineAudioContext ni un <audio> real que reproduzca:
+  // se inyectan fakes mínimos que cubren todo lo que buildVoice/ensureAudioBus
+  // tocan (visto grepeando el archivo), para poder probar el camino de
+  // verdad sin adivinar su forma.
+  W(`
+    window.URL.createObjectURL = () => 'blob:fake';
+    window.__playCalls = []; window.__renderCount = 0;
+    function __fakeParam(){ return { value:0, setValueAtTime(){}, exponentialRampToValueAtTime(){}, cancelScheduledValues(){} }; }
+    function __fakeNode(extra){ return Object.assign({ connect(){}, disconnect(){} }, extra || {}); }
+    class __FakeOfflineCtx {
+      constructor(channels, length, sampleRate){
+        this.destination = __fakeNode(); this.sampleRate = sampleRate;
+        this._channels = channels; this._length = length;
+      }
+      createGain(){ return __fakeNode({ gain: __fakeParam() }); }
+      createBiquadFilter(){ return __fakeNode({ type:'', frequency: __fakeParam(), Q: __fakeParam(), detune: __fakeParam() }); }
+      createOscillator(){ return __fakeNode({ type:'', frequency: __fakeParam(), detune: __fakeParam(), start(){}, stop(){} }); }
+      createDynamicsCompressor(){ return __fakeNode({ threshold:__fakeParam(), knee:__fakeParam(), ratio:__fakeParam(), attack:__fakeParam(), release:__fakeParam() }); }
+      createConvolver(){ return __fakeNode({ buffer:null }); }
+      createBufferSource(){ return __fakeNode({ buffer:null, start(){}, stop(){} }); }
+      createBuffer(channels, length, sampleRate){
+        const chans = []; for(let i=0;i<channels;i++) chans.push(new Float32Array(length));
+        return { numberOfChannels:channels, length, sampleRate, getChannelData:c=>chans[c] };
+      }
+      startRendering(){
+        window.__renderCount++;
+        return Promise.resolve(this.createBuffer(this._channels, this._length, this.sampleRate));
+      }
+    }
+    window.OfflineAudioContext = __FakeOfflineCtx;
+    class __FakeAudioEl {
+      constructor(src){ this.src = src; this.currentTime = 0; this.volume = 1; this.paused = true; }
+      play(){ this.paused = false; window.__playCalls.push(this.src); return Promise.resolve(); }
+      pause(){ this.paused = true; }
+    }
+    window.Audio = __FakeAudioEl;
+  `);
+  check(W('audioFallback') === false, 'apagado por defecto: es un rodeo para un caso raro, no para todos');
+  ev('#soundFallbackBtn');
+  check(W('audioFallback') === true, 'el botón enciende el sonido alternativo');
+  check(W("localStorage.getItem('audioFallback')") === '1', 'se recuerda en localStorage');
+  check(doc.getElementById('soundFallbackBtn').classList.contains('active'), 'el botón se ve encendido');
+
+  W('playNoteSound(60)');
+  await new Promise(r => setTimeout(r, 30));
+  check(W('window.__renderCount') === 1, 'la primera vez que suena una tecla, se renderiza en silencio');
+  check(W('window.__playCalls.length') === 1, 'y se reproduce como <audio>, no en vivo');
+  W('playNoteSound(60)');
+  await new Promise(r => setTimeout(r, 30));
+  check(W('window.__renderCount') === 1, 'la segunda vez NO se vuelve a renderizar — usa la caché por nota');
+  check(W('window.__playCalls.length') === 2, 'pero sí se reproduce de nuevo cada toque');
+
+  W('playNoteSound(64)');
+  await new Promise(r => setTimeout(r, 30));
+  check(Object.keys(W('noteClipPlaying')).includes('64'), 'mientras suena, queda marcada como sonando');
+  W('stopNoteSound(64)');
+  await new Promise(r => setTimeout(r, 250));
+  check(!Object.keys(W('noteClipPlaying')).includes('64'), 'soltar la tecla la desvanece y la saca de "sonando" (no de golpe)');
+
+  W('playNoteSound(67)');
+  await new Promise(r => setTimeout(r, 30));
+  // 60 sigue sonando de antes (nunca se soltó, como una tecla sostenida) + 67 recién tocada
+  check(Object.keys(W('noteClipPlaying')).includes('67'), 'setup: hay al menos una nota sonando antes de allNotesOff');
+  W('allNotesOff()');
+  check(Object.keys(W('noteClipPlaying')).length === 0, 'allNotesOff también corta el sonido alternativo, no solo el MIDI');
+
+  W(`window.__wav = (() => {
+    const buf = { numberOfChannels:1, length:2, sampleRate:8000, getChannelData:() => new Float32Array([0.5,-0.5]) };
+    const b = audioBufferToWavBlob(buf);
+    return { size:b.size, type:b.type };
+  })();`);
+  check(W('window.__wav.type') === 'audio/wav', 'el clip renderizado se etiqueta audio/wav');
+  check(W('window.__wav.size') === 44 + 2 * 2, 'tamaño = cabecera de 44 bytes + PCM de 16 bits (1 canal × 2 muestras)');
+
+  ev('#soundFallbackBtn'); // vuelve a apagarlo: no debe quedar prendido para el resto de la suite
+  check(W('audioFallback') === false, 'se puede apagar igual que se prendió');
+  W(`for(const k in noteClipCache) delete noteClipCache[k];
+     delete window.OfflineAudioContext; delete window.Audio;
+     delete window.__playCalls; delete window.__renderCount; delete window.__wav;`);
+
   console.log(`\n${passes} pruebas OK, ${failures} fallos`);
   if(errors.length) console.log('Errores de consola:', errors);
   process.exit(failures || errors.length ? 1 : 0);
