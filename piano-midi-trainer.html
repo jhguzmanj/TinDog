@@ -1674,6 +1674,7 @@ function stopNoteSound(note){
 const noteClipCache = {};    // note -> HTMLAudioElement ya renderizado (se reusa)
 const noteClipPending = {};  // note -> Promise, mientras se renderiza la primera vez
 const noteClipPlaying = {};  // note -> HTMLAudioElement sonando ahora mismo
+const noteClipFade = {};     // note -> id del setInterval de desvanecido, mientras dura
 
 // AudioBuffer -> WAV de 16 bits: lo mínimo para que un <audio> lo reproduzca
 // sin depender de que el navegador sepa codificar nada él solo.
@@ -1704,15 +1705,33 @@ function audioBufferToWavBlob(buf){
 // clic/touch llama a playNoteSound sin velocidad (buildVoice usa 80 fija en
 // ese caso), así que una sola versión por tecla alcanza — sin esto se
 // re-renderizaría en silencio cada vez, con un salto perceptible cada toque.
+// **Corto y SIN reverberación a propósito** (a diferencia del sonido en
+// vivo): reportado que el primero se sentía "pegado"/turbio y tardaba mucho
+// en oírse. La duración de `noteLife` (hasta 6 s) más el envío al
+// convolver de reverberación (una convolución contra un impulso de 1.5 s,
+// caro de verdad) hacían que CADA nota nueva tardara un buen rato en
+// renderizarse en un teléfono — y para una práctica de toque rápido, tanta
+// cola de reverberación solo emborronaba una nota con la siguiente. Un
+// bus propio, más chico y sin `send`, no el `ensureAudioBus` de siempre.
+function fallbackRenderBus(octx){
+  const comp = octx.createDynamicsCompressor();
+  comp.threshold.value = -16; comp.knee.value = 22; comp.ratio.value = 4;
+  comp.attack.value = 0.004; comp.release.value = 0.22;
+  comp.connect(octx.destination);
+  const master = octx.createGain();
+  master.gain.value = 0.85;
+  master.connect(comp);
+  return { master, send: null };
+}
 function renderNoteClip(note, vel){
   if(noteClipCache[note]) return Promise.resolve(noteClipCache[note]);
   if(noteClipPending[note]) return noteClipPending[note];
   const OAC = window.OfflineAudioContext || window.webkitOfflineAudioContext;
   if(!OAC) return Promise.resolve(null);
   const sr = 44100;
-  const dur = Math.min(noteLife(note) + 0.4, 6);
+  const dur = Math.min(noteLife(note) * 0.45 + 0.35, 2.2);
   const octx = new OAC(2, Math.ceil(dur * sr), sr);
-  const bus = ensureAudioBus(octx);
+  const bus = fallbackRenderBus(octx);
   buildVoice(octx, bus.master, bus.send, note, vel, 0);
   const p = octx.startRendering().then(buf => {
     const audioEl = new Audio(URL.createObjectURL(audioBufferToWavBlob(buf)));
@@ -1725,8 +1744,27 @@ function renderNoteClip(note, vel){
   return p;
 }
 
+// Deja pedidas por adelantado las notas que va a necesitar una pasada
+// completa (Fragmentos/oído "Escuchar"), para que ya estén listas cuando
+// arranque el conteo de tiempo. Sin esto, la primera vez que sonaba una
+// pieza cada nota nueva se renderizaba EN MEDIO de la reproducción — con el
+// tiempo agendado por adelantado (`playFragment`/`playEarInterval` no
+// esperan a que termine de renderizar), la nota sonaba tarde, atropellada
+// con la siguiente, y la pasada entera se oía amontonada. Piezas ya
+// escuchadas antes no pagan este costo: `renderNoteClip` cachea por nota.
+function warmNoteClips(notes){
+  if(!audioFallback) return Promise.resolve();
+  return Promise.all([...new Set(notes)].map(n => renderNoteClip(n)));
+}
+
 function playNoteSoundFallback(note, vel){
-  if(noteClipPlaying[note]) stopNoteSoundFallback(note);
+  // Si había un desvanecido a medias de un toque anterior de la MISMA
+  // tecla, se cancela en vez de dejarlo correr: sin esto, el intervalo
+  // viejo seguía bajando el volumen por debajo de la reproducción nueva y
+  // hasta la pausaba a la mitad — la tecla se sentía "pegada" o muda a
+  // ratos. No hace falta desvanecer lo que se va a reemplazar ya mismo.
+  if(noteClipFade[note]){ clearInterval(noteClipFade[note]); delete noteClipFade[note]; }
+  delete noteClipPlaying[note];
   renderNoteClip(note, vel).then(audioEl => {
     if(!audioEl) return;
     audioEl.currentTime = 0;
@@ -1740,18 +1778,25 @@ function playNoteSoundFallback(note, vel){
 // aquí no hay envolvente que reprogramar (es un clip ya grabado), así que el
 // desvanecido se hace bajando el volumen del <audio> a mano en unos pasos.
 function stopNoteSoundFallback(note){
+  if(noteClipFade[note]){ clearInterval(noteClipFade[note]); delete noteClipFade[note]; }
   const audioEl = noteClipPlaying[note];
   if(!audioEl) return;
   delete noteClipPlaying[note];
   const steps = 8, stepMs = 20, startVol = audioEl.volume;
   let i = 0;
-  const fade = setInterval(() => {
+  noteClipFade[note] = setInterval(() => {
     i++;
     audioEl.volume = Math.max(0, startVol * (1 - i / steps));
-    if(i >= steps){ clearInterval(fade); try { audioEl.pause(); } catch(e){} }
+    if(i >= steps){
+      clearInterval(noteClipFade[note]);
+      delete noteClipFade[note];
+      try { audioEl.pause(); } catch(e){}
+    }
   }, stepMs);
 }
 function allNotesOffFallback(){
+  Object.keys(noteClipFade).forEach(n => clearInterval(noteClipFade[n]));
+  for(const n in noteClipFade) delete noteClipFade[n];
   Object.keys(noteClipPlaying).forEach(n => { try { noteClipPlaying[n].pause(); } catch(e){} });
   for(const n in noteClipPlaying) delete noteClipPlaying[n];
 }
@@ -3910,6 +3955,17 @@ async function playFragment(){
   soundEnabled = true;
   ensureAudioCtx();
 
+  // Con el sonido alternativo, deja pedidas TODAS las notas de la pieza antes
+  // de arrancar el tiempo: si no, cada nota nueva se renderizaba a mitad de
+  // la reproducción (el conteo de tiempo no espera), sonaba tarde y la pieza
+  // se oía amontonada. Piezas ya escuchadas antes no pagan este costo.
+  if(audioFallback){
+    listenBtn.textContent = '⏳ Preparando...';
+    const allNotes = currentFragment.steps.flatMap(st => stepNotes(st, currentHand));
+    await warmNoteClips(allNotes);
+    listenBtn.textContent = '♪ Sonando...';
+  }
+
   const beatMs = 60000 / currentFragment.tempo;
   for(const step of currentFragment.steps){
     const notes = stepNotes(step, currentHand);
@@ -4113,6 +4169,7 @@ async function playEarInterval(){
   soundEnabled = true;
   try {
     if(!ensureAudioCtx()) return;
+    await warmNoteClips([root, top]);
     playNoteSound(root);
     await new Promise(r => setTimeout(r, 650));
     stopNoteSound(root);

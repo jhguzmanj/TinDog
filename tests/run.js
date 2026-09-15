@@ -1075,6 +1075,37 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
   check(W('window.__wav.type') === 'audio/wav', 'el clip renderizado se etiqueta audio/wav');
   check(W('window.__wav.size') === 44 + 2 * 2, 'tamaño = cabecera de 44 bytes + PCM de 16 bits (1 canal × 2 muestras)');
 
+  // Reportado: algunas notas se sentían "pegadas" — retocar la MISMA tecla
+  // mientras el desvanecido de la vez anterior seguía corriendo dejaba un
+  // setInterval huérfano peleando el volumen contra la reproducción nueva,
+  // y hasta la pausaba a la mitad. Retriggerear rápido tiene que cancelar
+  // ese desvanecido, no dejarlo correr en paralelo.
+  W('playNoteSound(69)');
+  await new Promise(r => setTimeout(r, 30)); // deja que el render (async) termine y quede marcada sonando
+  W('stopNoteSound(69)'); // arranca un desvanecido de 160ms
+  await new Promise(r => setTimeout(r, 40)); // a medio desvanecer, no terminado
+  check(W('!!noteClipFade[69]'), 'setup: el desvanecido de la vez anterior sigue corriendo');
+  W('playNoteSound(69)'); // se retoca la misma tecla A MITAD del desvanecido
+  check(W('!noteClipFade[69]'), 'retocar la tecla cancela el desvanecido viejo en el acto');
+  await new Promise(r => setTimeout(r, 220)); // más que de sobra para que el intervalo viejo hubiera terminado
+  check(W('noteClipCache[69].volume') === 1, 'y el volumen se queda en 1: el intervalo huérfano no lo baja por detrás');
+  check(Object.keys(W('noteClipPlaying')).includes('69'), 'la nota retocada sigue marcada sonando');
+  W('stopNoteSound(69)');
+  await new Promise(r => setTimeout(r, 250));
+
+  // warmNoteClips: precalienta sin sonar (lo usan "Escuchar" de Fragmentos y
+  // el modo de oído para no renderizar A MITAD de una pasada con tiempo).
+  W('window.__playCalls = []; window.__renderCount = 0;');
+  W('audioFallback = false;'); // apagado: no debe hacer nada
+  await W('warmNoteClips([72, 74])');
+  check(W('window.__renderCount') === 0, 'con el sonido alternativo apagado, warmNoteClips no hace nada');
+  W('audioFallback = true;');
+  await W('warmNoteClips([72, 74, 72])'); // nota repetida: no debe renderizarse dos veces
+  check(W('window.__renderCount') === 2, 'precalienta cada nota UNA vez (72 repetida no cuenta dos)');
+  check(W('window.__playCalls.length') === 0, 'precalentar renderiza pero no reproduce nada');
+  check(Object.keys(W('noteClipCache')).includes('72') && Object.keys(W('noteClipCache')).includes('74'),
+    'las notas precalentadas quedan cacheadas, listas para sonar al instante');
+
   ev('#soundFallbackBtn'); // vuelve a apagarlo: no debe quedar prendido para el resto de la suite
   check(W('audioFallback') === false, 'se puede apagar igual que se prendió');
   W(`for(const k in noteClipCache) delete noteClipCache[k];

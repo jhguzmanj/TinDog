@@ -656,21 +656,54 @@ raro, no algo que necesite casi nadie. Con esto encendido:
 - `playNoteSoundFallback(note, vel)` reemplaza a `buildVoice` tocando en
   vivo: la nota se renderiza **en silencio** con `OfflineAudioContext`
   (`renderNoteClip`) — eso no pide permiso de altavoz, solo calcula
-  números — usando el **mismo** `buildVoice`/`ensureAudioBus` que el
-  camino en vivo (mismo timbre, misma reverberación), y el resultado se
-  convierte a WAV (`audioBufferToWavBlob`, cabecera de 44 bytes a mano,
-  sin depender de que el navegador sepa codificar nada) y se reproduce con
-  un `<audio>` normal — la técnica que **sí** sonó en la prueba aislada.
+  números — usando el **mismo** `buildVoice`, y el resultado se convierte
+  a WAV (`audioBufferToWavBlob`, cabecera de 44 bytes a mano, sin depender
+  de que el navegador sepa codificar nada) y se reproduce con un `<audio>`
+  normal — la técnica que **sí** sonó en la prueba aislada.
 - **Se cachea por NOTA, no por (nota, velocidad)**: todo lo que toca la
   app desde clic/touch llama a `playNoteSound` sin velocidad (`buildVoice`
   usa 80 fija en ese caso), así que una sola versión por tecla alcanza.
   La primera vez que suena una tecla hay un salto perceptible (hay que
   renderizar); de ahí en adelante es instantáneo.
+- **Primera vuelta: sonaba turbio y tardaba mucho — dos causas, las dos en
+  `renderNoteClip`, ya corregidas.** (1) Usaba el `noteLife(note)` del
+  camino en vivo (hasta 6 s) Y lo mandaba al `send` de reverberación de
+  `ensureAudioBus` — una convolución de verdad contra un impulso de 1.5 s,
+  cara de calcular, para CADA nota nueva. En un teléfono eso se sentía
+  como tardanza real antes del primer sonido, y tanta cola de
+  reverberación emborronaba una nota con la siguiente en toque rápido.
+  Ahora usa `fallbackRenderBus(octx)`, un bus aparte sin `send` (mismo
+  compresor, sin convolver), y la duración se recorta a
+  `noteLife(note)*0.45+0.35` con un techo de 2.2 s. Verificado con
+  Chromium real: ~108 ms hasta que empieza a sonar una nota nueva (antes,
+  con reverberación de 6 s, mucho más). (2) `playNoteSoundFallback` volvía
+  a llamar `stopNoteSoundFallback` sobre la MISMA tecla si ya estaba
+  "sonando", lo que arrancaba un desvanecido de 160 ms — pero como el
+  `<audio>` se **reutiliza** por nota (`noteClipCache`), retocar la tecla
+  a mitad de ese desvanecido dejaba el `setInterval` viejo corriendo EN
+  PARALELO con la reproducción nueva, bajándole el volumen por detrás y a
+  veces pausándola a la mitad: la tecla se sentía "pegada" o muda a
+  ratos. `noteClipFade[note]` guarda el id del intervalo activo; tanto
+  `playNoteSoundFallback` como `stopNoteSoundFallback` lo cancelan antes
+  de arrancar uno nuevo — retocar la tecla nunca deja dos desvanecidos
+  compitiendo. Probado con 6 retoques seguidos cada 30 ms en Chromium
+  real: nada queda pegado.
 - `stopNoteSoundFallback` no tiene envolvente que reprogramar (es un clip
   ya grabado, no una voz en vivo): el corte al soltar la tecla se hace
   bajando `audioEl.volume` a mano en 8 pasos de 20 ms — mismo espíritu que
   el "corta rápido pero no de golpe" del camino en vivo, sin el chasquido
   de un `.pause()` en seco.
+- **`warmNoteClips(notes)`**: antes de una pasada con tiempo agendado —
+  "Escuchar" en Fragmentos (`playFragment`) y las dos notas del modo de
+  oído (`playEarInterval`) — deja pedidas por adelantado TODAS las notas
+  que va a necesitar, y espera a que terminen de renderizarse antes de
+  arrancar el reloj. Sin esto, la primera vez que sonaba una pieza cada
+  nota nueva se renderizaba A MITAD de la reproducción (el tiempo no
+  espera a nadie), sonaba tarde y la pieza se oía amontonada — el mismo
+  reporte de "pegado" pero en "Escuchar". `playFragment` muestra
+  "⏳ Preparando..." mientras dura; piezas ya escuchadas antes no pagan
+  este costo (todas sus notas ya están en caché). No hace nada si
+  `audioFallback` está apagado.
 - `allNotesOff()` llama también a `allNotesOffFallback()`: la red de
   seguridad contra notas colgadas tiene que cubrir este camino igual que
   cubre MIDI, o quedaría sonando algo si el fallback estaba prendido.
@@ -689,14 +722,19 @@ raro, no algo que necesite casi nadie. Con esto encendido:
   metrónomo no se puede permitir. Si algún día hace falta, es un problema
   aparte — no extender este mecanismo ahí sin pensarlo de nuevo.
 - Probado con un `OfflineAudioContext`/`Audio` falsos en jsdom (cubre todo
-  lo que `buildVoice`/`ensureAudioBus` tocan): primera vez renderiza,
+  lo que `buildVoice`/`fallbackRenderBus` tocan): primera vez renderiza,
   segunda vez usa caché, soltar la tecla desvanece y saca de "sonando",
+  retocar a mitad de un desvanecido lo cancela (no lo deja competir),
+  `warmNoteClips` precalienta sin sonar y no repite notas duplicadas,
   `allNotesOff` también corta el fallback, y la cabecera del WAV mide lo
   que debe. **Además probado con Chromium real** (no fakes): toque táctil
   real de principio a fin, nota entra a `noteClipPlaying`, suena
-  (`paused:false`), se desvanece al soltar — sin errores de consola.
+  (`paused:false`), se desvanece al soltar, y 6 retoques seguidos de la
+  misma tecla cada 30 ms no dejan nada pegado — sin errores de consola.
   **Seguía sin poder probarse en el iPhone real de Jorge** en el momento
-  de escribir esto; falta su confirmación.
+  de escribir esto (reportó sonido "pegado" y con demora en la primera
+  vuelta, ya corregido según lo de arriba); falta su confirmación de que
+  esta vuelta sí quedó bien.
 
 ### Sintetizador del computador (solo sin piano conectado)
 Imita las cuatro cosas que hacen que algo suene a piano y no a órgano:
