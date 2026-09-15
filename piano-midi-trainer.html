@@ -1466,9 +1466,27 @@ function ensureAudioCtx(){
     const AC = window.AudioContext || window.webkitAudioContext;
     if(!AC) return null; // navegador sin Web Audio (o entorno de pruebas)
     audioCtx = new AC();
+    unlockAudioContextIOS(audioCtx);
   }
   if(audioCtx.state === 'suspended') audioCtx.resume();
   return audioCtx;
+}
+// En iOS/Safari, `resume()` a veces deja el AudioContext en un estado "a
+// medias": ya no tira error y hasta puede reportar 'running', pero la
+// primera nota agendada no suena — el navegador exige tocar un buffer REAL
+// dentro del MISMO gesto de usuario para terminar de despertar la salida
+// de audio. Sin esto: el toque se registra, "Sonando: X" aparece, pero no
+// sale ni un ruido — exactamente el síntoma reportado en iPhone (Safari Y
+// Chrome, que ahí comparten motor WebKit). Solo hace falta una vez por
+// AudioContext, así que va pegado a la creación, no a cada nota.
+function unlockAudioContextIOS(ctx){
+  try {
+    const buf = ctx.createBuffer(1, 1, 22050);
+    const src = ctx.createBufferSource();
+    src.buffer = buf;
+    src.connect(ctx.destination);
+    if(src.start) src.start(0); else if(src.noteOn) src.noteOn(0);
+  } catch(e){}
 }
 
 // Reverberación corta generada con ruido decreciente: da aire sin descargar

@@ -975,6 +975,30 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
       id + ': cada paso trae su digitación pareja');
   }
 
+  section('Desbloqueo de audio en iOS');
+  // jsdom no trae AudioContext; se inyecta una falsa MUY mínima (solo lo que
+  // ensureAudioCtx/unlockAudioContextIOS tocan) para fijar que, al crear el
+  // contexto, se agenda un buffer real — no basta con resume(). En iOS/Safari
+  // (Safari y Chrome comparten motor WebKit ahí) resume() puede reportar
+  // 'running' y aun así la primera nota agendada no suena; el navegador
+  // exige tocar un buffer de verdad dentro del MISMO gesto para despertar
+  // la salida. Sin este desbloqueo el toque se registra ("Sonando: X" sale
+  // en pantalla) pero no sale ningún sonido — justo lo que se reportó.
+  W(`window.__starts = 0;
+     class FakeCtx {
+       constructor(){ this.state = 'suspended'; this.destination = {}; }
+       resume(){ this.state = 'running'; return Promise.resolve(); }
+       createBuffer(){ return {}; }
+       createBufferSource(){ return { connect(){}, start(){ window.__starts++; } }; }
+     }
+     window.AudioContext = FakeCtx; window.webkitAudioContext = FakeCtx;
+     audioCtx = null;`);
+  W('ensureAudioCtx()');
+  check(W('window.__starts') === 1, 'crear el contexto agenda un buffer real (el desbloqueo de iOS), no solo resume()');
+  W('ensureAudioCtx()');
+  check(W('window.__starts') === 1, 'y solo una vez: la segunda llamada reusa el contexto sin re-desbloquear');
+  W('audioCtx = null; delete window.AudioContext; delete window.webkitAudioContext;');
+
   console.log(`\n${passes} pruebas OK, ${failures} fallos`);
   if(errors.length) console.log('Errores de consola:', errors);
   process.exit(failures || errors.length ? 1 : 0);

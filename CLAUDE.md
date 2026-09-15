@@ -620,6 +620,26 @@ cuesta descargas: el sintetizador Web Audio queda solo para practicar sin piano.
 - `#soundOutBtn` solo aparece si hay salida; la elección persiste en
   `soundTarget`. El metrónomo sigue sonando por el computador a propósito.
 
+### `ensureAudioCtx` desbloquea de verdad en iOS, no solo con `resume()`
+Reportado: en iPhone (Safari y Chrome — ahí comparten motor WebKit, así que
+si falla en los dos es del motor, no del navegador) el toque se registraba
+bien (`noteOn` corría, "Sonando: X" salía en pantalla) pero no sonaba nada.
+**`audioCtx.resume()` no es suficiente la primera vez en WebKit**: puede
+reportar `state:'running'` y aun así la nota agendada no suena — el
+navegador exige que se toque un buffer REAL (no silencio programático, un
+`AudioBufferSourceNode.start()` de verdad) dentro del MISMO gesto de usuario
+para terminar de despertar la salida. `unlockAudioContextIOS(ctx)` hace
+justo eso: un buffer de 1 frame, conectado a destino, arrancado — pegado a
+la creación del contexto (una sola vez por contexto, no en cada nota; ya
+desbloqueado no hace falta repetirlo). Sin este paso el fallo es **silencioso
+en todos los sentidos**: no hay excepción, la UI responde normal, y el único
+síntoma es que no sale sonido — por eso costó diagnosticarlo por chat en vez
+de con el dispositivo en la mano. Probado con un `AudioContext` falso en
+jsdom (hay prueba): fija que se agenda un buffer al crear el contexto y que
+NO se repite en la siguiente nota. **No se pudo probar en un iPhone real**
+(sin acceso a uno) — la corrección es el fix estándar y documentado para
+este síntoma exacto, pero falta la confirmación de Jorge en su teléfono.
+
 ### Sintetizador del computador (solo sin piano conectado)
 Imita las cuatro cosas que hacen que algo suene a piano y no a órgano:
 decae desde el golpe (`noteLife()`: un La0 dura mucho más que un Do8), seis
