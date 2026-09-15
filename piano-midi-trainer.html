@@ -695,6 +695,11 @@
   @media (max-width:760px){
     .practice-info.stage{ padding:16px 18px; }
     .practice-info .mini-staff{ width:180px; height:90px; }
+    /* En angosto la etiqueta al lado deja a los botones una columna estrecha y
+       la fila de categorías se parte en tres. Etiqueta arriba = ancho completo
+       para los botones, y ninguna categoría queda escondida tras un scroll. */
+    #fragCatBar .reg-group{ flex-direction:column; align-items:flex-start; gap:6px; width:100%; }
+    #fragCatBar .reg-picker{ width:100%; }
   }
 
   /* =====================================================================
@@ -1051,6 +1056,10 @@
     <div id="intervalTip" class="tip" style="display:none;"></div>
 
     <div id="fragmentsPanel" style="display:none;">
+      <div id="fragCatBar" class="reg-bar" style="display:none;">
+        <span class="reg-group"><span class="reg-label g-type">Tipo de pieza</span>
+        <div class="reg-picker g-type" id="fragCatPicker"></div></span>
+      </div>
       <div class="mode-tabs sub-tabs scroll-tabs" id="fragSubTabs"></div>
       <div id="agilOctaveBar" class="reg-bar" style="display:none;">
         <span class="reg-group"><span class="reg-label g-oct">Octava mano izquierda</span>
@@ -2184,6 +2193,7 @@ const AGILITY_DRILLS = [
 const SONGS = [
   {
     id:'cuatro-acordes',
+    cat:'patrones',
     name:'Los 4 acordes',
     tip:'La progresión Do–Sol–Lam–Fa. Está en cientos de canciones pop. La izquierda hace el acorde completo, la derecha toca la nota más alta como melodía. Si te sale esto, ya puedes acompañar muchísimas canciones.',
     tempo:76,
@@ -2196,6 +2206,7 @@ const SONGS = [
   },
   {
     id:'oda-alegria',
+    cat:'clasica',
     name:'Himno a la alegría',
     tip:'Beethoven. Melodía en la derecha, bajo simple en la izquierda. Toda la melodía cabe en 5 dedos sin mover la mano. Dos frases: la primera se queda "en el aire" (termina en Mi), la segunda responde y baja al Do — así se construye de a partes; usa "Tramo" en el modo cascada para practicar solo una.',
     tempo:92,
@@ -2220,6 +2231,7 @@ const SONGS = [
   },
   {
     id:'corderito',
+    cat:'facil',
     name:'María tenía un corderito',
     tip:'De las melodías infantiles más simples que hay: solo usa Do Re Mi Sol, las cuatro primeras de tu pentatónica de clase (todavía no necesita el La). Cabe entera en la posición de 5 dedos, sin cruces ni saltos raros — ideal para sentir que ya "sabes tocar algo" mientras dominas la escala.',
     tempo:96,
@@ -2243,6 +2255,7 @@ const SONGS = [
   },
   {
     id:'cumple',
+    cat:'popular',
     name:'Cumpleaños feliz',
     tip:'La única pieza de Fragmentos que cambia de posición de mano a mitad de frase: el salto agudo de "cumpleaños a ti" no cabe en una sola posición de 5 dedos, así que hay que mover TODA la mano (no solo el pulgar, como en el cruce de Agilidad). Los pasos marcados avisan cuándo moverla. Practícala despacio y separada por frases con "Tramo" en el modo cascada.',
     tempo:104,
@@ -2265,6 +2278,7 @@ const SONGS = [
   },
   {
     id:'estrellita',
+    cat:'facil',
     name:'Estrellita',
     tip:'La que ya te había recomendado. Melodía de 5 notas en la derecha, acordes largos en la izquierda. Buen primer ejercicio de coordinación entre manos porque la izquierda se mueve poco.',
     tempo:88,
@@ -2281,6 +2295,7 @@ const SONGS = [
   },
   {
     id:'cadencia',
+    cat:'patrones',
     name:'Cadencia I–IV–V–I',
     tip:'El "punto final" de la música occidental: Do–Fa–Sol–Do. Suena a conclusión. Vale la pena que la reconozcas de oído, porque termina casi todas las piezas clásicas que vas a estudiar.',
     tempo:66,
@@ -2293,6 +2308,7 @@ const SONGS = [
   },
   {
     id:'arpegio',
+    cat:'patrones',
     name:'Arpegio de Do',
     tip:'Las mismas 3 notas del acorde de Do, pero una a la vez en vez de juntas. Es como suena un acorde "desarmado" — muy usado en baladas. Practica que suene parejo, sin que una nota salga más fuerte.',
     tempo:80,
@@ -2308,6 +2324,7 @@ const SONGS = [
   },
   {
     id:'hot-cross-buns',
+    cat:'facil',
     name:'Hot Cross Buns',
     tip:'Canción infantil muy sencilla. Solo tres notas: Do Re Mi. Es de las más cortas — perfecta para empezar a tocar una "pieza" de verdad sin abrumarse.',
     tempo:120,
@@ -2326,6 +2343,7 @@ const SONGS = [
   },
   {
     id:'au-clair',
+    cat:'facil',
     name:'Au Clair de la Lune',
     tip:'Canción francesa clásica. Melodía sencilla que se repite — tres notas que suben (Do Re Mi) y tres que bajan con un patrón distinto. Muy suave y equilibrada.',
     tempo:88,
@@ -2346,6 +2364,7 @@ const SONGS = [
   },
   {
     id:'twinkle',
+    cat:'facil',
     name:'Twinkle Twinkle Little Star',
     tip:'Melodía de "Brille, brille, pequeña estrella" en forma de hexacordio ascendente–descendente. Las frases van por parejas: Do Do Sol Sol La La Sol, luego Fa Fa Mi Mi Re Re Do. Una de las canciones más memorizables del mundo.',
     tempo:96,
@@ -2368,6 +2387,7 @@ const SONGS = [
   },
   {
     id:'hallelujah',
+    cat:'clasica',
     name:'Hallelujah Chorus',
     tip:'De Händel. La clave está en la nota larga al principio (Fa) que da el tiempo de la palabra "Hallelujah" — todas las demás notas salen corridas, así que concentra el pulso en ese primer Fa, luego deja que fluya. Solo Do Re Mi Fa Sol: pentatónica mayor sin La.',
     tempo:80,
@@ -2386,6 +2406,7 @@ const SONGS = [
   },
   {
     id:'jingle-bells',
+    cat:'popular',
     name:'Jingle Bells',
     tip:'Navideña de James Pierpont. Empieza con tres notas iguales (Mi Mi Mi) que dan el ritmo, luego sube (Fa Sol) y baja de nuevo. Hay repetición en la melodía así que por más que sea larga, los patrones se repiten y no se olvidan.',
     tempo:120,
@@ -2410,6 +2431,7 @@ const SONGS = [
   },
   {
     id:'dios-esta-aqui',
+    cat:'cristiana',
     name:'Dios está aquí',
     tip:'Transcrita de una partitura real (Instituto Técnico de Estudios Musicales), pedida para aprenderla por partes. Es una pieza larga con 5 frases — usa "Tramo" en el modo cascada para practicar solo una a la vez, igual que en Himno a la alegría. Digitación con pulgar en Sol4 la mayor parte del tiempo; el ritmo exacto de algunos compases es la mejor lectura posible de la partitura (no 100% garantizado nota por nota) — si algo se siente raro al tocarla, ajústalo de oído.',
     tempo:84,
@@ -2443,6 +2465,7 @@ const SONGS = [
   },
   {
     id:'bella-ciao',
+    cat:'popular',
     name:'Bella Ciao',
     tip:'La de La Casa de Papel, transcrita de la partitura real (itemfunes.com) — la que quedó pendiente dos veces por no tener una versión de melodía simple. Está en La menor, así que casi todo cae en teclas blancas. Tiene DOS posiciones de mano: la primera mitad con el pulgar en Mi4 y, desde los tres Mi5 seguidos ("bella ciao, bella ciao"), el pulgar sube a Do5; los pasos marcados avisan dónde se mueve. La izquierda alterna La y Mi (el bajo de La menor). Cuatro frases: practica una a la vez con "Tramo" en el modo cascada.',
     tempo:100,
@@ -2491,6 +2514,7 @@ const SONGS = [
   },
   {
     id:'espiritu-de-dios',
+    cat:'cristiana',
     name:'Espíritu de Dios',
     tip:'De la partitura de Ariel Arnhold (itemfunes.com), a ♩=70 como la marca el original. Está en Mi menor: la única tecla negra de la melodía es Fa#, más un Re# suelto en la entrada. La izquierda son notas largas (una por compás) que siguen los acordes Si–Mim–Re–Do, así que es de las piezas más cómodas para coordinar las dos manos. El original repite cada mitad; aquí va de corrido una sola vez y los pasos marcan dónde empieza cada frase.',
     tempo:70,
@@ -2557,6 +2581,7 @@ const SONGS = [
   },
   {
     id:'aleluya',
+    cat:'cristiana',
     name:'Aleluya',
     tip:'El estribillo de la Aleluya famosa (búscala como "Hallelujah" para oír el ritmo) — OJO: no es la misma que "Hallelujah Chorus", que es la de Händel. Del tutorial de AnthonyCalva, que da las notas por letra Y por número: las dos versiones dicen lo mismo, así que las notas están seguras. Dos posiciones: pulgar en Mi para todo el "Aleluya", y baja a Do para el final que resuelve (Fa Mi Re Do). El tutorial NO da el ritmo; aquí va parejo para que aprendas las teclas — el vaivén cópialo de la canción.',
     tempo:70,
@@ -2576,6 +2601,7 @@ const SONGS = [
   },
   {
     id:'colegiala',
+    cat:'popular',
     name:'La Colegiala',
     tip:'La cumbia de Rodolfo Aicardi. Del tutorial de AnthonyCalva, que da las notas por letra Y por número y las dos coinciden, así que las teclas están seguras. Tiene DOS teclas negras (Sib y Mib) — es tu primera pieza con negras dentro de la melodía. Pulgar en Sib casi todo el tiempo; solo al final baja a Fa. El riff son tres notas iguales y una que cae: Re Re Re Sib, Do Do Do Mib, y así. El tutorial NO da el ritmo; aquí va parejo, el tumbao cópialo de la canción.',
     tempo:90,
@@ -2597,6 +2623,115 @@ const SONGS = [
       {lh:[], rh:[67], rhF:[2], dur:2, label:'Fin'},
     ]
   },
+  {
+    id:'flaca',
+    cat:'popular',
+    name:'Flaca',
+    tip:'Jarabe de Palo, de la partitura real (itemfunes.com). El bajo de la izquierda es una redonda por compás y da la progresión Sol–Si–Mim–Do–Sol–Re–Sol. La derecha repite casi siempre el mismo molde: una nota corta, una LARGA, y dos cortas de enlace. Tiene tres teclas negras (Re#, Fa#) y la segunda mitad sube hasta Sol5, así que la mano derecha se corre: pulgar en Sol4 en la primera mitad y en La4 en la segunda. El único paso incómodo es Fa#5→Mi5 con el mismo dedo 5 — ahí se desliza.',
+    tempo:92,
+    steps:[
+      {lh:[43], lhF:[5], rh:[74], rhF:[5], dur:0.5, label:'Parte 1'}, {lh:[], rh:[71], rhF:[3], dur:2.5},
+      {lh:[], rh:[69], rhF:[2], dur:0.5}, {lh:[], rh:[67], rhF:[1], dur:0.5},
+      {lh:[47], lhF:[5], rh:[75], rhF:[5], dur:0.5}, {lh:[], rh:[71], rhF:[3], dur:2.5},
+      {lh:[], rh:[69], rhF:[2], dur:0.5}, {lh:[], rh:[67], rhF:[1], dur:0.5},
+      {lh:[52], lhF:[5], rh:[76], rhF:[5], dur:0.5}, {lh:[], rh:[71], rhF:[3], dur:2.5},
+      {lh:[], rh:[69], rhF:[2], dur:0.5}, {lh:[], rh:[71], rhF:[3], dur:0.5},
+      {lh:[48], lhF:[5], rh:[69], rhF:[2], dur:0.5}, {lh:[], rh:[67], rhF:[1], dur:2.5},
+      {lh:[], rh:[69], rhF:[2], dur:0.5}, {lh:[], rh:[67], rhF:[1], dur:0.5},
+      {lh:[43], lhF:[5], rh:[74], rhF:[5], dur:0.5}, {lh:[], rh:[71], rhF:[3], dur:2.5},
+      {lh:[], rh:[69], rhF:[2], dur:0.5}, {lh:[], rh:[67], rhF:[1], dur:0.5},
+      {lh:[50], lhF:[5], rh:[74], rhF:[5], dur:0.5}, {lh:[], rh:[71], rhF:[3], dur:1.5},
+      {lh:[], rh:[72], rhF:[4], dur:1}, {lh:[], rh:[71], rhF:[3], dur:0.5}, {lh:[], rh:[69], rhF:[2], dur:0.5},
+      {lh:[43], lhF:[5], rh:[67], rhF:[1], dur:4, label:'Fin de la parte 1'},
+      {lh:[43], lhF:[5], rh:[72], rhF:[3], dur:1.5, label:'Parte 2 — mano a La4'}, {lh:[], rh:[71], rhF:[2], dur:2.5},
+      {lh:[47], lhF:[5], rh:[76], rhF:[5], dur:1.5}, {lh:[], rh:[75], rhF:[4], dur:2.5},
+      {lh:[52], lhF:[5], rh:[78], rhF:[5], dur:1.5}, {lh:[], rh:[76], rhF:[5], dur:1.5},
+      {lh:[], rh:[71], rhF:[2], dur:1},
+      {lh:[48], lhF:[5], rh:[74], rhF:[4], dur:2}, {lh:[], rh:[72], rhF:[3], dur:2},
+      {lh:[43], lhF:[5], rh:[71], rhF:[2], dur:1}, {lh:[], rh:[74], rhF:[4], dur:0.5},
+      {lh:[], rh:[79], rhF:[5], dur:2.5},
+      {lh:[50], lhF:[5], rh:[69], rhF:[1], dur:1}, {lh:[], rh:[74], rhF:[4], dur:0.5},
+      {lh:[], rh:[78], rhF:[5], dur:1.5}, {lh:[], rh:[71], rhF:[2], dur:0.5}, {lh:[], rh:[69], rhF:[1], dur:0.5},
+      {lh:[43], lhF:[5], rh:[67], rhF:[1], dur:4, label:'Fin'},
+    ]
+  },
+  {
+    id:'faded',
+    cat:'popular',
+    name:'Faded (estribillo)',
+    tip:'Alan Walker. OJO: es SOLO el gancho, y movido a La menor. El PDF que trajiste es un arreglo en Re# menor — SEIS sostenidos, o sea casi puras teclas negras, con acordes de cuatro notas en la izquierda y carreras de semicorcheas. Leerlo se puede, tocarlo hoy no. Pasado a La menor queda en teclas blancas y cabe en una sola posición de mano (pulgar en La4). La izquierda es una nota por compás con la progresión de la canción: Lam–Fa–Do–Sol. Si algún día quieres el arreglo completo, hay que volver al PDF.',
+    tempo:90,
+    steps:[
+      {lh:[45], lhF:[5], rh:[72], rhF:[3], dur:0.5, label:'Gancho'}, {lh:[], rh:[72], rhF:[3], dur:0.5},
+      {lh:[], rh:[69], rhF:[1], dur:0.5}, {lh:[], rh:[72], rhF:[3], dur:0.5},
+      {lh:[], rh:[69], rhF:[1], dur:0.5}, {lh:[], rh:[72], rhF:[3], dur:0.5},
+      {lh:[], rh:[74], rhF:[4], dur:0.5},
+      {lh:[41], lhF:[5], rh:[76], rhF:[5], dur:1}, {lh:[], rh:[72], rhF:[3], dur:0.5},
+      {lh:[], rh:[72], rhF:[3], dur:0.5}, {lh:[], rh:[67], rhF:[1], dur:0.5},
+      {lh:[], rh:[76], rhF:[5], dur:1.5},
+      {lh:[48], lhF:[5], rh:[72], rhF:[3], dur:1, label:'Respuesta'}, {lh:[], rh:[72], rhF:[3], dur:1},
+      {lh:[], rh:[72], rhF:[3], dur:2},
+      {lh:[43], lhF:[5], rh:[71], rhF:[2], dur:1}, {lh:[], rh:[71], rhF:[2], dur:1},
+      {lh:[], rh:[71], rhF:[2], dur:1}, {lh:[], rh:[69], rhF:[1], dur:0.5}, {lh:[], rh:[72], rhF:[3], dur:0.5},
+      {lh:[45], lhF:[5], rh:[72], rhF:[3], dur:0.5, label:'Gancho otra vez'}, {lh:[], rh:[72], rhF:[3], dur:0.5},
+      {lh:[], rh:[69], rhF:[1], dur:0.5}, {lh:[], rh:[72], rhF:[3], dur:0.5},
+      {lh:[], rh:[69], rhF:[1], dur:0.5}, {lh:[], rh:[72], rhF:[3], dur:0.5},
+      {lh:[], rh:[74], rhF:[4], dur:0.5},
+      {lh:[41], lhF:[5], rh:[76], rhF:[5], dur:1}, {lh:[], rh:[72], rhF:[3], dur:0.5},
+      {lh:[], rh:[72], rhF:[3], dur:0.5}, {lh:[], rh:[67], rhF:[1], dur:0.5},
+      {lh:[45], lhF:[5], rh:[69], rhF:[1], dur:2, label:'Fin'},
+    ]
+  },
+  {
+    id:'amanecer',
+    cat:'facil',
+    name:'Amanecer',
+    tip:'Escrita para ti, no es de nadie más. Tres partes: la 1ª pregunta y queda en el aire, la 2ª responde y cierra, la 3ª se mueve más y termina arriba. Usa la progresión Do–Sol–Lam–Fa, los mismos 4 acordes que ya practicas. La derecha NO mueve la mano ni una vez: pulgar en Do5 y los cinco dedos quedan puestos (Do Re Mi Fa Sol). La izquierda es una sola nota por compás, salvo en la parte 3 donde entra dos veces para empujar. Practica una parte a la vez con "Tramo" en cascada.',
+    tempo:92,
+    steps:[
+      {lh:[48], lhF:[5], rh:[72], rhF:[1], dur:0.5, label:'Parte 1 — pregunta'}, {lh:[], rh:[74], rhF:[2], dur:0.5},
+      {lh:[], rh:[76], rhF:[3], dur:1}, {lh:[], rh:[79], rhF:[5], dur:2},
+      {lh:[43], lhF:[5], rh:[79], rhF:[5], dur:0.5}, {lh:[], rh:[77], rhF:[4], dur:0.5},
+      {lh:[], rh:[76], rhF:[3], dur:1}, {lh:[], rh:[74], rhF:[2], dur:2},
+      {lh:[45], lhF:[5], rh:[76], rhF:[3], dur:0.5}, {lh:[], rh:[77], rhF:[4], dur:0.5},
+      {lh:[], rh:[79], rhF:[5], dur:1}, {lh:[], rh:[76], rhF:[3], dur:2},
+      {lh:[41], lhF:[5], rh:[77], rhF:[4], dur:0.5}, {lh:[], rh:[79], rhF:[5], dur:0.5},
+      {lh:[], rh:[77], rhF:[4], dur:1}, {lh:[], rh:[74], rhF:[2], dur:2, label:'Queda en el aire'},
+      {lh:[48], lhF:[5], rh:[72], rhF:[1], dur:0.5, label:'Parte 2 — responde'}, {lh:[], rh:[74], rhF:[2], dur:0.5},
+      {lh:[], rh:[76], rhF:[3], dur:1}, {lh:[], rh:[79], rhF:[5], dur:2},
+      {lh:[43], lhF:[5], rh:[79], rhF:[5], dur:0.5}, {lh:[], rh:[77], rhF:[4], dur:0.5},
+      {lh:[], rh:[76], rhF:[3], dur:1}, {lh:[], rh:[74], rhF:[2], dur:2},
+      {lh:[41], lhF:[5], rh:[77], rhF:[4], dur:0.5}, {lh:[], rh:[76], rhF:[3], dur:0.5},
+      {lh:[], rh:[74], rhF:[2], dur:1}, {lh:[], rh:[76], rhF:[3], dur:2},
+      {lh:[48], lhF:[5], rh:[76], rhF:[3], dur:0.5}, {lh:[], rh:[74], rhF:[2], dur:0.5},
+      {lh:[], rh:[72], rhF:[1], dur:1}, {lh:[], rh:[72], rhF:[1], dur:2, label:'Cierra en Do'},
+      {lh:[45], lhF:[5], rh:[76], rhF:[3], dur:0.5, label:'Parte 3 — se mueve'}, {lh:[], rh:[76], rhF:[3], dur:0.5},
+      {lh:[], rh:[77], rhF:[4], dur:0.5}, {lh:[], rh:[79], rhF:[5], dur:0.5},
+      {lh:[45], lhF:[5], rh:[76], rhF:[3], dur:1}, {lh:[], rh:[74], rhF:[2], dur:1},
+      {lh:[41], lhF:[5], rh:[77], rhF:[4], dur:0.5}, {lh:[], rh:[77], rhF:[4], dur:0.5},
+      {lh:[], rh:[76], rhF:[3], dur:0.5}, {lh:[], rh:[74], rhF:[2], dur:0.5},
+      {lh:[41], lhF:[5], rh:[72], rhF:[1], dur:2},
+      {lh:[48], lhF:[5], rh:[72], rhF:[1], dur:0.5}, {lh:[], rh:[76], rhF:[3], dur:0.5},
+      {lh:[], rh:[79], rhF:[5], dur:0.5}, {lh:[], rh:[76], rhF:[3], dur:0.5},
+      {lh:[48], lhF:[5], rh:[72], rhF:[1], dur:1}, {lh:[], rh:[74], rhF:[2], dur:1},
+      {lh:[43], lhF:[5], rh:[74], rhF:[2], dur:0.5}, {lh:[], rh:[76], rhF:[3], dur:0.5},
+      {lh:[], rh:[77], rhF:[4], dur:0.5}, {lh:[], rh:[79], rhF:[5], dur:0.5},
+      {lh:[43], lhF:[5], rh:[79], rhF:[5], dur:2},
+      {lh:[48], lhF:[5], rh:[79], rhF:[5], dur:1}, {lh:[], rh:[76], rhF:[3], dur:1},
+      {lh:[], rh:[72], rhF:[1], dur:2, label:'Fin'},
+    ]
+  },
+];
+
+// Categorías de Fragmentos. El orden manda en la barra de arriba; `facil` va
+// primero porque es donde entra alguien que recién empieza.
+const SONG_CATS = [
+  {id:'all',       name:'Todas'},
+  {id:'facil',     name:'Fáciles'},
+  {id:'popular',   name:'Populares'},
+  {id:'cristiana', name:'Cristianas'},
+  {id:'clasica',   name:'Clásicas'},
+  {id:'patrones',  name:'Patrones'},
 ];
 
 const FRAGMENTS = SONGS;
@@ -3303,6 +3438,13 @@ function scrollToTargets(){
 
 // ---- Fragmentos / Agilidad (comparten el mismo motor de práctica) ----
 let practiceFamily = 'songs'; // 'songs' = Fragmentos, 'agility' = Agilidad
+// Categoría de Fragmentos vigente (se recuerda). Si el valor guardado ya no
+// existe (se renombró una categoría) se cae a 'all' en vez de dejar la lista vacía.
+let fragCat = 'all';
+try {
+  const saved = localStorage.getItem('fragCat');
+  if(saved && SONG_CATS.some(c => c.id === saved)) fragCat = saved;
+} catch(e){}
 let currentFragment = FRAGMENTS[0];
 let currentDrillShape = AGILITY_DRILLS[0];
 let currentHand = 'both';
@@ -3392,12 +3534,53 @@ function onAgilityChange(){
   }
 }
 
+// Fragmentos filtrados por la categoría elegida. Agilidad no se filtra: son
+// ejercicios, no repertorio, y son pocos.
+function visibleFragments(){
+  if(fragCat === 'all') return FRAGMENTS;
+  const list = FRAGMENTS.filter(f => f.cat === fragCat);
+  return list.length ? list : FRAGMENTS;
+}
+function renderFragCatPicker(){
+  const cont = $('fragCatPicker');
+  if(!cont) return;
+  cont.innerHTML = '';
+  SONG_CATS.forEach(c => {
+    // No dibujar una categoría vacía: un botón que no filtra nada confunde.
+    if(c.id !== 'all' && !FRAGMENTS.some(f => f.cat === c.id)) return;
+    const b = document.createElement('button');
+    b.className = 'reg-btn' + (c.id === fragCat ? ' active' : '');
+    b.textContent = c.name;
+    b.dataset.cat = c.id;
+    b.addEventListener('click', () => {
+      fragCat = c.id;
+      try { localStorage.setItem('fragCat', fragCat); } catch(e){}
+      renderFragCatPicker();
+      renderSubTabs();
+      const first = visibleFragments()[0];
+      if(first){
+        currentFragment = first;
+        practiceIndex = 0;
+        ensureValidHandSelection();
+        renderFragTip();
+        startFragmentStep();
+        if(typeof cascadeOn !== 'undefined' && cascadeOn){ exitCascade(); setupCascadeKeyboard(); }
+      }
+    });
+    cont.appendChild(b);
+  });
+}
+
 function renderSubTabs(){
   fragSubTabs.innerHTML = '';
-  const items = practiceFamily === 'agility' ? AGILITY_DRILLS : FRAGMENTS;
+  const items = practiceFamily === 'agility' ? AGILITY_DRILLS : visibleFragments();
+  const curId = practiceFamily === 'agility' ? currentDrillShape.id : currentFragment.id;
   items.forEach((item, i) => {
     const b = document.createElement('button');
-    b.className = 'mode-tab sub' + (i === 0 ? ' active' : '');
+    // Marcar la que está sonando, no siempre la primera: al cambiar de
+    // categoría la lista se redibuja y la activa puede estar en otra posición.
+    const isCur = item.id === curId || (!items.some(x => x.id === curId) && i === 0);
+    b.className = 'mode-tab sub' + (isCur ? ' active' : '');
     b.textContent = item.name;
     b.dataset.frag = item.id;
     b.addEventListener('click', () => {
@@ -3427,12 +3610,14 @@ function renderSubTabs(){
 function loadPracticeFamily(family){
   practiceFamily = family;
   agilOctaveBar.style.display = family === 'agility' ? 'flex' : 'none';
+  show($('fragCatBar'), family === 'songs', 'flex');
   if(family === 'agility'){
     currentDrillShape = AGILITY_DRILLS[0];
     refreshAgilOctavePickers();
     rebuildAgilityFragment();
   } else {
-    currentFragment = FRAGMENTS[0];
+    currentFragment = visibleFragments()[0];
+    renderFragCatPicker();
   }
   practiceIndex = 0;
   currentHand = 'both';
@@ -5418,6 +5603,16 @@ function buildTodayPlan(seed){
   return items;
 }
 function pickFragmentById(id){
+  // El plan de "Hoy" manda a una pieza concreta, que puede estar escondida por
+  // el filtro de categoría. Primero se abre su categoría y se redibuja la lista;
+  // si no, el botón no existe y el enlace de "Hoy" no hacía nada.
+  const song = FRAGMENTS.find(f => f.id === id);
+  if(song && fragCat !== 'all' && song.cat !== fragCat){
+    fragCat = song.cat;
+    try { localStorage.setItem('fragCat', fragCat); } catch(e){}
+    renderFragCatPicker();
+    renderSubTabs();
+  }
   const btn = [...fragSubTabs.querySelectorAll('.mode-tab')].find(b => b.dataset.frag === id);
   if(btn) btn.click();
 }

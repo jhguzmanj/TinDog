@@ -921,6 +921,60 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
     'fusionar dos veces lo mismo da igual que una vez');
   W("progress = emptyProgress()");
 
+  section('Fragmentos por categoría');
+  W("try { localStorage.removeItem('fragCat'); } catch(e){}; fragCat = 'all'");
+  check(W('SONGS.filter(s => !s.cat || !SONG_CATS.some(c => c.id === s.cat)).length') === 0,
+    'toda pieza tiene una categoría que existe en SONG_CATS');
+  W("selectCategory('fragments')");
+  check(doc.getElementById('fragCatBar').style.display === 'flex', 'la barra de categorías sale en Fragmentos');
+  check(doc.querySelectorAll('#fragSubTabs .mode-tab').length === W('SONGS.length'),
+    'con "Todas" se listan todas las piezas');
+  const catBtn = (id) => [...doc.querySelectorAll('#fragCatPicker .reg-btn')].find(b => b.dataset.cat === id);
+  check(SONG_CATS_ok(), 'no se dibuja ninguna categoría vacía');
+  function SONG_CATS_ok(){
+    return W('SONG_CATS').every(c => !!catBtn(c.id) === (c.id === 'all' || W('SONGS').some(s => s.cat === c.id)));
+  }
+  ev(catBtn('cristiana'));
+  const listed = [...doc.querySelectorAll('#fragSubTabs .mode-tab')].map(b => b.dataset.frag);
+  check(listed.length === W('SONGS.filter(s => s.cat === "cristiana").length') &&
+        listed.every(id => W('SONGS.find(s => s.id === "' + id + '").cat') === 'cristiana'),
+    'el filtro deja solo las piezas de esa categoría');
+  check(W('currentFragment.cat') === 'cristiana' &&
+        doc.querySelector('#fragSubTabs .mode-tab.active').dataset.frag === W('currentFragment.id'),
+    'al filtrar se pasa a la primera de la categoría y queda marcada en la lista');
+  // El plan de "Hoy" manda a una pieza concreta: tiene que llegar aunque el
+  // filtro vigente la esconda, o el enlace de Hoy no hace nada.
+  W("pickFragmentById('amanecer')");
+  check(W('currentFragment.id') === 'amanecer' && W('fragCat') === 'facil',
+    'saltar a una pieza de otra categoría abre su categoría y la selecciona');
+  check((doc.querySelector('#fragSubTabs .mode-tab.active') || {}).dataset.frag === 'amanecer',
+    'y queda marcada en la lista redibujada');
+  W("selectCategory('agility')");
+  check(doc.getElementById('fragCatBar').style.display === 'none' &&
+        doc.querySelectorAll('#fragSubTabs .mode-tab').length === W('AGILITY_DRILLS.length'),
+    'Agilidad no se filtra ni muestra la barra');
+  W("fragCat = 'all'; try { localStorage.removeItem('fragCat'); } catch(e){}");
+
+  section('Piezas nuevas: notas y compases cuadran');
+  for(const [id, beats, lo, hi] of [['flaca', 56, 67, 79], ['amanecer', 52, 72, 79]]){
+    const s = W('SONGS.find(s => s.id === "' + id + '")');
+    const sum = s.steps.reduce((a, x) => a + x.dur, 0);
+    check(sum === beats, id + ': ' + sum + ' tiempos = ' + (beats / 4) + ' compases justos');
+    const notes = s.steps.flatMap(x => x.rh);
+    check(Math.min(...notes) === lo && Math.max(...notes) === hi,
+      id + ': la derecha va de ' + lo + ' a ' + hi);
+  }
+  check(W('SONGS.find(s => s.id === "faded").steps').every(x => [67,69,71,72,74,76].includes(x.rh[0])),
+    'Faded quedó en La menor: solo teclas blancas');
+  check(W('SONGS.find(s => s.id === "amanecer").steps').every(x => x.rh[0] >= 72 && x.rh[0] <= 79 && x.rhF[0] === [72,74,76,77,79].indexOf(x.rh[0]) + 1),
+    'Amanecer no mueve la mano: los 5 dedos caen siempre en la misma tecla');
+  for(const id of ['flaca', 'faded', 'amanecer']){
+    check(W('SONGS.find(s => s.id === "' + id + '").steps').every(
+      x => x.rh && x.rh.length && x.rhF && x.rh.length === x.rhF.length &&
+           (!x.lh || !x.lh.length || (x.lhF && x.lhF.length === x.lh.length))),
+      id + ': cada paso trae su digitación pareja');
+  }
+
   console.log(`\n${passes} pruebas OK, ${failures} fallos`);
   if(errors.length) console.log('Errores de consola:', errors);
   process.exit(failures || errors.length ? 1 : 0);

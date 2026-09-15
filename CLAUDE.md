@@ -266,6 +266,32 @@ Orden dentro del `<script>`:
     posición marcado con `label`, como Cumpleaños feliz y Bella Ciao.
     Ojo con el nombre: `aleluya` (la famosa, tutorial) y `hallelujah`
     (el coro de Händel, del songbook) son piezas distintas y conviven.
+    **"Flaca"** (Jarabe de Palo, partitura de itemfunes.com, mismo molde que
+    Bella Ciao). El bajo son redondas, una por compás, y dan Sol–Si–Mim–Do–
+    Sol–Re–Sol; ese bajo sirvió además para **verificar** la melodía (las notas
+    de cada compás caen en su acorde). La derecha repite un molde: corta,
+    LARGA, y dos cortas de enlace. Dos posiciones (pulgar en Sol4 y después en
+    La4) porque la 2ª mitad sube a Sol5. 56 tiempos = 14 compases justos.
+    **"Faded" entra SOLO como estribillo y movido a La menor, a propósito.**
+    El PDF (arreglo de Melrose Tran) está en **Re# menor: SEIS sostenidos**,
+    con acordes de cuatro notas en la izquierda y pasajes de semicorcheas.
+    Se puede leer perfecto y aun así no sirve — es el mismo caso que el primer
+    PDF de Bella Ciao. En vez de descartarlo se sacó el gancho y se transportó
+    un tritono abajo, con lo que queda en **puras teclas blancas** y en una
+    sola posición de mano. La izquierda es la progresión real (Lam–Fa–Do–Sol).
+    Si alguna vez se quiere el arreglo completo, hay que volver al PDF: esto
+    NO es una transcripción de esa partitura y el `tip` lo dice.
+    **"Amanecer" es original, escrita para Jorge** (no es de nadie, no hay
+    fuente que verificar). Pedido: alegre, moderna, sencilla, 2-3 partes, con
+    subidas y bajadas, izquierda menos activa que la derecha. Decisiones:
+    Do mayor y la progresión Do–Sol–Lam–Fa **que ya practica en "Los 4
+    acordes"**, para que la pieza refuerce algo conocido; la derecha **no mueve
+    la mano ni una vez** (pulgar fijo en Do5, los 5 dedos sobre Do Re Mi Fa
+    Sol — hay una prueba que lo fija comparando `rhF` con la posición de la
+    tecla); el salto más grande es una 3ª. Las tres partes son pregunta (queda
+    en Re, en el aire) / respuesta (cierra en Do) / cierre con más movimiento.
+    La izquierda va a una nota por compás salvo en la parte 3, donde entra dos
+    veces por compás para empujar. 52 tiempos = 13 compases.
     **Cómo transcribir una partitura en PDF (método que funciona, reutilizable).**
     Con "Bella Ciao" y "Espíritu de Dios" se automatizó lo que en "Dios está
     aquí" se hizo a ojo, y sale mucho mejor:
@@ -278,8 +304,19 @@ Orden dentro del `<script>`:
        son blancos ENCERRADOS (agujeros) — sin esa segunda pasada se pierden
        todas las blancas y redondas. Todos los umbrales se escalan con L, así
        que el mismo código sirve para cualquier resolución o tamaño de página.
-       Filtro clave: **el agujero de una cabeza es más ancho que alto**; el de
-       un silencio de negra no — sin esa regla los silencios entran como notas.
+       **Cómo separar el agujero de una cabeza de la basura** (esto costó y no
+       hay que re-derivarlo): los falsos positivos NO son los silencios sino
+       **el hueco entre dos líneas del pentagrama** cerrado por barras de
+       compás — un rectángulo casi perfecto (`fill>0.85`) y de alto ≈ el
+       espacio entero (`h/L` 0.84–0.93). Una cabeza nunca pasa de `h/L≈0.80`
+       y es elíptica (`fill` 0.45–0.80). Reglas: descartar `h>0.90L`, o
+       `fill>0.85 y h>0.80L`, o `h<0.20L`, o `w<0.50h` (astilla vertical del
+       silencio de negra). **Hay que filtrar CADA hueco AL RECOLECTARLO, no
+       después de agrupar**: si no, el hueco entre líneas se fusiona con la
+       cabeza vecina, infla la caja y la cabeza real se pierde.
+       *(La regla vieja "la cabeza es más ancha que alta" estaba mal: rechaza
+       las REDONDAS, cuyo agujero es más alto que ancho —16×19 en Flaca—. Se
+       descubrió porque el bajo de Flaca, que son puras redondas, salía vacío.)*
     4. **Altura → nota**: `k = (línea_inferior − y) / (L/2)` y de ahí la letra.
        Descartar lo que caiga a más de 0.25 de una posición (es basura, no nota).
     5. **Barras de compás**: columna oscura de alto completo **que no sobresale
@@ -332,6 +369,30 @@ Orden dentro del `<script>`:
     que hoy no tiene el ejercicio. Lectura **nunca** marca la tecla objetivo — es
     a propósito (sight-reading, ver más abajo) — así que no hay tecla sobre la
     cual dibujar un número.
+- **Categorías de Fragmentos** (`cat` en cada pieza + `SONG_CATS`): con 20
+  piezas la fila de sub-pestañas era un scroll horizontal larguísimo donde no
+  se encontraba nada. Ahora hay una barra `#fragCatBar` (mismo vocabulario que
+  el resto: `.reg-bar` > `.reg-group` > `.reg-picker` en malva `g-type`) que
+  filtra la lista. Grupos: `facil | popular | cristiana | clasica | patrones`,
+  más `all`. Cosas que dependen de esto:
+  - **Agilidad NO se filtra** y la barra se esconde ahí: son ejercicios, no
+    repertorio, y son pocos.
+  - **`pickFragmentById()` abre la categoría de la pieza antes de buscar el
+    botón.** El plan de "Hoy" manda a una pieza concreta; si el filtro vigente
+    la escondía, el botón no existía y el enlace de Hoy no hacía NADA (fallo
+    silencioso). Hay prueba.
+  - `renderSubTabs()` marca la activa comparando con `currentFragment.id`, no
+    con `i===0`: al cambiar de categoría la lista se redibuja y la pieza que
+    suena puede no ser la primera.
+  - Una categoría sin piezas no se dibuja, y `visibleFragments()` cae a la
+    lista completa si el filtro quedara vacío: nunca una lista en blanco.
+  - La elección se recuerda (`fragCat` en localStorage) y se valida contra
+    `SONG_CATS` al cargar, por si algún día se renombra una categoría.
+  - **En pantalla angosta la etiqueta va ARRIBA de los botones**
+    (`@media max-width:760px`, solo dentro de `#fragCatBar`): con la etiqueta
+    al lado, los botones quedaban en una columna estrecha y la fila se partía
+    en tres (138 px de alto en 390 px de ancho; así son 94). Medido con
+    Chromium, que es lo único que mide diseño — jsdom no.
 - **P-45**: el manual numera las octavas una posición abajo (su C3 = C4/Do central);
   `manualToMidi()` hace esa conversión. Mapa extraído del PDF, no adivinar.
 
@@ -437,6 +498,7 @@ cualquier otro navegador funcionan igual que antes (`cloudState: 'off'`).
 
 ## Otras preferencias persistidas
 `kbZoom2`, `labelStyle`, `labelsShown` (ahora sí se recuerda; por defecto visible),
+`fragCat` (categoría de Fragmentos),
 `solfaShown`, `cascadeSpeed`, `scaleOpts` (mano/octavas/sentido/dedos/variante menor),
 `metroBpm`, `readingLevel`, `handsShown`, `soundTarget`.
 
