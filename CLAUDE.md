@@ -215,7 +215,44 @@ Orden dentro del `<script>`:
     de 5 dedos, así que no hace falta digitación nueva — es literalmente la
     frase 1 con el final cambiado. `label:'Frase 1'/'Frase 2'` en el último paso
     de cada una sirve de ancla para el selector de Tramo del modo cascada, para
-    practicar una frase sin la otra. **Cumpleaños feliz y Bella Ciao se pidieron
+    practicar una frase sin la otra.
+    **Después Jorge pidió la segunda mitad y poder unirlas, así que el tema son
+    TRES entradas**: `oda-alegria` (Parte 1, compases 1-8, la que ya tenía),
+    `oda-alegria-2` (Parte 2, compases 9-16) y `oda-alegria-full` (completo).
+    Tres entradas y no una sola pieza larga con `label` porque **fuera de la
+    cascada no hay selector de Tramo**: en el modo paso a paso hay que tocar
+    desde el principio, que es justo lo que pidió evitar. Los pasos viven en dos
+    arreglos, `ODA_P1` y `ODA_P2`, declarados antes de `SONGS`, y la completa es
+    `ODA_P1.concat(ODA_P2)` — **no una copia**, para que corregir una nota en una
+    parte corrija la completa sola (hay prueba que lo fija). Compartir los mismos
+    objetos de paso entre las tres piezas es seguro: nada del motor los modifica.
+    - **Verificación de la parte 2** (compases 9-16 en Do mayor):
+      `Re Re Mi Do / Re Mi Fa Mi Do / Re Mi Fa Mi Re / Do Re Sol(grave)` y
+      después la frase A' otra vez. En esta sesión **el proxy de red bloqueaba
+      WebFetch a todos los dominios**, así que se trianguló con lo que sí
+      pasaba: (1) resultados de búsqueda que citan esa línea literal, (2) una
+      fuente en Sol mayor cuya secuencia transpuesta da exactamente lo mismo,
+      (3) el ensayo de Michael Arnowitt, que dice que el compás 9 "salta hacia
+      abajo de Fa# a Re" y que **los compases 10 y 11 son los primeros con dos
+      corcheas en un mismo tiempo** — las dos cosas casan solo con esta lectura,
+      y (4) un PDF de merriammusic cuyo título trae la digitación
+      `3 3 4 5 / 5 4 3 2 / 1 1 2 3` de los compases 1-4, idéntica a la que ya
+      tenía la parte 1. Hay prueba que fija la melodía nota por nota.
+    - **Lo único rítmicamente nuevo son dos corcheas SEGUIDAS** (compases 10 y
+      11). Cuidado con decir "las primeras corcheas": la parte 1 ya trae una
+      suelta al final de cada frase (negra con puntillo + corchea). La prueba
+      cuenta pares de `dur:0.5` consecutivos: 0 en la parte 1, 2 en la parte 2.
+      Una etiqueta que decía "aquí entran las corcheas" era falsa y se cambió.
+    - **El Sol grave (55) lo toca la IZQUIERDA, no la derecha.** Es la nota más
+      baja del tema y la única fuera de la posición de 5 dedos de la derecha.
+      Las tres salidas posibles eran: mover toda la mano derecha por una sola
+      nota (lo más duro del repertorio, por un compás), subirla a Sol4 (invierte
+      el gesto más característico del tema) o dársela a la izquierda. Se eligió
+      la tercera: suena en su altura real, **ninguna mano se mueve** y encima el
+      Sol grave ES el bajo de ese compás (la dominante), así que no es un truco
+      sino la armonía. El paso va con `rh:[]`, que `advanceToPlayableStep()` ya
+      sabe saltar — con "Solo derecha" esa nota no suena, y está bien.
+      La izquierda queda en posición fija Do3(5)…Sol3(1), igual que en Estrellita. **Cumpleaños feliz y Bella Ciao se pidieron
     y quedaron pendientes**: Cumpleaños feliz sale de la posición de 5 dedos (la
     melodía sube hasta una 9ª desde el Do de referencia) y necesitaría un cambio
     de posición de mano que Fragmentos hoy no maneja fuera de Agilidad

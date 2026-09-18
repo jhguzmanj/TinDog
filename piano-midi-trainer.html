@@ -2378,6 +2378,61 @@ const AGILITY_DRILLS = [
 // reutilizan CHORD_FINGERS.rh por inversión, y la melodía de la derecha va
 // en posición de 5 dedos (Do=1 Re=2 Mi=3 Fa=4 Sol=5) estirando el 5 para
 // notas que caen un grado más arriba de Sol.
+// "Himno a la alegría" se aprende por partes (pedido de Jorge), así que el tema
+// de 16 compases vive partido en dos mitades y la versión completa se arma
+// concatenándolas: si se corrige una nota en una parte, la completa se corrige
+// sola. Los pasos son de solo lectura (nada del motor los modifica), así que
+// compartir los mismos objetos entre las tres piezas es seguro.
+// Compases 1-8: frase A (queda en el aire, en Mi) + frase A' (resuelve en Do).
+const ODA_P1 = [
+  {lh:[48], lhF:[5], rh:[64], rhF:[3], dur:1}, {lh:[], rh:[64], rhF:[3], dur:1},
+  {lh:[], rh:[65], rhF:[4], dur:1},  {lh:[], rh:[67], rhF:[5], dur:1},
+  {lh:[48], lhF:[5], rh:[67], rhF:[5], dur:1}, {lh:[], rh:[65], rhF:[4], dur:1},
+  {lh:[], rh:[64], rhF:[3], dur:1},  {lh:[], rh:[62], rhF:[2], dur:1},
+  {lh:[48], lhF:[5], rh:[60], rhF:[1], dur:1}, {lh:[], rh:[60], rhF:[1], dur:1},
+  {lh:[], rh:[62], rhF:[2], dur:1},  {lh:[], rh:[64], rhF:[3], dur:1},
+  {lh:[48], lhF:[5], rh:[64], rhF:[3], dur:1.5, label:'Frase 1'}, {lh:[], rh:[62], rhF:[2], dur:0.5},
+  {lh:[], rh:[62], rhF:[2], dur:2},
+  {lh:[48], lhF:[5], rh:[64], rhF:[3], dur:1}, {lh:[], rh:[64], rhF:[3], dur:1},
+  {lh:[], rh:[65], rhF:[4], dur:1},  {lh:[], rh:[67], rhF:[5], dur:1},
+  {lh:[48], lhF:[5], rh:[67], rhF:[5], dur:1}, {lh:[], rh:[65], rhF:[4], dur:1},
+  {lh:[], rh:[64], rhF:[3], dur:1},  {lh:[], rh:[62], rhF:[2], dur:1},
+  {lh:[48], lhF:[5], rh:[60], rhF:[1], dur:1}, {lh:[], rh:[60], rhF:[1], dur:1},
+  {lh:[], rh:[62], rhF:[2], dur:1},  {lh:[], rh:[64], rhF:[3], dur:1},
+  {lh:[48], lhF:[5], rh:[62], rhF:[2], dur:1.5, label:'Frase 2'}, {lh:[], rh:[60], rhF:[1], dur:0.5},
+  {lh:[], rh:[60], rhF:[1], dur:2},
+];
+// Compases 9-16: frase B (la parte nueva, con las corcheas) + frase A' otra vez.
+// Los compases 13-16 son NOTA POR NOTA los 5-8 de la parte 1: la mitad de esta
+// parte ya está aprendida, y eso es lo que la hace abordable.
+const ODA_P2 = [
+  {lh:[48], lhF:[5], rh:[62], rhF:[2], dur:1}, {lh:[], rh:[62], rhF:[2], dur:1},
+  {lh:[], rh:[64], rhF:[3], dur:1},  {lh:[], rh:[60], rhF:[1], dur:1},
+  // Lo único rítmicamente nuevo del tema: un tiempo partido en DOS corcheas
+  // seguidas. La parte 1 ya trae corcheas, pero siempre sueltas (negra con
+  // puntillo + corchea); dos seguidas no aparecen hasta aquí.
+  {lh:[48], lhF:[5], rh:[62], rhF:[2], dur:1, label:'Ahora vienen Mi y Fa seguidas, las dos dentro de un mismo tiempo'},
+  {lh:[], rh:[64], rhF:[3], dur:0.5}, {lh:[], rh:[65], rhF:[4], dur:0.5},
+  {lh:[], rh:[64], rhF:[3], dur:1},  {lh:[], rh:[60], rhF:[1], dur:1},
+  {lh:[48], lhF:[5], rh:[62], rhF:[2], dur:1},
+  {lh:[], rh:[64], rhF:[3], dur:0.5}, {lh:[], rh:[65], rhF:[4], dur:0.5},
+  {lh:[], rh:[64], rhF:[3], dur:1},  {lh:[], rh:[62], rhF:[2], dur:1},
+  {lh:[], rh:[60], rhF:[1], dur:1},  {lh:[], rh:[62], rhF:[2], dur:1},
+  // La nota más grave del tema. En vez de mover toda la mano derecha por una
+  // sola nota, la toma la izquierda con el pulgar: suena en su altura real y
+  // ninguna de las dos manos se mueve de su sitio.
+  {lh:[55], lhF:[1], rh:[], dur:2, label:'Sol grave: lo toca la mano IZQUIERDA con el pulgar'},
+  {lh:[48], lhF:[5], rh:[64], rhF:[3], dur:1, label:'Desde aquí es igual que la parte 1'},
+  {lh:[], rh:[64], rhF:[3], dur:1},
+  {lh:[], rh:[65], rhF:[4], dur:1},  {lh:[], rh:[67], rhF:[5], dur:1},
+  {lh:[48], lhF:[5], rh:[67], rhF:[5], dur:1}, {lh:[], rh:[65], rhF:[4], dur:1},
+  {lh:[], rh:[64], rhF:[3], dur:1},  {lh:[], rh:[62], rhF:[2], dur:1},
+  {lh:[48], lhF:[5], rh:[60], rhF:[1], dur:1}, {lh:[], rh:[60], rhF:[1], dur:1},
+  {lh:[], rh:[62], rhF:[2], dur:1},  {lh:[], rh:[64], rhF:[3], dur:1},
+  {lh:[48], lhF:[5], rh:[62], rhF:[2], dur:1.5}, {lh:[], rh:[60], rhF:[1], dur:0.5},
+  {lh:[], rh:[60], rhF:[1], dur:2, label:'Fin'},
+];
+
 const SONGS = [
   {
     id:'cuatro-acordes',
@@ -2395,27 +2450,26 @@ const SONGS = [
   {
     id:'oda-alegria',
     cat:'clasica',
-    name:'Himno a la alegría',
-    tip:'Beethoven. Melodía en la derecha, bajo simple en la izquierda. Toda la melodía cabe en 5 dedos sin mover la mano. Dos frases: la primera se queda "en el aire" (termina en Mi), la segunda responde y baja al Do — así se construye de a partes; usa "Tramo" en el modo cascada para practicar solo una.',
+    name:'Himno a la alegría · Parte 1',
+    tip:'Beethoven, primera mitad (8 compases). Melodía en la derecha, bajo simple en la izquierda. Todo cabe en 5 dedos sin mover la mano. Son dos frases: la primera se queda "en el aire" (termina en Mi), la segunda responde y baja al Do. Cuando la tengas, sigue con la Parte 2.',
     tempo:92,
-    steps:[
-      {lh:[48], lhF:[5], rh:[64], rhF:[3], dur:1}, {lh:[], rh:[64], rhF:[3], dur:1},
-      {lh:[], rh:[65], rhF:[4], dur:1},  {lh:[], rh:[67], rhF:[5], dur:1},
-      {lh:[48], lhF:[5], rh:[67], rhF:[5], dur:1}, {lh:[], rh:[65], rhF:[4], dur:1},
-      {lh:[], rh:[64], rhF:[3], dur:1},  {lh:[], rh:[62], rhF:[2], dur:1},
-      {lh:[48], lhF:[5], rh:[60], rhF:[1], dur:1}, {lh:[], rh:[60], rhF:[1], dur:1},
-      {lh:[], rh:[62], rhF:[2], dur:1},  {lh:[], rh:[64], rhF:[3], dur:1},
-      {lh:[48], lhF:[5], rh:[64], rhF:[3], dur:1.5, label:'Frase 1'}, {lh:[], rh:[62], rhF:[2], dur:0.5},
-      {lh:[], rh:[62], rhF:[2], dur:2},
-      {lh:[48], lhF:[5], rh:[64], rhF:[3], dur:1}, {lh:[], rh:[64], rhF:[3], dur:1},
-      {lh:[], rh:[65], rhF:[4], dur:1},  {lh:[], rh:[67], rhF:[5], dur:1},
-      {lh:[48], lhF:[5], rh:[67], rhF:[5], dur:1}, {lh:[], rh:[65], rhF:[4], dur:1},
-      {lh:[], rh:[64], rhF:[3], dur:1},  {lh:[], rh:[62], rhF:[2], dur:1},
-      {lh:[48], lhF:[5], rh:[60], rhF:[1], dur:1}, {lh:[], rh:[60], rhF:[1], dur:1},
-      {lh:[], rh:[62], rhF:[2], dur:1},  {lh:[], rh:[64], rhF:[3], dur:1},
-      {lh:[48], lhF:[5], rh:[62], rhF:[2], dur:1.5, label:'Frase 2'}, {lh:[], rh:[60], rhF:[1], dur:0.5},
-      {lh:[], rh:[60], rhF:[1], dur:2},
-    ]
+    steps: ODA_P1
+  },
+  {
+    id:'oda-alegria-2',
+    cat:'clasica',
+    name:'Himno a la alegría · Parte 2',
+    tip:'La segunda mitad (compases 9-16). Trae lo único nuevo del tema: unas corcheas (dos notas en un tiempo) y el Sol grave, la nota más baja de toda la pieza, que aquí toca la mano izquierda con el pulgar para que no tengas que mover la derecha. Ojo: la mitad final es NOTA POR NOTA la segunda frase de la Parte 1, así que en realidad solo hay 4 compases nuevos que aprender.',
+    tempo:92,
+    steps: ODA_P2
+  },
+  {
+    id:'oda-alegria-full',
+    cat:'clasica',
+    name:'Himno a la alegría (completo)',
+    tip:'Las dos partes seguidas: el tema entero de 16 compases, tal como lo escribió Beethoven. Cuando cada parte te salga sola, únelas aquí. Si una sección se te atasca, usa "Tramo" en el modo cascada para repetir solo esa.',
+    tempo:92,
+    steps: ODA_P1.concat(ODA_P2)
   },
   {
     id:'corderito',

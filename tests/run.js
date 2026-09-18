@@ -975,6 +975,44 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
       id + ': cada paso trae su digitación pareja');
   }
 
+  section('Himno a la alegría: dos partes y el tema completo');
+  const odaP1 = W('SONGS.find(s => s.id === "oda-alegria").steps');
+  const odaP2 = W('SONGS.find(s => s.id === "oda-alegria-2").steps');
+  const odaFull = W('SONGS.find(s => s.id === "oda-alegria-full").steps');
+  const beats = st => st.reduce((a, x) => a + x.dur, 0);
+  check(beats(odaP1) === 32, `Parte 1: ${beats(odaP1)} tiempos = 8 compases justos`);
+  check(beats(odaP2) === 32, `Parte 2: ${beats(odaP2)} tiempos = 8 compases justos`);
+  check(beats(odaFull) === 64, `Completo: ${beats(odaFull)} tiempos = 16 compases justos`);
+  // La completa se arma concatenando: no puede desviarse de las partes.
+  check(odaFull.length === odaP1.length + odaP2.length &&
+        JSON.stringify(odaFull) === JSON.stringify(odaP1.concat(odaP2)),
+    'la versión completa es exactamente Parte 1 + Parte 2 (no una copia que se pueda desincronizar)');
+  // Melodía de la parte 2 contra la fuente (Beethoven, compases 9-16 en Do mayor):
+  // Re Re Mi Do / Re Mi Fa Mi Do / Re Mi Fa Mi Re / Do Re Sol(grave) y luego A'.
+  check(JSON.stringify(odaP2.flatMap(x => x.rh)) === JSON.stringify([
+    62,62,64,60,  62,64,65,64,60,  62,64,65,64,62,  60,62,
+    64,64,65,67,  67,65,64,62,  60,60,62,64,  62,60,60,
+  ]), 'la melodía de la parte 2 coincide nota por nota con la fuente');
+  // Los últimos 4 compases son los mismos de la parte 1: eso es lo que la hace
+  // abordable, y si dejara de cumplirse el consejo de la pieza estaría mintiendo.
+  check(JSON.stringify(odaP2.slice(-14).flatMap(x => x.rh)) ===
+        JSON.stringify(odaP1.slice(-14).flatMap(x => x.rh)),
+    'la segunda mitad de la Parte 2 repite nota por nota la frase 2 de la Parte 1');
+  // El Sol grave (55) es la única nota fuera de la posición de 5 dedos del tema;
+  // va en la IZQUIERDA a propósito, para no mover la derecha por una sola nota.
+  const lowG = odaP2.filter(x => x.lh.includes(55));
+  check(lowG.length === 1 && lowG[0].rh.length === 0,
+    'el Sol grave lo toca la izquierda sola (la derecha no se mueve de su posición)');
+  check(odaP2.every(x => x.rh.every(n => n >= 60 && n <= 67)),
+    'la mano derecha no sale nunca de los 5 dedos Do4-Sol4');
+  // Lo rítmicamente nuevo no son las corcheas (la parte 1 ya trae una suelta al
+  // final de cada frase) sino DOS seguidas partiendo un mismo tiempo.
+  const pairs = st => st.filter((x, i) => x.dur === 0.5 && st[i+1] && st[i+1].dur === 0.5).length;
+  check(pairs(odaP1) === 0, 'la parte 1 no tiene ningún tiempo partido en dos corcheas');
+  check(pairs(odaP2) === 2, 'la parte 2 trae los dos tiempos partidos en dos corcheas (lo nuevo del tema)');
+  check(W('SONGS.filter(s => /^oda-alegria/.test(s.id)).length') === 3,
+    'quedan las tres: parte 1, parte 2 y completa');
+
   section('Desbloqueo de audio en iOS');
   // jsdom no trae AudioContext; se inyecta una falsa MUY mínima (solo lo que
   // ensureAudioCtx/unlockAudioContextIOS tocan) para fijar que, al crear el
