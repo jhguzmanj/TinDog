@@ -987,24 +987,43 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
   check(odaFull.length === odaP1.length + odaP2.length &&
         JSON.stringify(odaFull) === JSON.stringify(odaP1.concat(odaP2)),
     'la versión completa es exactamente Parte 1 + Parte 2 (no una copia que se pueda desincronizar)');
-  // Melodía de la parte 2 contra la fuente (Beethoven, compases 9-16 en Do mayor):
+  // Melodía contra la hoja del curso (laescueledemusica.net), compases 9-16:
   // Re Re Mi Do / Re Mi Fa Mi Do / Re Mi Fa Mi Re / Do Re Sol(grave) y luego A'.
   check(JSON.stringify(odaP2.flatMap(x => x.rh)) === JSON.stringify([
-    62,62,64,60,  62,64,65,64,60,  62,64,65,64,62,  60,62,
+    62,62,64,60,  62,64,65,64,60,  62,64,65,64,62,  60,62,55,
     64,64,65,67,  67,65,64,62,  60,60,62,64,  62,60,60,
-  ]), 'la melodía de la parte 2 coincide nota por nota con la fuente');
+  ]), 'la melodía de la parte 2 coincide nota por nota con la hoja del curso');
+  // Digitación del compás 12 tal como la marca la hoja: Do(1) Re(3) Sol(1).
+  check(JSON.stringify(odaP2.slice(14, 17).map(x => [x.rh[0], x.rhF[0]])) ===
+        JSON.stringify([[60,1],[62,3],[55,1]]),
+    'el compás 12 lleva la digitación 1-3-1 de la hoja (el 3 es el asterisco: ahí baja la mano)');
   // Los últimos 4 compases son los mismos de la parte 1: eso es lo que la hace
   // abordable, y si dejara de cumplirse el consejo de la pieza estaría mintiendo.
-  check(JSON.stringify(odaP2.slice(-14).flatMap(x => x.rh)) ===
-        JSON.stringify(odaP1.slice(-14).flatMap(x => x.rh)),
-    'la segunda mitad de la Parte 2 repite nota por nota la frase 2 de la Parte 1');
-  // El Sol grave (55) es la única nota fuera de la posición de 5 dedos del tema;
-  // va en la IZQUIERDA a propósito, para no mover la derecha por una sola nota.
-  const lowG = odaP2.filter(x => x.lh.includes(55));
-  check(lowG.length === 1 && lowG[0].rh.length === 0,
-    'el Sol grave lo toca la izquierda sola (la derecha no se mueve de su posición)');
-  check(odaP2.every(x => x.rh.every(n => n >= 60 && n <= 67)),
-    'la mano derecha no sale nunca de los 5 dedos Do4-Sol4');
+  // Sin los `label`: la parte 2 avisa ahí que vuelve lo conocido, la 1 no.
+  const bare = st => JSON.stringify(st.map(({label, ...x}) => x));
+  check(bare(odaP2.slice(-15)) === bare(odaP1.slice(-15)),
+    'la segunda mitad de la Parte 2 repite paso por paso la frase 2 de la Parte 1');
+  // El Sol grave (55) es la única nota fuera de la posición de 5 dedos.
+  const outside = odaP2.flatMap(x => x.rh).filter(n => n < 60 || n > 67);
+  check(outside.length === 1 && outside[0] === 55,
+    'el Sol grave es la ÚNICA nota en que la mano derecha sale de su posición');
+  check(odaP1.every(x => x.rh.every(n => n >= 60 && n <= 67)),
+    'en la parte 1 la mano derecha nunca sale de los 5 dedos Do4-Sol4');
+  // Ambas manos quietas: cada nota lleva siempre el mismo dedo, o la posición
+  // no sería fija. Se exceptúa el compás 12, que es el cambio marcado.
+  const fixedPos = (st, hand, fing, skip) => {
+    const map = {}; let ok = true;
+    st.forEach((x, i) => x[hand].forEach((n, j) => {
+      if(skip && skip(i)) return;
+      if(map[n] !== undefined && map[n] !== x[fing][j]) ok = false;
+      map[n] = x[fing][j];
+    }));
+    return ok;
+  };
+  check(fixedPos(odaP1, 'lh', 'lhF') && fixedPos(odaP1, 'rh', 'rhF'),
+    'parte 1: cada nota lleva siempre el mismo dedo (las dos manos quietas)');
+  check(fixedPos(odaP2, 'lh', 'lhF') && fixedPos(odaP2, 'rh', 'rhF', i => i >= 14 && i <= 16),
+    'parte 2: posición fija salvo el compás 12, que es el cambio marcado');
   // Lo rítmicamente nuevo no son las corcheas (la parte 1 ya trae una suelta al
   // final de cada frase) sino DOS seguidas partiendo un mismo tiempo.
   const pairs = st => st.filter((x, i) => x.dur === 0.5 && st[i+1] && st[i+1].dur === 0.5).length;

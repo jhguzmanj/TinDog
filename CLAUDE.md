@@ -226,33 +226,43 @@ Orden dentro del `<script>`:
     `ODA_P1.concat(ODA_P2)` — **no una copia**, para que corregir una nota en una
     parte corrija la completa sola (hay prueba que lo fija). Compartir los mismos
     objetos de paso entre las tres piezas es seguro: nada del motor los modifica.
-    - **Verificación de la parte 2** (compases 9-16 en Do mayor):
-      `Re Re Mi Do / Re Mi Fa Mi Do / Re Mi Fa Mi Re / Do Re Sol(grave)` y
-      después la frase A' otra vez. En esta sesión **el proxy de red bloqueaba
-      WebFetch a todos los dominios**, así que se trianguló con lo que sí
-      pasaba: (1) resultados de búsqueda que citan esa línea literal, (2) una
-      fuente en Sol mayor cuya secuencia transpuesta da exactamente lo mismo,
-      (3) el ensayo de Michael Arnowitt, que dice que el compás 9 "salta hacia
-      abajo de Fa# a Re" y que **los compases 10 y 11 son los primeros con dos
-      corcheas en un mismo tiempo** — las dos cosas casan solo con esta lectura,
-      y (4) un PDF de merriammusic cuyo título trae la digitación
-      `3 3 4 5 / 5 4 3 2 / 1 1 2 3` de los compases 1-4, idéntica a la que ya
-      tenía la parte 1. Hay prueba que fija la melodía nota por nota.
+    - **La fuente es la hoja del curso de laescueledemusica.net**, que Jorge
+      pasó como imagen: trae melodía por nombre de nota, **digitación de las dos
+      manos** y el acompañamiento de la izquierda, compás por compás. Da los 16
+      compases, así que la pieza entera está verificada, no reconstruida.
+      *(Método: el primer intento se hizo sin la hoja, triangulando resultados
+      de búsqueda — WebFetch estaba bloqueado por el proxy en todos los
+      dominios. La melodía salió bien, pero **dos cosas salieron mal**: el
+      acompañamiento y la octava del Sol final. Moraleja repetida: pedir la
+      fuente antes, no después.)*
+      Para leer la digitación del compás 12, que a tamaño normal no se
+      distinguía, se recortó la zona con PIL y se amplió ×4 — barato y resuelve
+      de una lo que costaría otra vuelta de preguntas.
     - **Lo único rítmicamente nuevo son dos corcheas SEGUIDAS** (compases 10 y
-      11). Cuidado con decir "las primeras corcheas": la parte 1 ya trae una
-      suelta al final de cada frase (negra con puntillo + corchea). La prueba
-      cuenta pares de `dur:0.5` consecutivos: 0 en la parte 1, 2 en la parte 2.
-      Una etiqueta que decía "aquí entran las corcheas" era falsa y se cambió.
-    - **El Sol grave (55) lo toca la IZQUIERDA, no la derecha.** Es la nota más
-      baja del tema y la única fuera de la posición de 5 dedos de la derecha.
-      Las tres salidas posibles eran: mover toda la mano derecha por una sola
-      nota (lo más duro del repertorio, por un compás), subirla a Sol4 (invierte
-      el gesto más característico del tema) o dársela a la izquierda. Se eligió
-      la tercera: suena en su altura real, **ninguna mano se mueve** y encima el
-      Sol grave ES el bajo de ese compás (la dominante), así que no es un truco
-      sino la armonía. El paso va con `rh:[]`, que `advanceToPlayableStep()` ya
-      sabe saltar — con "Solo derecha" esa nota no suena, y está bien.
-      La izquierda queda en posición fija Do3(5)…Sol3(1), igual que en Estrellita. **Cumpleaños feliz y Bella Ciao se pidieron
+      11, con corchete en la hoja). Cuidado con decir "las primeras corcheas":
+      la parte 1 ya trae una suelta al final de cada frase (negra con puntillo +
+      corchea). La prueba cuenta pares de `dur:0.5` consecutivos: 0 en la parte
+      1, 2 en la parte 2. Una etiqueta que decía "aquí entran las corcheas" era
+      falsa y se cambió.
+    - **El compás 12 es el ÚNICO cambio de posición de la pieza**, y la hoja lo
+      marca con un asterisco: digitación `Do(1) Re(3*) Sol(1)`. Ese `3` sobre el
+      Re (que en posición fija sería 2) es la señal de que la mano baja, y el
+      Sol es el **grave** (Sol3 = 55, debajo del Do central), tocado con el
+      pulgar. La izquierda cae a la vez en su Sol más grave (Sol2 = 43), así que
+      las dos manos aterrizan en la misma nota en octavas — por eso el paso
+      muestra `Sol2 + Sol3`.
+      **Un intento anterior le dio ese Sol a la izquierda** (con `rh:[]`) para
+      no mover la derecha; se veía razonable y era incorrecto: la hoja lo pone
+      en la derecha y la izquierda tiene su propia nota ahí. No repetirlo.
+    - **La izquierda NO es Do en todos los compases.** Va en posición fija
+      `Sol2(5) La2(4) Si2(3) Do3(2) Re3(1)` y toca `Do–Si–La–(Do Si)` en la
+      frase A, `Si–Do` dos veces por compás en la frase B, y `Re–Sol` en el
+      compás 12. Es una nota a la vez (Jorge no quiere acordes) pero sigue la
+      armonía de verdad. La versión anterior ponía Do3 en todos los compases con
+      el dedo 5; sonaba plano bajo el compás 2 y además ese dedo 5 chocaba con
+      la posición que exige el Sol2 del compás 12. Hay pruebas que fijan que
+      cada nota lleva siempre el mismo dedo (o la posición no sería fija), con
+      el compás 12 exceptuado a propósito. **Cumpleaños feliz y Bella Ciao se pidieron
     y quedaron pendientes**: Cumpleaños feliz sale de la posición de 5 dedos (la
     melodía sube hasta una 9ª desde el Do de referencia) y necesitaría un cambio
     de posición de mano que Fragmentos hoy no maneja fuera de Agilidad
