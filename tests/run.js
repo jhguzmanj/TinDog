@@ -1045,6 +1045,38 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
   check(W('SONGS.filter(s => /^oda-alegria/.test(s.id)).length') === 3,
     'quedan las tres: parte 1, parte 2 y completa');
 
+  section('All of Me: la vuelta de dos notas');
+  const aom = W('SONGS.find(s => s.id === "all-of-me").steps');
+  check(aom.reduce((a, x) => a + x.dur, 0) === 16, 'la vuelta son 16 tiempos = 4 compases justos');
+  check(aom.length === 12 && aom.every(x => x.lh.length === 1 && x.rh.length === 1),
+    '12 golpes, siempre dos notas a la vez (una por mano)');
+  // Las 5 teclas del tutorial, leídas de la foto contando los grupos de negras.
+  // Todas caen en La bemol mayor (Lab Sib Do Reb Mib Fa Sol): si alguna se
+  // saliera, la lectura de la foto estaría mal.
+  const AB_MAYOR = [56, 58, 60, 61, 63, 65, 67].map(n => n % 12);
+  const aomNotes = [...new Set(aom.flatMap(x => x.lh.concat(x.rh)))].sort((a, b) => a - b);
+  check(JSON.stringify(aomNotes) === JSON.stringify([51, 53, 58, 60, 61]),
+    'usa exactamente las 5 teclas del tutorial: Mib3 Fa3 Sib3 Do4 Reb4');
+  check(aomNotes.every(n => AB_MAYOR.includes(n % 12)), 'las cinco caen dentro de La bemol mayor');
+  // Verificación que vale: cada par tiene que dar el acorde de la canción
+  // (Fam–Reb–Lab–Mib). Si la foto se hubiera leído mal, esto no cuadraría.
+  const pares = aom.filter((x, i) => i % 3 === 0).map(x => [x.lh[0] % 12, x.rh[0] % 12]);
+  const FAM = [5, 8, 0], REB = [1, 5, 8], LAB = [8, 0, 3], MIB = [3, 7, 10];
+  check(JSON.stringify(pares.map(([a, b], i) => [FAM, REB, LAB, MIB][i].includes(a) &&
+                                                [FAM, REB, LAB, MIB][i].includes(b))) ===
+        JSON.stringify([true, true, true, true]),
+    'cada par de notas cae dentro de su acorde: Fam, Reb, Lab, Mib');
+  // Ninguna mano se mueve: cada tecla lleva siempre el mismo dedo.
+  const aomFijo = (hand, fing) => {
+    const map = {}; let ok = true;
+    aom.forEach(x => x[hand].forEach((n, j) => {
+      if(map[n] !== undefined && map[n] !== x[fing][j]) ok = false;
+      map[n] = x[fing][j];
+    }));
+    return ok;
+  };
+  check(aomFijo('lh', 'lhF') && aomFijo('rh', 'rhF'), 'cada tecla lleva siempre el mismo dedo: ninguna mano se mueve');
+
   section('Desbloqueo de audio en iOS');
   // jsdom no trae AudioContext; se inyecta una falsa MUY mínima (solo lo que
   // ensureAudioCtx/unlockAudioContextIOS tocan) para fijar que, al crear el

@@ -2923,6 +2923,31 @@ const SONGS = [
     ]
   },
   {
+    id:'all-of-me',
+    cat:'popular',
+    name:'All of Me (intro)',
+    tip:'John Legend. Es la vuelta del principio, la que se repite bajo casi toda la canción: dos notas a la vez, tres golpes por compás, y a los 4 compases vuelve a empezar. Va en La bemol, el tono original, así que puedes tocarla encima de la canción — por eso tiene teclas negras (Mib, Sib, Reb). Ninguna mano se mueve: la izquierda deja el 3 en Mib y el 2 en Fa, la derecha el 1 en Sib, el 2 en Do y el 3 en Reb. El ritmo NO viene del tutorial: aquí van golpes parejos para aprender las teclas, el vaivén sácalo escuchando la canción.',
+    tempo:66,
+    steps:[
+      // Fam: Fa (5ª abajo) + Do
+      {lh:[53], lhF:[2], rh:[60], rhF:[2], dur:1, label:'Fam (Fm)'},
+      {lh:[53], lhF:[2], rh:[60], rhF:[2], dur:1},
+      {lh:[53], lhF:[2], rh:[60], rhF:[2], dur:2},
+      // Reb: el Fa se queda y arriba baja a Reb
+      {lh:[53], lhF:[2], rh:[61], rhF:[3], dur:1, label:'Reb (Db) — solo cambia la derecha'},
+      {lh:[53], lhF:[2], rh:[61], rhF:[3], dur:1},
+      {lh:[53], lhF:[2], rh:[61], rhF:[3], dur:2},
+      // Lab: ahora la izquierda baja a Mib y arriba vuelve el Do
+      {lh:[51], lhF:[3], rh:[60], rhF:[2], dur:1, label:'Lab (Ab) — ahora cambia la izquierda'},
+      {lh:[51], lhF:[3], rh:[60], rhF:[2], dur:1},
+      {lh:[51], lhF:[3], rh:[60], rhF:[2], dur:2},
+      // Mib: el Mib se queda y arriba baja a Sib
+      {lh:[51], lhF:[3], rh:[58], rhF:[1], dur:1, label:'Mib (Eb)'},
+      {lh:[51], lhF:[3], rh:[58], rhF:[1], dur:1},
+      {lh:[51], lhF:[3], rh:[58], rhF:[1], dur:2, label:'Fin — y vuelve a empezar'},
+    ]
+  },
+  {
     id:'amanecer',
     cat:'facil',
     name:'Amanecer',

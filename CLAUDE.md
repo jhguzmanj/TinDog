@@ -343,6 +343,35 @@ Orden dentro del `<script>`:
     sola posición de mano. La izquierda es la progresión real (Lam–Fa–Do–Sol).
     Si alguna vez se quiere el arreglo completo, hay que volver al PDF: esto
     NO es una transcripción de esa partitura y el `tip` lo dice.
+    **"All of Me" (John Legend) sale de UN fotograma de un reel**, no de una
+    partitura: un tutorial por números (ponchopianot) donde el overlay dice
+    `222 222 111 111` (rojo, izquierda) sobre `444 555 444 333` (blanco,
+    derecha), y la foto del teclado tiene 5 teclas marcadas 1-5. **Los números
+    son TECLAS, no dedos.** Para saber cuáles, se midieron las teclas negras de
+    la foto y se agruparon por los huecos grandes (2+3+2): eso fija dónde está
+    cada Do y de ahí sale cada marca. Resultado: `1=Mib 2=Fa 3=Sib 4=Do 5=Reb`.
+    - **La verificación que lo confirma**: las cinco caen dentro de **La bemol
+      mayor** (el tono original de la canción), y los cuatro pares que arma el
+      overlay dan exactamente la progresión del tema: `Fa+Do` = Fam,
+      `Fa+Reb` = Reb, `Mib+Do` = Lab, `Mib+Sib` = Mib → **Fam–Reb–Lab–Mib**.
+      Si la lectura de la foto estuviera mal, esos pares no darían acordes. Es
+      el mismo truco que "el bajo tiene que dar los acordes" de las partituras.
+      Hay pruebas que fijan las dos cosas.
+    - **Se queda en La bemol a propósito, con teclas negras.** Es el caso
+      contrario a "Faded": ahí se transportó porque el arreglo era injugable;
+      aquí son cinco teclas en dos posiciones fijas, y transportarlo a Do
+      (que daría Lam–Fa–Do–Sol, todo blancas) rompería lo único que Jorge
+      quería — que suene como la canción y pueda tocar encima de ella.
+      Es la primera pieza con tecla negra **en la izquierda**.
+    - **Lo que el reel NO da es el ritmo ni la digitación.** Van tres golpes
+      parejos por compás (1+1+2 para llenar el 4/4, porque `SONGS` no tiene
+      silencios) y el `tip` dice que el vaivén se saca de la canción — mismo
+      criterio que "Aleluya"/"La Colegiala". La digitación es inventada
+      (izquierda 3 en Mib y 2 en Fa; derecha 1-2-3 en Sib-Do-Reb), elegida para
+      que **ninguna mano se mueva**; hay prueba que lo fija.
+    - **Solo hay un fotograma**, así que esto es la vuelta de 4 compases que se
+      repite, no la canción entera. Si aparecen más fotogramas del reel se
+      puede alargar.
     **"Amanecer" es original, escrita para Jorge** (no es de nadie, no hay
     fuente que verificar). Pedido: alegre, moderna, sencilla, 2-3 partes, con
     subidas y bajadas, izquierda menos activa que la derecha. Decisiones:
