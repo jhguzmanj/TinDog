@@ -1112,6 +1112,64 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
      delete window.OfflineAudioContext; delete window.Audio;
      delete window.__playCalls; delete window.__renderCount; delete window.__wav;`);
 
+  section('Estrellita: una sola versión y la izquierda sencilla');
+  // Estaba dos veces (corta con acordes + "Twinkle" larga). Jorge pidió dejar
+  // solo la corta, y sin acordes: todavía no los domina.
+  check(W("SONGS.filter(s => /estrellita|twinkle/i.test(s.id)).length") === 1,
+    'solo queda una versión de Estrellita (se quitó la larga)');
+  check(W("SONGS.find(s => s.id === 'estrellita').steps.every(st => st.lh.length <= 1)"),
+    'la izquierda nunca pide más de una tecla a la vez (ya no hay acordes)');
+  const estrLh = JSON.parse(W(
+    "JSON.stringify([...new Set(SONGS.find(s => s.id === 'estrellita').steps.flatMap(st => st.lh))])"));
+  check(Math.max(...estrLh) - Math.min(...estrLh) <= 7,
+    'todas las notas graves caben en una 5ª: la mano izquierda no se mueve en toda la pieza');
+  // Si una misma nota llevara dedos distintos, la mano tendría que reacomodarse.
+  check(W(`(() => {
+    const map = {}; let ok = true;
+    for(const st of SONGS.find(s => s.id === 'estrellita').steps){
+      st.lh.forEach((n, i) => {
+        if(map[n] !== undefined && map[n] !== st.lhF[i]) ok = false;
+        map[n] = st.lhF[i];
+      });
+    }
+    return ok;
+  })()`), 'cada nota grave lleva siempre el mismo dedo (posición fija)');
+
+  section('"Escuchar" se puede detener a mitad');
+  ev('#mainTabs [data-cat="fragments"]');
+  W("pickFragmentById('estrellita')");
+  check(W("currentFragment.id") === 'estrellita', 'setup: Estrellita cargada');
+  const pieceMs = W("currentFragment.steps.reduce((a, s) => a + s.dur, 0) * 60000 / currentFragment.tempo");
+  const listen = doc.querySelector('#listenBtn');
+  const t0 = Date.now();
+  ev('#listenBtn');
+  check(W('isPlayingBack') === true, 'tocar Escuchar arranca la reproducción');
+  check(listen.textContent.includes('Detener'), 'el botón pasa a decir Detener mientras suena');
+  check(listen.classList.contains('busy'), 'y se ve "trabajando ahora"');
+  await new Promise(r => setTimeout(r, 120));
+  ev('#listenBtn');                         // segundo toque = detener
+  await new Promise(r => setTimeout(r, 60));
+  const stoppedMs = Date.now() - t0;
+  check(W('isPlayingBack') === false, 'volver a tocarlo detiene la reproducción');
+  check(listen.textContent.includes('Escuchar'), 'el botón vuelve a decir Escuchar');
+  check(!listen.classList.contains('busy'), 'y deja de verse trabajando');
+  check(stoppedMs < pieceMs / 2,
+    `corta en el acto, no espera a que termine la nota ni la pieza (${Math.round(stoppedMs)}ms de ${Math.round(pieceMs)}ms)`);
+  check(doc.querySelectorAll('#pianoSvg .active').length === 0,
+    'no queda ninguna tecla encendida del paso que iba sonando');
+
+  // El token de cancelación no puede quedar "gastado": tiene que poder volver a sonar.
+  ev('#listenBtn');
+  check(W('isPlayingBack') === true, 'después de detener, se puede volver a escuchar');
+  await new Promise(r => setTimeout(r, 40));
+
+  // Cambiar de pieza mientras suena también corta: antes seguía sonando la
+  // anterior encima de la nueva.
+  W("pickFragmentById('hot-cross-buns')");
+  await new Promise(r => setTimeout(r, 60));
+  check(W('isPlayingBack') === false, 'cambiar de pieza mientras suena detiene la reproducción');
+  check(W("currentFragment.id") === 'hot-cross-buns', 'y la pieza nueva queda cargada');
+
   console.log(`\n${passes} pruebas OK, ${failures} fallos`);
   if(errors.length) console.log('Errores de consola:', errors);
   process.exit(failures || errors.length ? 1 : 0);

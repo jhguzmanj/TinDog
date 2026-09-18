@@ -225,9 +225,24 @@ Orden dentro del `<script>`:
     **"María tenía un corderito"** se agregó como pieza fácil y segura dentro
     de la pentatónica: usa solo Do Re Mi Sol (ni siquiera necesita el La),
     cabe entera en la posición de 5 dedos y aquí la izquierda solo marca el
-    Do en cada compás (no repite el patrón de acorde largo de Estrellita).
+    Do en cada compás.
     Se eligió sobre Cumpleaños feliz/Bella Ciao por tener rango de mano y
     confianza de transcripción altísimos (melodía de 3-4 notas, ultraconocida).
+    **"Estrellita" quedó en UNA sola versión y sin acordes.** Estaba dos veces:
+    `estrellita` (media pieza, con tríadas largas en la izquierda) y `twinkle`
+    (la misma melodía completa, con el "Brille brille" del medio). Jorge pidió
+    dejar solo la corta y quitarle los acordes, que todavía no domina, así que
+    `twinkle` se borró y la izquierda de `estrellita` pasó de tríadas a **una
+    nota grave por compás**. No se dejó el Do fijo de "María tenía un
+    corderito": se conservaron las raíces reales (Do–Fa–Do–Fa–Do–**Sol**–Do),
+    que suenan bien bajo la melodía y **caben las tres en una sola posición de
+    mano** — Fa2 con el meñique, Do3 con el pulgar, Sol2 con el 4. Por eso la
+    digitación es `48→1`, `43→4`, `41→5` y no el `5` suelto de la convención:
+    la mano no se mueve ni una vez en toda la pieza. Hay pruebas que fijan las
+    tres cosas (una sola versión, máximo una tecla por paso, y que cada nota
+    grave lleva siempre el mismo dedo — si cambiara, la mano tendría que
+    reacomodarse). El progreso viejo bajo `songs.twinkle` queda huérfano en
+    localStorage; es inofensivo (nada lo lee) y no vale la pena migrarlo.
     **"Cumpleaños feliz" sí sale de la posición fija de 5 dedos, a propósito**:
     es la primera pieza de Fragmentos con cambio de posición completo de mano
     (no solo cruce de pulgar). Va en dos posiciones — pulgar en Sol4 (Sol4-Re5)
@@ -244,8 +259,8 @@ Orden dentro del `<script>`:
     **Cinco piezas infantiles del PDF "Easy Piano Songs for Beginners"** (Angela
     Marshall, 2022) se agregaron como nivel 1–2 de la app: **Hot Cross Buns**
     (tres notas: Do Re Mi, ultra sencilla), **Au Clair de la Lune** (francesa,
-    patrón de seis notas que se repite), **Twinkle Twinkle Little Star** (hexacordio
-    ascendente–descendente, melodía más larga pero simétrica), **Hallelujah Chorus**
+    patrón de seis notas que se repite), **Twinkle Twinkle Little Star** (después
+    borrada por duplicar a "Estrellita", ver arriba), **Hallelujah Chorus**
     (Händel, nota larga al inicio que marca el tiempo, cinco notas sin La),
     **Jingle Bells** (navideña, comenzando con tres notas repetidas para marcar
     ritmo). Las cinco usan posición de 5 dedos sin cambios, solo una nota de la
@@ -364,6 +379,24 @@ Orden dentro del `<script>`:
     ("agrégamela para aprenderla por partes"). Si al tocarla algo suena raro
     rítmicamente, es la parte a ajustar de oído — las notas (qué tecla tocar)
     deberían estar bien.
+  - **`▶ Escuchar` se puede cortar (`stopFragmentPlayback`).** El mismo botón
+    hace las dos cosas: mientras suena dice `■ Detener` (con `.busy`) y volver a
+    tocarlo corta. Antes no había salida: una pieza son medio minuto y había que
+    esperarla entera para hacer cualquier otra cosa. Dos piezas del mecanismo:
+    `playbackToken` (se incrementa al empezar y al cortar; la pasada compara su
+    token con el vigente y se sale) y `playbackSleep`/`playbackWake`, que
+    **despierta la espera del paso en curso** — sin eso el corte tardaría lo que
+    dure la nota que esté sonando, y una redonda a 80 BPM son 3 segundos. El
+    `break` del bucle va **después** de soltar las notas del paso, o cortar
+    dejaría la tecla sonando y encendida. `startFragmentStep()` llama a
+    `stopFragmentPlayback()` de entrada, así que cambiar de pieza, de mano o de
+    categoría también corta (antes seguía sonando la anterior encima de la
+    nueva); la propia limpieza de `playFragment` llega ahí con `isPlayingBack`
+    ya en `false`, así que no se muerde la cola. `enterMode` lo llama también,
+    para salir de la práctica. **`playbackToken`/`playbackWake` se declaran
+    arriba, junto a `isPlayingBack`**, no al lado de `playFragment`: los usa
+    `startFragmentStep`, que corre mucho antes (mismo riesgo de zona muerta
+    temporal que tuvo `audioFallback`).
   - **Intervalos y Lectura quedan fuera a propósito.** Intervalos no tiene mano
     fija (`currentHand` no existe ahí): forzar un dedo inventaría una restricción
     que hoy no tiene el ejercicio. Lectura **nunca** marca la tecla objetivo — es

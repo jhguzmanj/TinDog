@@ -2468,17 +2468,17 @@ const SONGS = [
     id:'estrellita',
     cat:'facil',
     name:'Estrellita',
-    tip:'La que ya te había recomendado. Melodía de 5 notas en la derecha, acordes largos en la izquierda. Buen primer ejercicio de coordinación entre manos porque la izquierda se mueve poco.',
+    tip:'Melodía de 5 dedos en la derecha. La izquierda solo marca UNA nota grave por compás, sin acordes: Do, Fa y Sol caben bajo la misma posición de mano (pulgar en Do3, meñique en Fa2), así que no tienes que moverla en toda la pieza. Buen primer ejercicio de coordinación entre manos.',
     tempo:88,
     steps:[
-      {lh:[48,52,55], lhF:[5,3,1], rh:[60], rhF:[1], dur:1}, {lh:[], rh:[60], rhF:[1], dur:1},
-      {lh:[41,45,48], lhF:[5,3,1], rh:[67], rhF:[5], dur:1}, {lh:[], rh:[67], rhF:[5], dur:1},
+      {lh:[48], lhF:[1], rh:[60], rhF:[1], dur:1}, {lh:[], rh:[60], rhF:[1], dur:1},
+      {lh:[41], lhF:[5], rh:[67], rhF:[5], dur:1}, {lh:[], rh:[67], rhF:[5], dur:1},
       {lh:[], rh:[69], rhF:[5], dur:1},         {lh:[], rh:[69], rhF:[5], dur:1},
-      {lh:[48,52,55], lhF:[5,3,1], rh:[67], rhF:[5], dur:2},
-      {lh:[41,45,48], lhF:[5,3,1], rh:[65], rhF:[4], dur:1}, {lh:[], rh:[65], rhF:[4], dur:1},
-      {lh:[48,52,55], lhF:[5,3,1], rh:[64], rhF:[3], dur:1}, {lh:[], rh:[64], rhF:[3], dur:1},
-      {lh:[43,47,50], lhF:[5,3,1], rh:[62], rhF:[2], dur:1}, {lh:[], rh:[62], rhF:[2], dur:1},
-      {lh:[48,52,55], lhF:[5,3,1], rh:[60], rhF:[1], dur:2},
+      {lh:[48], lhF:[1], rh:[67], rhF:[5], dur:2},
+      {lh:[41], lhF:[5], rh:[65], rhF:[4], dur:1}, {lh:[], rh:[65], rhF:[4], dur:1},
+      {lh:[48], lhF:[1], rh:[64], rhF:[3], dur:1}, {lh:[], rh:[64], rhF:[3], dur:1},
+      {lh:[43], lhF:[4], rh:[62], rhF:[2], dur:1}, {lh:[], rh:[62], rhF:[2], dur:1},
+      {lh:[48], lhF:[1], rh:[60], rhF:[1], dur:2},
     ]
   },
   {
@@ -2548,29 +2548,6 @@ const SONGS = [
       {lh:[48], lhF:[5], rh:[60], rhF:[1], dur:1}, {lh:[], rh:[64], rhF:[3], dur:1},
       {lh:[], rh:[62], rhF:[2], dur:1}, {lh:[], rh:[62], rhF:[2], dur:1},
       {lh:[], rh:[60], rhF:[1], dur:4, label:'Fin'},
-    ]
-  },
-  {
-    id:'twinkle',
-    cat:'facil',
-    name:'Twinkle Twinkle Little Star',
-    tip:'Melodía de "Brille, brille, pequeña estrella" en forma de hexacordio ascendente–descendente. Las frases van por parejas: Do Do Sol Sol La La Sol, luego Fa Fa Mi Mi Re Re Do. Una de las canciones más memorizables del mundo.',
-    tempo:96,
-    steps:[
-      {lh:[48], lhF:[5], rh:[60], rhF:[1], dur:1}, {lh:[], rh:[60], rhF:[1], dur:1},
-      {lh:[], rh:[67], rhF:[5], dur:1}, {lh:[], rh:[67], rhF:[5], dur:1},
-      {lh:[], rh:[69], rhF:[5], dur:1}, {lh:[], rh:[69], rhF:[5], dur:1},
-      {lh:[], rh:[67], rhF:[5], dur:2},
-      {lh:[48], lhF:[5], rh:[65], rhF:[4], dur:1}, {lh:[], rh:[65], rhF:[4], dur:1},
-      {lh:[], rh:[64], rhF:[3], dur:1}, {lh:[], rh:[64], rhF:[3], dur:1},
-      {lh:[], rh:[62], rhF:[2], dur:1}, {lh:[], rh:[62], rhF:[2], dur:1},
-      {lh:[], rh:[60], rhF:[1], dur:2},
-      {lh:[48], lhF:[5], rh:[60], rhF:[1], dur:1}, {lh:[], rh:[60], rhF:[1], dur:1},
-      {lh:[], rh:[65], rhF:[4], dur:1}, {lh:[], rh:[65], rhF:[4], dur:1},
-      {lh:[], rh:[67], rhF:[5], dur:1}, {lh:[], rh:[67], rhF:[5], dur:2},
-      {lh:[48], lhF:[5], rh:[60], rhF:[1], dur:1}, {lh:[], rh:[60], rhF:[1], dur:1},
-      {lh:[], rh:[65], rhF:[4], dur:1}, {lh:[], rh:[65], rhF:[4], dur:1},
-      {lh:[], rh:[67], rhF:[5], dur:1}, {lh:[], rh:[67], rhF:[5], dur:4, label:'Fin'},
     ]
   },
   {
@@ -3106,6 +3083,7 @@ function show(el, on, disp){ if(el) el.style.display = on ? (disp || 'block') : 
 function enterMode(mode){
   currentMode = mode;
   practiceIndex = 0;
+  if(typeof stopFragmentPlayback === 'function') stopFragmentPlayback(); // salir de la práctica corta "Escuchar"
   if(typeof allNotesOff === 'function') allNotesOff(); // nada colgado en el piano
   clearAllHighlights();
   const isScale = !!SCALES[mode];
@@ -3637,6 +3615,12 @@ let currentFragment = FRAGMENTS[0];
 let currentDrillShape = AGILITY_DRILLS[0];
 let currentHand = 'both';
 let isPlayingBack = false;
+// `playbackToken` invalida la pasada de "Escuchar" en curso y `playbackWake`
+// corta la espera del compás que esté sonando. Se declaran aquí, junto al resto
+// del estado de Fragmentos, porque `startFragmentStep()` los usa y corre mucho
+// antes (zona muerta temporal si vivieran al lado de `playFragment`).
+let playbackToken = 0;
+let playbackWake = null;
 let agilRhOct = 4, agilLhOct = 3;
 
 const fragSubTabs = document.getElementById('fragSubTabs');
@@ -3871,6 +3855,11 @@ function advanceToPlayableStep(){
 }
 
 function startFragmentStep(){
+  // Cambiar de pieza, de mano o de categoría corta la reproducción: si no,
+  // seguía sonando la pieza anterior encima de la nueva. La propia limpieza de
+  // `playFragment` llega aquí con `isPlayingBack` ya en false, así que no
+  // se muerde la cola.
+  stopFragmentPlayback();
   clearAllHighlights();
   feedbackText.textContent = '';
   feedbackText.className = 'feedback';
@@ -3943,13 +3932,33 @@ registerNoteHandler('fragments', checkFragment);
 registerNoteHandler('agility', checkFragment);
 
 listenBtn.addEventListener('click', () => {
-  if(isPlayingBack) return;
+  if(isPlayingBack){ stopFragmentPlayback(); return; }
   playFragment();
 });
 
+// Una pasada de "Escuchar" puede durar medio minuto, y una nota larga sola ya
+// son 3 segundos: esperar a que termine para hacer otra cosa no es aceptable.
+// La espera de cada paso se puede despertar antes de tiempo, así que el corte
+// es inmediato en vez de al final de la nota que esté sonando.
+function playbackSleep(ms){
+  return new Promise(res => {
+    const done = () => { clearTimeout(timer); playbackWake = null; res(); };
+    const timer = setTimeout(done, ms);
+    playbackWake = done;
+  });
+}
+
+function stopFragmentPlayback(){
+  if(!isPlayingBack) return;
+  playbackToken++;
+  if(playbackWake) playbackWake();
+}
+
 async function playFragment(){
+  const token = ++playbackToken;
   isPlayingBack = true;
-  listenBtn.textContent = '♪ Sonando...';
+  listenBtn.classList.add('busy');
+  listenBtn.textContent = '■ Detener';
   clearAllHighlights();
   const wasSound = soundEnabled;
   soundEnabled = true;
@@ -3960,32 +3969,39 @@ async function playFragment(){
   // la reproducción (el conteo de tiempo no espera), sonaba tarde y la pieza
   // se oía amontonada. Piezas ya escuchadas antes no pagan este costo.
   if(audioFallback){
-    listenBtn.textContent = '⏳ Preparando...';
+    // El ■ delante avisa que también aquí se puede cortar; la preparación de una
+    // pieza larga la primera vez no es instantánea.
+    listenBtn.textContent = '■ Preparando...';
     const allNotes = currentFragment.steps.flatMap(st => stepNotes(st, currentHand));
     await warmNoteClips(allNotes);
-    listenBtn.textContent = '♪ Sonando...';
+    listenBtn.textContent = '■ Detener';
   }
 
   const beatMs = 60000 / currentFragment.tempo;
   for(const step of currentFragment.steps){
+    if(token !== playbackToken) break;
     const notes = stepNotes(step, currentHand);
     notes.forEach(n => {
       playNoteSound(n);
       const r = getRect(n);
       if(r) r.classList.add('active');
     });
-    await new Promise(res => setTimeout(res, beatMs * step.dur * 0.92));
+    await playbackSleep(beatMs * step.dur * 0.92);
+    // Soltar SIEMPRE lo que se acaba de tocar, se haya cortado o no: la salida
+    // del bucle va después, o el corte dejaría la nota sonando y encendida.
     notes.forEach(n => {
       stopNoteSound(n);
       const r = getRect(n);
       if(r) r.classList.remove('active');
     });
-    await new Promise(res => setTimeout(res, beatMs * step.dur * 0.08));
+    if(token !== playbackToken) break;
+    await playbackSleep(beatMs * step.dur * 0.08);
   }
 
   soundEnabled = wasSound;
   allNotesOff();
   isPlayingBack = false;
+  listenBtn.classList.remove('busy');
   listenBtn.textContent = '▶ Escuchar';
   practiceIndex = 0;
   startFragmentStep();
