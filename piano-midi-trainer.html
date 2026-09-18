@@ -373,6 +373,21 @@
     fill:#3a3226; pointer-events:none;
   }
   .fall-key-label.black{ fill:var(--brass); font-size:7.5px; }
+  /* Número de dedo en la cascada. Va en DOS sitios porque sirven para cosas
+     distintas: sobre el bloque que cae, para saber con qué dedo vas a tocar
+     antes de llegar; y sobre la tecla encendida, que es donde Jorge ya está
+     acostumbrado a leerlo en el teclado grande. El del bloque se esconde
+     cuando el bloque es más bajo que el número (notas rápidas) — ahí queda el
+     de la tecla, que no depende del alto. */
+  .fall-finger{
+    font-family:'Source Sans 3', sans-serif; font-size:12px; font-weight:700;
+    text-anchor:middle; pointer-events:none; fill:#241d12;
+  }
+  .fall-key-finger{
+    font-family:'Source Sans 3', sans-serif; font-size:12px; font-weight:700;
+    text-anchor:middle; pointer-events:none; fill:#241d12;
+  }
+  .fall-key-finger.black{ font-size:10px; fill:#f4ecdd; }
   .hand-btn.active{ color:var(--brass); border-color:var(--brass-soft); }
   .hand-btn:hover{ background:var(--brass); color:#0c0a06; border-color:var(--brass); }
   .hand-badge{
@@ -4653,10 +4668,15 @@ let cascadeOn = false;
 let cascade = null;
 let cascadeXFor = {};
 let cascadeKeyRects = {};
+let cascadeKeyFingers = {};   // nota -> <text> del dedo sobre la tecla del mini-teclado
 let cascadeMinUnits = 0;
 try { const m = localStorage.getItem('cascadeMode'); if(m === 'wait' || m === 'timed') cascadeMode = m; } catch(e){}
 
-const FALL_FWK = 30, FALL_FBKW = 18, FALL_FBKH = 30, FALL_KBH = 52, FALL_H = 210, FALL_PAD = 6;
+// FALL_KBH subió de 52 a 64 al añadir el número de dedo sobre la tecla: con 52
+// el número caía en la franja que tapan las teclas negras (que llegan hasta
+// FALL_FBKH=30) y quedaba espachurrado entre dos negras. Con 64 hay sitio para
+// el dedo debajo de las negras y el nombre de la nota debajo del dedo.
+const FALL_FWK = 30, FALL_FBKW = 18, FALL_FBKH = 30, FALL_KBH = 64, FALL_H = 210, FALL_PAD = 6;
 const LOOKAHEAD_MS = 2600;
 const LIGHT_LEAD_MS = 450;
 const HIT_TOLERANCE_MS = 320;
@@ -4666,7 +4686,7 @@ const BEATS_PER_BAR = 4;
 // Cuenta cuántas notas activas piden encendida cada tecla, para que dos
 // eventos solapados no se apaguen entre sí al terminar el primero.
 const litCounts = {};
-function setCascadeKeyLit(note, on, hand){
+function setCascadeKeyLit(note, on, hand, finger){
   litCounts[note] = (litCounts[note] || 0) + (on ? 1 : -1);
   if(litCounts[note] < 0) litCounts[note] = 0;
   const lit = litCounts[note] > 0;
@@ -4674,6 +4694,8 @@ function setCascadeKeyLit(note, on, hand){
   if(bigRect){ bigRect.classList.toggle('target', lit); bigRect.classList.toggle('lh', lit && hand === 'lh'); }
   const miniRect = cascadeKeyRects[note];
   if(miniRect){ miniRect.classList.toggle('lit', lit); miniRect.classList.toggle('lit-lh', lit && hand === 'lh'); }
+  const fingerEl = cascadeKeyFingers[note];
+  if(fingerEl) fingerEl.textContent = (lit && on && finger) ? finger : '';
 }
 function clearAllCascadeLights(){
   Object.keys(litCounts).forEach(n => {
@@ -4682,6 +4704,8 @@ function clearAllCascadeLights(){
     if(bigRect) bigRect.classList.remove('target', 'lh');
     const miniRect = cascadeKeyRects[n];
     if(miniRect) miniRect.classList.remove('lit', 'lit-lh');
+    const fingerEl = cascadeKeyFingers[n];
+    if(fingerEl) fingerEl.textContent = '';
   });
 }
 
@@ -4804,8 +4828,10 @@ function exitCascade(){
 
 function cascadeHandNotes(step){
   const out = [];
-  if(currentHand !== 'rh') step.lh.forEach(n => out.push({ n, hand:'lh' }));
-  if(currentHand !== 'lh') step.rh.forEach(n => out.push({ n, hand:'rh' }));
+  // El dedo viaja junto a la nota: la cascada lo dibuja sobre el bloque que cae
+  // y sobre la tecla al encenderse. Puede faltar (`lhF`/`rhF` opcionales).
+  if(currentHand !== 'rh') step.lh.forEach((n, i) => out.push({ n, hand:'lh', f:(step.lhF || [])[i] }));
+  if(currentHand !== 'lh') step.rh.forEach((n, i) => out.push({ n, hand:'rh', f:(step.rhF || [])[i] }));
   return out;
 }
 
@@ -4837,6 +4863,7 @@ function setupCascadeKeyboard(){
   cascadeSvg.innerHTML = '';
   cascadeXFor = {};
   cascadeKeyRects = {};
+  cascadeKeyFingers = {};
 
   function mk(tag){ return document.createElementNS('http://www.w3.org/2000/svg', tag); }
 
@@ -4880,6 +4907,13 @@ function setupCascadeKeyboard(){
     lbl.setAttribute('class', 'fall-key-label');
     lbl.textContent = noteLabel(n);
     cascadeSvg.appendChild(lbl);
+
+    const fng = mk('text');
+    fng.setAttribute('x', x + (FALL_FWK - 1) / 2);
+    fng.setAttribute('y', FALL_H + FALL_KBH - 23);
+    fng.setAttribute('class', 'fall-key-finger');
+    cascadeSvg.appendChild(fng);
+    cascadeKeyFingers[n] = fng;
   }
   for(let n = lo; n <= hi; n++){
     if(!BLACK_SET.has(n % 12)) continue;
@@ -4908,6 +4942,13 @@ function setupCascadeKeyboard(){
     lbl.setAttribute('class', 'fall-key-label black');
     lbl.textContent = noteLabel(n);
     cascadeSvg.appendChild(lbl);
+
+    const fng = mk('text');
+    fng.setAttribute('x', cx);
+    fng.setAttribute('y', FALL_H + FALL_FBKH - 18);
+    fng.setAttribute('class', 'fall-key-finger black');
+    cascadeSvg.appendChild(fng);
+    cascadeKeyFingers[n] = fng;
   }
 }
 
@@ -4918,7 +4959,8 @@ function buildCascadeSchedule(){
   cascadeSteps().steps.forEach(step => {
     const dur = step.dur * beatMs;
     cascadeHandNotes(step).forEach(x => {
-      events.push({ note: x.n, hand: x.hand, tStart: t, tEnd: t + dur * 0.85, hit: false, missed: false, el: null });
+      events.push({ note: x.n, hand: x.hand, finger: x.f, tStart: t, tEnd: t + dur * 0.85,
+                    hit: false, missed: false, el: null, fingerEl: null });
     });
     t += dur;
   });
@@ -4934,7 +4976,7 @@ function startCascade(){
     if(cascade.loopTimer) clearTimeout(cascade.loopTimer);
   }
   clearAllCascadeLights();
-  cascadeSvg.querySelectorAll('.fall-note, .beat-line, .count-in').forEach(e => e.remove());
+  cascadeSvg.querySelectorAll('.fall-note, .fall-finger, .beat-line, .count-in').forEach(e => e.remove());
   const { events, beats, totalMs, beatMs } = buildCascadeSchedule();
   const mk = (tag) => document.createElementNS('http://www.w3.org/2000/svg', tag);
   const beatLayer = cascadeSvg.querySelector('#cascadeBeats') || cascadeSvg;
@@ -4956,6 +4998,14 @@ function startCascade(){
     rect.setAttribute('class', 'fall-note pending ' + ev.hand);
     noteLayer.appendChild(rect);
     ev.el = rect;
+    if(ev.finger){
+      const fng = mk('text');
+      fng.setAttribute('x', pos.x + pos.w / 2);
+      fng.setAttribute('class', 'fall-finger');
+      fng.textContent = ev.finger;
+      noteLayer.appendChild(fng);
+      ev.fingerEl = fng;
+    }
   });
   const countEl = mk('text');
   countEl.setAttribute('x', svgW / 2); countEl.setAttribute('y', FALL_H * 0.45);
@@ -5034,7 +5084,7 @@ function cascadeTick(now){
                         (cascade.mode === 'wait' || t < ev.tStart + HIT_TOLERANCE_MS);
     if(shouldLight !== !!ev.lit){
       ev.lit = shouldLight;
-      setCascadeKeyLit(ev.note, shouldLight, ev.hand);
+      setCascadeKeyLit(ev.note, shouldLight, ev.hand, ev.finger);
     }
 
     if(!ev.el) return;
@@ -5045,6 +5095,17 @@ function cascadeTick(now){
     ev.el.setAttribute('y', y);
     ev.el.setAttribute('height', h);
 
+    if(ev.fingerEl){
+      // Centrado en el bloque, pero sin salirse por abajo de la línea: en una
+      // nota larga el bloque cruza la línea y el número tiene que quedarse en
+      // la parte que todavía se ve. Se esconde si el bloque es más bajo que el
+      // número (ahí queda el de la tecla) o si ya pasó de largo.
+      const mid = Math.min(y + h / 2, FALL_H - 7);
+      const visible = h >= 13 && mid > 6 && bottomY > 0;
+      ev.fingerEl.setAttribute('opacity', visible ? 1 : 0);
+      if(visible) ev.fingerEl.setAttribute('y', mid + 4);
+    }
+
     if(cascade.mode === 'timed' && !ev.hit && !ev.missed && t > ev.tStart + HIT_TOLERANCE_MS){
       ev.missed = true;
       ev.el.setAttribute('class', 'fall-note missed ' + ev.hand);
@@ -5054,6 +5115,7 @@ function cascadeTick(now){
     if(bottomY > FALL_H + 34 && (ev.hit || ev.missed)){
       ev.el.remove();
       ev.el = null;
+      if(ev.fingerEl){ ev.fingerEl.remove(); ev.fingerEl = null; }
     }
   });
 

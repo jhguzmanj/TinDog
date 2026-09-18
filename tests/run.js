@@ -429,10 +429,23 @@ check(W('cascade.t') === 0, 'el reloj se detiene en la primera nota');
 tick(6300);
 check(W('cascade.t') === 0 && W('cascade.misses') === 0, 'sigue detenido y no cuenta fallos en modo espera');
 check(doc.querySelectorAll('#cascadeSvg .fall-key.lit').length === 4 && doc.querySelectorAll('#cascadeSvg .fall-key.lit-lh').length === 3, 'teclas iluminadas: 3 azules y 1 dorada');
+// Número de dedo en la cascada: sin él Jorge se perdía. Va en el bloque que
+// cae (para anticipar) y en la tecla encendida (donde ya lo lee en el grande).
+check(W('cascade.events.every(e => e.finger >= 1 && e.finger <= 5)'), 'cada nota de la cascada carga su número de dedo');
+check(doc.querySelectorAll('#cascadeSvg .fall-finger').length === 16, 'cada bloque que cae dibuja su número de dedo');
+const litFingers = () => W(`JSON.stringify(Object.keys(cascadeKeyFingers)
+  .filter(n => cascadeKeyFingers[n].textContent)
+  .map(n => n + ':' + cascadeKeyFingers[n].textContent))`);
+check(litFingers() === JSON.stringify(['48:5', '52:3', '55:1', '72:5']),
+  'las 4 teclas encendidas muestran el dedo que dice la pieza (5-3-1 izquierda, 5 derecha)');
+const fallY = [...doc.querySelectorAll('#cascadeSvg .fall-finger')].filter(e => e.getAttribute('opacity') !== '0');
+check(fallY.length > 0 && fallY.every(e => parseFloat(e.getAttribute('y')) <= W('FALL_H')),
+  'el número del bloque nunca se dibuja por debajo de la línea de golpe');
 W('noteOn(61); noteOff(61)');
 check(W('cascade.wrong') === 1 && W('cascade.hits') === 0, 'nota equivocada se cuenta como equivocada');
 for(const n of [48,52,55,72]){ W(`noteOn(${n}); noteOff(${n})`); }
 check(W('cascade.hits') === 4, 'las cuatro notas del primer paso aciertan');
+check(litFingers() === '[]', 'al acertar, la tecla se apaga y su número de dedo desaparece');
 tick(6400);
 check(W('cascade.t') > 0, 'con el paso completo el reloj vuelve a andar');
 W("cascade.t = cascade.totalMs + 2000; cascade.lastNow = 9000"); tick(9001);

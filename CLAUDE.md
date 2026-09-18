@@ -444,6 +444,8 @@ Orden dentro del `<script>`:
     arriba, junto a `isPlayingBack`**, no al lado de `playFragment`: los usa
     `startFragmentStep`, que corre mucho antes (mismo riesgo de zona muerta
     temporal que tuvo `audioFallback`).
+  - **La cascada también lo dibuja** (ver la sección Cascada): era la única
+    práctica que marca tecla sin decir el dedo.
   - **Intervalos y Lectura quedan fuera a propósito.** Intervalos no tiene mano
     fija (`currentHand` no existe ahí): forzar un dedo inventaría una restricción
     que hoy no tiene el ejercicio. Lectura **nunca** marca la tecla objetivo — es
@@ -487,6 +489,25 @@ Orden dentro del `<script>`:
 - Cada evento lleva `hand` (`lh|rh`); `cascadeHandNotes(step)` respeta el filtro
   de mano. Colores: azul izquierda, dorado derecha (`.fall-note.lh/.rh`,
   `.fall-key.lit-lh`).
+- **Número de dedo (`f` en `cascadeHandNotes`, `finger` en el evento).** Jorge
+  reportó que se perdía: la cascada era la única práctica que marca tecla y no
+  lo mostraba. Va en **dos sitios a propósito**, porque sirven para cosas
+  distintas: `.fall-finger` sobre el bloque que cae (se lee por adelantado,
+  mientras baja) y `.fall-key-finger` sobre la tecla del mini-teclado al
+  encenderse (que es donde ya lo lee en el teclado grande, y no depende del
+  alto del bloque). El del bloque se esconde si el bloque mide menos de 13 px
+  —notas muy rápidas— y se **fija a `FALL_H - 7`** en vez de centrarse cuando
+  el bloque ya cruzó la línea: si no, en una nota larga el número se iba por
+  debajo del teclado. Los `<text>` del bloque se crean en `startCascade` y hay
+  que **borrarlos junto con su `rect`** (mismo `if` de limpieza) o quedan
+  flotando; `startCascade` también los barre con `.fall-finger` al reiniciar.
+  `setCascadeKeyLit(note, on, hand, finger)` pone y quita el de la tecla, y
+  `clearAllCascadeLights` lo vacía.
+- **`FALL_KBH` pasó de 52 a 64 por esto.** Con 52, el número de la tecla blanca
+  caía dentro de la franja que tapan las teclas negras (`FALL_FBKH = 30`) y se
+  veía espachurrado entre dos negras. Con 64 hay tres bandas limpias: negras
+  arriba, dedo en medio, nombre de la nota abajo. Medido en Chromium: el SVG
+  pasa de 394 a 411 px de alto y no desborda ni a 390 px de ancho.
 - `beats[]`: líneas de pulso (las de compás más marcadas, `BEATS_PER_BAR=4`) y
   clics de metrónomo al cruzar cada pulso (`cascadeClicks`). Cuenta de entrada de
   `COUNT_IN_BEATS=4` pulsos dibujada en `.count-in`.
