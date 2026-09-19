@@ -1136,6 +1136,24 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
   check(JSON.stringify(dbBass.slice(0, 6)) === JSON.stringify([60, 59, 57, 55, 53, 52]),
     'y el bajo de esos compases también coincide con esa hoja');
 
+  // La estrofa sale de esa misma hoja (la partitura no la trae).
+  const dbV = W('SONGS.find(s => s.id === "dbgt-3").steps');
+  check(sum(dbV) === 52, `Estrofa: ${sum(dbV)} tiempos = 13 compases justos`);
+  // Verificación que reemplaza a "el bajo da los acordes" cuando la fuente no
+  // es una partitura: TODO tiene que caer en una sola tonalidad. La estrofa da
+  // Do menor (el paralelo del tema, que va en Do mayor) con un solo cromatismo.
+  const DOm = [0, 2, 3, 5, 7, 8, 10];
+  const fuera = [...new Set(dbV.flatMap(x => x.lh.concat(x.rh)).map(n => n % 12))]
+    .filter(p => !DOm.includes(p));
+  check(JSON.stringify(fuera) === JSON.stringify([1]),
+    'la estrofa cae entera en Do menor salvo un Reb de paso (si estuviera mal leída, no daría una tonalidad)');
+  check(dbV.some(x => x.rh.some(n => [1, 3, 8, 10].includes(n % 12))),
+    'y sí trae teclas negras en la melodía, al revés que el tema');
+  check(dbV.every(x => x.lhF ? x.lhF.every(f => f === 1) : true),
+    'la izquierda de la estrofa también va toda con el pulgar');
+  check(dbV.every(x => !x.lh.length || !x.rh.length || Math.max(...x.lh) < Math.min(...x.rh)),
+    'y siempre queda por debajo de la derecha');
+
   section('Desbloqueo de audio en iOS');
   // jsdom no trae AudioContext; se inyecta una falsa MUY mínima (solo lo que
   // ensureAudioCtx/unlockAudioContextIOS tocan) para fijar que, al crear el

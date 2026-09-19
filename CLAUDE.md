@@ -440,10 +440,32 @@ Orden dentro del `<script>`:
       separaría más las manos, pero empujaría el clímax hasta Do7, que chilla —
       por eso se dejó como está. Si alguna vez se sube, hay que repensar el
       clímax.
-    - La hoja de virtualpiano trae además **la estrofa entera de la canción**,
-      que la partitura no tiene (la partitura es solo el tema). Queda como
-      material disponible si se pide: está en tonalidad de bemoles (Sib, Mib,
-      Lab, Reb), es bastante más difícil y esa fuente **no da el ritmo**.
+    - **La ESTROFA (`dbgt-3`) sale de esa hoja, no de la partitura**, que es
+      solo el tema. Jorge la pidió, así que va como pieza aparte y **no** se
+      mete en `dbgt-full`: esa sigue siendo el tema completo de la partitura,
+      y mezclar dos arreglos distintos bajo la etiqueta "completo" mentiría.
+      13 compases, `DBGT_V`.
+      - **Está en DO MENOR**, el paralelo del tema (Do mayor). Eso es lo que
+        la verifica: cuando la fuente no es una partitura no se puede usar el
+        truco de "el bajo da los acordes", pero **sí** se puede exigir que todo
+        caiga en una sola tonalidad. Las 13 barras dan Do menor entero salvo
+        **un Reb de paso** — una decodificación mal hecha no aterrizaría en un
+        tono. Hay prueba que lo fija.
+      - Es la primera parte de esta pieza con **teclas negras en la melodía**
+        (Mib, Lab, Sib); el tema es todo blancas salvo dos notas de la
+        izquierda. Hay prueba que contrasta las dos cosas.
+      - **La hoja no da el ritmo.** Los valores siguen su separación por
+        tiempos (`|` = un tiempo, notas sueltas dentro de un tiempo = corcheas)
+        y cuadran 4 por compás, pero el `tip` dice que el vaivén se saca de la
+        canción — mismo criterio que Aleluya/La Colegiala/All of Me.
+        Cuidado: esa regla **no es mecánica**. Probada contra el tema, donde sí
+        se conoce la respuesta, falla en el compás 5; sirve como guía de forma,
+        no como transcripción rítmica.
+      - Digitación: derecha con el pulgar en Fa4 (Fa=1 Sol=2 Lab=3 Sib=4 Do=5),
+        con dos movimientos marcados (baja al Mib en el compás 7, sube al Sib
+        en el 11). La izquierda con el pulgar, igual que el resto de la pieza.
+      - La hoja trae además el **estribillo** (sube a Sol5/Fa5, más movido),
+        que quedó fuera: no se pidió y es otro salto de dificultad.
     - Las **dos únicas teclas negras** de la pieza (Lab3 y Sib3, compases 17-18)
       están las dos en la izquierda: la melodía es toda de teclas blancas.
     **"Amanecer" es original, escrita para Jorge** (no es de nadie, no hay

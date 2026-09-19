@@ -2537,6 +2537,67 @@ const DBGT_P2 = [
   {lh:[60], lhF:[1], rh:[], dur:4, label:'Fin: cierra la izquierda sola'},
 ];
 
+// La ESTROFA no viene de la partitura (que es solo el tema) sino de la hoja de
+// virtualpiano.net que encontró Jorge. Esa hoja da teclas con octava pero NO da
+// ritmo: los valores de aquí siguen la separación por tiempos de la hoja y
+// cuadran 4 por compás, pero el vaivén hay que sacarlo de la canción.
+// Está en DO MENOR, el paralelo del tema (que está en Do mayor) — de ahí las
+// teclas negras: Mib, Lab, Sib. La única nota fuera de tono es un Reb de paso.
+// Digitación base de la derecha: pulgar en Fa4 (Fa=1 Sol=2 Lab=3 Sib=4 Do=5).
+// La izquierda, como en el resto de la pieza, va toda con el pulgar.
+const DBGT_V = [
+  // 1
+  {lh:[56], lhF:[1], rh:[], dur:2, label:'La estrofa entra sola con la izquierda'},
+  {lh:[], rh:[72], rhF:[5], dur:0.5}, {lh:[], rh:[72], rhF:[5], dur:0.5},
+  {lh:[], rh:[72], rhF:[5], dur:0.5}, {lh:[], rh:[72], rhF:[5], dur:0.5},
+  // 2
+  {lh:[58], lhF:[1], rh:[72], rhF:[5], dur:1},
+  {lh:[], rh:[70], rhF:[4], dur:0.5}, {lh:[], rh:[68], rhF:[3], dur:0.5},
+  {lh:[], rh:[70], rhF:[4], dur:0.5}, {lh:[], rh:[72], rhF:[5], dur:1.5},
+  // 3
+  {lh:[55], lhF:[1], rh:[70], rhF:[4], dur:2},
+  {lh:[], rh:[70], rhF:[4], dur:0.5}, {lh:[], rh:[70], rhF:[4], dur:0.5},
+  {lh:[], rh:[70], rhF:[4], dur:0.5}, {lh:[], rh:[70], rhF:[4], dur:0.5},
+  // 4
+  {lh:[60], lhF:[1], rh:[70], rhF:[4], dur:0.5}, {lh:[], rh:[70], rhF:[4], dur:0.5},
+  {lh:[], rh:[68], rhF:[3], dur:0.5}, {lh:[], rh:[67], rhF:[2], dur:0.5},
+  {lh:[], rh:[68], rhF:[3], dur:0.5}, {lh:[], rh:[70], rhF:[4], dur:1.5},
+  // 5
+  {lh:[53], lhF:[1], rh:[68], rhF:[3], dur:2},
+  {lh:[], rh:[68], rhF:[3], dur:0.5}, {lh:[], rh:[68], rhF:[3], dur:0.5},
+  {lh:[], rh:[68], rhF:[3], dur:0.5}, {lh:[], rh:[68], rhF:[3], dur:0.5},
+  // 6
+  {lh:[62], lhF:[1], rh:[68], rhF:[3], dur:1}, {lh:[], rh:[67], rhF:[2], dur:1},
+  {lh:[55], lhF:[1], rh:[67], rhF:[2], dur:1}, {lh:[], rh:[65], rhF:[1], dur:1},
+  // 7
+  {lh:[60], lhF:[1], rh:[65], rhF:[1], dur:1}, {lh:[], rh:[67], rhF:[2], dur:1},
+  {lh:[], rh:[63], rhF:[1], dur:0.5, label:'La mano baja: el pulgar pasa al Mib'},
+  {lh:[], rh:[65], rhF:[2], dur:0.5}, {lh:[], rh:[67], rhF:[3], dur:1},
+  // 8
+  {lh:[58], lhF:[1], rh:[], dur:2},
+  {lh:[], rh:[61], rhF:[1], dur:0.5, label:'Reb: la única nota fuera de tono, de paso'},
+  {lh:[], rh:[68], rhF:[3], dur:0.5}, {lh:[], rh:[70], rhF:[4], dur:1},
+  // 9 — segunda vuelta
+  {lh:[56], lhF:[1], rh:[72], rhF:[5], dur:2, label:'Segunda vuelta de la estrofa'},
+  {lh:[], rh:[72], rhF:[5], dur:0.5}, {lh:[], rh:[72], rhF:[5], dur:0.5},
+  {lh:[], rh:[72], rhF:[5], dur:0.5}, {lh:[], rh:[72], rhF:[5], dur:0.5},
+  // 10
+  {lh:[56], lhF:[1], rh:[72], rhF:[5], dur:1},
+  {lh:[], rh:[70], rhF:[4], dur:0.5}, {lh:[], rh:[68], rhF:[3], dur:0.5},
+  {lh:[], rh:[70], rhF:[4], dur:0.5}, {lh:[], rh:[72], rhF:[5], dur:1.5},
+  // 11 — aquí la melodía sube por encima de la posición
+  {lh:[55], lhF:[1], rh:[70], rhF:[4], dur:2},
+  {lh:[], rh:[70], rhF:[1], dur:0.5, label:'La mano sube: el pulgar pasa al Sib'},
+  {lh:[], rh:[72], rhF:[2], dur:0.5}, {lh:[], rh:[74], rhF:[3], dur:1},
+  // 12
+  {lh:[60], lhF:[1], rh:[74], rhF:[3], dur:1}, {lh:[], rh:[75], rhF:[4], dur:1},
+  {lh:[], rh:[70], rhF:[4], dur:0.5, label:'Y vuelve: pulgar otra vez en Fa'},
+  {lh:[], rh:[68], rhF:[3], dur:0.5}, {lh:[], rh:[67], rhF:[2], dur:1},
+  // 13
+  {lh:[53], lhF:[1], rh:[68], rhF:[3], dur:2}, {lh:[], rh:[70], rhF:[4], dur:1},
+  {lh:[], rh:[68], rhF:[3], dur:1, label:'Fin de la estrofa'},
+];
+
 const SONGS = [
   {
     id:'cuatro-acordes',
@@ -3049,10 +3110,18 @@ const SONGS = [
   {
     id:'dbgt-full',
     cat:'popular',
-    name:'Dragon Ball GT (completo)',
+    name:'Dragon Ball GT (tema completo)',
     tip:'Las dos partes seguidas: los 21 compases de la partitura. Cuando cada parte te salga sola, únelas aquí. Si una sección se te atasca, usa "Tramo" en el modo cascada para repetir solo esa.',
     tempo:120,
     steps: DBGT_P1.concat(DBGT_P2)
+  },
+  {
+    id:'dbgt-3',
+    cat:'popular',
+    name:'Dragon Ball GT · Estrofa',
+    tip:'La parte cantada, la que sigue al tema. NO viene de la partitura (esa es solo el tema) sino de la hoja de virtualpiano que encontraste, así que es otro arreglo. Dos avisos honestos: esa hoja da las teclas pero NO el ritmo — aquí los valores siguen su separación por tiempos y cuadran los compases, pero el vaivén sácalo escuchando la canción. Y está en Do menor, el paralelo del tema, o sea que aquí sí hay teclas negras en la melodía: Mib, Lab y Sib. La derecha vive con el pulgar en Fa4 y solo se mueve dos veces (marcadas); la izquierda, como siempre en esta pieza, va toda con el pulgar.',
+    tempo:120,
+    steps: DBGT_V
   },
   {
     id:'amanecer',
