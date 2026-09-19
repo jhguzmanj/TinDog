@@ -412,8 +412,38 @@ Orden dentro del `<script>`:
       los compases 1-2 y en Do4 desde el 3— porque la melodía abarca una octava
       (La3-La4) y no cabe en cinco dedos; los cambios van con `label`. En el
       clímax, pulgar abajo y meñique arriba, que es como se tocan las octavas
-      alternadas. La izquierda es **una redonda por compás**: tiene el compás
-      entero para moverse, así que su digitación es orientativa.
+      alternadas.
+    - **La izquierda va TODA con el pulgar, y eso NO es pereza.** La primera
+      versión le puso una digitación "de posición" (5 en Fa3, 4 en Sol3, 3 en
+      La3…) y **estaba mal**: en la mano izquierda el pulgar es el dedo de más
+      a la DERECHA, así que poner el meñique sobre la nota abre la mano *hacia
+      arriba* y el pulgar cae justo sobre las teclas que la derecha necesita
+      (Si3 en el compás 4, La3 en el 5). Las manos se chocaban. Con el pulgar
+      sobre la nota, el resto de la izquierda queda hacia abajo y libre. Es
+      además trivial de recordar, y cada nota es una redonda con el compás
+      entero para reposicionarse. Hay pruebas que fijan las dos cosas: todos
+      los `lhF` son 1, y en ningún paso la izquierda queda por encima de la
+      derecha. **Regla general**: cuando la izquierda sostiene una sola nota
+      justo debajo de la melodía, va con el pulgar.
+    - **Segunda fuente: la hoja de virtualpiano.net** ("Mi corazón encantado",
+      el opening latino) que encontró Jorge después. Es OTRO arreglo, pero
+      sirve como verificación independiente y **confirma la transcripción**:
+      su melodía es la misma **exactamente una octava arriba**, y bajada 12
+      semitonos coincide nota por nota en los compases 1-4, 6 y 7; el bajo
+      coincide en 6 de 7 compases. Solo difieren en dos detalles de arreglo
+      (la hoja repite el La del compás 5 y armoniza el 7 con Sib en vez de Re).
+      Hay pruebas que guardan esa comparación.
+    - **La octava de la melodía está como la escribe la partitura**, no como la
+      hoja de virtualpiano. Se comprobó ampliando la clave: es una clave de Sol
+      normal, sin el 8, así que la lectura es correcta y el arreglo de
+      Marconato de verdad va bajo. Subirla una octava sonaría más brillante y
+      separaría más las manos, pero empujaría el clímax hasta Do7, que chilla —
+      por eso se dejó como está. Si alguna vez se sube, hay que repensar el
+      clímax.
+    - La hoja de virtualpiano trae además **la estrofa entera de la canción**,
+      que la partitura no tiene (la partitura es solo el tema). Queda como
+      material disponible si se pide: está en tonalidad de bemoles (Sib, Mib,
+      Lab, Reb), es bastante más difícil y esa fuente **no da el ritmo**.
     - Las **dos únicas teclas negras** de la pieza (Lab3 y Sib3, compases 17-18)
       están las dos en la izquierda: la melodía es toda de teclas blancas.
     **"Amanecer" es original, escrita para Jorge** (no es de nadie, no hay

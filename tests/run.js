@@ -1119,6 +1119,22 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
     (x.lh.length === 0 || (x.lhF && x.lhF.length === x.lh.length)) &&
     (x.rh.length === 0 || (x.rhF && x.rhF.length === x.rh.length))),
     'cada nota trae su dedo');
+  // La izquierda va TODA con el pulgar. En la mano izquierda el pulgar es el
+  // dedo de más a la derecha, así que el resto de la mano queda hacia abajo y
+  // no invade el registro de la derecha, que en esta pieza baja hasta La3.
+  check(dbFull.every(x => x.lhF ? x.lhF.every(f => f === 1) : true),
+    'toda la izquierda va con el pulgar (si no, la mano se abre hacia arriba y choca con la derecha)');
+  check(dbFull.every(x => !x.lh.length || !x.rh.length || Math.max(...x.lh) < Math.min(...x.rh)),
+    'la izquierda siempre queda por debajo de la derecha');
+  // Segunda fuente: la hoja de virtualpiano que encontró Jorge. Su melodía es
+  // la misma una octava arriba, así que bajada 12 semitonos tiene que coincidir
+  // con la transcripción de la partitura. Compases 1-4, 6 y 7 dan exacto; el 5
+  // es el único donde las dos versiones difieren (la hoja repite el La).
+  const VP_BAJADA = [67,67,64,65,67,69, 67,65,64,62, 64,64,60,62,64,65, 64,62,60,59];
+  check(JSON.stringify(dbP1.flatMap(x => x.rh).slice(0, 20)) === JSON.stringify(VP_BAJADA),
+    'los compases 1-4 coinciden nota por nota con la hoja de virtualpiano (bajada una octava)');
+  check(JSON.stringify(dbBass.slice(0, 6)) === JSON.stringify([60, 59, 57, 55, 53, 52]),
+    'y el bajo de esos compases también coincide con esa hoja');
 
   section('Desbloqueo de audio en iOS');
   // jsdom no trae AudioContext; se inyecta una falsa MUY mínima (solo lo que
