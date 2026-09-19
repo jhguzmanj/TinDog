@@ -372,6 +372,50 @@ Orden dentro del `<script>`:
     - **Solo hay un fotograma**, así que esto es la vuelta de 4 compases que se
       repite, no la canción entera. Si aparecen más fotogramas del reel se
       puede alargar.
+    **"Dragon Ball GT" (Akihito Tokunaga, arreglo de Thiago Marconato)**: 21
+    compases, Do mayor, ♩=120, transcrita de la partitura que pasó Jorge como
+    PNG. Va en tres entradas (`dbgt`, `dbgt-2`, `dbgt-full`) con el mismo molde
+    que el Himno: `DBGT_P1` + `DBGT_P2` y la completa como `concat`.
+    - **La imagen era de 900 px: L = 7,75 px.** El detector de píxeles de más
+      arriba está calibrado para escaneos a 300 dpi (L ≈ 20-40) y **aquí se
+      queda en ~70% de aciertos** por más que se ajusten los umbrales. No
+      insistir: a esta resolución el camino que sirve es **recortar compás por
+      compás y leer a ojo**, con las líneas guía dibujadas encima.
+    - **Lo que SÍ conviene reutilizar del detector**: (1) las líneas del
+      pentagrama, sacadas solo de la línea SUPERIOR de cada pentagrama (las de
+      en medio se pierden) más `top + k·L`; (2) las **barras de compás**
+      (columna oscura que cruza los dos pentagramas, >93% de alto), que dan los
+      cortes exactos para recortar; (3) las **guías diatónicas numeradas**
+      (`k = (línea_inferior − y)/(L/2)`, dibujadas y rotuladas sobre el
+      recorte): con eso cada cabeza se lee contra su número y no a ojo.
+      Ampliar ×9 por compás deja la partitura perfectamente legible.
+    - **Verificada por TRES vías independientes**, y las tres cuadran:
+      1. Las duraciones dan 4 por compás en los 21 compases.
+      2. El bajo da la armonía: las redondas de la izquierda bajan una escala
+         entera `Do4 Si3 La3 Sol3 Fa3 Mi3 Re3`, que con la melodía arma
+         `Do – Sol/Si – Lam – Sol – Fa – Do/Mi – Rem – Mim-Sol`. Una nota mal
+         leída rompería esa bajada.
+      3. El clímax (compases 19-20) son **octavas exactas** bajando por grados
+         (Do Si La Sol Fa Mi Re): si una cabeza estuviera mal, la relación de
+         octava no daría 12 semitonos. Hay pruebas que fijan las tres.
+    - **Los compases 9-15 son NOTA POR NOTA los 1-7**, así que la Parte 2
+      arranca con la mitad ya sabida (mismo regalo que en el Himno). Diverge en
+      el 16, que cierra bajando al Si en vez de quedarse en Re.
+    - **Silencios y ligaduras, que `SONGS` no tiene.** El compás 5 abre con un
+      silencio de negra: en vez de perderlo (que descuadraría la rejilla de
+      compases de la cascada) se **alarga a 2 la última nota del compás 4**.
+      El Do de la izquierda de los compases 19-20 está ligado: se toca una vez
+      y el compás 20 va con `lh:[]` — que es exactamente lo que hace una
+      ligadura. El compás 21 es silencio en la derecha: `rh:[]`.
+    - **La partitura no trae digitación, así que es inventada** (como en el
+      resto de Fragmentos). La derecha usa dos posiciones —pulgar en Re4 para
+      los compases 1-2 y en Do4 desde el 3— porque la melodía abarca una octava
+      (La3-La4) y no cabe en cinco dedos; los cambios van con `label`. En el
+      clímax, pulgar abajo y meñique arriba, que es como se tocan las octavas
+      alternadas. La izquierda es **una redonda por compás**: tiene el compás
+      entero para moverse, así que su digitación es orientativa.
+    - Las **dos únicas teclas negras** de la pieza (Lab3 y Sib3, compases 17-18)
+      están las dos en la izquierda: la melodía es toda de teclas blancas.
     **"Amanecer" es original, escrita para Jorge** (no es de nadie, no hay
     fuente que verificar). Pedido: alegre, moderna, sencilla, 2-3 partes, con
     subidas y bajadas, izquierda menos activa que la derecha. Decisiones:

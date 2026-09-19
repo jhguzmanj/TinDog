@@ -1077,6 +1077,49 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
   };
   check(aomFijo('lh', 'lhF') && aomFijo('rh', 'rhF'), 'cada tecla lleva siempre el mismo dedo: ninguna mano se mueve');
 
+  section('Dragon Ball GT: la transcripción cuadra');
+  const dbP1 = W('SONGS.find(s => s.id === "dbgt").steps');
+  const dbP2 = W('SONGS.find(s => s.id === "dbgt-2").steps');
+  const dbFull = W('SONGS.find(s => s.id === "dbgt-full").steps');
+  const sum = st => st.reduce((a, x) => a + x.dur, 0);
+  // Verificación 1 de CLAUDE.md: las duraciones tienen que dar 4 por compás.
+  check(sum(dbP1) === 32, `Parte 1: ${sum(dbP1)} tiempos = 8 compases justos`);
+  check(sum(dbP2) === 52, `Parte 2: ${sum(dbP2)} tiempos = 13 compases justos`);
+  check(sum(dbFull) === 84, `Completo: ${sum(dbFull)} tiempos = 21 compases (los de la partitura)`);
+  check(JSON.stringify(dbFull) === JSON.stringify(dbP1.concat(dbP2)),
+    'la completa es Parte 1 + Parte 2, no una copia que se pueda desincronizar');
+  // Verificación 2: el bajo tiene que dar la progresión. Las redondas de la
+  // izquierda en los compases 1-7 bajan una escala entera de Do a Re.
+  const dbBass = dbP1.filter(x => x.lh.length).map(x => x.lh[0]);
+  // El compás 8 es el único con dos notas en la izquierda (dos blancas).
+  check(JSON.stringify(dbBass) === JSON.stringify([60, 59, 57, 55, 53, 52, 50, 52, 55]),
+    'el bajo de la parte 1 baja la escala Do-Si-La-Sol-Fa-Mi-Re y cierra Mi-Sol');
+  check(dbBass.slice(0, 7).every((n, i, a) => i === 0 || n < a[i - 1]),
+    'esa bajada es estrictamente descendente (si una nota estuviera mal leída, no lo sería)');
+  // Los 7 primeros compases de la parte 2 repiten la parte 1 nota por nota.
+  const noLabel = st => JSON.stringify(st.map(({label, ...x}) => x));
+  check(noLabel(dbP2.slice(0, 28)) === noLabel(dbP1.slice(0, 28)),
+    'los 7 primeros compases de la Parte 2 repiten la Parte 1 paso por paso');
+  // Verificación 3: el clímax son OCTAVAS exactas bajando por grados. Si
+  // alguna cabeza se hubiera leído mal, la relación de octava se rompería.
+  const octavas = [];
+  for(let i = 0; i < dbP2.length - 1; i++){
+    const a = dbP2[i].rh[0], b = dbP2[i + 1].rh[0];
+    if(a && b && b - a === 12 && dbP2[i].dur === 0.5) octavas.push(a);
+  }
+  check(JSON.stringify(octavas) === JSON.stringify([72, 71, 69, 67, 65, 64, 62]),
+    'el clímax son 7 octavas exactas bajando por grados: Do Si La Sol Fa Mi Re');
+  // Las dos únicas teclas negras de la pieza, ambas en la izquierda.
+  const negras = dbFull.flatMap(x => x.lh.concat(x.rh)).filter(n => [1,3,6,8,10].includes(n % 12));
+  check(JSON.stringify(negras) === JSON.stringify([56, 58]),
+    'solo hay dos teclas negras en toda la pieza: Lab3 y Sib3');
+  check(dbFull.every(x => x.rh.every(n => ![1,3,6,8,10].includes(n % 12))),
+    'y ninguna cae en la mano derecha: la melodía es toda de teclas blancas');
+  check(dbFull.every(x =>
+    (x.lh.length === 0 || (x.lhF && x.lhF.length === x.lh.length)) &&
+    (x.rh.length === 0 || (x.rhF && x.rhF.length === x.rh.length))),
+    'cada nota trae su dedo');
+
   section('Desbloqueo de audio en iOS');
   // jsdom no trae AudioContext; se inyecta una falsa MUY mínima (solo lo que
   // ensureAudioCtx/unlockAudioContextIOS tocan) para fijar que, al crear el
