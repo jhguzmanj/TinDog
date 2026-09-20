@@ -515,6 +515,9 @@
   .timing-chip{
     width:18px; height:18px; border-radius:4px; background:#2a2822; border:1px solid var(--panel-border);
   }
+  /* toque ya hecho pero sin metrónomo: no hay tiempo que clasificar, pero la
+     casilla tiene que verse marcada igual (la usan las repeticiones de acordes) */
+  .timing-chip.done{ background:var(--brass-soft); }
   .timing-chip.ok{ background:var(--correct); }
   .timing-chip.early{ background:#8fb3d9; }
   .timing-chip.late{ background:#dba14f; }
@@ -713,8 +716,8 @@
     /* En angosto la etiqueta al lado deja a los botones una columna estrecha y
        la fila de categorías se parte en tres. Etiqueta arriba = ancho completo
        para los botones, y ninguna categoría queda escondida tras un scroll. */
-    #fragCatBar .reg-group{ flex-direction:column; align-items:flex-start; gap:6px; width:100%; }
-    #fragCatBar .reg-picker{ width:100%; }
+    #fragCatBar .reg-group, #agilGroupBar .reg-group{ flex-direction:column; align-items:flex-start; gap:6px; width:100%; }
+    #fragCatBar .reg-picker, #agilGroupBar .reg-picker{ width:100%; }
   }
 
   /* =====================================================================
@@ -726,8 +729,8 @@
        sentido   → salvia
        tipo/pos. → malva
      ===================================================================== */
-  :root{ --sage:#a4c9ab; --mauve:#c6afd9; }
-  .reg-label.g-hand::before, .reg-label.g-oct::before, .reg-label.g-dir::before, .reg-label.g-type::before{
+  :root{ --sage:#a4c9ab; --mauve:#c6afd9; --clay:#d9a98c; }
+  .reg-label.g-hand::before, .reg-label.g-oct::before, .reg-label.g-dir::before, .reg-label.g-type::before, .reg-label.g-rep::before{
     content:''; display:inline-block; width:7px; height:7px; border-radius:50%;
     margin-right:7px; vertical-align:1px;
   }
@@ -735,6 +738,8 @@
   .reg-label.g-oct::before{ background:var(--ivory); }
   .reg-label.g-dir::before{ background:var(--sage); }
   .reg-label.g-type::before{ background:var(--mauve); }
+  .reg-label.g-rep::before{ background:var(--clay); }
+  .g-rep .reg-btn.active{ background:var(--clay); color:#22120a; }
   .g-hand .reg-btn.active[data-shand="lh"], .g-hand .reg-btn.active[data-chand="lh"], .g-hand .hand-btn.active[data-hand="lh"]{
     background:var(--lh); color:#07131f;
   }
@@ -1044,6 +1049,13 @@
         <button class="reg-btn" data-chand="lh">Izquierda</button>
         <button class="reg-btn active" data-chand="rh">Derecha</button>
       </div></span>
+      <span class="reg-group"><span class="reg-label g-rep">Repeticiones</span>
+      <div class="reg-picker g-rep" id="chordRepsPicker">
+        <button class="reg-btn active" data-creps="1">1</button>
+        <button class="reg-btn" data-creps="2">2</button>
+        <button class="reg-btn" data-creps="4">4</button>
+        <button class="reg-btn" data-creps="8">8</button>
+      </div></span>
       <button id="chordStrictBtn" class="ghost-btn" title="Exige las notas exactas marcadas (con la inversión y octava elegidas). Apagado: acepta el acorde en cualquier octava/posición.">🎯 Notas exactas</button>
     </div>
     <div id="chordTip" class="tip" style="display:none;">
@@ -1074,6 +1086,10 @@
       <div id="fragCatBar" class="reg-bar" style="display:none;">
         <span class="reg-group"><span class="reg-label g-type">Tipo de pieza</span>
         <div class="reg-picker g-type" id="fragCatPicker"></div></span>
+      </div>
+      <div id="agilGroupBar" class="reg-bar" style="display:none;">
+        <span class="reg-group"><span class="reg-label g-type">Tipo de ejercicio</span>
+        <div class="reg-picker g-type" id="agilGroupPicker"></div></span>
       </div>
       <div class="mode-tabs sub-tabs scroll-tabs" id="fragSubTabs"></div>
       <div id="agilOctaveBar" class="reg-bar" style="display:none;">
@@ -1949,6 +1965,11 @@ function handleMIDIMessage(msg){
 // tres sitios que comparaban el nombre del modo a mano y uno se olvidaba).
 const NOTE_HANDLERS = {};
 function registerNoteHandler(mode, fn){ NOTE_HANDLERS[mode] = fn; }
+// Mismo registro, pero para cuando se SUELTA una tecla. Lo usa el modo Acordes
+// para pedir el mismo acorde varias veces seguidas: sin saber que se levantó la
+// mano no hay forma de distinguir "lo tocó otra vez" de "lo tiene pisado".
+const NOTE_OFF_HANDLERS = {};
+function registerNoteOffHandler(mode, fn){ NOTE_OFF_HANDLERS[mode] = fn; }
 
 // src: 'midi' = viene del piano real (ya suena solo, la app no lo duplica);
 //      'ui'   = clic/touch en el teclado dibujado (la app pone el sonido).
@@ -1973,6 +1994,8 @@ function noteOff(note){
   const rect = getRect(note);
   if(rect) rect.classList.remove('active');
   stopNoteSound(note);
+  const h = NOTE_OFF_HANDLERS[currentMode];
+  if(h) h(note);
 }
 
 // ===== Escalas: generadas desde raíz + patrón, con deletreo correcto =====
@@ -2383,6 +2406,145 @@ const AGILITY_DRILLS = [
       {deg:7,dur:4,label:'5'},
     ]
   },
+];
+
+// ===== Ejercicios de COORDINACIÓN: las dos manos no hacen lo mismo =====
+// Todo lo que la app llamaba "ambas manos" hasta ahora —los ejercicios de
+// arriba y las escalas— toca el MISMO dibujo con las dos manos al mismo
+// tiempo. Eso es lo más fácil que existe a dos manos y, sobre todo, NO es lo
+// que se traba en las piezas: ahí la izquierda sostiene una nota larga
+// mientras la derecha se mueve, o entra en un tiempo distinto. Eso es
+// independencia, y sin ejercicios que la pidan no se entrena.
+// Estos seis son esa escalera, del 1 al 6 de menor a mayor dificultad, todos
+// en teclas blancas para que lo único nuevo sea la coordinación.
+// Formato: `coord:true`, y cada paso lleva `l`/`r` (el grado de cada mano) y
+// `lf`/`rf` (el dedo). Una mano SIN grado en ese paso no vuelve a pulsar:
+// sigue pisada. Es la misma convención de ligadura que usa SONGS.
+// Posición de la izquierda: en el espejo el PULGAR va en Do3 y la mano baja
+// (Do=1 Si=2 La=3 Sol=4 Fa=5); en los demás es la posición normal, meñique en
+// Do3 (Do=5 Re=4 Mi=3 Fa=2 Sol=1). La derecha siempre pulgar en Do4.
+const COORD_DRILLS = [
+  {
+    id:'manos-espejo',
+    grupo:'manos', coord:true,
+    name:'1 · Espejo (hacia afuera)',
+    tip:'El primer peldaño, y el más fácil de los seis: las dos manos pulsan <b>a la vez</b> y con el <b>mismo dedo</b>, pero en direcciones opuestas — los dos pulgares empiezan juntos en el Do y las manos se abren hacia los lados. Cuesta menos que tocar en paralelo porque no tienes que pensar dos dedos distintos: piensa "ahora el 3" y las dos manos obedecen. Mira la guía de manos (el botón encima del piano) si te pierdes con los números.',
+    tempo:60,
+    pattern:[
+      {l:0,lf:1,r:0,rf:1,dur:1,label:'Los dos pulgares (1 y 1)'},
+      {l:-1,lf:2,r:2,rf:2,dur:1,label:'2 y 2'},
+      {l:-3,lf:3,r:4,rf:3,dur:1,label:'3 y 3'},
+      {l:-5,lf:4,r:5,rf:4,dur:1,label:'4 y 4'},
+      {l:-7,lf:5,r:7,rf:5,dur:2,label:'Los dos meñiques (5 y 5)'},
+      {l:-5,lf:4,r:5,rf:4,dur:1,label:'4 y 4'},
+      {l:-3,lf:3,r:4,rf:3,dur:1,label:'3 y 3'},
+      {l:-1,lf:2,r:2,rf:2,dur:1,label:'2 y 2'},
+      {l:0,lf:1,r:0,rf:1,dur:3,label:'De vuelta a los pulgares'},
+    ]
+  },
+  {
+    id:'manos-alternadas',
+    grupo:'manos', coord:true,
+    name:'2 · Una y otra (nunca a la vez)',
+    tip:'Las manos se turnan: izquierda, derecha, izquierda, derecha, y no coinciden nunca hasta la última nota. Es fácil de entender y por eso va temprano, pero entrena lo que de verdad falta: saber <b>a quién le toca ahora</b> sin tener que mirar. Que suene parejo — el problema típico es que la izquierda pega más fuerte.',
+    tempo:66,
+    pattern:[
+      {l:0,lf:5,dur:1,label:'Izquierda'}, {r:0,rf:1,dur:1,label:'Derecha'},
+      {l:4,lf:3,dur:1,label:'Izquierda'}, {r:4,rf:3,dur:1,label:'Derecha'},
+      {l:7,lf:1,dur:1,label:'Izquierda'}, {r:7,rf:5,dur:1,label:'Derecha'},
+      {l:4,lf:3,dur:1,label:'Izquierda'}, {r:4,rf:3,dur:1,label:'Derecha'},
+      {l:0,lf:5,dur:1,label:'Izquierda'}, {r:0,rf:1,dur:1,label:'Derecha'},
+      {l:4,lf:3,dur:1,label:'Izquierda'}, {r:4,rf:3,dur:1,label:'Derecha'},
+      {l:7,lf:1,dur:1,label:'Izquierda'}, {r:7,rf:5,dur:1,label:'Derecha'},
+      {l:0,lf:5,r:0,rf:1,dur:2,label:'Las dos juntas para cerrar'},
+    ]
+  },
+  {
+    id:'manos-sostiene',
+    grupo:'manos', coord:true,
+    name:'3 · La izquierda sostiene',
+    tip:'<b>Este es el que te hace falta.</b> Es exactamente la textura de "Dios está aquí", "Espíritu de Dios" y "Dragon Ball GT": la izquierda pone UNA nota grave al empezar el compás y la <b>deja pisada</b> los cuatro tiempos, mientras la derecha camina sola. Lo difícil no es tocarla, es no levantarla cuando la derecha se mueve. La izquierda va Do–Sol–Fa–Do, que es el bajo de siempre.',
+    tempo:60,
+    pattern:[
+      {l:0,lf:5,r:0,rf:1,dur:1,label:'La izquierda entra y NO se levanta'},
+      {r:2,rf:2,dur:1}, {r:4,rf:3,dur:1}, {r:5,rf:4,dur:1},
+      {l:7,lf:1,r:7,rf:5,dur:1,label:'Cambia la izquierda (Sol)'},
+      {r:5,rf:4,dur:1}, {r:4,rf:3,dur:1}, {r:2,rf:2,dur:1},
+      {l:5,lf:2,r:0,rf:1,dur:1,label:'Cambia la izquierda (Fa)'},
+      {r:2,rf:2,dur:1}, {r:4,rf:3,dur:1}, {r:5,rf:4,dur:1},
+      {l:0,lf:5,r:4,rf:3,dur:2,label:'Vuelve al Do'},
+      {r:2,rf:2,dur:1}, {r:0,rf:1,dur:1},
+    ]
+  },
+  {
+    id:'manos-1-y-3',
+    grupo:'manos', coord:true,
+    name:'4 · La izquierda en 1 y 3',
+    tip:'Ahora la izquierda no se queda quieta todo el compás: entra en el tiempo 1 y otra vez en el 3, mientras la derecha sigue tocando los cuatro. Es más difícil que sostener porque la izquierda tiene que <b>volver a entrar con la derecha en marcha</b>, y ese es el momento donde casi todos se paran. Cuenta en voz alta 1-2-3-4 y pisa la izquierda en el 1 y en el 3.',
+    tempo:66,
+    pattern:[
+      {l:0,lf:5,r:0,rf:1,dur:1,label:'Tiempo 1 — entran las dos'},
+      {r:2,rf:2,dur:1,label:'Tiempo 2 — solo la derecha'},
+      {l:7,lf:1,r:4,rf:3,dur:1,label:'Tiempo 3 — vuelve a entrar la izquierda'},
+      {r:5,rf:4,dur:1,label:'Tiempo 4 — solo la derecha'},
+      {l:0,lf:5,r:7,rf:5,dur:1}, {r:5,rf:4,dur:1},
+      {l:7,lf:1,r:4,rf:3,dur:1}, {r:2,rf:2,dur:1},
+      {l:0,lf:5,r:0,rf:1,dur:1}, {r:2,rf:2,dur:1},
+      {l:7,lf:1,r:4,rf:3,dur:1}, {r:5,rf:4,dur:1},
+      {l:0,lf:5,r:4,rf:3,dur:1}, {r:2,rf:2,dur:1},
+      {l:7,lf:1,r:0,rf:1,dur:2,label:'Cierre'},
+    ]
+  },
+  {
+    id:'manos-dos-por-una',
+    grupo:'manos', coord:true,
+    name:'5 · Dos de la derecha por una',
+    tip:'La derecha va al doble de velocidad que la izquierda: por cada nota de la izquierda, dos de la derecha. La primera de cada par cae <b>junto</b> con la izquierda y la segunda queda sola — eso es lo que hay que sentir. Si se te descuadra, toca primero solo la izquierda contando 1-2-3-4, y después agrega la derecha diciendo "y" entre cada número: 1-y-2-y-3-y-4-y.',
+    tempo:56,
+    pattern:[
+      {l:0,lf:5,r:0,rf:1,dur:0.5,label:'Juntas'}, {r:2,rf:2,dur:0.5,label:'Sola la derecha'},
+      {l:4,lf:3,r:4,rf:3,dur:0.5}, {r:5,rf:4,dur:0.5},
+      {l:7,lf:1,r:7,rf:5,dur:0.5}, {r:5,rf:4,dur:0.5},
+      {l:4,lf:3,r:4,rf:3,dur:0.5}, {r:2,rf:2,dur:0.5},
+      {l:0,lf:5,r:0,rf:1,dur:0.5}, {r:2,rf:2,dur:0.5},
+      {l:4,lf:3,r:4,rf:3,dur:0.5}, {r:5,rf:4,dur:0.5},
+      {l:7,lf:1,r:7,rf:5,dur:0.5}, {r:5,rf:4,dur:0.5},
+      {l:4,lf:3,r:4,rf:3,dur:0.5}, {r:2,rf:2,dur:0.5},
+      {l:0,lf:5,r:0,rf:1,dur:0.5}, {r:2,rf:2,dur:0.5},
+      {l:4,lf:3,r:4,rf:3,dur:0.5}, {r:5,rf:4,dur:0.5},
+      {l:7,lf:1,r:7,rf:5,dur:0.5}, {r:5,rf:4,dur:0.5},
+      {l:0,lf:5,r:0,rf:1,dur:1,label:'Cierre, las dos juntas'},
+    ]
+  },
+  {
+    id:'manos-contratiempo',
+    grupo:'manos', coord:true,
+    name:'6 · La derecha a contratiempo',
+    tip:'El más difícil de los seis, y el que de verdad separa a quien toca con dos manos de quien no. La izquierda cae <b>en</b> el pulso y la derecha <b>entre</b> pulsos: nunca suenan a la vez hasta el final. No lo intentes rápido — este ejercicio se gana lento. Úsalo en <b>modo cascada</b> o con el metrónomo encendido: paso a paso solo aprendes el orden de las teclas, el ritmo es el ejercicio.',
+    tempo:52,
+    pattern:[
+      {l:0,lf:5,dur:0.5,label:'Izquierda EN el pulso'}, {r:0,rf:1,dur:0.5,label:'Derecha ENTRE pulsos'},
+      {l:4,lf:3,dur:0.5}, {r:4,rf:3,dur:0.5},
+      {l:7,lf:1,dur:0.5}, {r:7,rf:5,dur:0.5},
+      {l:4,lf:3,dur:0.5}, {r:4,rf:3,dur:0.5},
+      {l:0,lf:5,dur:0.5}, {r:0,rf:1,dur:0.5},
+      {l:4,lf:3,dur:0.5}, {r:4,rf:3,dur:0.5},
+      {l:7,lf:1,dur:0.5}, {r:7,rf:5,dur:0.5},
+      {l:4,lf:3,dur:0.5}, {r:4,rf:3,dur:0.5},
+      {l:0,lf:5,dur:0.5}, {r:0,rf:1,dur:0.5},
+      {l:4,lf:3,dur:0.5}, {r:4,rf:3,dur:0.5},
+      {l:7,lf:1,dur:0.5}, {r:7,rf:5,dur:0.5},
+      {l:0,lf:5,r:0,rf:1,dur:1,label:'Y las dos juntas al final'},
+    ]
+  },
+];
+// Los de dedos son los que ya había; los de manos se agregan a la misma lista
+// para que "Hoy", el progreso y las sub-pestañas no necesiten saber la diferencia.
+AGILITY_DRILLS.forEach(d => { d.grupo = d.grupo || 'dedos'; });
+COORD_DRILLS.forEach(d => AGILITY_DRILLS.push(d));
+const AGIL_GROUPS = [
+  {id:'dedos', name:'Dedos'},
+  {id:'manos', name:'Manos juntas'},
 ];
 
 // Digitación (lhF/rhF, paralela a lh/rh): no viene del profesor de Jorge,
@@ -3332,6 +3494,15 @@ let minorVariant = 'natural';
 let currentScaleId = 'cmajor';
 let scaleHand = 'rh', scaleOctaves = 1, scaleDir = 'updown';
 let showFingers = true, scaleTempoMode = false, scaleBlockMode = false;
+// Cuántas veces seguidas se pide el MISMO acorde antes de pasar al siguiente.
+// Va aquí arriba, y no junto al resto del estado de acordes, porque lo lee
+// `enterMode` para decidir si se ve la cinta de toques — y `enterMode` está
+// declarado antes (mismo riesgo de zona muerta temporal que tuvo playbackToken).
+let chordReps = 1;
+try {
+  const r = parseInt(localStorage.getItem('chordReps'), 10);
+  if([1,2,4,8].includes(r)) chordReps = r;
+} catch(e){}
 try {
   const so = JSON.parse(localStorage.getItem('scaleOpts') || '{}');
   if(so.hand) scaleHand = so.hand;
@@ -3407,7 +3578,7 @@ function enterMode(mode){
   show($('earBar'), mode === 'intervals' && earMode, 'flex');
   show(scaleTip, isScale);
   show(scaleOptBar, isScale, 'flex');
-  show($('timingBox'), isScale && scaleTempoMode, 'flex');
+  show($('timingBox'), (isScale && scaleTempoMode) || (mode === 'chords' && chordReps > 1), 'flex');
   show($('miniStaves'), isScale, 'flex');
   show(functionsPanel, mode === 'functions');
   show(fragmentsPanel, mode === 'fragments' || mode === 'agility');
@@ -3771,24 +3942,66 @@ function chordVoicing(chord, inv, octave){
 }
 const INV_NAMES = ['posición fundamental', '1ª inversión', '2ª inversión'];
 
-function startChordStep(){
-  if(typeof refreshChordPicker === 'function') refreshChordPicker();
+// Repeticiones del mismo acorde. Pedido de Jorge: en la vida real un acorde no
+// se toca una vez y ya, se repite en el tiempo. Un toque aislado tampoco mide
+// nada; con el metrónomo encendido cada repetición se clasifica igual que una
+// nota de escala, y la cinta de casillas es a la vez el contador de toques.
+let chordRepDone = 0;
+let chordRepTiming = [];
+// Para contar un segundo toque hay que ver la mano LEVANTADA en medio: si no,
+// tener el acorde pisado dispararía las repeticiones de golpe.
+let chordAwaitRelease = false;
+
+function markChordTargets(){
   clearAllHighlights();
   clearFingerNums();
-  feedbackText.textContent = '';
-  feedbackText.className = 'feedback';
   const chord = CHORDS[practiceIndex];
-  progressText.textContent = `Acorde ${practiceIndex+1} / ${CHORDS.length}`;
-  targetNoteLabel.textContent = chord.name + (chordInversion ? ' /' + INV_NAMES[chordInversion].slice(0,2) : '');
-
   const notes = chordVoicing(chord, chordInversion, chordOctave);
   const fingers = CHORD_FINGERS[chordHand][chordInversion];
   notes.forEach((n, i) => {
     markTarget(n, chordHand);
     drawFingerNum(n, fingers[i], chordHand);
   });
+  return notes;
+}
+
+function renderChordRepBox(){
+  const box = $('timingBox');
+  if(!box) return;
+  if(currentMode !== 'chords' || chordReps <= 1){ box.innerHTML = ''; return; }
+  let chips = '';
+  for(let i = 0; i < chordReps; i++){
+    const off = chordRepTiming[i];
+    const cls = i >= chordRepDone ? ''
+      : (typeof off === 'number' ? timingClass(off) : 'done');
+    const title = typeof off === 'number'
+      ? (off > 0 ? '+' : '') + Math.round(off) + ' ms'
+      : (i < chordRepDone ? 'tocado' : 'pendiente');
+    chips += '<span class="timing-chip ' + cls + '" title="' + title + '"></span>';
+  }
+  const pct = timingPct(chordRepTiming);
+  const summary = metro.on
+    ? (pct === null ? 'Toca el acorde en cada clic, a ' + metro.bpm + ' BPM.' : '<b>' + pct + '%</b> a tiempo')
+    : 'Enciende el metrónomo (arriba) y toca el acorde en cada clic.';
+  box.innerHTML = chips + '<span class="timing-summary">' + summary + '</span>';
+}
+
+function startChordStep(){
+  if(typeof refreshChordPicker === 'function') refreshChordPicker();
+  feedbackText.textContent = '';
+  feedbackText.className = 'feedback';
+  chordRepDone = 0;
+  chordRepTiming = [];
+  chordAwaitRelease = false;
+  const chord = CHORDS[practiceIndex];
+  progressText.textContent = `Acorde ${practiceIndex+1} / ${CHORDS.length}`;
+  targetNoteLabel.textContent = chord.name + (chordInversion ? ' /' + INV_NAMES[chordInversion].slice(0,2) : '');
+
+  const notes = markChordTargets();
   targetSubLabel.textContent = chord.full + ' · ' + INV_NAMES[chordInversion] + ' — ' + notes.map(noteLabel).join(' + ') +
-    (chordStrict ? '' : ' (vale en cualquier octava)');
+    (chordStrict ? '' : ' (vale en cualquier octava)') +
+    (chordReps > 1 ? ' — ' + chordReps + ' veces seguidas' : '');
+  renderChordRepBox();
   scrollToTargets();
 }
 
@@ -3824,6 +4037,7 @@ function buildOctavePicker(containerId, current, onPick, isValid){
 
 function checkChord(){
   if(currentMode !== 'chords') return;
+  if(chordAwaitRelease) return;   // todavía no se levantó la mano del toque anterior
   const chord = CHORDS[practiceIndex];
   let allPresent;
   if(chordStrict){
@@ -3835,9 +4049,22 @@ function checkChord(){
     allPresent = [...target].every(pc => playedPCs.has(pc));
   }
   if(allPresent){
+    if(metro.on && typeof metroOffsetMs === 'function'){
+      chordRepTiming[chordRepDone] = metroOffsetMs(performance.now());
+    }
+    chordRepDone++;
+    document.querySelectorAll('.target').forEach(r => { r.classList.remove('target','lh'); r.classList.add('correct'); });
+    renderChordRepBox();
+    if(chordRepDone < chordReps){
+      // Falta repetir: no se avanza de acorde. Hay que soltar de verdad antes
+      // de que cuente el siguiente toque, o dejarlo pisado los daría todos.
+      chordAwaitRelease = true;
+      feedbackText.textContent = chordRepDone + ' de ' + chordReps + ' — suelta y vuelve a tocarlo';
+      feedbackText.className = 'feedback correct';
+      return;
+    }
     feedbackText.textContent = 'Correcto';
     feedbackText.className = 'feedback correct';
-    document.querySelectorAll('.target').forEach(r => { r.classList.remove('target','lh'); r.classList.add('correct'); });
     chordDoneSet.add(practiceIndex);
     if(typeof recordChord === 'function') recordChord(chord.name, chordInversion);
     practiceIndex++;
@@ -3854,6 +4081,18 @@ function checkChord(){
 }
 registerNoteHandler('chords', checkChord);
 
+// Al levantar la mano entre repeticiones se vuelve a pintar el objetivo: el
+// verde dice "ese toque contó" y el contorno dice "ahora otra vez".
+function chordReleased(){
+  if(currentMode !== 'chords' || !chordAwaitRelease) return;
+  if(activeNotes.size > 0) return;
+  chordAwaitRelease = false;
+  markChordTargets();
+  feedbackText.textContent = 'Otra vez — van ' + chordRepDone + ' de ' + chordReps;
+  feedbackText.className = 'feedback';
+}
+registerNoteOffHandler('chords', chordReleased);
+
 const chordStrictBtn = $('chordStrictBtn');
 function applyChordStrict(){ chordStrictBtn.classList.toggle('active', chordStrict); }
 chordStrictBtn.addEventListener('click', () => { chordStrict = !chordStrict; applyChordStrict(); startChordStep(); });
@@ -3864,6 +4103,12 @@ bindPicker('chordInvPicker', 'inv', () => chordInversion, v => {
   startChordStep();
 });
 bindPicker('chordHandPicker', 'chand', () => chordHand, v => { chordHand = v; startChordStep(); });
+bindPicker('chordRepsPicker', 'creps', () => String(chordReps), v => {
+  chordReps = parseInt(v, 10);
+  try { localStorage.setItem('chordReps', chordReps); } catch(e){}
+  show($('timingBox'), chordReps > 1, 'flex');
+  startChordStep();
+});
 applyChordStrict();
 
 // ---- Zoom del teclado ----
@@ -3958,6 +4203,19 @@ function mirrorFinger(f){ return f ? 6 - f : null; }
 function materializeAgilitySteps(shape, rhOct, lhOct){
   const rhRoot = (rhOct + 1) * 12;
   const lhRoot = (lhOct + 1) * 12;
+  // Ejercicio de coordinación: cada mano trae su propio grado y su propio
+  // dedo, y una mano sin grado en ese paso NO vuelve a pulsar (sigue pisada).
+  // Ojo: el grado 0 es válido y es falsy, así que se compara contra undefined.
+  if(shape.coord){
+    return shape.pattern.map(p => ({
+      lh: p.l === undefined ? [] : [lhRoot + p.l],
+      rh: p.r === undefined ? [] : [rhRoot + p.r],
+      dur: p.dur,
+      label: p.label,
+      lhF: p.l === undefined ? [] : [p.lf],
+      rhF: p.r === undefined ? [] : [p.rf],
+    }));
+  }
   return shape.pattern.map(p => {
     const rhFinger = parseFingerLabel(p.label);
     return {
@@ -3971,8 +4229,18 @@ function materializeAgilitySteps(shape, rhOct, lhOct){
   });
 }
 
-function shapeOctaveValid(oct, shape){
-  const degs = shape.pattern.map(p => p.deg);
+// Qué grados usa CADA mano. En los de dedos las dos tocan el mismo dibujo; en
+// los de coordinación no, y el espejo llega a grados negativos (la izquierda
+// baja del Do), así que la octava se valida por separado para cada mano.
+function shapeDegs(shape, hand){
+  if(!shape.coord) return shape.pattern.map(p => p.deg);
+  const key = hand === 'lh' ? 'l' : 'r';
+  return shape.pattern.map(p => p[key]).filter(d => d !== undefined);
+}
+
+function shapeOctaveValid(oct, shape, hand){
+  const degs = shapeDegs(shape, hand);
+  if(!degs.length) return true;
   const lo = Math.min(...degs), hi = Math.max(...degs);
   const root = (oct + 1) * 12;
   return root + lo >= MIN_NOTE && root + hi <= MAX_NOTE;
@@ -3988,20 +4256,20 @@ function rebuildAgilityFragment(){
 
 function refreshAgilOctavePickers(){
   // si la octava elegida dejó de caber en el patrón actual, se corrige antes de dibujar
-  if(!shapeOctaveValid(agilRhOct, currentDrillShape)){
-    for(let o = 8; o >= 0; o--){ if(shapeOctaveValid(o, currentDrillShape)){ agilRhOct = o; break; } }
+  if(!shapeOctaveValid(agilRhOct, currentDrillShape, 'rh')){
+    for(let o = 8; o >= 0; o--){ if(shapeOctaveValid(o, currentDrillShape, 'rh')){ agilRhOct = o; break; } }
   }
-  if(!shapeOctaveValid(agilLhOct, currentDrillShape)){
-    for(let o = 8; o >= 0; o--){ if(shapeOctaveValid(o, currentDrillShape)){ agilLhOct = o; break; } }
+  if(!shapeOctaveValid(agilLhOct, currentDrillShape, 'lh')){
+    for(let o = 8; o >= 0; o--){ if(shapeOctaveValid(o, currentDrillShape, 'lh')){ agilLhOct = o; break; } }
   }
   buildOctavePicker('agilRhOctavePicker', agilRhOct, (oct) => {
     agilRhOct = oct;
     onAgilityChange();
-  }, (oct) => shapeOctaveValid(oct, currentDrillShape));
+  }, (oct) => shapeOctaveValid(oct, currentDrillShape, 'rh'));
   buildOctavePicker('agilLhOctavePicker', agilLhOct, (oct) => {
     agilLhOct = oct;
     onAgilityChange();
-  }, (oct) => shapeOctaveValid(oct, currentDrillShape));
+  }, (oct) => shapeOctaveValid(oct, currentDrillShape, 'lh'));
 }
 
 function onAgilityChange(){
@@ -4016,8 +4284,50 @@ function onAgilityChange(){
   }
 }
 
-// Fragmentos filtrados por la categoría elegida. Agilidad no se filtra: son
-// ejercicios, no repertorio, y son pocos.
+// Agilidad SÍ se filtra ahora: con los seis de coordinación son catorce
+// ejercicios, y mezclados en una sola fila los de "manos juntas" quedaban
+// escondidos al final de un scroll horizontal — que es justo lo que Jorge
+// dijo que más le falta. Dos grupos: Dedos (una mano, o las dos haciendo lo
+// mismo) y Manos juntas (las dos haciendo cosas distintas).
+let agilGroup = 'dedos';
+try {
+  const g = localStorage.getItem('agilGroup');
+  if(g && AGIL_GROUPS.some(x => x.id === g)) agilGroup = g;
+} catch(e){}
+function visibleDrills(){
+  const list = AGILITY_DRILLS.filter(d => d.grupo === agilGroup);
+  return list.length ? list : AGILITY_DRILLS;
+}
+function renderAgilGroupPicker(){
+  const cont = $('agilGroupPicker');
+  if(!cont) return;
+  cont.innerHTML = '';
+  AGIL_GROUPS.forEach(g => {
+    const b = document.createElement('button');
+    b.className = 'reg-btn' + (g.id === agilGroup ? ' active' : '');
+    b.textContent = g.name;
+    b.dataset.grupo = g.id;
+    b.addEventListener('click', () => { selectAgilGroup(g.id); });
+    cont.appendChild(b);
+  });
+}
+function selectAgilGroup(id){
+  agilGroup = id;
+  try { localStorage.setItem('agilGroup', agilGroup); } catch(e){}
+  renderAgilGroupPicker();
+  const first = visibleDrills()[0];
+  if(first) currentDrillShape = first;
+  refreshAgilOctavePickers();
+  rebuildAgilityFragment();
+  renderSubTabs();
+  practiceIndex = 0;
+  ensureValidHandSelection();
+  renderFragTip();
+  startFragmentStep();
+  if(typeof cascadeOn !== 'undefined' && cascadeOn){ exitCascade(); setupCascadeKeyboard(); }
+}
+
+// Fragmentos filtrados por la categoría elegida.
 function visibleFragments(){
   if(fragCat === 'all') return FRAGMENTS;
   const list = FRAGMENTS.filter(f => f.cat === fragCat);
@@ -4055,7 +4365,7 @@ function renderFragCatPicker(){
 
 function renderSubTabs(){
   fragSubTabs.innerHTML = '';
-  const items = practiceFamily === 'agility' ? AGILITY_DRILLS : visibleFragments();
+  const items = practiceFamily === 'agility' ? visibleDrills() : visibleFragments();
   const curId = practiceFamily === 'agility' ? currentDrillShape.id : currentFragment.id;
   items.forEach((item, i) => {
     const b = document.createElement('button');
@@ -4093,8 +4403,10 @@ function loadPracticeFamily(family){
   practiceFamily = family;
   agilOctaveBar.style.display = family === 'agility' ? 'flex' : 'none';
   show($('fragCatBar'), family === 'songs', 'flex');
+  show($('agilGroupBar'), family === 'agility', 'flex');
   if(family === 'agility'){
-    currentDrillShape = AGILITY_DRILLS[0];
+    renderAgilGroupPicker();
+    currentDrillShape = visibleDrills()[0];
     refreshAgilOctavePickers();
     rebuildAgilityFragment();
   } else {
@@ -5760,6 +6072,9 @@ function metroRender(){
   metroToggle.textContent = metro.on ? '■' : '▶';
   metroToggle.classList.toggle('on', metro.on);
   try { localStorage.setItem('metroBpm', metro.bpm); } catch(e){}
+  // La cinta de repeticiones de acordes dice si hay metrónomo o no: encenderlo
+  // tiene que cambiar el texto YA, o parece que el botón no hizo nada.
+  if(typeof renderChordRepBox === 'function') renderChordRepBox();
 }
 function metroClick(time, accent){
   const ctx = audioCtx;
@@ -6094,9 +6409,23 @@ function buildTodayPlan(seed){
   const items = [];
   const today = dateKey();
 
-  const drills = leastPracticed(AGILITY_DRILLS, progress.drills, 'id');
-  const drill = drills[Math.min(rnd(2), drills.length - 1)];
-  items.push({ key:'drill', min:3, block:'warm', title:'Calentar: ' + drill.name, sub:'Agilidad. Lento y parejo, sin mirar la mano si puedes.',
+  // Jorge dijo que las dos manos son su punto débil, así que mientras quede un
+  // peldaño de coordinación SIN estrenar, el calentamiento es ese — y en orden
+  // de la escalera, no el "menos practicado": el 6 no tiene sentido antes del 1.
+  // Cuando ya pasó por los seis, vuelve la rotación normal entre todos.
+  const coordPend = AGILITY_DRILLS.filter(d => d.grupo === 'manos' && !progress.drills[d.id]);
+  let drill, drillSub;
+  if(coordPend.length){
+    drill = coordPend[0];
+    drillSub = 'Manos juntas — es lo que dijiste que más te cuesta. Lento; si se traba, toca cada mano por separado primero.';
+  } else {
+    const drills = leastPracticed(AGILITY_DRILLS, progress.drills, 'id');
+    drill = drills[Math.min(rnd(2), drills.length - 1)];
+    drillSub = drill.grupo === 'manos'
+      ? 'Manos juntas. Lento y parejo: la meta es que no se descuadren, no la velocidad.'
+      : 'Agilidad. Lento y parejo, sin mirar la mano si puedes.';
+  }
+  items.push({ key:'drill', min:3, block:'warm', title:'Calentar: ' + drill.name, sub:drillSub,
     done: () => (progress.drills[drill.id] || {}).lastDay === today,
     go: () => { selectCategory('agility'); pickFragmentById(drill.id); } });
 
@@ -6195,6 +6524,16 @@ function pickFragmentById(id){
     fragCat = song.cat;
     try { localStorage.setItem('fragCat', fragCat); } catch(e){}
     renderFragCatPicker();
+    renderSubTabs();
+  }
+  // Lo mismo para Agilidad: el plan de "Hoy" manda a un ejercicio concreto que
+  // puede estar en el otro grupo. Sin esto el botón no existe y el enlace de
+  // Hoy no hace nada (el mismo fallo silencioso que ya tuvo Fragmentos).
+  const drill = AGILITY_DRILLS.find(d => d.id === id);
+  if(drill && drill.grupo !== agilGroup){
+    agilGroup = drill.grupo;
+    try { localStorage.setItem('agilGroup', agilGroup); } catch(e){}
+    renderAgilGroupPicker();
     renderSubTabs();
   }
   const btn = [...fragSubTabs.querySelectorAll('.mode-tab')].find(b => b.dataset.frag === id);

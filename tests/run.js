@@ -352,17 +352,19 @@ W(`noteOn(${last})`); W(`noteOff(${last})`);
 check(W("progress.songs['cuatro-acordes'].runs") === 1, 'terminar una pieza se registra');
 
 section('Digitación en agilidad y fragmentos: datos consistentes');
-// Toda la digitación de agilidad sale de un solo número al frente del label
-// (derecha) más su espejo (6 - dedo) para la izquierda — no hay datos sueltos.
+// En los ejercicios de DEDOS toda la digitación sale de un solo número al
+// frente del label (derecha) más su espejo (6 - dedo) para la izquierda. Los de
+// coordinación no pueden usar esa regla: las manos no hacen lo mismo, así que
+// cada paso trae su propio lf/rf y el label es texto libre.
 const agilFingerCheck = W(`
-  AGILITY_DRILLS.every(shape => shape.pattern.every(p => {
+  AGILITY_DRILLS.filter(s => !s.coord).every(shape => shape.pattern.every(p => {
     const m = /^(\\d)/.exec(p.label || '');
     if(!m) return false;
     const rh = Number(m[1]);
     return rh >= 1 && rh <= 5;
   }))
 `);
-check(agilFingerCheck, 'cada paso de agilidad trae un dedo de mano derecha válido (1-5) en su label');
+check(agilFingerCheck, 'cada paso de agilidad (dedos) trae un dedo de mano derecha válido (1-5) en su label');
 check(W("mirrorFinger(1) === 5 && mirrorFinger(5) === 1 && mirrorFinger(3) === 3"), 'el espejo de dedo es 6 - dedo');
 const materialized = W("JSON.stringify(materializeAgilitySteps(AGILITY_DRILLS[0], 4, 3).map(s => [s.rhF[0], s.lhF[0]]))");
 check(JSON.parse(materialized).every(([rh, lh]) => rh + lh === 6), 'agilidad: cada paso materializado trae rhF/lhF espejados (suman 6)');
@@ -969,9 +971,19 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
     'y queda marcada en la lista redibujada');
   W("selectCategory('agility')");
   check(doc.getElementById('fragCatBar').style.display === 'none' &&
-        doc.querySelectorAll('#fragSubTabs .mode-tab').length === W('AGILITY_DRILLS.length'),
-    'Agilidad no se filtra ni muestra la barra');
-  W("fragCat = 'all'; try { localStorage.removeItem('fragCat'); } catch(e){}");
+        doc.getElementById('agilGroupBar').style.display === 'flex',
+    'en Agilidad se esconde el filtro de piezas y aparece el de tipo de ejercicio');
+  check(doc.querySelectorAll('#fragSubTabs .mode-tab').length === W("AGILITY_DRILLS.filter(d => d.grupo === 'dedos').length"),
+    'la lista muestra solo los del grupo elegido, no los catorce de golpe');
+  // El de "Hoy" puede mandar a un ejercicio del OTRO grupo: tiene que llegar,
+  // o el enlace no hace nada (mismo fallo silencioso que ya tuvo Fragmentos).
+  W("pickFragmentById('manos-sostiene')");
+  check(W('currentDrillShape.id') === 'manos-sostiene' && W('agilGroup') === 'manos',
+    'saltar a un ejercicio de coordinación abre su grupo y lo selecciona');
+  check((doc.querySelector('#fragSubTabs .mode-tab.active') || {}).dataset.frag === 'manos-sostiene',
+    'y queda marcado en la lista redibujada');
+  W("selectAgilGroup('dedos')");
+  W("fragCat = 'all'; try { localStorage.removeItem('fragCat'); localStorage.removeItem('agilGroup'); } catch(e){}");
 
   section('Piezas nuevas: notas y compases cuadran');
   for(const [id, beats, lo, hi] of [['flaca', 56, 67, 79], ['amanecer', 52, 72, 79]]){
@@ -1240,6 +1252,125 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
   check(onSeq === '48,64,65,43,67', 'el bajo suena una sola vez por cambio, no en cada paso');
   check(offSeq === '64,65,48,67,43', 'y se suelta recién cuando la izquierda cambia (48 después del 65, no antes)');
   W(`playNoteSound = window.__playNoteSound; stopNoteSound = window.__stopNoteSound;`);
+
+  section('Coordinación: las dos manos no hacen lo mismo');
+  const coord = W('AGILITY_DRILLS.filter(d => d.coord)');
+  check(coord.length === 6, `${coord.length} ejercicios de coordinación (la escalera del 1 al 6)`);
+  check(coord.every(d => d.grupo === 'manos'), 'todos viven en el grupo "Manos juntas"');
+  // Lo que hace que estos ejercicios SIRVAN es que las manos no coincidan. Un
+  // ejercicio donde las dos tocan lo mismo a la vez ya existe (los de dedos) y
+  // no entrena independencia, así que aquí eso es un error de datos.
+  const espejo = coord.find(d => d.id === 'manos-espejo');
+  check(espejo.pattern.every(p => p.l !== undefined && p.r !== undefined),
+    'el espejo pulsa con las dos manos en todos los pasos…');
+  check(espejo.pattern.every(p => p.l <= 0 && p.r >= 0 && (p.l !== 0 || p.r === 0)),
+    '…pero en direcciones opuestas: la izquierda baja del Do y la derecha sube');
+  check(espejo.pattern.every(p => p.lf === p.rf),
+    'y con el mismo dedo en las dos manos, que es lo que lo hace el peldaño fácil');
+  const otros = coord.filter(d => d.id !== 'manos-espejo');
+  check(otros.every(d => d.pattern.some(p => p.l === undefined || p.r === undefined)),
+    'los otros cinco tienen pasos donde solo entra una mano (sostener, turnarse, contratiempo)');
+  // Cuadrar en compases de 4 importa aquí igual que en las piezas: la cascada
+  // dibuja la rejilla de compases y es donde estos ejercicios se practican.
+  coord.forEach(d => {
+    const beats = d.pattern.reduce((a, p) => a + p.dur, 0);
+    check(beats % 4 === 0, `${d.id}: ${beats} tiempos = ${beats / 4} compases justos`);
+  });
+  check(coord.every(d => d.pattern.every(p =>
+      (p.l === undefined || (p.lf >= 1 && p.lf <= 5)) &&
+      (p.r === undefined || (p.rf >= 1 && p.rf <= 5)))),
+    'cada mano que entra trae un dedo válido (1-5)');
+  // La mano no se mueve dentro de un ejercicio: el mismo grado lleva siempre el
+  // mismo dedo. Si cambiara habría que reacomodar la mano y no está marcado.
+  const posFija = coord.every(d => {
+    const vistos = {};
+    return d.pattern.every(p => {
+      for(const [g, f] of [['L' + p.l, p.lf], ['R' + p.r, p.rf]]){
+        if(f === undefined) continue;
+        if(vistos[g] === undefined) vistos[g] = f;
+        else if(vistos[g] !== f) return false;
+      }
+      return true;
+    });
+  });
+  check(posFija, 'dentro de cada ejercicio cada tecla lleva siempre el mismo dedo (la mano no se mueve)');
+
+  // Materialización: una mano sin grado en el paso NO vuelve a pulsar (lh:[]),
+  // que es la misma convención de ligadura de SONGS — y es justo el ejercicio
+  // de "La izquierda sostiene".
+  const sost = W('materializeAgilitySteps(AGILITY_DRILLS.find(d => d.id === "manos-sostiene"), 4, 3)');
+  check(sost.filter(st => st.lh.length).length === 4 && sost.length === 15,
+    `la izquierda entra 4 veces (una por compás) en los ${sost.length} pasos, el resto la sostiene`);
+  check(sost.every(st => st.rh.length === 1), 'y la derecha toca en todos');
+  check(sost.every(st => !st.lh.length || st.lh[0] < Math.min(...st.rh)),
+    'la izquierda siempre queda por debajo de la derecha');
+  check(sost.every(st => (!st.lh.length || st.lhF.length === st.lh.length) &&
+                         (!st.rh.length || st.rhF.length === st.rh.length)),
+    'cada nota materializada trae su dedo');
+  // El grado 0 es falsy: si se comparara con if(p.l) el Do se perdería.
+  const esp = W('materializeAgilitySteps(AGILITY_DRILLS.find(d => d.id === "manos-espejo"), 4, 3)');
+  check(esp[0].lh[0] === 48 && esp[0].rh[0] === 60, 'el grado 0 (el Do) no se pierde por ser falsy');
+  check(Math.min(...esp.map(st => st.lh[0])) === 41,
+    'el espejo baja hasta Fa2 en la izquierda (grados negativos)');
+  check(W("shapeOctaveValid(3, AGILITY_DRILLS.find(d => d.id === 'manos-espejo'), 'lh')") === true &&
+        W("shapeOctaveValid(0, AGILITY_DRILLS.find(d => d.id === 'manos-espejo'), 'lh')") === false,
+    'la octava se valida por mano: con grados negativos la 0 no cabe');
+  // Se puede practicar una mano sola, que es el primer paso cuando se traba.
+  check(W(`(function(){
+      const st = materializeAgilitySteps(AGILITY_DRILLS.find(d => d.id === 'manos-contratiempo'), 4, 3);
+      return st.some(x => stepNotes(x, 'lh').length) && st.some(x => stepNotes(x, 'rh').length);
+    })()`), 'el contratiempo se puede practicar con cada mano por separado');
+  // El plan de Hoy empuja la escalera: mientras quede un peldaño sin estrenar,
+  // el calentamiento es ese y en orden, no el "menos practicado".
+  W("progress.drills = {};");
+  const planCoord = W('buildTodayPlan(1)[0]');
+  check(planCoord.title.includes('Espejo'), 'el calentamiento de Hoy arranca en el peldaño 1 de la escalera');
+  W("progress.drills = {}; AGILITY_DRILLS.filter(d => d.grupo === 'manos').forEach(d => { progress.drills[d.id] = {runs:1, lastDay:'2000-01-01'}; });");
+  check(!/Espejo|Una y otra|sostiene|1 y 3|Dos de la derecha|contratiempo/.test(W('buildTodayPlan(1)[0].title')),
+    'y cuando ya pasó por los seis, vuelve la rotación normal entre todos');
+  W("progress.drills = {};");
+
+  section('Acordes repetidos, como se tocan de verdad');
+  W("soundEnabled = false; selectCategory('chords'); chordReps = 1; practiceIndex = 0; startChordStep();");
+  const acordeNotas = () => W('JSON.stringify(chordVoicing(CHORDS[practiceIndex], chordInversion, chordOctave))');
+  const tocar = () => {
+    const ns = JSON.parse(acordeNotas());
+    ns.forEach(n => W(`noteOn(${n})`));
+    ns.forEach(n => W(`noteOff(${n})`));
+  };
+  tocar();
+  check(W('practiceIndex') === 1, 'con 1 repetición sigue como antes: un toque y al siguiente acorde');
+  W("chordReps = 4; practiceIndex = 0; startChordStep();");
+  check(doc.getElementById('timingBox').innerHTML.split('timing-chip').length - 1 === 4,
+    'con 4 repeticiones aparece una casilla por toque');
+  // Primer toque, sin soltar todavía.
+  const ns0 = JSON.parse(acordeNotas());
+  ns0.forEach(n => W(`noteOn(${n})`));
+  check(W('chordRepDone') === 1 && W('practiceIndex') === 0,
+    'el primer toque cuenta pero NO pasa al siguiente acorde');
+  // Dejarlo pisado no puede contar cuatro veces de golpe: hace falta soltar.
+  W('checkChord()'); W('checkChord()');
+  check(W('chordRepDone') === 1, 'tenerlo pisado no suma repeticiones; hay que levantar la mano');
+  check(W('chordAwaitRelease') === true, 'y queda esperando que se suelte');
+  ns0.forEach(n => W(`noteOff(${n})`));
+  check(W('chordAwaitRelease') === false && doc.querySelectorAll('.target').length === ns0.length,
+    'al soltar se vuelve a marcar el objetivo para el toque siguiente');
+  tocar(); tocar(); tocar();
+  check(W('chordRepDone') === 4 && W('practiceIndex') === 1,
+    'al cuarto toque sí pasa al siguiente acorde');
+  check(W("progress.chords['C'].runs") >= 1, 'y el acorde se registra una sola vez, no una por repetición');
+  // Con el metrónomo encendido cada toque se clasifica igual que una nota de
+  // escala: repetir sin medir el tiempo no sirve de mucho, que es el punto.
+  W(`metroOffsetMs = () => 15; metro.on = true; chordReps = 4; practiceIndex = 0; startChordStep();`);
+  tocar();
+  check(W('chordRepTiming[0]') === 15, 'con metrónomo se guarda el desfase de cada toque');
+  check(doc.querySelector('#timingBox .timing-chip').className.includes('ok'),
+    'y la casilla se pinta según lo ajustado que estuvo, no solo como "tocado"');
+  W(`metroOffsetMs = () => 400;`);
+  tocar();
+  check(doc.querySelectorAll('#timingBox .timing-chip')[1].className.includes('miss'),
+    'un toque muy fuera del pulso se marca como fallado');
+  W("metro.on = false; chordReps = 1; try { localStorage.removeItem('chordReps'); } catch(e){} practiceIndex = 0; startChordStep();");
 
   section('Desbloqueo de audio en iOS');
   // jsdom no trae AudioContext; se inyecta una falsa MUY mínima (solo lo que

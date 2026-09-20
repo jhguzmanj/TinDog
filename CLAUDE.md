@@ -28,7 +28,11 @@ Orden dentro del `<script>`:
 1. Teclado SVG de 88 teclas, etiquetas (letra / Do Re Mi), zoom, sonido, Web MIDI.
 2. `noteOn(note, src)` — **`src:'midi'` no dispara el sintetizador** (el piano ya
    suena solo); `'ui'` sí. Despacha por modo con `NOTE_HANDLERS` (registro):
-   `registerNoteHandler('chords', checkChord)` etc. Las escalas se detectan con
+   `registerNoteHandler('chords', checkChord)` etc. Hay un registro gemelo para
+   cuando se SUELTA una tecla (`NOTE_OFF_HANDLERS` / `registerNoteOffHandler`,
+   despachado desde `noteOff`): lo usa Acordes para las repeticiones, porque sin
+   saber que se levantó la mano no se distingue "lo tocó otra vez" de "lo tiene
+   pisado". Las escalas se detectan con
    `SCALES[currentMode]`; la cascada tiene prioridad en fragmentos/agilidad.
    **Modo nuevo = una línea `registerNoteHandler(...)`, nada más.**
 3. Datos de escalas (`SCALE_DEFS`, `spellScale`, `buildScale`, `SCALES`,
@@ -123,6 +127,29 @@ Orden dentro del `<script>`:
 - **Acordes**: `CHORDS` (24 tríadas). `chordVoicing(chord, inv, octave)` da las notas
   exactas de fundamental / 1ª / 2ª inversión. `checkChord` es octave-agnostic salvo
   con `chordStrict` (se enciende solo al elegir una inversión, si no no se distingue).
+  **Repeticiones (`chordReps`, 1/2/4/8, persistido).** Pedido de Jorge: en la
+  vida real un acorde no se toca una vez y ya, se repite en el tiempo. Con más
+  de 1 el mismo acorde se pide N veces antes de pasar al siguiente. Tres cosas
+  que no son obvias:
+  - **Hay que SOLTAR entre toque y toque** (`chordAwaitRelease`, se limpia en
+    `chordReleased` cuando `activeNotes` queda vacío). Sin eso, tener el acorde
+    pisado dispararía las N repeticiones de golpe y el ejercicio no existiría.
+    Por eso hizo falta el registro de note-off: `checkChord` corre en note-on y
+    ahí `activeNotes` nunca está vacío.
+  - **La cinta de casillas (`#timingBox`) es a la vez el contador y el
+    cronómetro.** Reusa el elemento, el CSS y `timingClass`/`timingPct` de las
+    escalas; con el metrónomo apagado la casilla tocada va en `.timing-chip.done`
+    (clase nueva, marfil apagado) y con él encendido se clasifica igual que una
+    nota de escala. Repetir sin medir el tiempo es apretar N veces, no tocar:
+    por eso el resumen invita a encender el metrónomo. `metroRender()` llama a
+    `renderChordRepBox()` — si no, encender el metrónomo no cambiaba el texto y
+    parecía que el botón no hacía nada.
+  - **`recordChord` se llama una sola vez por acorde**, al completar las
+    repeticiones, no una por toque: si no, 8 repeticiones inflarían el progreso
+    ×8 (y el respaldo fusiona por máximo, así que quedaría inflado para siempre).
+  - `chordReps` se declara **arriba, junto a `scaleTempoMode`**, no con el resto
+    del estado de acordes: lo lee `enterMode`, que está declarado antes (mismo
+    riesgo de zona muerta temporal que tuvo `playbackToken`).
 - **Intervalos**: `checkInterval` compara **notas MIDI exactas** (antes comparaba solo
   la letra y Do4+Mi5 aprobaba como 3ª mayor — no reintroducir). Modo oído: la app
   toca raíz y segunda nota (`playEarInterval`), solo se marca la raíz, se registra
@@ -606,6 +633,46 @@ Orden dentro del `<script>`:
     **La versión de la partitura y la de `basic-pitch` están las dos en el
     historial de git** — si hay que volver a alguna, se recupera de ahí, no se
     re-transcribe.
+  - **Coordinación: `COORD_DRILLS` (grupo `manos`, `coord:true`).** El punto
+    ciego que destapó Jorge al decir que las dos manos son su talón de Aquiles:
+    **todo lo que la app llamaba "ambas manos" hasta ahora hace lo MISMO con las
+    dos a la vez.** Las escalas van en paralelo y `materializeAgilitySteps`
+    duplicaba el mismo `deg` en las dos manos con la digitación espejada. Eso es
+    lo más fácil que existe a dos manos y, sobre todo, **no es lo que se traba en
+    las piezas**: ahí la izquierda sostiene una nota larga mientras la derecha se
+    mueve, o entra en otro tiempo. Agregar más ejercicios al unísono habría
+    parecido progreso sin arreglar nada.
+    - Seis ejercicios, numerados en el nombre (`1 ·` … `6 ·`) porque **el orden
+      es la escalera**: espejo (las dos a la vez con el mismo dedo, en
+      direcciones opuestas — el más fácil, no hay dos dedos que pensar) →
+      alternadas (nunca coinciden) → **la izquierda sostiene** (la textura de
+      "Dios está aquí", "Espíritu de Dios" y "Dragon Ball GT": una nota grave
+      pisada los cuatro tiempos) → la izquierda en 1 y 3 (tiene que volver a
+      entrar con la derecha en marcha) → dos por una → contratiempo.
+    - **Formato nuevo, el viejo intacto.** `coord:true` y cada paso lleva `l`/`r`
+      (grado de cada mano) y `lf`/`rf` (dedo). Una mano **sin grado** en un paso
+      no vuelve a pulsar: sigue pisada — la misma convención de ligadura que usa
+      `SONGS`, así que el motor no necesitó cambios. **Ojo: el grado 0 (el Do) es
+      falsy**, así que se compara contra `undefined`, nunca con `if(p.l)`; hay
+      prueba que lo fija.
+    - **La octava se valida por mano** (`shapeDegs(shape, hand)` +
+      `shapeOctaveValid(oct, shape, hand)`): en el espejo la izquierda usa grados
+      **negativos** (baja del Do3 hasta Fa2), así que el rango de una mano no
+      sirve para la otra.
+    - **Posición de la izquierda**: en el espejo el **pulgar** va en Do3 y la
+      mano baja (Do=1 Si=2 La=3 Sol=4 Fa=5, o sea las dos manos con el mismo
+      dedo, que es lo que lo hace fácil); en los otros cinco es la posición
+      normal, meñique en Do3 (Do=5 Re=4 Mi=3 Fa=2 Sol=1). Dentro de cada
+      ejercicio cada tecla lleva **siempre** el mismo dedo (hay prueba): la mano
+      no se mueve, o habría que marcarlo.
+    - Todos en teclas blancas y cuadrando en compases de 4, porque la cascada
+      dibuja la rejilla de compases y **es ahí donde estos ejercicios sirven**:
+      paso a paso solo se aprende el orden de las teclas y el ritmo ES el
+      ejercicio. El tip del 6 lo dice explícitamente.
+    - **El plan de "Hoy" sube la escalera**: mientras quede un peldaño de
+      coordinación sin estrenar, el calentamiento es ese y **en orden**, no el
+      "menos practicado" (el 6 no tiene sentido antes del 1). Cuando ya pasó por
+      los seis vuelve la rotación normal entre los catorce.
   - **`▶ Escuchar` se puede cortar (`stopFragmentPlayback`).** El mismo botón
     hace las dos cosas: mientras suena dice `■ Detener` (con `.busy`) y volver a
     tocarlo corta. Antes no había salida: una pieza son medio minuto y había que
@@ -648,8 +715,12 @@ Orden dentro del `<script>`:
   el resto: `.reg-bar` > `.reg-group` > `.reg-picker` en malva `g-type`) que
   filtra la lista. Grupos: `facil | popular | cristiana | clasica | patrones`,
   más `all`. Cosas que dependen de esto:
-  - **Agilidad NO se filtra** y la barra se esconde ahí: son ejercicios, no
-    repertorio, y son pocos.
+  - **Agilidad tiene su propia barra** (`#agilGroupBar`, `agilGroup`), no la de
+    piezas: `Dedos | Manos juntas` (ver la sección de coordinación). Antes no se
+    filtraba porque eran pocos; con los seis de coordinación son catorce y los
+    nuevos quedaban escondidos al final del scroll horizontal, que es justo lo
+    que Jorge dijo que más le falta. `pickFragmentById()` abre también el grupo
+    del ejercicio, por el mismo fallo silencioso que ya tuvo Fragmentos.
   - **`pickFragmentById()` abre la categoría de la pieza antes de buscar el
     botón.** El plan de "Hoy" manda a una pieza concreta; si el filtro vigente
     la escondía, el botón no existía y el enlace de Hoy no hacía NADA (fallo
@@ -790,7 +861,8 @@ cualquier otro navegador funcionan igual que antes (`cloudState: 'off'`).
 
 ## Otras preferencias persistidas
 `kbZoom2`, `labelStyle`, `labelsShown` (ahora sí se recuerda; por defecto visible),
-`fragCat` (categoría de Fragmentos), `audioFallback` (sonido alternativo, ver más abajo),
+`fragCat` (categoría de Fragmentos), `agilGroup` (Dedos / Manos juntas),
+`chordReps` (repeticiones de acordes), `audioFallback` (sonido alternativo, ver más abajo),
 `solfaShown`, `cascadeSpeed`, `scaleOpts` (mano/octavas/sentido/dedos/variante menor),
 `metroBpm`, `readingLevel`, `handsShown`, `soundTarget`.
 
