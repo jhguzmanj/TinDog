@@ -533,47 +533,79 @@ Orden dentro del `<script>`:
     coordinar manos. El original repite cada mitad; aquí va de corrido una vez
     porque `SONGS` no tiene repeticiones, y los `label` marcan dónde empieza
     cada frase y dónde estaba el "vuelve al principio".
-    **"Dios está aquí" se REEMPLAZÓ por una transcripción automática, a pedido
-    explícito de Jorge y contra la recomendación.** La versión que hay hoy es la
-    salida cruda de `basic-pitch` sobre el audio de un video. Se le midieron las
-    pegas antes de cambiarla y se le presentaron; decidió igual, así que se puso
-    tal cual, sin inventar nada. Lo que trae, medido:
-    - **La "melodía" no es una melodía.** La voz superior salta
-      `Si5 Re4 Re6 La5 Re4 Si5 Sol5 Mi4…` — el detector confunde el fundamental
-      con sus armónicos. La de la partitura era cantable: `La4 Re5 Si4 Do5…`.
-    - **Re4 aparece en el 49% de los 160 pasos** (nota sostenida re-detectada
-      en cada ventana), 38 pasos con 4+ notas simultáneas (hasta 6), 17 racimos
-      de notas a ≤2 semitonos en la misma mano (p. ej. `Re4+Fa#5+Sol5+La5`,
-      que es un armónico, no un acorde), y notas hasta Mi6.
-    - **96,5 tiempos**, que no divide entre 4: las líneas de compás de la
-      cascada se van corriendo respecto a la música.
-    - **Sin `lhF`/`rhF` y sin `label`.** Sin digitación a propósito: poner dedos
-      sobre un racimo de armónicos sería ficción con pinta de autoridad. Es la
-      **única** pieza sin digitación, y la prueba `songsFingerCheck` la exceptúa
-      por id (`SIN_DEDOS`) con una segunda prueba que verifica que **ninguna
-      otra** se cuele por esa puerta. Sin `label`, el selector de Tramo pasa de
-      5 anclas de frase a 160 pasos sueltos.
-    - Con 6 notas por paso, `checkFragment` exige las 6 pulsadas a la vez para
-      avanzar; en la cascada en modo espera se congela hasta que estén todas.
-    **La versión anterior, transcrita de la partitura, está en el historial de
-    git** (commit anterior a este) — si hay que volver, se recupera de ahí, no
-    se re-transcribe. Cómo se hizo, por si se necesita: se extrajo el PDF a PNG de alta
-    resolución (`pdftoppm -r 300`), se detectaron las líneas del pentagrama por
-    análisis de columnas oscuras, y se dibujaron líneas de referencia por cada
-    posición diatónica (línea/espacio) superpuestas a la imagen para leer cada
-    cabeza de nota por su posición Y exacta en vez de a ojo. **Las alturas
-    (pitches) tienen alta confianza** con este método. **El ritmo exacto de
-    2-3 compases NO se pudo verificar al 100%**: hay una partitura con puntillos
-    dobles inusuales, dieciseisavos agrupados, y al menos un compás donde la
-    suma de duraciones no cuadraba exactamente a 4/4 por más pixel-forensics
-    que se hizo (posible error de lectura en una nota puntillada o silencio no
-    detectado). Se optó por una duración razonable en vez de seguir invirtiendo
-    tiempo indefinidamente, y el usuario fue avisado y aceptó ese trade-off
-    explícitamente. **Dividida en 5 frases con `label`** (Frase 1-4 + Fin) para
-    practicar por partes con "Tramo" en cascada, que fue el pedido explícito
-    ("agrégamela para aprenderla por partes"). Si al tocarla algo suena raro
-    rítmicamente, es la parte a ajustar de oído — las notas (qué tecla tocar)
-    deberían estar bien.
+    **"Dios está aquí" pasó por TRES versiones. La de hoy sale de una hoja
+    guía con cifrados y es la buena.** El recorrido importa porque deja dos
+    lecciones:
+    1. Primero se transcribió del PDF de la partitura (método de píxeles). Las
+       alturas quedaron bien; el ritmo de 2-3 compases no se pudo cerrar al
+       100% (puntillos dobles, semicorcheas agrupadas) y se avisó.
+    2. Después Jorge pidió **reemplazarla por la salida cruda de `basic-pitch`**
+       sobre el audio de un video, contra la recomendación. Se le midieron las
+       pegas antes de cambiarla y decidió igual, así que se puso tal cual.
+       **Volvió con "no se escucha nada bien"**, que era exactamente lo
+       previsto. Lo que traía, medido, por si alguna vez se vuelve a proponer
+       una transcripción automática: la voz superior saltaba
+       `Si5 Re4 Re6 La5 Re4 Si5…` (el detector confunde el fundamental con sus
+       armónicos), `Re4` aparecía en el 49% de los 160 pasos, 38 pasos con 4+
+       notas simultáneas (hasta 6), 17 racimos a ≤2 semitonos en la misma mano,
+       notas hasta Mi6, y **96,5 tiempos**, que no divide entre 4 (las líneas de
+       compás de la cascada se corrían). **Moraleja: `basic-pitch` sobre una
+       grabación con acompañamiento no da una melodía; da armónicos.**
+    3. Entonces Jorge pasó **cuatro fotos de una hoja guía**: melodía en clave
+       de Sol, letra debajo y **los cifrados impresos encima de cada compás**
+       (Do, Sol, Lam, Fa, Do7). Esa es la versión actual.
+    Lo que hace especial a esa fuente: **los cifrados vuelven la mano izquierda
+    un dato, no un invento.** En las piezas de oído/tutorial la izquierda se
+    añade a ojo; aquí se lee. Cómo se transcribió y cómo se verificó:
+    - El detector estándar (ver el método más abajo) funciona bien aquí
+      (L = 16 px), con **dos fallos conocidos**: las cabezas HUECAS atravesadas
+      por una línea adicional (el Do4 con línea adicional, que es justo el final
+      de cada frase) se pierden, porque la línea parte el agujero en dos trozos
+      de alto < 0.30 L; y los huecos encerrados de la **letra** (las `o`, `a`,
+      `e`) entran como cabezas. Los dos se resuelven acotando `k` al rango
+      melódico real (aquí −4..9) y leyendo a ojo las pocas huecas perdidas.
+    - **Verificación extra que esta hoja regala: la x del cifrado.** Cada
+      cifrado se imprime **9 px a la izquierda de la cabeza de su nota**, sin
+      una sola excepción en los 24 cifrados. Eso convierte "¿en qué tiempo entra
+      este acorde?" en una medición en vez de una interpretación — y de paso
+      confirma la lectura de compases, porque el cifrado y la nota tienen que
+      caer en el mismo compás. Así salió que el compás 6 lleva **tres** acordes
+      (Do en el 1, Sol en el 2, Lam en el 3), que a ojo no se habría visto.
+    - Las tres verificaciones de siempre cuadran: duraciones = 4 por compás en
+      los 17 compases; cada entrada del bajo cae sobre una nota de su acorde
+      (21 de 22; la excepción es el Mi sobre Sol del compás 7, que la hoja
+      escribe así); y la melodía es **toda de teclas blancas**, coherente con la
+      armadura vacía.
+    - **La izquierda: una nota grave por cifrado**, la fundamental. Jorge pidió
+      hace tiempo quitar los acordes de Estrellita porque todavía no los domina,
+      así que aquí tampoco. Las cuatro notas (Fa2, Sol2, La2, Do3) **caben bajo
+      una sola posición** — Fa2(5) Sol2(4) La2(3) Do3(1) — así que la izquierda
+      no se mueve en toda la pieza; hay prueba que lo fija.
+    - **La derecha tiene dos posiciones y una sola mudanza.** La melodía abarca
+      una 7ª (Si3–La4), así que cinco dedos no alcanzan. La solución no fue ir
+      saltando: en la estrofa el **pulgar vive en Re4** (Re=1 Mi=2 Fa=3 Sol=4
+      La=5) y **baja un paso al Do4 cuando hace falta** — el Do sigue siendo el
+      pulgar, solo se desliza. Con eso la estrofa entera se toca sin mover la
+      mano. En "me puedes oír" (compás 7) la melodía baja al Si3 y la mano se
+      muda de una vez al **pulgar en Si3** (Si=1 Do=2 Re=3 Mi=4), donde **todo
+      el coro cabe** y ya no se mueve más. Un `label` marca esa mudanza.
+      *Probado también el camino obvio y descartado*: pulgar fijo en Do4 y el
+      La4 con el meñique estirado obliga a tocar La4 y Sol4 con el mismo dedo 5,
+      y en los compases 3 y 5 van seguidos.
+    - **Lo que se pierde y hay que saber**: la hoja trae `‖:` con casillas 1 y 2,
+      y `SONGS` no tiene repeticiones, así que va de corrido — se toca la
+      estrofa una vez y entra por la casilla 2 directo al coro (16 compases de
+      los 17). Los silencios se absorben alargando la nota anterior (convención
+      de `SONGS`, mantiene la rejilla de compases de la cascada): en la práctica
+      hay que **dejar la tecla pisada** en vez de levantarla. Y el `Do7` del
+      compás 4 se toca como Do a secas, porque el Sib que lo distingue está en
+      el acorde y acordes todavía no.
+    - **Once `label`**: ocho anclas de frase (el pedido original era
+      "aprenderla por partes"), la mudanza de mano, el punto donde la hoja
+      repetía y el `Fin`.
+    **La versión de la partitura y la de `basic-pitch` están las dos en el
+    historial de git** — si hay que volver a alguna, se recupera de ahí, no se
+    re-transcribe.
   - **`▶ Escuchar` se puede cortar (`stopFragmentPlayback`).** El mismo botón
     hace las dos cosas: mientras suena dice `■ Detener` (con `.busy`) y volver a
     tocarlo corta. Antes no había salida: una pieza son medio minuto y había que
@@ -592,6 +624,17 @@ Orden dentro del `<script>`:
     arriba, junto a `isPlayingBack`**, no al lado de `playFragment`: los usa
     `startFragmentStep`, que corre mucho antes (mismo riesgo de zona muerta
     temporal que tuvo `audioFallback`).
+  - **`▶ Escuchar` SOSTIENE la nota de la izquierda mientras la derecha sigue.**
+    Una nota grave que dura varios pasos se escribe UNA vez y los pasos
+    siguientes van con `lh:[]` (así se escribe una ligadura en `SONGS`).
+    `playFragment` soltaba las notas del paso al terminar SU paso, así que el
+    bajo de una redonda sonaba lo que dura la primera semicorchea de la derecha
+    y la pieza se oía sin fondo. Ahora `heldLh` guarda lo que la izquierda tiene
+    pisado y solo se suelta cuando la izquierda vuelve a cambiar (o al terminar
+    la pasada, también si se cortó). La derecha sí se suelta paso a paso, salvo
+    que la misma nota esté sostenida por la izquierda. Afecta a **todas** las
+    piezas con bajo largo (Dragon Ball GT, Espíritu de Dios, Dios está aquí);
+    hay prueba que fija el orden exacto de encendidos y apagados.
   - **La cascada también lo dibuja** (ver la sección Cascada): era la única
     práctica que marca tecla sin decir el dedo.
   - **Intervalos y Lectura quedan fuera a propósito.** Intervalos no tiene mano

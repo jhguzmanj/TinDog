@@ -367,22 +367,18 @@ check(W("mirrorFinger(1) === 5 && mirrorFinger(5) === 1 && mirrorFinger(3) === 3
 const materialized = W("JSON.stringify(materializeAgilitySteps(AGILITY_DRILLS[0], 4, 3).map(s => [s.rhF[0], s.lhF[0]]))");
 check(JSON.parse(materialized).every(([rh, lh]) => rh + lh === 6), 'agilidad: cada paso materializado trae rhF/lhF espejados (suman 6)');
 // Cada nota de SONGS trae su dedo: los arreglos lhF/rhF calzan en tamaño con lh/rh.
-// 'dios-esta-aqui' es la ÚNICA excepción: Jorge pidió reemplazarla por la
-// salida cruda de basic-pitch, que no trae digitación. No se le inventa una
-// porque sus acordes son racimos de armónicos, no notas tocadas: unos dedos
-// ahí serían ficción con pinta de autoridad. La regla sigue viva para todas
-// las demás, que es lo que protege.
-const SIN_DEDOS = ['dios-esta-aqui'];
+// Ya no hay excepciones: la única que las tenía ('dios-esta-aqui', la salida
+// cruda de basic-pitch) volvió a salir de una partitura y trae digitación.
 const songsFingerCheck = W(`
-  SONGS.filter(s => !${JSON.stringify(SIN_DEDOS)}.includes(s.id)).every(song => song.steps.every(st =>
+  SONGS.every(song => song.steps.every(st =>
     (st.lh.length === 0 || (st.lhF && st.lhF.length === st.lh.length)) &&
     (st.rh.length === 0 || (st.rhF && st.rhF.length === st.rh.length))
   ))
 `);
 check(songsFingerCheck, 'en fragmentos, cada nota (lh/rh) tiene su dedo (lhF/rhF) del mismo tamaño');
 check(W(`SONGS.filter(s => s.steps.some(st =>
-    (st.lh.length && !st.lhF) || (st.rh.length && !st.rhF))).map(s => s.id).join()`) === SIN_DEDOS.join(),
-  'y la única pieza sin digitación es la transcripción automática, ninguna más se cuela');
+    (st.lh.length && !st.lhF) || (st.rh.length && !st.rhF))).map(s => s.id).join()`) === '',
+  'y ninguna pieza se queda sin digitación');
 
 section('Plan de hoy y progreso');
 ev('#mainTabs [data-cat="today"]');
@@ -1162,6 +1158,88 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
     'la izquierda de la estrofa también va toda con el pulgar');
   check(dbV.every(x => !x.lh.length || !x.rh.length || Math.max(...x.lh) < Math.min(...x.rh)),
     'y siempre queda por debajo de la derecha');
+
+  section('Dios está aquí: vuelve a salir de una partitura');
+  const dios = W('SONGS.find(s => s.id === "dios-esta-aqui").steps');
+  // Verificación 1 de CLAUDE.md: las duraciones dan 4 por compás, compás a
+  // compás (no solo el total: un error de +0,25 y otro de -0,25 se anularían).
+  check(sum(dios) === 64, `${sum(dios)} tiempos = 16 compases justos`);
+  let acc = 0, cuadran = 0;
+  dios.forEach(st => { acc += st.dur; if(Math.abs(acc - 4) < 1e-9){ cuadran++; acc = 0; } });
+  check(cuadran === 16 && Math.abs(acc) < 1e-9, 'y cada compás cierra en 4 tiempos exactos');
+  // La transcripción automática que había antes tenía 96,5 tiempos, racimos de
+  // hasta 6 notas y notas hasta Mi6. Nada de eso puede volver.
+  check(dios.every(st => st.lh.length <= 1 && st.rh.length <= 1),
+    'una sola tecla por mano en cada paso (Jorge no toca acordes todavía)');
+  const dNotas = dios.flatMap(st => st.lh.concat(st.rh));
+  check(Math.max(...dNotas) === 69 && Math.min(...dNotas) === 41,
+    'el rango va del Fa2 de la izquierda al La4 de la melodía, sin notas sueltas fuera');
+  // Verificación 2: la izquierda NO es invento, es la fundamental de cada
+  // cifrado impreso. Esta es la lista que se lee en la hoja, compás a compás.
+  const dBajo = dios.filter(st => st.lh.length).map(st => st.lh[0]);
+  check(JSON.stringify(dBajo) === JSON.stringify([
+      48, 43,        // c1  Do  Sol
+      45,            // c2  Lam
+      41, 43,        // c3  Fa  Sol
+      48,            // c4  Do (el Do7 no cambia el bajo)
+      41, 43,        // c5  Fa  Sol
+      48, 43, 45,    // c6  Do  Sol  Lam
+      41, 43,        // c7  Fa  Sol
+      48,            // c9  Do (casilla 2)
+      43, 45, 43, 45, 43, 45, 43,   // coro: Sol y Lam alternando
+      48,            // c17 Do
+    ]),
+    'la izquierda sigue los cifrados impresos (Do Sol Lam Fa … Sol Lam) y nada más');
+  // Verificación 3: donde entra el bajo, la melodía tiene que caer en ESE
+  // acorde. Si una cabeza estuviera mal leída, el par sonaría fuera.
+  const TRIADA = { 48:[0,4,7], 43:[7,11,2], 45:[9,0,4], 41:[5,9,0] };
+  const dFuera = dios.filter(st => st.lh.length && st.rh.length)
+    .filter(st => !TRIADA[st.lh[0]].includes(st.rh[0] % 12))
+    .map(st => [st.lh[0], st.rh[0]]);
+  check(JSON.stringify(dFuera) === JSON.stringify([[43, 64]]),
+    'cada entrada del bajo cae sobre una nota de su acorde, salvo el Mi sobre Sol del compás 7 (así lo escribe la hoja)');
+  // La mano derecha tiene DOS posiciones y no se mueve dentro de cada una:
+  // estrofa con el pulgar en Re4 (bajando al Do), coro con el pulgar en Si3.
+  const kCambio = dios.findIndex(st => (st.label || '').includes('Si3'));
+  check(kCambio > 0, 'el paso donde la mano derecha baja está marcado con label');
+  const ESTROFA = { 60:1, 62:1, 64:2, 65:3, 67:4, 69:5 };
+  const CORO    = { 59:1, 60:2, 62:3, 64:4, 65:5 };
+  check(dios.slice(0, kCambio).every(st => !st.rh.length || st.rhF[0] === ESTROFA[st.rh[0]]),
+    'en la estrofa cada nota lleva siempre el mismo dedo (la mano no se mueve)');
+  check(dios.slice(kCambio).every(st => !st.rh.length || st.rhF[0] === CORO[st.rh[0]]),
+    'y en el coro igual, con el pulgar en Si3');
+  const DEDO_IZQ = {};
+  let izqFija = true;
+  dios.forEach(st => { if(st.lh.length){
+    if(DEDO_IZQ[st.lh[0]] === undefined) DEDO_IZQ[st.lh[0]] = st.lhF[0];
+    else if(DEDO_IZQ[st.lh[0]] !== st.lhF[0]) izqFija = false;
+  }});
+  check(izqFija && Object.keys(DEDO_IZQ).length === 4,
+    'las cuatro notas graves llevan siempre el mismo dedo: la izquierda tampoco se mueve');
+  check(dios.filter(st => st.label).length === 11,
+    'once anclas marcadas para el selector de Tramo (era el pedido original: aprenderla por partes)');
+
+  section('Escuchar sostiene el bajo mientras la derecha sigue');
+  // Una nota de la izquierda que dura varios pasos se escribe una vez y los
+  // siguientes van con lh:[]. Si se soltara al terminar SU paso, el bajo de una
+  // redonda sonaría lo que dura la primera semicorchea y la pieza se oiría sin
+  // fondo — que es justo lo que se reportó de "Dios está aquí".
+  W(`window.__on = []; window.__off = [];
+     window.__playNoteSound = playNoteSound; window.__stopNoteSound = stopNoteSound;
+     playNoteSound = n => window.__on.push(n);
+     stopNoteSound = n => window.__off.push(n);
+     currentHand = 'both';
+     currentFragment = { id:'__t', name:'t', tip:'t', tempo:6000, steps:[
+       {lh:[48], lhF:[1], rh:[64], rhF:[1], dur:1},
+       {lh:[],             rh:[65], rhF:[2], dur:1},
+       {lh:[43], lhF:[4], rh:[67], rhF:[3], dur:1},
+     ] };`);
+  await W('playFragment()');
+  const onSeq = W('window.__on.join()');
+  const offSeq = W('window.__off.join()');
+  check(onSeq === '48,64,65,43,67', 'el bajo suena una sola vez por cambio, no en cada paso');
+  check(offSeq === '64,65,48,67,43', 'y se suelta recién cuando la izquierda cambia (48 después del 65, no antes)');
+  W(`playNoteSound = window.__playNoteSound; stopNoteSound = window.__stopNoteSound;`);
 
   section('Desbloqueo de audio en iOS');
   // jsdom no trae AudioContext; se inyecta una falsa MUY mínima (solo lo que
