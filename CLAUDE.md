@@ -533,8 +533,31 @@ Orden dentro del `<script>`:
     coordinar manos. El original repite cada mitad; aquí va de corrido una vez
     porque `SONGS` no tiene repeticiones, y los `label` marcan dónde empieza
     cada frase y dónde estaba el "vuelve al principio".
-    **"Dios está aquí"** (partitura real de un PDF, Instituto Técnico de Estudios
-    Musicales) se transcribió pixel por pixel: se extrajo el PDF a PNG de alta
+    **"Dios está aquí" se REEMPLAZÓ por una transcripción automática, a pedido
+    explícito de Jorge y contra la recomendación.** La versión que hay hoy es la
+    salida cruda de `basic-pitch` sobre el audio de un video. Se le midieron las
+    pegas antes de cambiarla y se le presentaron; decidió igual, así que se puso
+    tal cual, sin inventar nada. Lo que trae, medido:
+    - **La "melodía" no es una melodía.** La voz superior salta
+      `Si5 Re4 Re6 La5 Re4 Si5 Sol5 Mi4…` — el detector confunde el fundamental
+      con sus armónicos. La de la partitura era cantable: `La4 Re5 Si4 Do5…`.
+    - **Re4 aparece en el 49% de los 160 pasos** (nota sostenida re-detectada
+      en cada ventana), 38 pasos con 4+ notas simultáneas (hasta 6), 17 racimos
+      de notas a ≤2 semitonos en la misma mano (p. ej. `Re4+Fa#5+Sol5+La5`,
+      que es un armónico, no un acorde), y notas hasta Mi6.
+    - **96,5 tiempos**, que no divide entre 4: las líneas de compás de la
+      cascada se van corriendo respecto a la música.
+    - **Sin `lhF`/`rhF` y sin `label`.** Sin digitación a propósito: poner dedos
+      sobre un racimo de armónicos sería ficción con pinta de autoridad. Es la
+      **única** pieza sin digitación, y la prueba `songsFingerCheck` la exceptúa
+      por id (`SIN_DEDOS`) con una segunda prueba que verifica que **ninguna
+      otra** se cuele por esa puerta. Sin `label`, el selector de Tramo pasa de
+      5 anclas de frase a 160 pasos sueltos.
+    - Con 6 notas por paso, `checkFragment` exige las 6 pulsadas a la vez para
+      avanzar; en la cascada en modo espera se congela hasta que estén todas.
+    **La versión anterior, transcrita de la partitura, está en el historial de
+    git** (commit anterior a este) — si hay que volver, se recupera de ahí, no
+    se re-transcribe. Cómo se hizo, por si se necesita: se extrajo el PDF a PNG de alta
     resolución (`pdftoppm -r 300`), se detectaron las líneas del pentagrama por
     análisis de columnas oscuras, y se dibujaron líneas de referencia por cada
     posición diatónica (línea/espacio) superpuestas a la imagen para leer cada

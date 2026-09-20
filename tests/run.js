@@ -367,13 +367,22 @@ check(W("mirrorFinger(1) === 5 && mirrorFinger(5) === 1 && mirrorFinger(3) === 3
 const materialized = W("JSON.stringify(materializeAgilitySteps(AGILITY_DRILLS[0], 4, 3).map(s => [s.rhF[0], s.lhF[0]]))");
 check(JSON.parse(materialized).every(([rh, lh]) => rh + lh === 6), 'agilidad: cada paso materializado trae rhF/lhF espejados (suman 6)');
 // Cada nota de SONGS trae su dedo: los arreglos lhF/rhF calzan en tamaño con lh/rh.
+// 'dios-esta-aqui' es la ÚNICA excepción: Jorge pidió reemplazarla por la
+// salida cruda de basic-pitch, que no trae digitación. No se le inventa una
+// porque sus acordes son racimos de armónicos, no notas tocadas: unos dedos
+// ahí serían ficción con pinta de autoridad. La regla sigue viva para todas
+// las demás, que es lo que protege.
+const SIN_DEDOS = ['dios-esta-aqui'];
 const songsFingerCheck = W(`
-  SONGS.every(song => song.steps.every(st =>
+  SONGS.filter(s => !${JSON.stringify(SIN_DEDOS)}.includes(s.id)).every(song => song.steps.every(st =>
     (st.lh.length === 0 || (st.lhF && st.lhF.length === st.lh.length)) &&
     (st.rh.length === 0 || (st.rhF && st.rhF.length === st.rh.length))
   ))
 `);
 check(songsFingerCheck, 'en fragmentos, cada nota (lh/rh) tiene su dedo (lhF/rhF) del mismo tamaño');
+check(W(`SONGS.filter(s => s.steps.some(st =>
+    (st.lh.length && !st.lhF) || (st.rh.length && !st.rhF))).map(s => s.id).join()`) === SIN_DEDOS.join(),
+  'y la única pieza sin digitación es la transcripción automática, ninguna más se cuela');
 
 section('Plan de hoy y progreso');
 ev('#mainTabs [data-cat="today"]');
