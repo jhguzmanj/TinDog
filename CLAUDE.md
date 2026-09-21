@@ -150,6 +150,39 @@ Orden dentro del `<script>`:
   - `chordReps` se declara **arriba, junto a `scaleTempoMode`**, no con el resto
     del estado de acordes: lo lee `enterMode`, que está declarado antes (mismo
     riesgo de zona muerta temporal que tuvo `playbackToken`).
+  **Tres menús (`CHORD_GROUPS`, `chordGroup` persistido).** `basicos` (los 6
+  primeros de `CHORDS`), `resto` (los otros 18) y `all`. El orden de `CHORDS` ya
+  ponía los seis básicos al frente y el plan de "Hoy" se apoyaba en eso con un
+  `slice(0,6)` suelto; ahora hay UN sitio que lo define y el plan lo usa.
+  **Arranca en `basicos` a propósito**: el consejo del modo decía "empieza por
+  C, G, F, Am, Em, Dm" y con los 24 de golpe eso no se cumplía.
+  - `practiceIndex` indexa la lista VISIBLE (`visibleChords()`), no `CHORDS`.
+    Se puede porque la llave del progreso es `chord.name`, no el índice — al
+    revés que en `INTERVALS`, donde el índice ES la llave y por eso no se
+    puede reordenar.
+  - **`chordDoneSet` guarda NOMBRES, no índices.** Con listas de distinto largo
+    un índice guardado apuntaría a otro acorde al cambiar de menú.
+  - `pickChordByName()` abre el menú del acorde antes de buscarlo, por el mismo
+    fallo silencioso que ya tuvieron Fragmentos y Agilidad.
+  **Calificación del ejercicio (`chordVerdict`).** Pedido de Jorge: "saber
+  cuántas veces lo hice bien". Con repeticiones y metrónomo, la tanda se
+  califica con el **mismo listón que las escalas** (`CHORD_TIMING_OK =
+  SCALE_TIMING_OK`, ≥80% de los toques dentro de los 90 ms del pulso) y el
+  veredicto dice `Do: 3 de 4 a tiempo (75%) — este repítelo · llevas 5 de 8
+  acordes logrados`. Decisiones:
+  - **Se avanza al siguiente acorde aunque la tanda no pase.** Un candado
+    "hasta que salga" lo dejaría atascado en Do para siempre y los otros 23 sin
+    practicar. La calificación mide, no bloquea. `chordGoodRun`/`chordSetsRun`
+    son el marcador de la tanda (se reinician al cambiar de menú, de
+    repeticiones, o al dar la vuelta completa).
+  - **Sin metrónomo no se califica**: `timingPct` devuelve `null`, la tanda se
+    da por buena y el veredicto lo dice ("enciende el metrónomo para
+    calificarlo"). No inventar una nota de algo que no se midió.
+  - `recordChord(name, inv, pct, bpm, passed)` guarda `bestPct`, `bestBpm` y
+    `good`. Los tres son máximos o contadores que solo suben, así que
+    `mergeRecords` (que fusiona cualquier número por máximo) los maneja sin
+    caso especial. Una tanda fallada **sí** suma `runs` y `lastDay`: si no, un
+    día de práctica dura saldría vacío en el plan.
 - **Intervalos**: `checkInterval` compara **notas MIDI exactas** (antes comparaba solo
   la letra y Do4+Mi5 aprobaba como 3ª mayor — no reintroducir). Modo oído: la app
   toca raíz y segunda nota (`playEarInterval`), solo se marca la raíz, se registra
@@ -673,6 +706,53 @@ Orden dentro del `<script>`:
       coordinación sin estrenar, el calentamiento es ese y **en orden**, no el
       "menos practicado" (el 6 no tiene sentido antes del 1). Cuando ya pasó por
       los seis vuelve la rotación normal entre los catorce.
+    - **Modo al azar y niveles (`agilRandom`, `agilLevel`, los dos
+      persistidos).** Jorge: "está muy lineal, las canciones van saltando de
+      teclas". Es el límite de cualquier patrón fijo: a la tercera vuelta la
+      mano lo hace sola y ya no se entrena la coordinación, se entrena la
+      memoria. **Lo que NO se puede hacer es barajar los pasos**: el esqueleto
+      —quién pulsa en qué tiempo— ES el ejercicio, y reordenarlo mata "la
+      izquierda sostiene". `randomCoordPattern(shape, nivel)` conserva el ritmo
+      y el reparto de manos **exactos** y sortea solo las NOTAS dentro de la
+      posición de cinco dedos; hay prueba que compara los dos sorteos y exige
+      que el ritmo sea idéntico.
+      - **El dedo sale del grado** (`RND_RH[i] → dedo i+1`, `RND_LH[i] → 5-i`),
+        que es una biyección: la regla de "cada tecla siempre el mismo dedo" se
+        cumple sola con notas sorteadas. Probado sobre 40 sorteos.
+      - **El espejo no sortea la izquierda**: vive de que las dos manos usen el
+        MISMO dedo, así que la izquierda sigue a la derecha hacia el otro lado
+        (`RND_LH_MIRROR`). Hay prueba de que `lf === rf` siempre.
+      - **`RND_LEVELS` mueve dos perillas**: cuánto puede saltar la derecha de
+        una nota a la siguiente (`rhStep` 1/2/4/4) y entre cuántas notas graves
+        elige la izquierda (`lhPool`). Empezar por grados vecinos es lo que hace
+        que el nivel 1 sea de verdad un nivel 1: **el salto es lo que
+        descoordina, no la nota**.
+      - **Solo aplica a los de coordinación** (`agilRandomOn()` mira
+        `currentDrillShape.coord`): sortear "Posición de 5 dedos" o "Notas
+        repetidas" destruiría el ejercicio, que es justamente una figura fija.
+        La barra entera se esconde en el grupo Dedos.
+      - **El sorteo es por VUELTA, no por paso**: se hace en
+        `rebuildAgilityFragment()`. Dentro de una vuelta el ejercicio tiene que
+        quedarse quieto o "Escuchar" y la cascada tocarían otra cosa. Cada
+        vuelta nueva trae sorteo nuevo (`onAgilityRoundDone`), y `🎲 Otro
+        sorteo` lo fuerza a mano.
+      - **Las etiquetas se regeneran.** Las originales nombran dedos y notas
+        fijas ("3 y 3", "Cambia la izquierda (Sol)") y al azar mentirían; se
+        reemplazan por lo único que sigue siendo cierto en cualquier sorteo:
+        quién pulsa en ese paso. El `tip` también avisa y dice que las notas
+        fijas que menciona ya no aplican.
+      - **Sube de nivel solo con DOS vueltas limpias seguidas**
+        (`AGIL_LEVEL_UP`), no con dos vueltas a secas: terminar una vuelta
+        siempre se puede si se va despacio, así que la vuelta sola no acredita
+        nada — lo que acredita es terminarla sin equivocarse. Nunca baja solo;
+        el selector de nivel está a la vista para bajarlo a mano.
+    - **Notas equivocadas (`fragMistakes`).** Hacía falta para lo de arriba y no
+      existía: una nota mal tocada simplemente no avanzaba y no dejaba rastro.
+      `checkFragment(note)` ahora recibe la nota y cuenta las que no están en el
+      paso. **Se perdonan las del paso recién acertado** (`fragJustPlayed`):
+      entre acertar y dibujar el paso siguiente hay 450 ms y una tecla que venía
+      sonando no es un error. Sirve para todos los fragmentos, no solo para los
+      ejercicios: el mensaje de fin de pieza ahora dice si salió limpia.
   - **`▶ Escuchar` se puede cortar (`stopFragmentPlayback`).** El mismo botón
     hace las dos cosas: mientras suena dice `■ Detener` (con `.busy`) y volver a
     tocarlo corta. Antes no había salida: una pieza son medio minuto y había que
@@ -862,7 +942,9 @@ cualquier otro navegador funcionan igual que antes (`cloudState: 'off'`).
 ## Otras preferencias persistidas
 `kbZoom2`, `labelStyle`, `labelsShown` (ahora sí se recuerda; por defecto visible),
 `fragCat` (categoría de Fragmentos), `agilGroup` (Dedos / Manos juntas),
-`chordReps` (repeticiones de acordes), `audioFallback` (sonido alternativo, ver más abajo),
+`agilRandom` / `agilLevel` (notas al azar y nivel en los ejercicios de coordinación),
+`chordReps` (repeticiones de acordes), `chordGroup` (qué acordes: básicos / demás / todos),
+`audioFallback` (sonido alternativo, ver más abajo),
 `solfaShown`, `cascadeSpeed`, `scaleOpts` (mano/octavas/sentido/dedos/variante menor),
 `metroBpm`, `readingLevel`, `handsShown`, `soundTarget`.
 
@@ -1116,6 +1198,17 @@ forma de onda (decaimiento, pico, registro) en vez de confiar en el oído.
   de lo que toca Jorge todavía se ignora: sigue pendiente.
 
 ## Cosas ya resueltas — no "arreglar" de nuevo
+- **Temporizadores apilados que borraban el mensaje final**
+  (`scheduleFragmentStep` / `scheduleChordStep`). Cada acierto agendaba el
+  dibujo del paso siguiente con un `setTimeout` suelto (450 ms en fragmentos,
+  700 ms en acordes). Tocando más rápido que eso —o sea, tocando normal— se
+  apilaban varios y los viejos disparaban DESPUÉS del mensaje de fin de vuelta,
+  que se borraba antes de poder leerse. Se descubrió al poner información de
+  verdad ahí (la calificación del acorde y el "vuelta limpia" que sube de
+  nivel); con el genérico "¡Completaste el fragmento!" pasaba igual y no se
+  notaba. Ahora solo puede haber **un** temporizador pendiente por modo, y el
+  camino de "terminó" cancela el que hubiera. **Cualquier `setTimeout` nuevo
+  que redibuje el paso va por estas funciones, no suelto.**
 - Doble sonido con el piano conectado (solo `src:'ui'` sintetiza).
 - Listener duplicado del `<select>` de dispositivos MIDI (`deviceSelectBound`).
 - `ensureValidHandSelection()` / `advanceToPlayableStep()` (red de seguridad de manos).

@@ -716,8 +716,10 @@
     /* En angosto la etiqueta al lado deja a los botones una columna estrecha y
        la fila de categorías se parte en tres. Etiqueta arriba = ancho completo
        para los botones, y ninguna categoría queda escondida tras un scroll. */
-    #fragCatBar .reg-group, #agilGroupBar .reg-group{ flex-direction:column; align-items:flex-start; gap:6px; width:100%; }
-    #fragCatBar .reg-picker, #agilGroupBar .reg-picker{ width:100%; }
+    #fragCatBar .reg-group, #agilGroupBar .reg-group, #chordGroupBar .reg-group,
+    #agilRandomBar .reg-group{ flex-direction:column; align-items:flex-start; gap:6px; width:100%; }
+    #fragCatBar .reg-picker, #agilGroupBar .reg-picker, #chordGroupBar .reg-picker,
+    #agilRandomBar .reg-picker{ width:100%; }
   }
 
   /* =====================================================================
@@ -1034,6 +1036,10 @@
       <span class="reg-label">Ir directo a:</span>
       <div class="reg-picker" id="chordPicker"></div>
     </div>
+    <div id="chordGroupBar" class="reg-bar" style="display:none;">
+      <span class="reg-group"><span class="reg-label g-type">Qué acordes</span>
+      <div class="reg-picker g-type" id="chordGroupPicker"></div></span>
+    </div>
     <div id="chordOctaveBar" class="reg-bar" style="display:none;">
       <span class="reg-group"><span class="reg-label g-oct">Octava</span>
       <div class="reg-picker g-oct" id="chordOctavePicker"></div></span>
@@ -1092,6 +1098,16 @@
         <div class="reg-picker g-type" id="agilGroupPicker"></div></span>
       </div>
       <div class="mode-tabs sub-tabs scroll-tabs" id="fragSubTabs"></div>
+      <div id="agilRandomBar" class="reg-bar" style="display:none;">
+        <span class="reg-group"><span class="reg-label g-rep">Notas</span>
+        <div class="reg-picker g-rep" id="agilRndPicker">
+          <button class="reg-btn active" data-arnd="0">Fijas</button>
+          <button class="reg-btn" data-arnd="1">🎲 Al azar</button>
+        </div></span>
+        <span class="reg-group" id="agilLevelGroup"><span class="reg-label g-dir">Nivel</span>
+        <div class="reg-picker g-dir" id="agilLevelPicker"></div></span>
+        <button id="agilShuffleBtn" class="ghost-btn primary" style="display:none;">🎲 Otro sorteo</button>
+      </div>
       <div id="agilOctaveBar" class="reg-bar" style="display:none;">
         <span class="reg-group"><span class="reg-label g-oct">Octava mano izquierda</span>
         <div class="reg-picker g-oct" id="agilLhOctavePicker"></div></span>
@@ -2179,6 +2195,15 @@ function buildScaleRun(scale, hand, octaves, dir, blocks){
   return { scaleId: scale.id, hand, octaves, dir, blocks: !!blocks, steps, mistakes: 0, timing: [], startedAt: null };
 }
 
+// Tres menús, pedido de Jorge: los que de verdad usa, los que no, y todos.
+// El orden de CHORDS ya ponía los seis básicos al frente (y el plan de "Hoy"
+// se apoyaba en eso con un slice(0,6) suelto), así que los grupos solo le dan
+// nombre a algo que ya existía — y ahora hay UN sitio que lo define.
+const CHORD_GROUPS = [
+  {id:'basicos', name:'Los 6 de siempre', from:0, to:6},
+  {id:'resto',   name:'Los demás',        from:6, to:24},
+  {id:'all',     name:'Todos',            from:0, to:24},
+];
 const CHORDS = [
   {name:'C',  full:'Do mayor',        root:0,  q:'M'},
   {name:'G',  full:'Sol mayor',       root:7,  q:'M'},
@@ -2538,6 +2563,70 @@ const COORD_DRILLS = [
     ]
   },
 ];
+// ===== Modo aleatorio de los ejercicios de coordinación =====
+// Jorge: "está muy lineal, las canciones van saltando de teclas". Tiene razón,
+// y es el límite de cualquier patrón fijo: a la tercera vuelta la mano lo hace
+// sola y ya no se entrena la coordinación, se entrena la memoria.
+// Lo que NO se puede hacer es barajar los pasos: el esqueleto —quién pulsa en
+// qué tiempo— ES el ejercicio ("la izquierda sostiene" deja de existir si se
+// reordena). Así que se conserva el ritmo tal cual y se sortean las NOTAS
+// dentro de la posición de cinco dedos.
+const RND_RH = [0, 2, 4, 5, 7];             // Do4..Sol4; dedo = índice + 1
+const RND_LH = [0, 2, 4, 5, 7];             // Do3..Sol3; dedo = 5 - índice
+const RND_LH_MIRROR = [0, -1, -3, -5, -7];  // Do3 bajando; dedo = índice + 1
+// Los niveles mueven DOS perillas: cuánto puede saltar la derecha de una nota
+// a la siguiente, y entre cuántas notas graves elige la izquierda. Empezar por
+// grados vecinos es lo que hace que el nivel 1 sea de verdad un nivel 1: el
+// salto es lo que descoordina, no la nota.
+const RND_LEVELS = [
+  {n:1, label:'Vecinas',       rhStep:1, lhPool:[0]},
+  {n:2, label:'Saltos cortos', rhStep:2, lhPool:[0, 4]},
+  {n:3, label:'Toda la mano',  rhStep:4, lhPool:[0, 3, 4]},
+  {n:4, label:'Sin red',       rhStep:4, lhPool:[0, 1, 2, 3, 4]},
+];
+function rndLevel(n){
+  return RND_LEVELS[Math.max(0, Math.min(RND_LEVELS.length - 1, (n || 1) - 1))];
+}
+// Devuelve un `pattern` con el MISMO ritmo y las mismas manos que el original,
+// pero con las notas sorteadas. El dedo sale del grado (posición fija), así que
+// la regla de "cada tecla siempre con el mismo dedo" se cumple sola.
+function randomCoordPattern(shape, level){
+  const lv = rndLevel(level);
+  const pick = a => a[Math.floor(Math.random() * a.length)];
+  const espejo = shape.id === 'manos-espejo';
+  let r = Math.floor(Math.random() * RND_RH.length);
+  let l = lv.lhPool[0];
+  return shape.pattern.map(p => {
+    const out = { dur: p.dur };
+    if(p.r !== undefined){
+      const cands = [];
+      for(let i = Math.max(0, r - lv.rhStep); i <= Math.min(RND_RH.length - 1, r + lv.rhStep); i++){
+        if(i !== r) cands.push(i);
+      }
+      if(cands.length) r = pick(cands);
+      out.r = RND_RH[r]; out.rf = r + 1;
+    }
+    if(p.l !== undefined){
+      if(espejo){
+        // El espejo vive de que las dos manos usen el MISMO dedo: la izquierda
+        // no sortea, sigue a la derecha hacia el otro lado.
+        out.l = RND_LH_MIRROR[r]; out.lf = r + 1;
+      } else {
+        const cands = lv.lhPool.filter(i => i !== l);
+        if(cands.length) l = pick(cands);
+        out.l = RND_LH[l]; out.lf = 5 - l;
+      }
+    }
+    // La etiqueta original nombra dedos y notas fijas ("3 y 3", "Cambia la
+    // izquierda (Sol)") y al azar mentiría. Se reemplaza por lo único que
+    // sigue siendo cierto en cualquier sorteo: quién pulsa en este paso.
+    out.label = out.l !== undefined && out.r !== undefined
+      ? (espejo ? 'Las dos con el dedo ' + out.rf : 'Las dos a la vez')
+      : (out.l !== undefined ? 'Solo izquierda' : 'Solo derecha');
+    return out;
+  });
+}
+
 // Los de dedos son los que ya había; los de manos se agregan a la misma lista
 // para que "Hoy", el progreso y las sub-pestañas no necesiten saber la diferencia.
 AGILITY_DRILLS.forEach(d => { d.grupo = d.grupo || 'dedos'; });
@@ -3503,6 +3592,17 @@ try {
   const r = parseInt(localStorage.getItem('chordReps'), 10);
   if([1,2,4,8].includes(r)) chordReps = r;
 } catch(e){}
+// Arranca en los seis básicos a propósito: el consejo del modo ya decía
+// "empieza por C, G, F, Am, Em, Dm" y con los 24 de golpe eso no se cumplía.
+let chordGroup = 'basicos';
+try {
+  const g = localStorage.getItem('chordGroup');
+  if(g && CHORD_GROUPS.some(x => x.id === g)) chordGroup = g;
+} catch(e){}
+function visibleChords(){
+  const g = CHORD_GROUPS.find(x => x.id === chordGroup) || CHORD_GROUPS[2];
+  return CHORDS.slice(g.from, g.to);
+}
 try {
   const so = JSON.parse(localStorage.getItem('scaleOpts') || '{}');
   if(so.hand) scaleHand = so.hand;
@@ -3571,6 +3671,7 @@ function enterMode(mode){
   show(chordTip, mode === 'chords');
   show(intervalTip, mode === 'intervals');
   show(chordOctaveBar, mode === 'chords', 'flex');
+  show($('chordGroupBar'), mode === 'chords', 'flex');
   show(intervalRootBar, mode === 'intervals', 'flex');
   show($('chordPickBar'), mode === 'chords', 'flex');
   show($('intervalPickBar'), mode === 'intervals', 'flex');
@@ -3948,6 +4049,20 @@ const INV_NAMES = ['posición fundamental', '1ª inversión', '2ª inversión'];
 // nota de escala, y la cinta de casillas es a la vez el contador de toques.
 let chordRepDone = 0;
 let chordRepTiming = [];
+// Calificación del ejercicio (pedido de Jorge: "saber cuántas veces lo hice
+// bien"). Mismo listón que las escalas: ≥80% de los toques dentro de los 90 ms
+// del pulso. SIN metrónomo no hay nada que medir y la ronda se da por buena —
+// no inventar una nota de algo que no se midió.
+const CHORD_TIMING_OK = SCALE_TIMING_OK;
+let chordGoodRun = 0;    // acordes logrados en esta tanda
+let chordSetsRun = 0;    // acordes intentados en esta tanda
+// Mismo problema que en Fragmentos: encadenando acordes rápido, el
+// temporizador del acorde anterior borraba el veredicto del siguiente.
+let chordStepTimer = null;
+function scheduleChordStep(ms){
+  if(chordStepTimer) clearTimeout(chordStepTimer);
+  chordStepTimer = setTimeout(() => { chordStepTimer = null; startChordStep(); }, ms);
+}
 // Para contar un segundo toque hay que ver la mano LEVANTADA en medio: si no,
 // tener el acorde pisado dispararía las repeticiones de golpe.
 let chordAwaitRelease = false;
@@ -3955,7 +4070,7 @@ let chordAwaitRelease = false;
 function markChordTargets(){
   clearAllHighlights();
   clearFingerNums();
-  const chord = CHORDS[practiceIndex];
+  const chord = visibleChords()[practiceIndex];
   const notes = chordVoicing(chord, chordInversion, chordOctave);
   const fingers = CHORD_FINGERS[chordHand][chordInversion];
   notes.forEach((n, i) => {
@@ -3963,6 +4078,20 @@ function markChordTargets(){
     drawFingerNum(n, fingers[i], chordHand);
   });
   return notes;
+}
+
+// "Do: 3 de 4 a tiempo — llevas 5 de 8 acordes logrados". Con una sola
+// repetición no hay ejercicio que calificar y se queda en el "Correcto" de
+// siempre: un marcador de 1 de 1 no dice nada.
+function chordVerdict(chord, pct, passed){
+  if(chordReps <= 1) return 'Correcto';
+  if(pct === null){
+    return chord.name + ': ' + chordReps + ' de ' + chordReps + ' ✓ · enciende el metrónomo para calificarlo';
+  }
+  const aTiempo = chordRepTiming.filter(v => typeof v === 'number' && Math.abs(v) <= TIMING_OK).length;
+  return chord.name + ': ' + aTiempo + ' de ' + chordReps + ' a tiempo (' + pct + '%)' +
+    (passed ? ' ✓' : ' — este repítelo') +
+    ' · llevas ' + chordGoodRun + ' de ' + chordSetsRun + ' acordes logrados';
 }
 
 function renderChordRepBox(){
@@ -3993,8 +4122,8 @@ function startChordStep(){
   chordRepDone = 0;
   chordRepTiming = [];
   chordAwaitRelease = false;
-  const chord = CHORDS[practiceIndex];
-  progressText.textContent = `Acorde ${practiceIndex+1} / ${CHORDS.length}`;
+  const chord = visibleChords()[practiceIndex];
+  progressText.textContent = `Acorde ${practiceIndex+1} / ${visibleChords().length}`;
   targetNoteLabel.textContent = chord.name + (chordInversion ? ' /' + INV_NAMES[chordInversion].slice(0,2) : '');
 
   const notes = markChordTargets();
@@ -4038,7 +4167,7 @@ function buildOctavePicker(containerId, current, onPick, isValid){
 function checkChord(){
   if(currentMode !== 'chords') return;
   if(chordAwaitRelease) return;   // todavía no se levantó la mano del toque anterior
-  const chord = CHORDS[practiceIndex];
+  const chord = visibleChords()[practiceIndex];
   let allPresent;
   if(chordStrict){
     const notes = chordVoicing(chord, chordInversion, chordOctave);
@@ -4063,19 +4192,29 @@ function checkChord(){
       feedbackText.className = 'feedback correct';
       return;
     }
-    feedbackText.textContent = 'Correcto';
-    feedbackText.className = 'feedback correct';
-    chordDoneSet.add(practiceIndex);
-    if(typeof recordChord === 'function') recordChord(chord.name, chordInversion);
+    const pct = timingPct(chordRepTiming);
+    const passed = pct === null || pct >= CHORD_TIMING_OK;
+    chordSetsRun++;
+    if(passed) chordGoodRun++;
+    chordDoneSet.add(chord.name);
+    if(typeof recordChord === 'function'){
+      recordChord(chord.name, chordInversion, pct, metro.on ? metro.bpm : null, passed);
+    }
+    feedbackText.textContent = chordVerdict(chord, pct, passed);
+    feedbackText.className = 'feedback ' + (passed ? 'correct' : 'wrong');
     practiceIndex++;
-    if(practiceIndex >= CHORDS.length){
+    if(chordStepTimer){ clearTimeout(chordStepTimer); chordStepTimer = null; }
+    if(practiceIndex >= visibleChords().length){
+      const total = visibleChords().length, logrados = chordGoodRun, intentos = chordSetsRun;
       setTimeout(() => {
-        feedbackText.textContent = 'Recorriste los 24 acordes — reiniciando';
+        feedbackText.textContent = 'Terminaste los ' + total + ' acordes de esta lista' +
+          (chordReps > 1 ? ' — ' + logrados + ' de ' + intentos + ' a tiempo' : '') + '. Reiniciando';
         practiceIndex = 0;
-        setTimeout(startChordStep, 1000);
+        chordGoodRun = 0; chordSetsRun = 0;
+        scheduleChordStep(1400);
       }, 400);
     } else {
-      setTimeout(startChordStep, 500);
+      scheduleChordStep(700);
     }
   }
 }
@@ -4105,6 +4244,7 @@ bindPicker('chordInvPicker', 'inv', () => chordInversion, v => {
 bindPicker('chordHandPicker', 'chand', () => chordHand, v => { chordHand = v; startChordStep(); });
 bindPicker('chordRepsPicker', 'creps', () => String(chordReps), v => {
   chordReps = parseInt(v, 10);
+  chordGoodRun = 0; chordSetsRun = 0;
   try { localStorage.setItem('chordReps', chordReps); } catch(e){}
   show($('timingBox'), chordReps > 1, 'flex');
   startChordStep();
@@ -4246,11 +4386,36 @@ function shapeOctaveValid(oct, shape, hand){
   return root + lo >= MIN_NOTE && root + hi <= MAX_NOTE;
 }
 
+// Modo aleatorio y nivel. Solo aplican a los de coordinación: sortear las
+// notas de "Posición de 5 dedos" o de "Notas repetidas" destruiría el
+// ejercicio, que es justamente una figura fija.
+let agilRandom = false, agilLevel = 1;
+try {
+  agilRandom = localStorage.getItem('agilRandom') === '1';
+  const n = parseInt(localStorage.getItem('agilLevel'), 10);
+  if(n >= 1 && n <= RND_LEVELS.length) agilLevel = n;
+} catch(e){}
+let agilStreak = 0;   // vueltas limpias seguidas en el nivel actual
+function agilRandomOn(){ return agilRandom && !!currentDrillShape.coord; }
+
 function rebuildAgilityFragment(){
   const shape = currentDrillShape;
+  // Se sortea AQUÍ y no en cada paso: dentro de una vuelta el ejercicio tiene
+  // que quedarse quieto (si no, "Escuchar" y la cascada tocarían otra cosa).
+  // Cada vuelta nueva trae un sorteo nuevo, que es el punto del modo.
+  const random = agilRandomOn();
+  const gen = random
+    ? Object.assign({}, shape, { pattern: randomCoordPattern(shape, agilLevel) })
+    : shape;
+  // El consejo del ejercicio nombra notas fijas ("la izquierda va Do–Sol–Fa–Do")
+  // y al azar eso deja de ser cierto: se avisa en vez de dejarlo mintiendo.
+  const lv = rndLevel(agilLevel);
+  const tip = random
+    ? shape.tip + ' <b>🎲 Al azar, nivel ' + lv.n + ' (' + lv.label.toLowerCase() + '):</b> el ritmo y el reparto de manos son los mismos, pero las <b>notas cambian en cada vuelta</b>, así que no te las puedes aprender de memoria — hay que mirar. Las notas fijas que menciona el consejo de arriba ya no aplican. Dos vueltas seguidas sin errores y subes de nivel.'
+    : shape.tip;
   currentFragment = {
-    id: shape.id, name: shape.name, tip: shape.tip, tempo: shape.tempo,
-    steps: materializeAgilitySteps(shape, agilRhOct, agilLhOct)
+    id: shape.id, name: shape.name, tip: tip, tempo: shape.tempo,
+    steps: materializeAgilitySteps(gen, agilRhOct, agilLhOct)
   };
 }
 
@@ -4270,6 +4435,37 @@ function refreshAgilOctavePickers(){
     agilLhOct = oct;
     onAgilityChange();
   }, (oct) => shapeOctaveValid(oct, currentDrillShape, 'lh'));
+  renderAgilRandomBar();
+}
+
+function renderAgilRandomBar(){
+  const coord = !!currentDrillShape.coord;
+  show($('agilRandomBar'), practiceFamily === 'agility' && coord, 'flex');
+  const rndCont = $('agilRndPicker');
+  if(rndCont){
+    rndCont.querySelectorAll('.reg-btn').forEach(b => {
+      b.classList.toggle('active', (b.dataset.arnd === '1') === agilRandom);
+    });
+  }
+  show($('agilLevelGroup'), agilRandom, 'inline-flex');
+  show($('agilShuffleBtn'), agilRandom, 'inline-block');
+  const cont = $('agilLevelPicker');
+  if(!cont) return;
+  cont.innerHTML = '';
+  RND_LEVELS.forEach(lv => {
+    const b = document.createElement('button');
+    b.className = 'reg-btn' + (lv.n === agilLevel ? ' active' : '');
+    b.textContent = lv.n + ' · ' + lv.label;
+    b.dataset.alevel = lv.n;
+    b.title = 'Nivel ' + lv.n + ': ' + lv.label;
+    b.addEventListener('click', () => {
+      agilLevel = lv.n; agilStreak = 0;
+      try { localStorage.setItem('agilLevel', agilLevel); } catch(e){}
+      renderAgilRandomBar();
+      onAgilityChange();
+    });
+    cont.appendChild(b);
+  });
 }
 
 function onAgilityChange(){
@@ -4282,6 +4478,46 @@ function onAgilityChange(){
     exitCascade();
     setupCascadeKeyboard();
   }
+}
+$('agilRndPicker').querySelectorAll('.reg-btn').forEach(b => {
+  b.addEventListener('click', () => {
+    agilRandom = b.dataset.arnd === '1';
+    agilStreak = 0;
+    try { localStorage.setItem('agilRandom', agilRandom ? '1' : '0'); } catch(e){}
+    renderAgilRandomBar();
+    onAgilityChange();
+  });
+});
+// Sortear de nuevo a mano: sin esto, para cambiar de notas había que terminar
+// la vuelta entera o cambiar de ejercicio y volver.
+$('agilShuffleBtn').addEventListener('click', onAgilityChange);
+
+// Se llama al terminar una vuelta del ejercicio. En modo aleatorio sortea
+// notas nuevas, y si la vuelta salió sin errores sube el peldaño de la racha.
+// Dos vueltas LIMPIAS seguidas suben de nivel: terminar una vuelta siempre se
+// puede si se va despacio, así que la vuelta sola no acredita nada — lo que
+// acredita es terminarla sin equivocarse.
+const AGIL_LEVEL_UP = 2;
+function onAgilityRoundDone(mistakes){
+  if(currentMode !== 'agility' || !agilRandomOn()) return '';
+  let msg = '';
+  if(mistakes === 0){
+    agilStreak++;
+    if(agilStreak >= AGIL_LEVEL_UP && agilLevel < RND_LEVELS.length){
+      agilLevel++;
+      agilStreak = 0;
+      try { localStorage.setItem('agilLevel', agilLevel); } catch(e){}
+      msg = ' ¡Subes al nivel ' + agilLevel + ' (' + rndLevel(agilLevel).label + ')!';
+      renderAgilRandomBar();
+    } else if(agilLevel < RND_LEVELS.length){
+      msg = ' Otra limpia y subes de nivel.';
+    }
+  } else {
+    agilStreak = 0;
+  }
+  rebuildAgilityFragment();   // notas nuevas para la vuelta siguiente
+  renderFragTip();            // el consejo dice el nivel: si subió, hay que redibujarlo
+  return msg;
 }
 
 // Agilidad SÍ se filtra ahora: con los seis de coordinación son catorce
@@ -4404,6 +4640,7 @@ function loadPracticeFamily(family){
   agilOctaveBar.style.display = family === 'agility' ? 'flex' : 'none';
   show($('fragCatBar'), family === 'songs', 'flex');
   show($('agilGroupBar'), family === 'agility', 'flex');
+  if(family !== 'agility') show($('agilRandomBar'), false, 'flex');
   if(family === 'agility'){
     renderAgilGroupPicker();
     currentDrillShape = visibleDrills()[0];
@@ -4482,6 +4719,10 @@ function startFragmentStep(){
   // `playFragment` llega aquí con `isPlayingBack` ya en false, así que no
   // se muerde la cola.
   stopFragmentPlayback();
+  // Vuelta nueva: el contador de errores arranca de cero. Se mira antes de
+  // advanceToPlayableStep(), que puede mover el índice si el paso 0 está vacío
+  // para la mano elegida.
+  if(practiceIndex === 0){ fragMistakes = 0; fragJustPlayed = new Set(); }
   clearAllHighlights();
   feedbackText.textContent = '';
   feedbackText.className = 'feedback';
@@ -4516,7 +4757,22 @@ function startFragmentStep(){
   });
 }
 
-function checkFragment(){
+// Notas equivocadas de la vuelta en curso. Hasta ahora una nota mal tocada
+// simplemente no avanzaba y no dejaba rastro: no se podía decir si una vuelta
+// salió limpia, que es lo que hace falta para subir de nivel solo.
+let fragMistakes = 0;
+let fragJustPlayed = new Set();
+// Cada acierto agenda el dibujo del paso siguiente a 450 ms. Tocando más
+// rápido que eso —o sea, tocando normal— se apilaban varios temporizadores y
+// los viejos seguían disparando DESPUÉS del mensaje de fin de vuelta, que
+// quedaba borrado antes de poder leerse. Solo puede haber uno pendiente.
+let fragStepTimer = null;
+function scheduleFragmentStep(ms){
+  if(fragStepTimer) clearTimeout(fragStepTimer);
+  fragStepTimer = setTimeout(() => { fragStepTimer = null; startFragmentStep(); }, ms);
+}
+
+function checkFragment(note){
   if((currentMode !== 'fragments' && currentMode !== 'agility') || isPlayingBack) return;
   const step = currentFragment.steps[practiceIndex];
   if(!step) return;
@@ -4526,8 +4782,13 @@ function checkFragment(){
   // practicar "ambas manos" con el mismo patrón en dos octavas), tocar solo
   // una de las dos no debe darse por válido.
   const target = new Set(notes);
+  // Las notas del paso RECIÉN acertado se perdonan: entre acertar y dibujar el
+  // paso siguiente hay 450 ms, y una tecla que todavía venía sonando de antes
+  // no es una equivocación.
+  if(typeof note === 'number' && !target.has(note) && !fragJustPlayed.has(note)) fragMistakes++;
   const allPresent = [...target].every(n => activeNotes.has(n));
   if(allPresent){
+    fragJustPlayed = target;
     feedbackText.textContent = 'Correcto';
     feedbackText.className = 'feedback correct';
     document.querySelectorAll('.target').forEach(r => { r.classList.remove('target'); r.classList.add('correct'); });
@@ -4539,14 +4800,22 @@ function checkFragment(){
     const finished = !remaining.some(st => stepNotes(st, currentHand).length > 0);
     if(!finished) advanceToPlayableStep();
     if(finished){
+      const errores = fragMistakes;
+      if(fragStepTimer){ clearTimeout(fragStepTimer); fragStepTimer = null; }
       if(typeof recordPracticeDone === 'function') recordPracticeDone();
+      // Se registra ANTES de sortear: onAgilityRoundDone reemplaza
+      // currentFragment con las notas de la vuelta siguiente.
+      const extra = typeof onAgilityRoundDone === 'function' ? onAgilityRoundDone(errores) : '';
       setTimeout(() => {
-        feedbackText.textContent = '¡Completaste el fragmento! Reiniciando';
+        feedbackText.textContent = (errores === 0
+          ? '¡Vuelta limpia, sin una sola nota equivocada!'
+          : '¡Completaste la vuelta! ' + errores + (errores === 1 ? ' nota equivocada' : ' notas equivocadas')) + extra;
+        feedbackText.className = 'feedback ' + (errores === 0 ? 'correct' : '');
         practiceIndex = 0;
-        setTimeout(startFragmentStep, 1200);
+        scheduleFragmentStep(1600);
       }, 400);
     } else {
-      setTimeout(startFragmentStep, 450);
+      scheduleFragmentStep(450);
     }
   }
 }
@@ -4889,14 +5158,18 @@ $('earHintBtn').addEventListener('click', showEarHint);
 let chordDoneSet = new Set();
 let intervalDoneSet = new Set();
 
+// La lista depende del grupo elegido, así que se redibuja al cambiarlo y
+// `chordDoneSet` guarda NOMBRES, no índices: con listas de distinto largo un
+// índice guardado apuntaría a otro acorde.
 function buildChordPicker(){
   const cont = document.getElementById('chordPicker');
   cont.innerHTML = '';
-  CHORDS.forEach((c, i) => {
+  visibleChords().forEach((c, i) => {
     const b = document.createElement('button');
     b.className = 'pick-btn';
     b.textContent = c.name;
     b.title = c.full;
+    b.dataset.chord = c.name;
     b.addEventListener('click', () => {
       practiceIndex = i;
       startChordStep();
@@ -4909,8 +5182,47 @@ function refreshChordPicker(){
   const cont = document.getElementById('chordPicker');
   [...cont.children].forEach((b, i) => {
     b.classList.toggle('current', i === practiceIndex);
-    b.classList.toggle('done', chordDoneSet.has(i) && i !== practiceIndex);
+    b.classList.toggle('done', chordDoneSet.has(b.dataset.chord) && i !== practiceIndex);
   });
+}
+function renderChordGroupPicker(){
+  const cont = $('chordGroupPicker');
+  if(!cont) return;
+  cont.innerHTML = '';
+  CHORD_GROUPS.forEach(g => {
+    const b = document.createElement('button');
+    b.className = 'reg-btn' + (g.id === chordGroup ? ' active' : '');
+    b.textContent = g.name;
+    b.dataset.cgroup = g.id;
+    b.addEventListener('click', () => selectChordGroup(g.id));
+    cont.appendChild(b);
+  });
+}
+function selectChordGroup(id){
+  chordGroup = id;
+  try { localStorage.setItem('chordGroup', chordGroup); } catch(e){}
+  renderChordGroupPicker();
+  practiceIndex = 0;
+  chordGoodRun = 0; chordSetsRun = 0;
+  buildChordPicker();
+  startChordStep();
+}
+// El plan de "Hoy" manda a un acorde concreto, que puede estar en el otro
+// grupo: hay que abrirlo antes de buscarlo o el enlace no hace nada (el mismo
+// fallo silencioso que ya tuvieron Fragmentos y Agilidad).
+function pickChordByName(name){
+  if(!visibleChords().some(c => c.name === name)){
+    const g = CHORD_GROUPS.find(x => CHORDS.slice(x.from, x.to).some(c => c.name === name) && x.id !== 'all');
+    if(g){
+      chordGroup = g.id;
+      try { localStorage.setItem('chordGroup', chordGroup); } catch(e){}
+      renderChordGroupPicker();
+      buildChordPicker();
+    }
+  }
+  const i = visibleChords().findIndex(c => c.name === name);
+  practiceIndex = i < 0 ? 0 : i;
+  startChordStep();
 }
 
 function buildIntervalPicker(){
@@ -4971,6 +5283,7 @@ refreshChordOctaves();
 refreshIntervalOctaves();
 buildRootPicker();
 buildChordPicker();
+renderChordGroupPicker();
 buildIntervalPicker();
 
 document.getElementById('chordRandomOct').addEventListener('click', () => {
@@ -6218,9 +6531,17 @@ function recordScaleRun(run, okPct){
   progress.scales[key] = r;
   bump('scales');
 }
-function recordChord(name, inv){
+// `bestPct`, `bestBpm` y `good` son máximos o contadores que solo suben, así
+// que la fusión por máximo del respaldo los maneja sin caso especial. `good`
+// solo cuenta cuando hubo ejercicio de verdad (más de una repetición).
+function recordChord(name, inv, pct, bpm, passed){
   const r = progress.chords[name] || { runs:0, inv:0, lastDay:null };
   r.runs++; if(inv) r.inv++; r.lastDay = dateKey();
+  if(typeof pct === 'number'){
+    r.bestPct = Math.max(r.bestPct || 0, pct);
+    if(bpm) r.bestBpm = Math.max(r.bestBpm || 0, bpm);
+  }
+  if(passed && chordReps > 1) r.good = (r.good || 0) + 1;
   progress.chords[name] = r;
   bump('chords');
 }
@@ -6498,14 +6819,14 @@ function buildTodayPlan(seed){
     done: () => (dayRec().reading || 0) >= 10,
     go: () => { readingLevel = lvIdx; selectCategory('reading'); } });
 
-  const groupA = CHORDS.slice(0, 6), groupB = CHORDS.slice(6);
+  const groupA = CHORDS.slice(CHORD_GROUPS[0].from, CHORD_GROUPS[0].to), groupB = CHORDS.slice(CHORD_GROUPS[1].from, CHORD_GROUPS[1].to);
   const aDone = groupA.every(c => ((progress.chords[c.name] || {}).runs || 0) >= 3);
   const pool = aDone ? groupB : groupA;
   const chordsPick = leastPracticed(pool, progress.chords, 'name').slice(0, 3);
   items.push({ key:'chords', min:3, block:'keep', title:'Acordes: ' + chordsPick.map(c => c.name).join(', '),
     sub: aDone ? 'Ya dominas los seis básicos: ahora los de sostenidos. Prueba también en 1ª inversión.' : 'Los seis que más se usan (C, G, F, Am, Em, Dm). Fundamental, con dedos 1-3-5.',
     done: () => chordsPick.every(c => (progress.chords[c.name] || {}).lastDay === today),
-    go: () => { selectCategory('chords'); practiceIndex = CHORDS.indexOf(chordsPick[0]); startChordStep(); } });
+    go: () => { selectCategory('chords'); pickChordByName(chordsPick[0].name); } });
 
   const songs = leastPracticed(SONGS, progress.songs, 'id');
   const song = songs[Math.min(rnd(2), songs.length - 1)];

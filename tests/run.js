@@ -1372,6 +1372,146 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
     'un toque muy fuera del pulso se marca como fallado');
   W("metro.on = false; chordReps = 1; try { localStorage.removeItem('chordReps'); } catch(e){} practiceIndex = 0; startChordStep();");
 
+  section('Acordes: tres menús y calificación del ejercicio');
+  W("soundEnabled = false; selectCategory('chords'); metro.on = false; chordReps = 1; chordGroup = 'basicos'; practiceIndex = 0; buildChordPicker(); startChordStep();");
+  check(W('visibleChords().map(c => c.name).join()') === 'C,G,F,Am,Em,Dm',
+    'el grupo por defecto son los seis que el propio consejo del modo manda practicar primero');
+  check(W("CHORD_GROUPS.map(g => CHORDS.slice(g.from, g.to).length).join()") === '6,18,24',
+    'los tres menús cubren 6 / 18 / 24 acordes');
+  W("selectChordGroup('resto')");
+  check(W('visibleChords().length') === 18 && W('visibleChords()[0].name') === 'F#m' && W('practiceIndex') === 0,
+    'cambiar de menú reinicia en el primero de esa lista');
+  check(doc.querySelectorAll('#chordPicker .pick-btn').length === 18,
+    'y el selector "Ir directo a" se redibuja con esa lista');
+  // El plan de "Hoy" manda a un acorde concreto: tiene que llegar aunque esté
+  // en el otro menú (mismo fallo silencioso que ya tuvieron Fragmentos y Agilidad).
+  W("pickChordByName('Am')");
+  check(W('chordGroup') === 'basicos' && W('visibleChords()[practiceIndex].name') === 'Am',
+    'saltar a un acorde del otro menú abre su menú y lo selecciona');
+  // `chordDoneSet` guarda NOMBRES: con listas de distinto largo un índice
+  // guardado apuntaría a otro acorde al cambiar de menú.
+  check(W("[...chordDoneSet].every(x => typeof x === 'string')"),
+    'los acordes hechos se recuerdan por nombre, no por índice');
+
+  // --- calificación ---
+  W(`metroOffsetMs = () => 10; metro.on = true; metro.bpm = 72;
+     chordGroup = 'basicos'; practiceIndex = 0; chordReps = 4;
+     chordGoodRun = 0; chordSetsRun = 0; progress.chords = {}; buildChordPicker(); startChordStep();`);
+  const tocarAcorde = () => {
+    const ns = JSON.parse(W('JSON.stringify(chordVoicing(visibleChords()[practiceIndex], chordInversion, chordOctave))'));
+    ns.forEach(n => W(`noteOn(${n})`));
+    ns.forEach(n => W(`noteOff(${n})`));
+  };
+  for(let i = 0; i < 4; i++) tocarAcorde();
+  check(W('chordGoodRun') === 1 && W('chordSetsRun') === 1, 'una tanda a tiempo cuenta como acorde logrado');
+  check(/4 de 4 a tiempo/.test(W('document.getElementById("feedbackText").textContent')),
+    'el veredicto dice cuántas veces salió bien, no solo "Correcto"');
+  check(W("progress.chords['C'].bestPct") === 100 && W("progress.chords['C'].bestBpm") === 72 &&
+        W("progress.chords['C'].good") === 1,
+    'y se guarda la calificación: mejor %, BPM al que se logró y cuántas veces');
+  // Fuera de tiempo: no cuenta como logrado, pero sí como practicado.
+  W(`metroOffsetMs = () => 400; practiceIndex = 0; startChordStep();`);
+  for(let i = 0; i < 4; i++) tocarAcorde();
+  check(W('chordGoodRun') === 1 && W('chordSetsRun') === 2,
+    'una tanda fuera de tiempo suma intento pero no suma logro');
+  check(W("progress.chords['C'].runs") === 2 && W("progress.chords['C'].good") === 1,
+    'el acorde queda registrado como practicado igual (si no, el día saldría vacío)');
+  check(W("progress.chords['C'].bestPct") === 100,
+    'y la mejor marca NO baja: es un máximo, que es lo que la fusión del respaldo sabe manejar');
+  check(W('practiceIndex') === 1, 'igual se avanza al siguiente acorde: quedarse atascado en uno no enseña los otros');
+  // Sin metrónomo no hay nada que medir y no se inventa una nota.
+  W(`metro.on = false; practiceIndex = 0; startChordStep();`);
+  for(let i = 0; i < 4; i++) tocarAcorde();
+  check(/enciende el metrónomo/i.test(W('document.getElementById("feedbackText").textContent')),
+    'sin metrónomo el veredicto lo dice en vez de calificar a ojo');
+  W(`metroOffsetMs = ${'function(t){ return 0; }'}; metro.on = false; chordReps = 1; chordGroup = 'basicos'; practiceIndex = 0;
+     try { localStorage.removeItem('chordReps'); localStorage.removeItem('chordGroup'); } catch(e){}
+     buildChordPicker(); startChordStep();`);
+
+  section('Coordinación al azar y niveles');
+  W("selectCategory('agility'); selectAgilGroup('manos'); soundEnabled = false;");
+  check(W("!!AGILITY_DRILLS.find(d => d.id === 'cinco-dedos').coord") === false &&
+        W("agilRandomOn.toString().includes('coord')"),
+    'el azar solo aplica a los de coordinación: sortear "Posición de 5 dedos" destruiría el ejercicio');
+  W("pickFragmentById('manos-sostiene'); agilRandom = true; agilLevel = 3; agilStreak = 0; onAgilityChange();");
+  const antes = W('JSON.stringify(currentFragment.steps.map(s => s.lh.concat(s.rh)))');
+  const ritmoAntes = W('JSON.stringify(currentFragment.steps.map(s => [s.dur, s.lh.length, s.rh.length]))');
+  W('onAgilityChange()');
+  const despues = W('JSON.stringify(currentFragment.steps.map(s => s.lh.concat(s.rh)))');
+  const ritmoDespues = W('JSON.stringify(currentFragment.steps.map(s => [s.dur, s.lh.length, s.rh.length]))');
+  check(antes !== despues, 'cada sorteo cambia las notas');
+  check(ritmoAntes === ritmoDespues,
+    'pero NO el ritmo ni el reparto de manos: ese esqueleto ES el ejercicio ("la izquierda sostiene" dejaría de existir)');
+  // El dedo sale del grado, así que la regla de "cada tecla siempre el mismo
+  // dedo" se cumple sola también con notas sorteadas.
+  check(W(`(function(){
+      for(let i = 0; i < 40; i++){
+        const st = materializeAgilitySteps(
+          Object.assign({}, currentDrillShape, {pattern: randomCoordPattern(currentDrillShape, 4)}), 4, 3);
+        const m = {};
+        for(const x of st){
+          for(const [n, f] of x.lh.map((n, j) => [n, x.lhF[j]]).concat(x.rh.map((n, j) => [n, x.rhF[j]]))){
+            if(m[n] === undefined) m[n] = f; else if(m[n] !== f) return false;
+          }
+        }
+      }
+      return true;
+    })()`), 'en 40 sorteos, cada tecla lleva siempre el mismo dedo (la mano no se mueve)');
+  // El espejo vive de que las dos manos usen el MISMO dedo: no puede sortear
+  // la izquierda por su cuenta.
+  check(W(`(function(){
+      const esp = AGILITY_DRILLS.find(d => d.id === 'manos-espejo');
+      for(let i = 0; i < 30; i++){
+        const pat = randomCoordPattern(esp, 4);
+        if(!pat.every(p => p.lf === p.rf)) return false;
+        if(!pat.every(p => p.l <= 0 && p.r >= 0)) return false;
+      }
+      return true;
+    })()`), 'el espejo sortea con el mismo dedo en las dos manos y en direcciones opuestas');
+  // Los niveles mueven de verdad el tamaño del salto.
+  const salto = (nivel) => W(`(function(){
+      const d = AGILITY_DRILLS.find(x => x.id === 'manos-sostiene');
+      let max = 0;
+      for(let i = 0; i < 60; i++){
+        const pat = randomCoordPattern(d, ${nivel}).filter(p => p.rf !== undefined);
+        for(let j = 1; j < pat.length; j++) max = Math.max(max, Math.abs(pat[j].rf - pat[j-1].rf));
+      }
+      return max;
+    })()`);
+  check(salto(1) === 1, 'nivel 1: la derecha solo se mueve a un dedo vecino');
+  check(salto(2) === 2, 'nivel 2: hasta dos dedos de salto');
+  check(salto(4) === 4, 'nivel 4: del pulgar al meñique de una');
+  check(W("randomCoordPattern(AGILITY_DRILLS.find(d => d.id === 'manos-sostiene'), 1).filter(p => p.l !== undefined).every(p => p.l === 0)"),
+    'y en el nivel 1 la izquierda se queda en el Do: el salto es lo que descoordina, no la nota');
+  // Etiquetas: la original nombra notas y dedos fijos y al azar mentiría.
+  check(W(`randomCoordPattern(AGILITY_DRILLS.find(d => d.id === 'manos-sostiene'), 3)
+      .every(p => ['Las dos a la vez','Solo izquierda','Solo derecha'].includes(p.label))`),
+    'las etiquetas al azar solo dicen quién pulsa, que es lo único que sigue siendo cierto');
+
+  section('Vuelta limpia: se cuentan las notas equivocadas y sube el nivel');
+  W("agilRandom = true; agilLevel = 1; agilStreak = 0; pickFragmentById('manos-espejo'); currentHand = 'both'; onAgilityChange();");
+  const vuelta = (conError) => {
+    W('practiceIndex = 0; startFragmentStep();');
+    if(conError) W('noteOn(61); noteOff(61);');   // Do#: los ejercicios son todos de teclas blancas
+    for(let i = 0; i < 40; i++){
+      const ns = JSON.parse(W('JSON.stringify(stepNotes(currentFragment.steps[practiceIndex] || {lh:[],rh:[]}, currentHand))'));
+      if(!ns.length) break;
+      const antesIdx = W('practiceIndex');
+      ns.forEach(n => W(`noteOn(${n})`));
+      ns.forEach(n => W(`noteOff(${n})`));
+      if(W('practiceIndex') === antesIdx) break;
+    }
+  };
+  vuelta(true);
+  check(W('fragMistakes') === 1, 'una tecla que no toca cuenta como nota equivocada');
+  check(W('agilStreak') === 0, 'y una vuelta con errores no suma racha');
+  vuelta(false);
+  check(W('agilStreak') === 1 && W('agilLevel') === 1, 'una vuelta limpia suma racha pero todavía no sube');
+  vuelta(false);
+  check(W('agilLevel') === 2 && W('agilStreak') === 0,
+    'dos vueltas limpias seguidas suben de nivel (terminar una vuelta despacio no acredita nada; terminarla sin errores sí)');
+  W("agilRandom = false; agilLevel = 1; agilStreak = 0; try { localStorage.removeItem('agilRandom'); localStorage.removeItem('agilLevel'); } catch(e){} onAgilityChange();");
+
   section('Desbloqueo de audio en iOS');
   // jsdom no trae AudioContext; se inyecta una falsa MUY mínima (solo lo que
   // ensureAudioCtx/unlockAudioContextIOS tocan) para fijar que, al crear el
