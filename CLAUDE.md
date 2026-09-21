@@ -477,10 +477,17 @@ Orden dentro del `<script>`:
     de la foto, leída columna por columna (una columna = un compás), tiene que
     dar el mismo pitch-class que ya estaba en la app; hay prueba que lo hace
     para las dos piezas y las dos cuadran EXACTO, sin cambiar ni una nota.
-    - **El ritmo confirma lo que ya había sin saberlo.** "x3" son tres golpes
-      por compás, y las dos piezas ya usaban tres pulsaciones por compás
-      (negra-negra-blanca) desde que se transcribieron — coincidencia sana,
-      no hubo que tocar los `dur`.
+    - **El ritmo SÍ hubo que corregirlo, y fue Jorge quien lo notó.** Las dos
+      piezas ya usaban tres pulsaciones por compás desde que se
+      transcribieron (`dur:[1,1,2]`, negra-negra-blanca), y a primera vista
+      parecía coincidir sano con "x3". Pero "x3" no dice "dos golpes y uno
+      sostenido el doble" — dice **tres golpes IGUALES**. Corregido a
+      `dur:4/3` en los tres (un tresillo por compás: 3 × 4/3 = 4 tiempos
+      exactos, sin huecos). Se probó que `4/3` en JS suma exacto en punto
+      flotante para 3 y para 12 repeticiones antes de usarlo (hay riesgo real
+      de que no cuadre por redondeo; en este caso sí cuadra). Más parejo y
+      más movido — que es lo que Jorge pidió al notar que el ritmo se sentía
+      plano ("aumentar un poco el ritmo").
     - **El error real: el intro tenía las dos notas repartidas entre las dos
       manos** (Fa/Mib en la izquierda, Do/Reb/Sib en la derecha). Esa mano
       venía de la PRIMERA fuente (el fotograma del reel, que solo daba

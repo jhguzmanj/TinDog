@@ -1065,6 +1065,10 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
   section('All of Me: la vuelta, corregida a las dos notas en una mano');
   const aom = W('SONGS.find(s => s.id === "all-of-me").steps');
   check(aom.reduce((a, x) => a + x.dur, 0) === 16, 'la vuelta son 16 tiempos = 4 compases justos');
+  // Ritmo CORREGIDO: "x3" son tres golpes IGUALES por compás, no dos rápidos
+  // y uno sostenido el doble (dur 1,1,2, lo que había antes). 4/3 × 3 = 4
+  // tiempos exactos, así que sigue sin haber huecos ni compases descuadrados.
+  check(aom.every(x => Math.abs(x.dur - 4 / 3) < 1e-9), 'los tres golpes de cada compás duran exactamente igual (un tresillo)');
   // Corrección real: una fuente anterior (el fotograma del reel, que solo daba
   // pitches) había repartido las dos notas entre las manos. El tutorial
   // completo ("1:F-3:C"...) siempre dijo "Right-hand fingers", y una foto
@@ -1120,6 +1124,9 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
   const acordesApp = aom2.filter((x, i) => i % 3 === 0).map(x => x.rh.map(n => n % 12).sort((a, b) => a - b));
   check(JSON.stringify(acordesFoto) === JSON.stringify(acordesApp),
     'y las tres filas de la estrofa dan el mismo acorde que ya tenía all-of-me-2, compás a compás');
+  check(aom2.reduce((a, x) => a + x.dur, 0) === 16, 'la estrofa también son 16 tiempos = 4 compases justos');
+  check(aom2.every(x => Math.abs(x.dur - 4 / 3) < 1e-9),
+    'y también tiene tres golpes iguales por compás en la derecha, igual que el intro');
 
   section('Dragon Ball GT: la transcripción cuadra');
   const dbP1 = W('SONGS.find(s => s.id === "dbgt").steps');
