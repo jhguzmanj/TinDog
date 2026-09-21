@@ -485,9 +485,20 @@ Orden dentro del `<script>`:
       `dur:4/3` en los tres (un tresillo por compás: 3 × 4/3 = 4 tiempos
       exactos, sin huecos). Se probó que `4/3` en JS suma exacto en punto
       flotante para 3 y para 12 repeticiones antes de usarlo (hay riesgo real
-      de que no cuadre por redondeo; en este caso sí cuadra). Más parejo y
-      más movido — que es lo que Jorge pidió al notar que el ritmo se sentía
-      plano ("aumentar un poco el ritmo").
+      de que no cuadre por redondeo; en este caso sí cuadra).
+    - **El tempo TAMBIÉN estaba mal, y era el problema de fondo.** Con el
+      tresillo puesto Jorge la seguía sintiendo lenta. `tempo:66` no salió de
+      ninguna fuente: fue un número puesto sin verificar cuando no había
+      partitura de donde sacarlo (a diferencia de Dragon Ball GT, que sí trae
+      `♩=120` impreso). Una búsqueda cruzando varias bases de datos de tempo
+      (GetSongBPM, Tunebat, SongBPM, AudioKeychain…) converge en **~120 BPM**
+      para la grabación real — **casi el doble** de lo que tenía. Corregido a
+      `tempo:120` en las dos piezas. **Moraleja**: cuando no hay partitura que
+      dé el tempo, no inventar un número "razonable" — buscarlo, igual que se
+      busca la fuente para las notas. El control VELOCIDAD del modo cascada
+      sigue siendo el camino correcto para practicarla más despacio; el
+      `tempo` del dato tiene que ser el real de la canción, no una versión ya
+      enlentecida de fábrica.
     - **El error real: el intro tenía las dos notas repartidas entre las dos
       manos** (Fa/Mib en la izquierda, Do/Reb/Sib en la derecha). Esa mano
       venía de la PRIMERA fuente (el fotograma del reel, que solo daba

@@ -1127,6 +1127,12 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
   check(aom2.reduce((a, x) => a + x.dur, 0) === 16, 'la estrofa también son 16 tiempos = 4 compases justos');
   check(aom2.every(x => Math.abs(x.dur - 4 / 3) < 1e-9),
     'y también tiene tres golpes iguales por compás en la derecha, igual que el intro');
+  // Jorge la sintió lenta y tenía razón: tenía 66 BPM (menos de la mitad de
+  // la real). Verificado en varias bases de datos de tempo: la canción está
+  // en ~120 BPM, no en el número que se había puesto sin comprobar.
+  check(W("SONGS.find(s => s.id === 'all-of-me').tempo") === 120 &&
+        W("SONGS.find(s => s.id === 'all-of-me-2').tempo") === 120,
+    'el tempo es el real de la canción (120 BPM), no una versión lenta puesta sin verificar');
 
   section('Dragon Ball GT: la transcripción cuadra');
   const dbP1 = W('SONGS.find(s => s.id === "dbgt").steps');
