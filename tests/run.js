@@ -1372,6 +1372,59 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
     'un toque muy fuera del pulso se marca como fallado');
   W("metro.on = false; chordReps = 1; try { localStorage.removeItem('chordReps'); } catch(e){} practiceIndex = 0; startChordStep();");
 
+  section('All of Me: la estrofa confirma el intro');
+  const aomI = W("SONGS.find(s => s.id === 'all-of-me').steps");
+  const aomV = W("SONGS.find(s => s.id === 'all-of-me-2').steps");
+  check(aomV.reduce((a, x) => a + x.dur, 0) === 16, 'la estrofa son 16 tiempos = 4 compases justos');
+  // Un compás = 3 golpes del mismo acorde, así que basta mirar uno de cada tres.
+  const clases = st => [...new Set(st.lh.concat(st.rh).map(n => n % 12))].sort((a, b) => a - b);
+  const acordeDe = (pasos, i) => [...new Set(pasos[i * 3].rh.map(n => n % 12))].sort((a, b) => a - b);
+  const TRIADAS = { 'Fam':[0,5,8], 'Reb':[1,5,8], 'Lab':[0,3,8], 'Mib':[7,10,3] };
+  const esperadas = ['Fam', 'Reb', 'Lab', 'Mib'];
+  esperadas.forEach((nombre, i) => {
+    const got = acordeDe(aomV, i);
+    const want = TRIADAS[nombre].slice().sort((a, b) => a - b);
+    check(JSON.stringify(got) === JSON.stringify(want),
+      `compás ${i + 1}: la derecha da ${nombre} exacto`);
+  });
+  // Verificación que reemplaza a "el bajo da los acordes" cuando la fuente es un
+  // tutorial: TODO tiene que caer en una sola tonalidad. Lab mayor es el tono
+  // original de la canción, y el tutorial no se sale ni una nota.
+  const LAB_MAYOR = [8, 10, 0, 1, 3, 5, 7];
+  const fueraLab = [...new Set(aomV.flatMap(x => x.lh.concat(x.rh)).map(n => n % 12))]
+    .filter(pc => !LAB_MAYOR.includes(pc));
+  check(fueraLab.length === 0, 'y todo cae dentro de Lab mayor, el tono original (ni una nota fuera)');
+  // LA comprobación cruzada: el tutorial nuevo (por letras) y el fotograma del
+  // reel (decodificado midiendo teclas negras) son fuentes distintas. Cada par
+  // del intro tiene que estar DENTRO del acorde de la estrofa en su compás.
+  for(let i = 0; i < 4; i++){
+    const par = clases(aomI[i * 3]);
+    const tri = acordeDe(aomV, i);
+    check(par.every(pc => tri.includes(pc)),
+      `compás ${i + 1}: las dos notas del intro están dentro del acorde de la estrofa (dos fuentes independientes, misma armonía)`);
+  }
+  // La izquierda: una nota por compás, sostenida el resto (misma convención de
+  // ligadura de SONGS) y siempre por debajo de la derecha.
+  check(aomV.filter(st => st.lh.length).length === 4 && aomV.every(st => st.lh.length <= 1),
+    'la izquierda entra una sola vez por compás y con una sola tecla');
+  check(aomV.every(st => !st.lh.length || st.lh[0] < Math.min(...st.rh)),
+    'y siempre queda por debajo de la derecha');
+  // Digitación del tutorial, no inventada: cada tecla lleva siempre el mismo dedo.
+  const dedoDe = {};
+  let dedosFijos = true;
+  aomV.forEach(st => {
+    st.lh.forEach((n, i) => {
+      if(dedoDe['L' + n] === undefined) dedoDe['L' + n] = st.lhF[i];
+      else if(dedoDe['L' + n] !== st.lhF[i]) dedosFijos = false;
+    });
+    st.rh.forEach((n, i) => {
+      if(dedoDe['R' + n] === undefined) dedoDe['R' + n] = st.rhF[i];
+      else if(dedoDe['R' + n] !== st.rhF[i]) dedosFijos = false;
+    });
+  });
+  check(dedosFijos, 'cada tecla lleva siempre el mismo dedo: ninguna mano se mueve en toda la vuelta');
+  check(aomV.every(st => st.rh.length === 3), 'los cuatro son acordes de tres teclas (el salto respecto al intro)');
+
   section('Acordes: tres menús y calificación del ejercicio');
   W("soundEnabled = false; selectCategory('chords'); metro.on = false; chordReps = 1; chordGroup = 'basicos'; practiceIndex = 0; buildChordPicker(); startChordStep();");
   check(W('visibleChords().map(c => c.name).join()') === 'C,G,F,Am,Em,Dm',

@@ -432,6 +432,53 @@ Orden dentro del `<script>`:
     - **Solo hay un fotograma**, así que esto es la vuelta de 4 compases que se
       repite, no la canción entera. Si aparecen más fotogramas del reel se
       puede alargar.
+    **Fuente NUEVA y la mejor de las de tutorial: el formato "posiciones de
+    dedo".** Jorge encontró después otro tutorial de la misma canción escrito
+    así: `Place your right-hand fingers this way: 1:C - 2:F - 3:G#`, una línea
+    por acorde, agrupado por secciones (Intro / Verse / Pre-Chorus) con
+    `Play this section N times`. **Si vuelve a aparecer un formato así, vale la
+    pena pedirlo**: es el único que da NOTAS y DIGITACIÓN a la vez, y la
+    digitación es justo lo que en todas las demás piezas hay que inventar.
+    - **Sirvió de verificación independiente del fotograma.** Las cuatro líneas
+      del Intro (`F+C`, `F+C#`, `D#+C`, `D#+A#`) son **nota por nota** los
+      cuatro pares que se habían decodificado midiendo las teclas negras de la
+      foto, y en el mismo orden. Dos fuentes distintas, misma respuesta: la
+      versión que ya estaba en la app queda confirmada.
+    - **Cómo verificar este formato** (igual de barato que "el bajo da los
+      acordes"): cada línea tiene que dar un acorde con nombre, y todas las
+      notas tienen que caer en una sola tonalidad. Aquí el Verse da
+      `Fam – Reb – Lab – Mib` y las siete notas que usa son exactamente la
+      escala de **Lab mayor**, el tono original. Ni una se sale. Hay pruebas
+      que fijan las dos cosas y la comparación intro/estrofa.
+    - **Lo que el formato NO da**, y por eso conviene pedir también las
+      imágenes del video: (1) el **ritmo** (ni duraciones ni compases;
+      `Play this section 4 times` da la forma, no el vaivén); (2) la **octava**
+      —`C` puede ser Do4 o Do5, se deduce de que los dedos suben con las notas
+      y de lo que abarca la mano—; y (3) **si la línea se toca en bloque o
+      desgranada**: el texto escribe `1:C - 2:D# - 4:G#` igual en los dos
+      casos, y en las capturas del video se ve que es una MEZCLA (en el
+      Pre-Chorus ese mismo acorde va primero como bloque dos veces y después
+      nota a nota).
+    **"All of Me · Estrofa" (`all-of-me-2`) sale de ese tutorial.** Mismos
+    cuatro acordes que el intro pero completos en la derecha (tres teclas), con
+    la **digitación del tutorial, no inventada** (1-2-3 en los tres primeros,
+    1-2-4 en el Mib) — es la **primera pieza de la app donde la digitación no
+    es invención propia. La izquierda sí es añadida**: la fundamental de cada
+    acorde, una por compás y sostenida, que es la textura del ejercicio
+    "3 · La izquierda sostiene". Es una entrada aparte y **no** se concatena
+    con el intro: son dos arreglos distintos de la misma canción (el del reel
+    reparte las dos notas entre las manos, este mete el acorde entero en la
+    derecha), y juntarlos bajo una sola pieza mentiría.
+    **El Pre-Chorus quedó FUERA a propósito**, aunque el tutorial lo trae. La
+    diferencia con Aleluya/La Colegiala (donde solo faltaba el ritmo) es que
+    aquí faltan además el bloque-vs-desgranado y el orden dentro de cada
+    posición, y las dos capturas que hay solo cubren 2 de las 8 líneas. Lo que
+    sí se pudo leer de ellas, por si se retoma: la izquierda es **Sib y luego
+    Lab** (o sea `Sibm → Lab`, el ii y el I de Lab mayor), `1:C - 2:C# - 4:F`
+    va desgranado subiendo, `3:G# - 4:C - 5:C#` desgranado BAJANDO,
+    `1:C - 2:D# - 4:G#` en bloque dos veces y después desgranado subiendo, y
+    `1:D# - 2:F - 3:G` desgranado bajando. Falta el ritmo y las otras cuatro
+    líneas: hace falta el enlace del video o más fotogramas.
     **"Dragon Ball GT" (Akihito Tokunaga, arreglo de Thiago Marconato)**: 21
     compases, Do mayor, ♩=120, transcrita de la partitura que pasó Jorge como
     PNG. Va en tres entradas (`dbgt`, `dbgt-2`, `dbgt-full`) con el mismo molde
