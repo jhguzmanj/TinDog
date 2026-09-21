@@ -1062,11 +1062,16 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
   check(W('SONGS.filter(s => /^oda-alegria/.test(s.id)).length') === 3,
     'quedan las tres: parte 1, parte 2 y completa');
 
-  section('All of Me: la vuelta de dos notas');
+  section('All of Me: la vuelta, corregida a las dos notas en una mano');
   const aom = W('SONGS.find(s => s.id === "all-of-me").steps');
   check(aom.reduce((a, x) => a + x.dur, 0) === 16, 'la vuelta son 16 tiempos = 4 compases justos');
-  check(aom.length === 12 && aom.every(x => x.lh.length === 1 && x.rh.length === 1),
-    '12 golpes, siempre dos notas a la vez (una por mano)');
+  // Corrección real: una fuente anterior (el fotograma del reel, que solo daba
+  // pitches) había repartido las dos notas entre las manos. El tutorial
+  // completo ("1:F-3:C"...) siempre dijo "Right-hand fingers", y una foto
+  // nueva del mismo video lo confirma escribiendo "Right hand" sin mano
+  // izquierda: las dos notas van juntas en la derecha, nada en la izquierda.
+  check(aom.length === 12 && aom.every(x => x.lh.length === 0 && x.rh.length === 2),
+    '12 golpes, las dos notas juntas en la mano DERECHA — nada en la izquierda');
   // Las 5 teclas del tutorial, leídas de la foto contando los grupos de negras.
   // Todas caen en La bemol mayor (Lab Sib Do Reb Mib Fa Sol): si alguna se
   // saliera, la lectura de la foto estaría mal.
@@ -1077,22 +1082,44 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
   check(aomNotes.every(n => AB_MAYOR.includes(n % 12)), 'las cinco caen dentro de La bemol mayor');
   // Verificación que vale: cada par tiene que dar el acorde de la canción
   // (Fam–Reb–Lab–Mib). Si la foto se hubiera leído mal, esto no cuadraría.
-  const pares = aom.filter((x, i) => i % 3 === 0).map(x => [x.lh[0] % 12, x.rh[0] % 12]);
+  const pares = aom.filter((x, i) => i % 3 === 0).map(x => x.rh.map(n => n % 12).sort((a, b) => a - b));
   const FAM = [5, 8, 0], REB = [1, 5, 8], LAB = [8, 0, 3], MIB = [3, 7, 10];
-  check(JSON.stringify(pares.map(([a, b], i) => [FAM, REB, LAB, MIB][i].includes(a) &&
-                                                [FAM, REB, LAB, MIB][i].includes(b))) ===
+  check(JSON.stringify(pares.map((par, i) => par.every(pc => [FAM, REB, LAB, MIB][i].includes(pc)))) ===
         JSON.stringify([true, true, true, true]),
     'cada par de notas cae dentro de su acorde: Fam, Reb, Lab, Mib');
-  // Ninguna mano se mueve: cada tecla lleva siempre el mismo dedo.
-  const aomFijo = (hand, fing) => {
-    const map = {}; let ok = true;
-    aom.forEach(x => x[hand].forEach((n, j) => {
-      if(map[n] !== undefined && map[n] !== x[fing][j]) ok = false;
-      map[n] = x[fing][j];
-    }));
-    return ok;
-  };
-  check(aomFijo('lh', 'lhF') && aomFijo('rh', 'rhF'), 'cada tecla lleva siempre el mismo dedo: ninguna mano se mueve');
+  // El pulgar SIEMPRE toca la nota grave (Fa o Mib): eso es lo que no se
+  // mueve. La nota aguda sí cambia de dedo (3 o 4) según de dónde venga el
+  // pulgar — Do lleva el 3 cuando el pulgar está en Fa y el 4 cuando está en
+  // Mib, y eso es lo que dice el tutorial, no un descuido: no "arreglarlo"
+  // igualando los dedos.
+  check(aom.every(x => x.rhF[0] === 1), 'el pulgar toca siempre la nota grave (Fa o Mib)');
+  check(JSON.stringify(aom.filter((x, i) => i % 3 === 0).map(x => x.rhF[1])) === JSON.stringify([3, 4, 4, 3]),
+    'y el dedo de la nota aguda cambia (3/4) según de dónde viene el pulgar — así lo da el tutorial');
+  // La digitación 1-3/1-4/1-4/1-3 viene del texto completo del tutorial
+  // ("1:F-3:C", "1:F-4:C#", "1:D#-4:C", "1:D#-3:A#"), no es inventada: el
+  // pulgar (1) siempre en la nota grave, el otro dedo en la aguda.
+  check(JSON.stringify(pares && aom.filter((x, i) => i % 3 === 0).map(x => x.rhF)) ===
+        JSON.stringify([[1, 3], [1, 4], [1, 4], [1, 3]]),
+    'la digitación (1-3, 1-4, 1-4, 1-3) es la del tutorial, no inventada');
+
+  section('All of Me: una foto nueva confirma el intro y la estrofa, y destapó el error de mano');
+  // Foto nueva, formato "nota x3" separada por voz. Fila de abajo = la nota
+  // grave del intro en los 4 compases; fila de arriba = la aguda. Tiene que
+  // dar EXACTO los mismos 4 pares que ya estaban (ahora en la mano derecha).
+  const filaAbajo = ['F', 'F', 'D#', 'D#'], filaArriba = ['C', 'C#', 'C', 'A#'];
+  const NOTA = { C: 0, 'C#': 1, D: 2, 'D#': 3, E: 4, F: 5, 'F#': 6, G: 7, 'G#': 8, A: 9, 'A#': 10, B: 11 };
+  const paresFoto = filaAbajo.map((g, i) => [NOTA[g], NOTA[filaArriba[i]]].sort((a, b) => a - b));
+  const paresApp = aom.filter((x, i) => i % 3 === 0).map(x => x.rh.map(n => n % 12).sort((a, b) => a - b));
+  check(JSON.stringify(paresFoto) === JSON.stringify(paresApp),
+    'los 4 pares de la foto nueva son EXACTO los mismos que ya estaban en la app, compás a compás');
+  // Misma foto, tres filas para la estrofa (acorde de 3 notas): tiene que dar
+  // el mismo acorde que ya tenía all-of-me-2 en cada uno de los 4 compases.
+  const aom2 = W('SONGS.find(s => s.id === "all-of-me-2").steps');
+  const versoArriba = ['C', 'C#', 'C', 'A#'], versoMedio = ['F', 'F', 'D#', 'D#'], versoAbajo = ['G#', 'G#', 'G#', 'G'];
+  const acordesFoto = versoArriba.map((_, i) => [NOTA[versoArriba[i]], NOTA[versoMedio[i]], NOTA[versoAbajo[i]]].sort((a, b) => a - b));
+  const acordesApp = aom2.filter((x, i) => i % 3 === 0).map(x => x.rh.map(n => n % 12).sort((a, b) => a - b));
+  check(JSON.stringify(acordesFoto) === JSON.stringify(acordesApp),
+    'y las tres filas de la estrofa dan el mismo acorde que ya tenía all-of-me-2, compás a compás');
 
   section('Dragon Ball GT: la transcripción cuadra');
   const dbP1 = W('SONGS.find(s => s.id === "dbgt").steps');

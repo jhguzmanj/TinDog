@@ -3355,40 +3355,58 @@ const SONGS = [
     id:'all-of-me',
     cat:'popular',
     name:'All of Me (intro)',
-    tip:'John Legend. Es la vuelta del principio, la que se repite bajo casi toda la canción: dos notas a la vez, tres golpes por compás, y a los 4 compases vuelve a empezar. Va en La bemol, el tono original, así que puedes tocarla encima de la canción — por eso tiene teclas negras (Mib, Sib, Reb). Ninguna mano se mueve: la izquierda deja el 3 en Mib y el 2 en Fa, la derecha el 1 en Sib, el 2 en Do y el 3 en Reb. El ritmo NO viene del tutorial: aquí van golpes parejos para aprender las teclas, el vaivén sácalo escuchando la canción.',
+    tip:'John Legend. Es la vuelta del principio, la que se repite bajo casi toda la canción — en la grabación suena CUATRO veces antes de pasar a la estrofa. <b>Las dos notas van juntas en la mano DERECHA</b> (no una en cada mano: eso era un error de una fuente anterior, corregido). El pulgar se queda fijo en Fa o Mib y solo el otro dedo se estira o encoge para alcanzar la segunda nota — la mano tampoco se mueve. Digitación tomada del tutorial, no inventada. Va en La bemol, el tono original, así que puedes tocarla encima de la canción — por eso tiene teclas negras (Mib, Sib, Reb). El ritmo tampoco es invento esta vez: la fuente marca tres golpes por compás (x3), y eso es justo negra-negra-blanca.',
     tempo:66,
+    // Corrige una versión anterior que partía estas dos notas entre las dos
+    // manos (la izquierda en Fa/Mib, la derecha en Do/Reb/Sib) — salió de la
+    // primera fuente (el fotograma del reel), que solo daba PITCHES, no de
+    // qué mano. El texto completo del tutorial ("1:F-3:C" etc.) siempre dijo
+    // "Right-hand fingers", las dos notas juntas en la derecha, y Jorge lo
+    // confirmó con una foto nueva que dice "Right hand" sin mano izquierda.
+    // La digitación 1-3 / 1-4 / 1-4 / 1-3 es la que trae ese mismo texto.
+    // Las notas no cambiaron: la foto nueva las reconfirma columna por
+    // columna (fila de abajo = Fa,Fa,Mib,Mib; fila de arriba = Do,Reb,Do,Sib
+    // — exactamente los cuatro pares que ya estaban) y de paso confirma el
+    // ritmo: "x3" son tres golpes por compás, lo mismo que ya tenía
+    // (negra-negra-blanca) sin saberlo.
     steps:[
-      // Fam: Fa (5ª abajo) + Do
-      {lh:[53], lhF:[2], rh:[60], rhF:[2], dur:1, label:'Fam (Fm)'},
-      {lh:[53], lhF:[2], rh:[60], rhF:[2], dur:1},
-      {lh:[53], lhF:[2], rh:[60], rhF:[2], dur:2},
-      // Reb: el Fa se queda y arriba baja a Reb
-      {lh:[53], lhF:[2], rh:[61], rhF:[3], dur:1, label:'Reb (Db) — solo cambia la derecha'},
-      {lh:[53], lhF:[2], rh:[61], rhF:[3], dur:1},
-      {lh:[53], lhF:[2], rh:[61], rhF:[3], dur:2},
-      // Lab: ahora la izquierda baja a Mib y arriba vuelve el Do
-      {lh:[51], lhF:[3], rh:[60], rhF:[2], dur:1, label:'Lab (Ab) — ahora cambia la izquierda'},
-      {lh:[51], lhF:[3], rh:[60], rhF:[2], dur:1},
-      {lh:[51], lhF:[3], rh:[60], rhF:[2], dur:2},
-      // Mib: el Mib se queda y arriba baja a Sib
-      {lh:[51], lhF:[3], rh:[58], rhF:[1], dur:1, label:'Mib (Eb)'},
-      {lh:[51], lhF:[3], rh:[58], rhF:[1], dur:1},
-      {lh:[51], lhF:[3], rh:[58], rhF:[1], dur:2, label:'Fin — y vuelve a empezar'},
+      // Fam: Fa + Do, las dos en la derecha
+      {lh:[], rh:[53,60], rhF:[1,3], dur:1, label:'Fam (Fm)'},
+      {lh:[], rh:[53,60], rhF:[1,3], dur:1},
+      {lh:[], rh:[53,60], rhF:[1,3], dur:2},
+      // Reb: el pulgar se queda en Fa, el otro dedo baja a Reb
+      {lh:[], rh:[53,61], rhF:[1,4], dur:1, label:'Reb (Db)'},
+      {lh:[], rh:[53,61], rhF:[1,4], dur:1},
+      {lh:[], rh:[53,61], rhF:[1,4], dur:2},
+      // Lab: el pulgar baja a Mib, el otro dedo vuelve a Do
+      {lh:[], rh:[51,60], rhF:[1,4], dur:1, label:'Lab (Ab) — el pulgar baja a Mib'},
+      {lh:[], rh:[51,60], rhF:[1,4], dur:1},
+      {lh:[], rh:[51,60], rhF:[1,4], dur:2},
+      // Mib: el pulgar se queda en Mib, el otro dedo baja a Sib
+      {lh:[], rh:[51,58], rhF:[1,3], dur:1, label:'Mib (Eb)'},
+      {lh:[], rh:[51,58], rhF:[1,3], dur:1},
+      {lh:[], rh:[51,58], rhF:[1,3], dur:2, label:'Fin — y vuelve a empezar (x4 en la grabación)'},
     ]
   },
   {
     id:'all-of-me-2',
     cat:'popular',
     name:'All of Me · Estrofa (acordes)',
-    tip:'La MISMA canción y la MISMA armonía que el intro (Fam–Reb–Lab–Mib), pero con el acorde completo en la derecha en vez de dos teclas repartidas entre las manos. Es el siguiente escalón real de esta pieza, y es un salto: tres teclas a la vez, varias negras. <b>La digitación NO es inventada</b> — viene del tutorial que pasó Jorge (1-2-3 en los tres primeros, 1-2-4 en el Mib), y es la primera pieza de la app donde eso pasa. Si un acorde te queda apretado, el agarre estándar 1-3-5 también sirve. La izquierda SÍ es añadida: la fundamental de cada acorde, una por compás y sostenida los cuatro tiempos — la misma textura del ejercicio "3 · La izquierda sostiene". El ritmo tampoco viene del tutorial: van golpes parejos para aprender las teclas.',
+    tip:'La MISMA canción y la MISMA armonía que el intro (Fam–Reb–Lab–Mib), pero con el acorde completo en la derecha en vez de un intervalo de dos notas. Es el siguiente escalón real de esta pieza, y es un salto: tres teclas a la vez, varias negras. En la grabación esta vuelta suena DOS veces antes de repetirse. <b>La digitación NO es inventada</b> — viene del tutorial que pasó Jorge (1-2-3 en los tres primeros, 1-2-4 en el Mib). Si un acorde te queda apretado, el agarre estándar 1-3-5 también sirve. La izquierda SÍ es añadida: la fundamental de cada acorde, una por compás y sostenida los cuatro tiempos — la misma textura del ejercicio "3 · La izquierda sostiene". El ritmo tampoco viene del tutorial, pero coincide con lo confirmado en el intro: tres golpes por compás.',
     tempo:66,
     // Fuente: tutorial por posiciones de dedo ("1:C - 2:F - 3:G#"), que da notas
-    // Y digitación. Verificado por dos vías: (1) las cuatro líneas dan Fam, Reb,
-    // Lab y Mib, que es la progresión real del tema; (2) las siete notas que usa
-    // (Sol# La# Do Do# Re# Fa Sol) son EXACTAMENTE la escala de Lab mayor, el
-    // tono original — ni una se sale. El mismo tutorial confirma de paso el
-    // intro que ya estaba: sus cuatro pares (F+C, F+C#, D#+C, D#+A#) son nota
-    // por nota los que se sacaron midiendo las teclas negras del fotograma.
+    // Y digitación. Verificado por TRES vías, ninguna redundante: (1) las cuatro
+    // líneas dan Fam, Reb, Lab y Mib, la progresión real del tema; (2) las siete
+    // notas que usa (Sol# La# Do Do# Re# Fa Sol) son EXACTAMENTE la escala de
+    // Lab mayor, sin que se salga ninguna; (3) una foto NUEVA del mismo video,
+    // en formato "nota x3" y separada por voz (fila de arriba = Do,Reb,Do,Sib;
+    // fila de en medio = Fa,Fa,Mib,Mib; fila de abajo = Lab,Lab,Lab,Sol),
+    // reconstruida columna por columna, da EXACTO el mismo acorde en los
+    // cuatro compases — hay prueba que lo fija. La misma foto nueva confirma
+    // el ritmo (tres golpes por compás, ya lo tenía sin saberlo) y de paso el
+    // intro: hizo salir un error real ahí (ver 'all-of-me' — las dos notas
+    // del intro estaban repartidas entre las manos, y son las dos de la
+    // derecha).
     steps:[
       // Fam — Do4(1) Fa4(2) Lab4(3) sobre Fa3
       {lh:[53], lhF:[1], rh:[60,65,68], rhF:[1,2,3], dur:1, label:'Fam (Fm) — la izquierda entra y NO se levanta'},

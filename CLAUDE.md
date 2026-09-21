@@ -466,9 +466,39 @@ Orden dentro del `<script>`:
     es invención propia. La izquierda sí es añadida**: la fundamental de cada
     acorde, una por compás y sostenida, que es la textura del ejercicio
     "3 · La izquierda sostiene". Es una entrada aparte y **no** se concatena
-    con el intro: son dos arreglos distintos de la misma canción (el del reel
-    reparte las dos notas entre las manos, este mete el acorde entero en la
-    derecha), y juntarlos bajo una sola pieza mentiría.
+    con el intro: son dos arreglos distintos de la misma canción (el intro es
+    un intervalo de dos notas, este mete el acorde entero en la derecha), y
+    juntarlos bajo una sola pieza mentiría.
+    **Una foto NUEVA del mismo video (formato "nota x3", separada por fila —
+    una voz por fila) reconfirmó las dos piezas nota por nota Y destapó un
+    error real en el intro.** La foto trae, para cada compás, cuántas veces se
+    golpea cada nota (x3) y cuántas veces se repite la sección completa (Intro
+    ×4, Estrofa ×2) — información que antes no había. Verificación: cada fila
+    de la foto, leída columna por columna (una columna = un compás), tiene que
+    dar el mismo pitch-class que ya estaba en la app; hay prueba que lo hace
+    para las dos piezas y las dos cuadran EXACTO, sin cambiar ni una nota.
+    - **El ritmo confirma lo que ya había sin saberlo.** "x3" son tres golpes
+      por compás, y las dos piezas ya usaban tres pulsaciones por compás
+      (negra-negra-blanca) desde que se transcribieron — coincidencia sana,
+      no hubo que tocar los `dur`.
+    - **El error real: el intro tenía las dos notas repartidas entre las dos
+      manos** (Fa/Mib en la izquierda, Do/Reb/Sib en la derecha). Esa mano
+      venía de la PRIMERA fuente (el fotograma del reel, que solo daba
+      pitches, nunca de qué mano) y nunca se contrastó contra el texto
+      completo del tutorial, que siempre dijo *"Place your **right-hand**
+      fingers this way: 1:F-3:C…"* — las dos notas en la MISMA mano. La foto
+      nueva lo confirma escribiendo "Right hand" sin ninguna mano izquierda.
+      **Corregido**: las dos notas del intro van juntas en la derecha, nada en
+      la izquierda, con la digitación real del tutorial (pulgar siempre en la
+      nota grave — 1 — y la aguda con 3 o 4 según de dónde venga el pulgar:
+      **el mismo Do lleva dedo distinto en el compás 1 que en el 3**, porque
+      la mano llega desde un lugar distinto — no es un descuido, es lo que
+      dice la fuente, y una prueba lo fija en vez de exigir "siempre el mismo
+      dedo" como en el resto de Fragmentos). **Moraleja**: verificar solo el
+      CONJUNTO de notas (como se hizo la primera vez, comparando sets) no basta
+      cuando hay más de una mano — hay que verificar también a qué mano
+      pertenece cada una, contra la fuente más completa disponible, no la
+      primera que llegó.
     **El Pre-Chorus quedó FUERA a propósito**, aunque el tutorial lo trae. La
     diferencia con Aleluya/La Colegiala (donde solo faltaba el ritmo) es que
     aquí faltan además el bloque-vs-desgranado y el orden dentro de cada
