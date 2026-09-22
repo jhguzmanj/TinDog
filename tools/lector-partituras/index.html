@@ -25,11 +25,21 @@
         <span>Tempo <b id="tempo-label"></b></span>
         <input id="tempo" type="range" min="30" max="130" value="100">
       </label>
+      <label class="field">
+        <span>Sonido</span>
+        <select id="output">
+          <option value="synth">App (sintetizador)</option>
+          <option value="midi">Piano por MIDI</option>
+          <option value="clip">Clip (móvil)</option>
+        </select>
+      </label>
+      <select id="midi-port" hidden></select>
       <label class="check"><input id="metronome" type="checkbox"> Metrónomo</label>
       <label class="check"><input id="countin" type="checkbox" checked> Cuenta de entrada</label>
       <label class="check"><input id="mute-rh" type="checkbox" checked> Mano derecha</label>
       <label class="check"><input id="mute-lh" type="checkbox" checked> Mano izquierda</label>
     </div>
+    <p id="out-status" class="out-status" hidden></p>
     <div id="song-info" class="info"></div>
     <div id="blocks" class="blocks"></div>
     <canvas id="roll" height="260"></canvas>
@@ -66,6 +76,7 @@
 
 <script src="js/notation.js"></script>
 <script src="js/audio.js"></script>
+<script src="js/midiout.js"></script>
 <script src="js/midi.js"></script>
 <script src="js/trainer.js"></script>
 <script src="songs/clocks.js"></script>

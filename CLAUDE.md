@@ -17,7 +17,11 @@ Exporta el objeto `{id, cat, name, tip, tempo, steps}` ya con la forma de `SONGS
 los dedos escritos en la partitura en `rhF`/`lhF`. Valida que cada compás sume los
 tiempos del compás, que es donde se cuelan los errores de transcripción. Su formato de
 texto y el flujo están en `tools/lector-partituras/README.md`. No comparte código con
-`piano-midi-trainer.html`: el puente es el objeto exportado, nada más.
+`piano-midi-trainer.html`: el puente es el objeto exportado, nada más. Sí comparte lo
+aprendido aquí: saca el sonido por **MIDI out** al P-45 igual que esta app (con
+`allNotesOff` al parar), y para el iPhone —donde Web Audio en vivo se queda mudo— tiene
+un modo que renderiza el tramo con `OfflineAudioContext` y lo toca por un `<audio>`,
+la misma técnica del `audioFallback` de aquí pero de una pieza entera en vez de por nota.
 
 ## Cómo se prueba (seguir esta convención)
 ```

@@ -17,6 +17,26 @@ meter en el entrenador notas que nadie ha verificado.
 La app valida cada compás: si le faltan o le sobran tiempos lo dice con el número de
 compás. Es el error de transcripción más común y se caza solo.
 
+## De dónde sale el sonido
+
+Selector **Sonido**, tres caminos:
+
+- **App (sintetizador)** — el de siempre, se genera al vuelo. Es el que responde al
+  instante a los cambios de tempo y de manos.
+- **Piano por MIDI** — manda la pieza al P-45B y suena con los samples del Yamaha, que
+  es el mejor sonido disponible. Al parar se manda note-off de todo + CC 123: sin eso el
+  piano se queda sonando solo. El metrónomo sigue saliendo por el computador, igual que
+  en el entrenador. **Ojo: Web MIDI no funciona dentro de un iframe**, así que en la
+  página publicada de Claude no hay MIDI — hay que abrir este `index.html` directo en
+  Chrome o Edge de escritorio. La app lo detecta y lo dice en vez de dejar un botón muerto.
+- **Clip (móvil)** — renderiza el tramo a un WAV con `OfflineAudioContext` y lo toca con
+  un `<audio>`. Existe porque en el iPhone de Jorge Web Audio **en vivo** se queda mudo
+  mientras que un `<audio>` sí suena (está documentado en `CLAUDE.md` del entrenador).
+  De paso el tiempo sale perfecto, porque ya no depende de ningún reloj. A cambio, cada
+  cambio de tempo, mano o metrónomo obliga a renderizar otra vez: una sección tarda ~0,1 s
+  y la pieza entera unos segundos. Con una sección en bucle no se mete cuenta de entrada,
+  porque se repetiría en cada vuelta.
+
 ## Formato
 
 ```

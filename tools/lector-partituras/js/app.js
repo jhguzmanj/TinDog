@@ -32,7 +32,7 @@ function selectSong(index) {
 }
 
 function apply() {
-  player.stop();
+  stopAll();
   song = Notation.parseSong(el.editor.value);
   timeline = Notation.buildTimeline(song);
   loopBlock = null;
@@ -70,8 +70,8 @@ function renderBlocks() {
     btn.title = `${b.name} (repetir solo esta parte)`;
     btn.onclick = () => {
       loopBlock = loopBlock === i ? null : i;
-      const playing = player.playing;
-      player.stop();
+      const playing = player.playing || clipPlaying;
+      stopAll();
       if (playing) startPlay();
       renderBlocks();
     };
@@ -90,21 +90,126 @@ function highlightBlocks() {
 
 // ---------- transporte ----------
 
-function startPlay() {
-  player.gains.rh = $('mute-rh').checked ? 1 : 0;
-  player.gains.lh = $('mute-lh').checked ? 1 : 0;
-  player.metronome = $('metronome').checked;
-  player.loop = loopBlock === null ? null : {
-    start: timeline.blocks[loopBlock].start, end: timeline.blocks[loopBlock].end,
+function settings() {
+  return {
+    gains: { rh: $('mute-rh').checked ? 1 : 0, lh: $('mute-lh').checked ? 1 : 0 },
+    metronome: $('metronome').checked,
+    secondsPerQuarter: 60 / (song.quarterBpm * el.tempo.value / 100),
   };
-  const from = player.loop ? player.loop.start : 0;
-  player.start(timeline, from, $('countin').checked ? song.beatsPerBar : 0);
+}
+
+function playRange() {
+  const b = loopBlock === null ? null : timeline.blocks[loopBlock];
+  return { from: b ? b.start : 0, to: b ? b.end : timeline.quarters };
+}
+
+function startPlay() {
+  const s = settings();
+  const r = playRange();
+  if (output() === 'clip') return startClip(s, r);
+
+  player.gains = s.gains;
+  player.metronome = s.metronome;
+  player.midi = output() === 'midi' ? midiOut : null;
+  player.loop = loopBlock === null ? null : r;
+  player.start(timeline, r.from, $('countin').checked ? song.beatsPerBar : 0);
   el.play.textContent = 'Detener';
 }
 
+function stopAll() {
+  player.stop();
+  stopClip();
+}
+
 el.play.onclick = () => {
-  if (player.playing) { player.stop(); } else { startPlay(); }
+  if (player.playing || clipPlaying) { stopAll(); } else { unlockClip(); startPlay(); }
 };
+
+// ---------- salida de sonido ----------
+
+const midiOut = new MidiOut();
+const output = () => $('output').value;
+
+function setStatus(text) {
+  $('out-status').hidden = !text;
+  $('out-status').textContent = text || '';
+}
+
+$('output').onchange = async () => {
+  stopAll();
+  $('midi-port').hidden = true;
+  if (output() === 'synth') return setStatus('');
+  if (output() === 'clip') {
+    return setStatus('Renderiza el tramo a un audio antes de sonar (tarda unos segundos). ' +
+      'Es el camino que sí suena en móviles donde el sintetizador en vivo se queda mudo.');
+  }
+  setStatus('Buscando el piano… acepta el permiso de MIDI que pide el navegador.');
+  const res = await midiOut.connect();
+  if (!res.ok) { setStatus(res.reason); $('output').value = 'synth'; return; }
+  const sel = $('midi-port');
+  sel.innerHTML = '';
+  res.ports.forEach(p => sel.add(new Option(p.name, p.id)));
+  sel.hidden = res.ports.length < 2;
+  setStatus(`Sonando por ${res.ports[0].name}. El metrónomo sigue saliendo por el computador.`);
+};
+
+$('midi-port').onchange = () => { stopAll(); midiOut.use($('midi-port').value); };
+window.addEventListener('beforeunload', () => midiOut.allNotesOff());
+
+// ---------- modo clip (móviles donde Web Audio en vivo no suena) ----------
+
+const clipEl = new Audio();
+let clipPlaying = false, clipFrom = 0, clipSpq = 0.5, clipUrl = null, clipUnlocked = false, clipLead = 0;
+
+// El render tarda segundos y rompe la cadena del gesto: hay que "despertar" el
+// <audio> ya, dentro del clic, o WebKit no lo deja sonar después.
+function unlockClip() {
+  if (clipUnlocked || output() !== 'clip') return;
+  clipUnlocked = true;
+  clipEl.src = URL.createObjectURL(AudioRender.silentWav());
+  clipEl.play().catch(() => {});
+}
+
+async function startClip(s, r) {
+  el.play.textContent = 'Preparando…';
+  setStatus('Renderizando el audio…');
+  // Con bucle no se pone cuenta de entrada: se repetiría en cada vuelta.
+  const countIn = ($('countin').checked && loopBlock === null) ? song.beatsPerBar : 0;
+  const blob = await AudioRender.renderClip({
+    notes: timeline.notes, from: r.from, to: r.to,
+    secondsPerQuarter: s.secondsPerQuarter, gains: s.gains,
+    metronome: s.metronome, beatsPerBar: song.beatsPerBar, countIn,
+  });
+  if (!blob) { setStatus('Este navegador no puede renderizar el clip.'); el.play.textContent = 'Reproducir'; return; }
+
+  if (clipUrl) URL.revokeObjectURL(clipUrl);
+  clipUrl = URL.createObjectURL(blob);
+  clipFrom = r.from;
+  clipSpq = s.secondsPerQuarter;
+  clipLead = countIn * s.secondsPerQuarter;
+  clipEl.src = clipUrl;
+  clipEl.loop = loopBlock !== null;
+  try {
+    await clipEl.play();
+  } catch {
+    setStatus('El navegador pidió otro toque para dejar sonar: vuelve a pulsar Reproducir.');
+    el.play.textContent = 'Reproducir';
+    return;
+  }
+  clipPlaying = true;
+  el.play.textContent = 'Detener';
+  setStatus('Sonando desde un clip. Tempo, manos y metrónomo se aplican al volver a reproducir.');
+}
+
+function stopClip() {
+  if (!clipPlaying) return;
+  clipPlaying = false;
+  clipEl.pause();
+  position = null;
+  el.play.textContent = 'Reproducir';
+}
+
+clipEl.onended = () => stopClip();
 
 player.onStop = () => { el.play.textContent = 'Reproducir'; };
 player.onPosition = p => { position = p; };
@@ -267,6 +372,7 @@ function drawNow() {
 }
 
 function frame() {
+  if (clipPlaying) position = clipFrom + Math.max(0, clipEl.currentTime - clipLead) / clipSpq;
   if (timeline) { drawRoll(); drawKeys(); drawNow(); highlightBlocks(); }
   requestAnimationFrame(frame);
 }
