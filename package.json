@@ -1,0 +1,23 @@
+{
+  "name": "piano-midi-trainer",
+  "version": "1.0.0",
+  "description": "Entrenador de piano MIDI para Yamaha P-45B (un solo archivo HTML)",
+  "scripts": {
+    "test": "node tests/run.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jhguzmanj/TinDog.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jhguzmanj/TinDog/issues"
+  },
+  "homepage": "https://github.com/jhguzmanj/TinDog#readme",
+  "devDependencies": {
+    "jsdom": "^30.0.1"
+  },
+  "private": true
+}

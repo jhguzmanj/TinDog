@@ -11,6 +11,7 @@
   <h1>Lector de partituras</h1>
   <div class="head-right">
     <select id="song-select"></select>
+    <button id="btn-trainer" class="primary">Exportar al entrenador</button>
     <button id="btn-midi" class="ghost">MIDI</button>
     <button id="btn-json" class="ghost">JSON</button>
   </div>
@@ -34,6 +35,10 @@
     <canvas id="roll" height="260"></canvas>
     <canvas id="keys" height="110"></canvas>
     <div id="now" class="now"></div>
+    <div id="export-box" hidden>
+      <p class="export-note" id="export-note"></p>
+      <pre id="export-out"></pre>
+    </div>
   </section>
 
   <section class="panel">
@@ -62,6 +67,7 @@
 <script src="js/notation.js"></script>
 <script src="js/audio.js"></script>
 <script src="js/midi.js"></script>
+<script src="js/trainer.js"></script>
 <script src="songs/clocks.js"></script>
 <script src="js/app.js"></script>
 </body>

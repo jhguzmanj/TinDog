@@ -137,6 +137,23 @@ $('btn-midi').onclick = () => download(
 
 $('btn-json').onclick = () => download(MidiExport.exportJson(song, timeline), `${slug(song.meta.title)}.json`);
 
+$('btn-trainer').onclick = async () => {
+  const block = loopBlock === null ? null : timeline.blocks[loopBlock];
+  const code = TrainerExport.exportTrainer(song, timeline, block
+    ? { from: block.start, to: block.end, idSuffix: `-${block.id.toLowerCase()}`, label: block.name }
+    : {});
+  const steps = (code.match(/dur:/g) || []).length;
+  $('export-box').hidden = false;
+  $('export-out').textContent = code;
+  $('export-note').textContent =
+    `${block ? `Sección ${block.id} (c.${block.firstBar})` : 'Pieza completa'} · ${steps} pasos. ` +
+    `Pégalo dentro de SONGS en piano-midi-trainer.html.`;
+  try {
+    await navigator.clipboard.writeText(code);
+    $('export-note').textContent += ' Copiado al portapapeles.';
+  } catch { /* sin portapapeles: queda visible para copiar a mano */ }
+};
+
 function slug(s) { return (s || 'cancion').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''); }
 function download(blob, name) {
   const a = document.createElement('a');

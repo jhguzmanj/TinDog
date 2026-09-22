@@ -48,8 +48,10 @@ function parseHand(text, meterQuarters, label) {
     const slash = body.lastIndexOf('/');
     if (slash < 0) { errors.push(`${label} c.${barNo}: falta duración en "${tok}"`); continue; }
 
-    const dur = durationToQuarters(body.slice(slash + 1));
+    const [durPart, fingerPart] = body.slice(slash + 1).split(':');
+    const dur = durationToQuarters(durPart);
     if (dur === null) { errors.push(`${label} c.${barNo}: duración inválida en "${tok}"`); continue; }
+    const fingers = fingerPart ? fingerPart.split(',').map(Number) : null;
 
     const head = body.slice(0, slash);
     if (head === 'r' || head === 'R') { t += dur; continue; }
@@ -61,7 +63,10 @@ function parseHand(text, meterQuarters, label) {
       if (midi === null) errors.push(`${label} c.${barNo}: nota desconocida "${p}"`);
       else pitches.push(midi);
     }
-    if (pitches.length) events.push({ start: t, dur, pitches, tie, bar: barNo });
+    if (fingers && fingers.length !== pitches.length) {
+      errors.push(`${label} c.${barNo}: "${tok}" tiene ${pitches.length} notas y ${fingers.length} dedos`);
+    }
+    if (pitches.length) events.push({ start: t, dur, pitches, fingers, tie, bar: barNo });
     t += dur;
   }
   if (t > barStart + 1e-6) closeBar();
@@ -130,11 +135,12 @@ function buildTimeline(song) {
 
     for (const hand of ['rh', 'lh']) {
       for (const ev of section.parsed[hand].events) {
-        for (const midi of ev.pitches) {
+        for (const [i, midi] of ev.pitches.entries()) {
           const prev = notes.find(n => n.hand === hand && n.midi === midi && n.open &&
                                        Math.abs(n.start + n.dur - (t + ev.start)) < 1e-6);
           if (prev) { prev.dur += ev.dur; prev.open = ev.tie; continue; }
           notes.push({ midi, hand, start: t + ev.start, dur: ev.dur, open: ev.tie,
+                       finger: ev.fingers ? ev.fingers[i] : null,
                        bar: barOffset + ev.bar, block: blocks.length });
         }
       }

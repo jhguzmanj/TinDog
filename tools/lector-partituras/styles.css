@@ -54,6 +54,15 @@ canvas { width: 100%; display: block; margin-top: 10px; border-radius: 8px; back
 .now { margin-top: 10px; font-size: 13px; color: var(--dim); min-height: 20px; }
 .now b { color: var(--text); }
 
+#export-box { margin-top: 12px; }
+.export-note { margin: 0 0 6px; font-size: 13px; color: var(--accent); }
+#export-out {
+  margin: 0; max-height: 260px; overflow: auto; padding: 12px;
+  background: #10131a; border: 1px solid var(--line); border-radius: 8px;
+  font: 12px/1.6 ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  white-space: pre; color: var(--text);
+}
+
 .editor-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 10px; }
 .editor-head div { display: flex; gap: 8px; }
 textarea {
