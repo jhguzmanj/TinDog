@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lector de partituras</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header>
+  <h1>Lector de partituras</h1>
+  <div class="head-right">
+    <select id="song-select"></select>
+    <button id="btn-midi" class="ghost">MIDI</button>
+    <button id="btn-json" class="ghost">JSON</button>
+  </div>
+</header>
+
+<main>
+  <section class="panel">
+    <div class="transport">
+      <button id="btn-play" class="primary">Reproducir</button>
+      <label class="field">
+        <span>Tempo <b id="tempo-label"></b></span>
+        <input id="tempo" type="range" min="30" max="130" value="100">
+      </label>
+      <label class="check"><input id="metronome" type="checkbox"> Metrónomo</label>
+      <label class="check"><input id="countin" type="checkbox" checked> Cuenta de entrada</label>
+      <label class="check"><input id="mute-rh" type="checkbox" checked> Mano derecha</label>
+      <label class="check"><input id="mute-lh" type="checkbox" checked> Mano izquierda</label>
+    </div>
+    <div id="song-info" class="info"></div>
+    <div id="blocks" class="blocks"></div>
+    <canvas id="roll" height="260"></canvas>
+    <canvas id="keys" height="110"></canvas>
+    <div id="now" class="now"></div>
+  </section>
+
+  <section class="panel">
+    <div class="editor-head">
+      <h2>Partitura</h2>
+      <div>
+        <button id="btn-apply" class="primary">Aplicar cambios</button>
+        <button id="btn-reset" class="ghost">Deshacer</button>
+      </div>
+    </div>
+    <div id="errors" class="errors"></div>
+    <textarea id="editor" spellcheck="false"></textarea>
+    <details class="help">
+      <summary>Cómo se escribe</summary>
+      <ul>
+        <li><code>Eb5/8</code> nota y duración: <code>1</code> redonda, <code>2</code> blanca, <code>4</code> negra, <code>8</code> corchea, <code>16</code> semicorchea. El punto alarga: <code>2.</code></li>
+        <li><code>r/4</code> silencio · <code>[F3,Ab3,C4]/1</code> acorde · <code>~</code> al final liga con la nota siguiente</li>
+        <li><code>|</code> separa compases; la app avisa si a un compás le faltan o le sobran tiempos</li>
+        <li><code>[X] nombre</code> abre una sección; <code>order:</code> define el orden real de reproducción (ahí van las repeticiones y las casillas 1ª/2ª)</li>
+        <li><code>tempo: 80 dotted-quarter</code> = negra con puntillo a 80 = <b>negra a 120</b></li>
+      </ul>
+    </details>
+  </section>
+</main>
+
+<script src="js/notation.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/midi.js"></script>
+<script src="songs/clocks.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
