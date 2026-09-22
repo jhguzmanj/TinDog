@@ -9,14 +9,14 @@ meter: 4/4
 tempo: 80 dotted-quarter
 source: arreglo fácil, 22 compases (imágenes de la partitura)
 notes: El riff agrupa 3+3+2 corcheas. Revisar de oído la sección C (compases 9-11), es la menos nítida en la imagen.
-tip: El riff no va en grupos de 4 sino de 3+3+2 corcheas: por eso suena "cojo" y engancha. La derecha repite un mismo dibujo de tres notas que baja; la izquierda solo pone la fundamental y la deja sonar todo el compás. Los dedos de la derecha son los de la partitura; los de la izquierda son la digitación estándar de acorde (5-3-1), no vienen escritos.
+tip: El riff no va en grupos de 4 sino de 3+3+2 corcheas: por eso suena "cojo" y engancha. La derecha repite un mismo dibujo de tres notas que baja; la izquierda solo pone la fundamental y la deja sonar todo el compás. Los dedos de la derecha son los de la partitura; los de la izquierda no vienen escritos: son la digitación estándar (5-3-1 en los acordes, meñique en los bajos sueltos).
 
 [A] Riff (c.1-4)
 rh: Eb5/8:4 Bb4/8:2 Gb4/8:1 Eb5/8:4 Bb4/8:2 Gb4/8:1 Eb5/8:4 Bb4/8:2 |
 rh: Db5/8:3 Bb4/8:2 F4/8:1 Db5/8:3 Bb4/8:2 F4/8:1 Db5/8:3 Bb4/8:2 |
 rh: Db5/8:3 Bb4/8:2 F4/8:1 Db5/8:3 Bb4/8:2 F4/8:1 Db5/8:3 Bb4/8:2 |
 rh: C5/8:4 Ab4/8:2 F4/8:1 C5/8:4 Ab4/8:2 F4/8:1 C5/8:4 Ab4/8:2
-lh: Eb4/1 | Bb3/1 | Bb3/1 | F3/1
+lh: Eb4/1:1 | Bb3/1:5 | Bb3/1:5 | F3/1:5
 
 [B] Melodía (c.5-8)
 rh: Eb5/4:5 Eb5/4:5 Eb5/4:5 Eb5/8:5 C5/8:3 |
@@ -36,7 +36,7 @@ rh: Eb5/8:4 Bb4/8:2 Gb4/8:1 Eb5/8:4 Bb4/8:2 Gb4/8:1 Eb5/8:4 Bb4/8:2 |
 rh: Db5/8:3 Bb4/8:2 F4/8:1 Db5/8:3 Bb4/8:2 F4/8:1 Db5/8:3 Bb4/8:2 |
 rh: Db5/8:3 Bb4/8:2 F4/8:1 Db5/8:3 Bb4/8:2 F4/8:1 Db5/8:3 Bb4/8:2 |
 rh: C5/8:4 Ab4/8:2 F4/8:1 C5/8:4 Ab4/8:2 F4/8:1 C5/8:4 Ab4/8:2
-lh: Eb3/1 | Bb2/1 | Bb2/1 | F2/1
+lh: Eb3/1:5 | Bb2/1:5 | Bb2/1:5 | F2/1:5
 
 [E] Riff agudo (c.16-18)
 rh: Ab5/8:5 Gb5/8:4 Eb5/8:1 Ab5/8:5 Gb5/8:4 Eb5/8:1 Ab5/8:5 Gb5/8:4 |

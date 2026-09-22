@@ -54,8 +54,11 @@ El tempo acepta `quarter`, `dotted-quarter`, `half` y `eighth`. Importa:
 El entrenador avanza por **pasos**, no por tiempo: cada paso son las notas que empiezan a
 la vez y `dur` es lo que tarda en llegar el siguiente. La mano que no cambia va vacía
 (`lh:[]`), que es como se escribe una redonda de la izquierda mientras la derecha hace
-ocho corcheas. Los dedos son opcionales en el entrenador, así que solo se exportan los
-que estén escritos en la partitura.
+ocho corcheas.
+
+**Escribe la digitación completa.** `tests/run.js` exige que toda nota de `SONGS` tenga su
+dedo (`lhF`/`rhF` del mismo tamaño que `lh`/`rh`), así que una pieza a medio digitar no
+entra. Donde la partitura no trae dedos, pon la digitación estándar y dilo en el `tip`.
 
 También exporta MIDI estándar y un JSON plano (lista de notas con `startBeat`), por si
 hacen falta fuera del entrenador.

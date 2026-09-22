@@ -1134,6 +1134,38 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
         W("SONGS.find(s => s.id === 'all-of-me-2').tempo") === 120,
     'el tempo es el real de la canción (120 BPM), no una versión lenta puesta sin verificar');
 
+  section('Clocks: el riff 3+3+2 y el tempo real');
+  const clocksRiff = W('SONGS.find(s => s.id === "clocks-riff").steps');
+  const clocksMel  = W('SONGS.find(s => s.id === "clocks-melodia").steps');
+  check(clocksRiff.reduce((a, x) => a + x.dur, 0) === 16 && clocksRiff.length === 32,
+    'riff: 32 corcheas = 16 tiempos = 4 compases justos');
+  check(clocksRiff.every(x => x.dur === 0.5), 'y todas las notas de la derecha son corcheas iguales');
+  // El agrupamiento 3+3+2 es lo que hace que suene a Clocks: la derecha repite
+  // un dibujo de TRES notas dentro de un compás de cuatro tiempos, así que el
+  // patrón se desplaza. Si alguien lo "arregla" a grupos de cuatro, esto falla.
+  check([0, 1, 2, 3].every(b => {
+      const bar = clocksRiff.slice(b * 8, b * 8 + 8).map(x => x.rh[0]);
+      return bar.length === 8 && [0, 1, 2].every(i => bar[i + 3] === bar[i]) &&
+             bar[6] === bar[0] && bar[7] === bar[1];
+    }),
+    'la derecha repite el mismo dibujo de tres notas dentro del compás: 3 + 3 + 2');
+  check(clocksRiff.filter(x => x.lh.length).length === 4 &&
+        [0, 8, 16, 24].every(i => clocksRiff[i].lh.length === 1),
+    'la izquierda pone una sola fundamental al empezar cada compás y la deja sonar');
+  // La partitura marca negra CON PUNTILLO = 80, que son 120 negras por minuto.
+  // Leerlo como 80 deja la canción a dos tercios de su velocidad (el mismo
+  // error que tenía All of Me).
+  check(W("SONGS.find(s => s.id === 'clocks-riff').tempo") === 120 &&
+        W("SONGS.find(s => s.id === 'clocks-melodia').tempo") === 120,
+    'el tempo es 120 (la partitura marca negra con puntillo = 80, no negra = 80)');
+  check(clocksMel.reduce((a, x) => a + x.dur, 0) === 16,
+    'melodía: 16 tiempos = 4 compases justos');
+  check(clocksMel.every(x => !x.rh.length || (x.rh[0] >= 68 && x.rh[0] <= 75)),
+    'y la derecha no se sale de la posición de cinco dedos Lab4-Mib5');
+  check(clocksMel.filter(x => x.lh.length).length === 4 &&
+        clocksMel.every(x => !x.lh.length || x.lh.length === 3),
+    'la izquierda son cuatro acordes de tres notas, uno por compás');
+
   section('Dragon Ball GT: la transcripción cuadra');
   const dbP1 = W('SONGS.find(s => s.id === "dbgt").steps');
   const dbP2 = W('SONGS.find(s => s.id === "dbgt-2").steps');
