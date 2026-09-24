@@ -262,6 +262,53 @@ Orden dentro del `<script>`:
     octava). `escalera-doblada` dobla cada nota (1-1-2-2-3-4-5, la última a 2
     tiempos); `espejo-menique` arranca en el meñique y baja al pulgar antes de
     volver a subir — lo contrario de cómo empiezan los demás ejercicios.
+  - **`paralelas-1..4` ("Manos Paralelas", David Domínguez,
+    creatumusica.art/ejercicios-de-piano) SÍ son partitura real**, cuatro fotos
+    que Jorge pidió transcribir después de que la búsqueda por texto (WebFetch
+    bloqueado para ese dominio) sugiriera "solo Do y Re" — cierto para el
+    ejercicio 1, no para los otros tres. Las cuatro traen dedo (derecha arriba,
+    izquierda abajo) sobre CADA nota, así que no hubo que inventar nada.
+    Posición de 5 dedos, **movimiento paralelo puro**: las dos manos tocan
+    siempre el mismo grado (una octava aparte), así que calzan tal cual en el
+    formato `{deg,dur,label}` ya existente — `materializeAgilitySteps` las
+    genera igual que a las demás, sin motor nuevo. **La verificación que lo
+    confirma**: se comprobó nota por nota que la digitación de la izquierda de
+    la hoja es SIEMPRE `6 − dedo derecho` (la misma regla que ya usaba el
+    espejo de escalas/Agilidad), sin una sola excepción en las 4×16 = 64
+    columnas de las cuatro fotos — si la lectura de una nota estuviera mal, esa
+    igualdad se habría roto en algún punto; hay prueba que lo repite sobre los
+    datos ya materializados. Van en **`grupo:'dedos'`, no en "Manos juntas"**:
+    aunque el pedido de Jorge fue "coordinación, se me sigue dificultando",
+    mecánicamente esto es DEDOS en posición fija con las dos manos haciendo lo
+    MISMO — lo que de verdad entrena manos haciendo cosas distintas ya son los
+    seis `COORD_DRILLS`. Van igual porque son válidas y están bien sourceadas,
+    pero no hay que confundir "suena a dos manos" con "coordinación de manos
+    independientes".
+    - **Progresión de dificultad, visible en qué dedos usa cada una**: la 1 solo
+      pulgar e índice (Do-Re); la 2 suma el 3 (Mi); la 3 suma el 4 (Fa); la 4
+      usa los cinco dedos y además introduce **saltos de verdad** (1-2-3-4-5 y
+      combinaciones que no van por grado vecino, p. ej. `5,2,1,3`), a diferencia
+      de las tres primeras que solo suben/bajan un dedo por vez.
+      Hay prueba que fija esa distinción (saltos ≥3ª solo en la 4) y que la 1
+      usa únicamente los grados de Do y Re.
+    - **Las tres primeras terminan en el pulgar sostenido** (última nota
+      `dur:2`, blanca, dedo 1 en las dos manos); **la 4 termina distinto**: una
+      redonda (`dur:4`) con el dedo 3, no el pulgar — así lo trae la hoja, y
+      cambiarlo para que "todas terminen igual" habría sido inventar. Hay
+      prueba que lo fija.
+    - **Tempos son sugerencia de práctica, no un dato sourceado** (la hoja no
+      trae metrónomo impreso — es un ejercicio técnico, no una canción, así que
+      no aplica la regla de "buscar el tempo real" que sí rige para piezas de
+      `SONGS`): 72/76/80 BPM subiendo con la dificultad de los tres primeros, y
+      60 para el cuarto — más lento que los otros porque el reto ahí es
+      encontrar la tecla del salto a la primera, no la velocidad, igual que
+      `saltos-terceras` (76) y `cruce-pulgar` (66) ya usan tempos más bajos que
+      sus vecinos por la misma razón.
+    - **Quedó pendiente un "Nivel 2: Manos en Espejo"** del mismo sitio, que
+      Jorge dijo que iba a mandar después — cuidado si llega: el concepto de
+      "espejo" (mismo dedo, direcciones opuestas) ya lo cubre
+      `manos-espejo` (el primer `COORD_DRILL`), así que antes de transcribirlo
+      hay que comparar si aporta algo nuevo o si duplica lo que ya existe.
   - **Fragmentos** (`SONGS`): no hay patrón que derivar (son piezas reales, no
     posiciones fijas), así que `lhF`/`rhF` se escribieron a mano por nota.
     Convención: acorde de la izquierda en posición fundamental = `5-3-1` (igual

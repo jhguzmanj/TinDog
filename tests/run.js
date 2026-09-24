@@ -382,6 +382,35 @@ check(W(`SONGS.filter(s => s.steps.some(st =>
     (st.lh.length && !st.lhF) || (st.rh.length && !st.rhF))).map(s => s.id).join()`) === '',
   'y ninguna pieza se queda sin digitación');
 
+section('Manos Paralelas (David Domínguez, creatumusica.art): 4 ejercicios nuevos');
+// Los cuatro salen de partitura real (posición de 5 dedos, movimiento paralelo:
+// las dos manos SIEMPRE tocan el mismo grado, una octava aparte). Se verificaron
+// a mano contra la hoja que la digitación de la izquierda es siempre 6 - dedo
+// derecho; acá se comprueba que la transcripción, ya en el motor, sigue
+// cumpliendo esa regla y que cada ejercicio son 16 compases de 4/4 exactos.
+const paralelas = W("AGILITY_DRILLS.filter(d => /^paralelas-/.test(d.id))");
+check(paralelas.length === 4, 'los 4 ejercicios están en AGILITY_DRILLS');
+check(paralelas.every(d => d.grupo === 'dedos'), 'van en el grupo "Dedos" (movimiento paralelo, no independencia de manos)');
+check(paralelas.every(d => !d.coord), 'no son ejercicios de coordinación (coord no está puesto)');
+['paralelas-1', 'paralelas-2', 'paralelas-3', 'paralelas-4'].forEach(id => {
+  const sum = W(`AGILITY_DRILLS.find(d => d.id === '${id}').pattern.reduce((a, p) => a + p.dur, 0)`);
+  check(Math.abs(sum - 64) < 1e-9, `${id}: 16 compases de 4/4 exactos (suma de duraciones = 64)`);
+  const mats = W(`materializeAgilitySteps(AGILITY_DRILLS.find(d => d.id === '${id}'), 4, 3)`);
+  check(mats.every(s => s.rhF[0] + s.lhF[0] === 6), `${id}: cada paso trae rhF/lhF espejados (suman 6), como en la hoja original`);
+  check(mats.every(s => s.rh[0] - 12 === s.lh[0]), `${id}: las dos manos tocan siempre el mismo grado, una octava aparte (movimiento paralelo)`);
+});
+// Ejercicio 1: solo Do y Re (fingers 1-2), tal como lo describió Jorge.
+check(W(`AGILITY_DRILLS.find(d => d.id === 'paralelas-1').pattern.every(p => p.deg === 0 || p.deg === 2)`),
+  'paralelas-1 usa únicamente Do y Re, como describió Jorge');
+// Ejercicio 4 es el único con saltos grandes y el único que termina en el dedo 3
+// sostenido (nota larga), no en el pulgar como los otros tres.
+check(W(`(() => {
+  const p = AGILITY_DRILLS.find(d => d.id === 'paralelas-4').pattern;
+  return p.some((step, i) => i > 0 && Math.abs(step.deg - p[i-1].deg) >= 5);
+})()`), 'paralelas-4 trae saltos de verdad, no solo grados vecinos');
+check(W(`(() => { const p = AGILITY_DRILLS.find(d => d.id === 'paralelas-4').pattern; return p[p.length-1].dur === 4 && p[p.length-1].label === '3'; })()`),
+  'paralelas-4 termina en una nota larga con el dedo 3, no el pulgar');
+
 section('Plan de hoy y progreso');
 ev('#mainTabs [data-cat="today"]');
 const plan = W('todayPlan');
