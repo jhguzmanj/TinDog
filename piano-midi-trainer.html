@@ -2767,6 +2767,154 @@ const COORD_DRILLS = [
       {l:0,lf:1,r:0,rf:1,dur:3,label:'De vuelta a los pulgares'},
     ]
   },
+  // ===== Espejo con partitura real (David Domínguez, creatumusica.art, "Nivel 2:
+  // Manos en Espejo") ===== Jorge pidió estos después de los de "Manos Paralelas"
+  // del mismo sitio. Es el mismo CONCEPTO que `manos-espejo` de arriba (mismo dedo
+  // las dos manos, direcciones opuestas) pero con dos diferencias reales, no un
+  // duplicado: (1) usan la posición FIJA de siempre (meñique izquierdo en Do,
+  // pulgar izquierdo en Sol; pulgar derecho en Do, meñique derecho en Sol — la
+  // misma de `paralelas-1..4` y de todo "Dedos"), mientras que `manos-espejo` usa
+  // un descenso inventado para la izquierda que no corresponde a ninguna posición
+  // real; y (2) son partitura de verdad, 16 compases cada uno, con la variedad
+  // rítmica (blancas, blanca con puntillo, redonda) que el ejercicio corto de
+  // arriba no tiene. **La verificación**: con el mismo dedo en las dos manos y la
+  // posición fija, el grado de cada mano sale de la MISMA tabla que ya usa
+  // `paralelas-1..4` (dedo→grado), así que no hubo nada que inventar — el "espejo"
+  // sale solo de que el dedo 3 cae en Mi para las dos manos (eje de la simetría) y
+  // los dedos 1/5 quedan intercambiados entre ambas manos (dedo 1 izquierda = Sol,
+  // dedo 1 derecha = Do; dedo 5 izquierda = Do, dedo 5 derecha = Sol).
+  {
+    id:'espejo-1',
+    grupo:'manos', coord:true,
+    name:'Espejo · Ejercicio 1 (partitura)',
+    tip:'Mismo dedo en las dos manos a la vez, como en el ejercicio de arriba, pero ahora en la posición fija normal (pulgar derecho en Do, pulgar izquierdo en Sol — la misma que usas en "Dedos"). Fíjate que el dedo 3 suena igual en las dos manos (el eje del espejo) y que el 1 y el 5 se cambian: donde la derecha usa el pulgar, la izquierda usa el meñique.',
+    tempo:60,
+    pattern:[
+      {l:0,lf:5,r:7,rf:5,dur:1,label:'Los dos meñiques'},
+      {l:0,lf:5,r:7,rf:5,dur:1},
+      {l:4,lf:3,r:4,rf:3,dur:1},
+      {l:4,lf:3,r:4,rf:3,dur:1},
+      {l:4,lf:3,r:4,rf:3,dur:1},
+      {l:4,lf:3,r:4,rf:3,dur:1},
+      {l:0,lf:5,r:7,rf:5,dur:1},
+      {l:0,lf:5,r:7,rf:5,dur:1},
+      {l:4,lf:3,r:4,rf:3,dur:1},
+      {l:4,lf:3,r:4,rf:3,dur:1},
+      {l:0,lf:5,r:7,rf:5,dur:1},
+      {l:0,lf:5,r:7,rf:5,dur:1},
+      {l:7,lf:1,r:0,rf:1,dur:1,label:'Los dos pulgares'},
+      {l:7,lf:1,r:0,rf:1,dur:1},
+      {l:7,lf:1,r:0,rf:1,dur:2},
+      {l:7,lf:1,r:0,rf:1,dur:1},
+      {l:7,lf:1,r:0,rf:1,dur:1},
+      {l:7,lf:1,r:0,rf:1,dur:1},
+      {l:7,lf:1,r:0,rf:1,dur:1},
+      {l:5,lf:2,r:2,rf:2,dur:2},
+      {l:5,lf:2,r:2,rf:2,dur:2},
+      {l:4,lf:3,r:4,rf:3,dur:1},
+      {l:4,lf:3,r:4,rf:3,dur:1},
+      {l:4,lf:3,r:4,rf:3,dur:1},
+      {l:4,lf:3,r:4,rf:3,dur:1},
+      {l:2,lf:4,r:5,rf:4,dur:2},
+      {l:2,lf:4,r:5,rf:4,dur:2},
+      {l:0,lf:5,r:7,rf:5,dur:1},
+      {l:0,lf:5,r:7,rf:5,dur:1},
+      {l:0,lf:5,r:7,rf:5,dur:1},
+      {l:0,lf:5,r:7,rf:5,dur:1},
+      {l:2,lf:4,r:5,rf:4,dur:1},
+      {l:2,lf:4,r:5,rf:4,dur:1},
+      {l:2,lf:4,r:5,rf:4,dur:1},
+      {l:2,lf:4,r:5,rf:4,dur:1},
+      {l:4,lf:3,r:4,rf:3,dur:1},
+      {l:4,lf:3,r:4,rf:3,dur:1},
+      {l:4,lf:3,r:4,rf:3,dur:1},
+      {l:4,lf:3,r:4,rf:3,dur:1},
+      {l:5,lf:2,r:2,rf:2,dur:2},
+      {l:5,lf:2,r:2,rf:2,dur:1},
+      {l:5,lf:2,r:2,rf:2,dur:1},
+      {l:7,lf:1,r:0,rf:1,dur:3},
+      {l:5,lf:2,r:2,rf:2,dur:1},
+      {l:7,lf:1,r:0,rf:1,dur:1},
+      {l:7,lf:1,r:0,rf:1,dur:1},
+      {l:7,lf:1,r:0,rf:1,dur:1},
+      {l:7,lf:1,r:0,rf:1,dur:1},
+      {l:0,lf:5,r:7,rf:5,dur:1},
+      {l:0,lf:5,r:7,rf:5,dur:1},
+      {l:2,lf:4,r:5,rf:4,dur:1},
+      {l:2,lf:4,r:5,rf:4,dur:1},
+      {l:4,lf:3,r:4,rf:3,dur:1},
+      {l:4,lf:3,r:4,rf:3,dur:1},
+      {l:5,lf:2,r:2,rf:2,dur:1},
+      {l:7,lf:1,r:0,rf:1,dur:1,label:'Cierre'},
+    ]
+  },
+  {
+    id:'espejo-2',
+    grupo:'manos', coord:true,
+    name:'Espejo · Ejercicio 2 (partitura)',
+    tip:'Segundo de la serie: empieza clavado en el pulgar (el 1 se repite mucho) y hacia el final baja por los cinco dedos en las dos manos a la vez, del meñique al pulgar. Termina en una redonda con el pulgar sostenido cuatro tiempos — no la sueltes antes de tiempo.',
+    tempo:64,
+    pattern:[
+      {l:7,lf:1,r:0,rf:1,dur:1,label:'Los dos pulgares'},
+      {l:7,lf:1,r:0,rf:1,dur:1},
+      {l:5,lf:2,r:2,rf:2,dur:1},
+      {l:7,lf:1,r:0,rf:1,dur:1},
+      {l:7,lf:1,r:0,rf:1,dur:1},
+      {l:7,lf:1,r:0,rf:1,dur:1},
+      {l:4,lf:3,r:4,rf:3,dur:1},
+      {l:7,lf:1,r:0,rf:1,dur:1},
+      {l:7,lf:1,r:0,rf:1,dur:1},
+      {l:7,lf:1,r:0,rf:1,dur:1},
+      {l:2,lf:4,r:5,rf:4,dur:1},
+      {l:7,lf:1,r:0,rf:1,dur:1},
+      {l:7,lf:1,r:0,rf:1,dur:1},
+      {l:7,lf:1,r:0,rf:1,dur:1},
+      {l:0,lf:5,r:7,rf:5,dur:1},
+      {l:7,lf:1,r:0,rf:1,dur:1},
+      {l:0,lf:5,r:7,rf:5,dur:1},
+      {l:0,lf:5,r:7,rf:5,dur:1},
+      {l:2,lf:4,r:5,rf:4,dur:1},
+      {l:4,lf:3,r:4,rf:3,dur:1},
+      {l:2,lf:4,r:5,rf:4,dur:1},
+      {l:2,lf:4,r:5,rf:4,dur:1},
+      {l:2,lf:4,r:5,rf:4,dur:2},
+      {l:2,lf:4,r:5,rf:4,dur:1},
+      {l:2,lf:4,r:5,rf:4,dur:1},
+      {l:4,lf:3,r:4,rf:3,dur:1},
+      {l:5,lf:2,r:2,rf:2,dur:1},
+      {l:4,lf:3,r:4,rf:3,dur:1},
+      {l:4,lf:3,r:4,rf:3,dur:1},
+      {l:4,lf:3,r:4,rf:3,dur:2},
+      {l:4,lf:3,r:4,rf:3,dur:1},
+      {l:4,lf:3,r:4,rf:3,dur:1},
+      {l:5,lf:2,r:2,rf:2,dur:1},
+      {l:7,lf:1,r:0,rf:1,dur:1},
+      {l:5,lf:2,r:2,rf:2,dur:1},
+      {l:5,lf:2,r:2,rf:2,dur:1},
+      {l:5,lf:2,r:2,rf:2,dur:1},
+      {l:5,lf:2,r:2,rf:2,dur:1},
+      {l:0,lf:5,r:7,rf:5,dur:1,label:'Bajando del meñique al pulgar'},
+      {l:2,lf:4,r:5,rf:4,dur:1},
+      {l:4,lf:3,r:4,rf:3,dur:1},
+      {l:5,lf:2,r:2,rf:2,dur:1},
+      {l:0,lf:5,r:7,rf:5,dur:1},
+      {l:2,lf:4,r:5,rf:4,dur:1},
+      {l:4,lf:3,r:4,rf:3,dur:1},
+      {l:5,lf:2,r:2,rf:2,dur:1},
+      {l:0,lf:5,r:7,rf:5,dur:1},
+      {l:2,lf:4,r:5,rf:4,dur:1},
+      {l:4,lf:3,r:4,rf:3,dur:1},
+      {l:5,lf:2,r:2,rf:2,dur:1},
+      {l:2,lf:4,r:5,rf:4,dur:1},
+      {l:4,lf:3,r:4,rf:3,dur:1},
+      {l:5,lf:2,r:2,rf:2,dur:1},
+      {l:7,lf:1,r:0,rf:1,dur:1},
+      {l:7,lf:1,r:0,rf:1,dur:2},
+      {l:7,lf:1,r:0,rf:1,dur:1},
+      {l:5,lf:2,r:2,rf:2,dur:1},
+      {l:7,lf:1,r:0,rf:1,dur:4,label:'Cierre, redonda sostenida'},
+    ]
+  },
   {
     id:'manos-alternadas',
     grupo:'manos', coord:true,
@@ -2894,6 +3042,11 @@ function randomCoordPattern(shape, level){
   const lv = rndLevel(level);
   const pick = a => a[Math.floor(Math.random() * a.length)];
   const espejo = shape.id === 'manos-espejo';
+  // espejo-1/2 (partitura real) son TAMBIÉN mismo-dedo-las-dos-manos, pero con
+  // la posición fija de siempre, no el descenso inventado de manos-espejo — así
+  // que su espejo sale de la MISMA tabla que ya usa la rama no-espejo de abajo
+  // (RND_LH indexado por dedo), no de RND_LH_MIRROR.
+  const espejoReal = shape.id === 'espejo-1' || shape.id === 'espejo-2';
   let r = Math.floor(Math.random() * RND_RH.length);
   let l = lv.lhPool[0];
   return shape.pattern.map(p => {
@@ -2911,6 +3064,11 @@ function randomCoordPattern(shape, level){
         // El espejo vive de que las dos manos usen el MISMO dedo: la izquierda
         // no sortea, sigue a la derecha hacia el otro lado.
         out.l = RND_LH_MIRROR[r]; out.lf = r + 1;
+      } else if(espejoReal){
+        // Mismo dedo que la derecha (r + 1), pero el grado sale de la posición
+        // fija real: RND_LH[4 - r] es la izquierda con el mismo dedo que r + 1
+        // (misma cuenta que usa la rama de abajo, `lf = 5 - l` despejado).
+        out.l = RND_LH[4 - r]; out.lf = r + 1;
       } else {
         const cands = lv.lhPool.filter(i => i !== l);
         if(cands.length) l = pick(cands);
@@ -2921,7 +3079,7 @@ function randomCoordPattern(shape, level){
     // izquierda (Sol)") y al azar mentiría. Se reemplaza por lo único que
     // sigue siendo cierto en cualquier sorteo: quién pulsa en este paso.
     out.label = out.l !== undefined && out.r !== undefined
-      ? (espejo ? 'Las dos con el dedo ' + out.rf : 'Las dos a la vez')
+      ? ((espejo || espejoReal) ? 'Las dos con el dedo ' + out.rf : 'Las dos a la vez')
       : (out.l !== undefined ? 'Solo izquierda' : 'Solo derecha');
     return out;
   });

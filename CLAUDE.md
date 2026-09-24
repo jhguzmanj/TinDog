@@ -304,11 +304,13 @@ Orden dentro del `<script>`:
       encontrar la tecla del salto a la primera, no la velocidad, igual que
       `saltos-terceras` (76) y `cruce-pulgar` (66) ya usan tempos más bajos que
       sus vecinos por la misma razón.
-    - **Quedó pendiente un "Nivel 2: Manos en Espejo"** del mismo sitio, que
-      Jorge dijo que iba a mandar después — cuidado si llega: el concepto de
-      "espejo" (mismo dedo, direcciones opuestas) ya lo cubre
-      `manos-espejo` (el primer `COORD_DRILL`), así que antes de transcribirlo
-      hay que comparar si aporta algo nuevo o si duplica lo que ya existe.
+    - **El "Nivel 2: Manos en Espejo" llegó después**: dos ejercicios
+      (`espejo-1`, `espejo-2`, documentados en la sección de Coordinación de
+      arriba). Sí aportaban algo nuevo sobre `manos-espejo` — la posición fija
+      real en vez del descenso inventado — así que se agregaron en vez de
+      descartarse por duplicados. El sitio menciona un total de **tres
+      niveles**; si llega un Nivel 3, aplicar el mismo criterio: comparar
+      contra lo que ya existe antes de transcribir a ciegas.
   - **Fragmentos** (`SONGS`): no hay patrón que derivar (son piezas reales, no
     posiciones fijas), así que `lhF`/`rhF` se escribieron a mano por nota.
     Convención: acorde de la izquierda en posición fundamental = `5-3-1` (igual
@@ -824,6 +826,38 @@ Orden dentro del `<script>`:
       "Dios está aquí", "Espíritu de Dios" y "Dragon Ball GT": una nota grave
       pisada los cuatro tiempos) → la izquierda en 1 y 3 (tiene que volver a
       entrar con la derecha en marcha) → dos por una → contratiempo.
+    - **`espejo-1` y `espejo-2` (David Domínguez, creatumusica.art, "Nivel 2:
+      Manos en Espejo") se insertaron justo después del peldaño 1**, como
+      refuerzo del mismo concepto con partitura real (16 compases cada uno,
+      no las 9 notas inventadas del peldaño 1). Jorge los pidió después de
+      "Manos Paralelas" del mismo sitio; el mensaje decía "el nivel 2 son
+      manos en espejo: mismo dedo las dos manos a la vez" — y coincide
+      exactamente con lo que ya hacía `manos-espejo`, así que antes de
+      transcribir tocaba decidir si aportaban algo o duplicaban. **Sí aportan
+      algo real**: usan la posición FIJA de siempre (pulgar derecho en Do,
+      pulgar izquierdo en Sol — la misma de `paralelas-1..4` y de "Dedos"),
+      mientras que `manos-espejo` usa un descenso semitonal inventado para la
+      izquierda (0,-1,-3,-5,-7) que no corresponde a ninguna posición real de
+      la mano. Con la posición fija, el grado de cada mano sale de la MISMA
+      tabla dedo→grado que ya usan los de Dedos: el dedo 3 cae en Mi para las
+      dos manos (el eje del espejo) y el 1/5 se intercambian entre manos
+      (dedo 1 derecha=Do, dedo 1 izquierda=Sol; dedo 5 derecha=Sol, dedo 5
+      izquierda=Do) — no hubo que inventar nada nuevo, la tabla ya existía.
+      **La misma verificación de "Manos Paralelas" aplica aquí**: con las dos
+      manos usando SIEMPRE el mismo dedo, se comprobó que el grado de cada
+      paso coincide con esa tabla en las 114 columnas de las dos hojas (2×16
+      compases), sin excepciones; hay prueba que lo repite sobre los datos ya
+      materializados. El ejercicio 2 termina en una redonda con el pulgar
+      sostenido cuatro tiempos, algo que ningún otro `coord` drill tenía.
+      **Esto también destapó un bug latente en el modo al azar** (ver más
+      abajo): `randomCoordPattern` reconocía el espejo SOLO por
+      `id === 'manos-espejo'` y usaba `RND_LH_MIRROR` (la tabla inventada) —
+      aplicado a `espejo-1/2` sin arreglar, sortear notas habría tocado la
+      tabla EQUIVOCADA y roto el eje real de la posición fija en silencio, la
+      primera vez que alguien encendiera "Al azar" en uno de estos dos. Se
+      agregó una rama `espejoReal` que usa `RND_LH[4 - r]` (la tabla de
+      posición fija, despejada para el mismo índice que ya elige la derecha),
+      con su propia prueba.
     - **Formato nuevo, el viejo intacto.** `coord:true` y cada paso lleva `l`/`r`
       (grado de cada mano) y `lf`/`rf` (dedo). Una mano **sin grado** en un paso
       no vuelve a pulsar: sigue pisada — la misma convención de ligadura que usa
@@ -845,9 +879,11 @@ Orden dentro del `<script>`:
       paso a paso solo se aprende el orden de las teclas y el ritmo ES el
       ejercicio. El tip del 6 lo dice explícitamente.
     - **El plan de "Hoy" sube la escalera**: mientras quede un peldaño de
-      coordinación sin estrenar, el calentamiento es ese y **en orden**, no el
-      "menos practicado" (el 6 no tiene sentido antes del 1). Cuando ya pasó por
-      los seis vuelve la rotación normal entre los catorce.
+      coordinación sin estrenar, el calentamiento es ese y **en orden de
+      array**, no el "menos practicado" (el 6 no tiene sentido antes del 1;
+      `espejo-1/2` van justo después del peldaño 1, como refuerzo antes de
+      pasar al 2). Cuando ya pasó por los ocho vuelve la rotación normal entre
+      los veinte.
     - **Modo al azar y niveles (`agilRandom`, `agilLevel`, los dos
       persistidos).** Jorge: "está muy lineal, las canciones van saltando de
       teclas". Es el límite de cualquier patrón fijo: a la tercera vuelta la

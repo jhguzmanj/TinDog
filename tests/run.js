@@ -1324,11 +1324,14 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
 
   section('Coordinación: las dos manos no hacen lo mismo');
   const coord = W('AGILITY_DRILLS.filter(d => d.coord)');
-  check(coord.length === 6, `${coord.length} ejercicios de coordinación (la escalera del 1 al 6)`);
+  check(coord.length === 8, `${coord.length} ejercicios de coordinación (la escalera del 1 al 6, más 2 de espejo con partitura)`);
   check(coord.every(d => d.grupo === 'manos'), 'todos viven en el grupo "Manos juntas"');
   // Lo que hace que estos ejercicios SIRVAN es que las manos no coincidan. Un
   // ejercicio donde las dos tocan lo mismo a la vez ya existe (los de dedos) y
-  // no entrena independencia, así que aquí eso es un error de datos.
+  // no entrena independencia, así que aquí eso es un error de datos — salvo la
+  // FAMILIA "espejo" (mismo dedo, direcciones opuestas, las dos manos SIEMPRE
+  // pulsan juntas): esos SÍ son válidos sin pasos de una sola mano, porque el
+  // reto ahí no es la independencia rítmica sino la dirección contraria.
   const espejo = coord.find(d => d.id === 'manos-espejo');
   check(espejo.pattern.every(p => p.l !== undefined && p.r !== undefined),
     'el espejo pulsa con las dos manos en todos los pasos…');
@@ -1336,8 +1339,21 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
     '…pero en direcciones opuestas: la izquierda baja del Do y la derecha sube');
   check(espejo.pattern.every(p => p.lf === p.rf),
     'y con el mismo dedo en las dos manos, que es lo que lo hace el peldaño fácil');
-  const otros = coord.filter(d => d.id !== 'manos-espejo');
-  check(otros.every(d => d.pattern.some(p => p.l === undefined || p.r === undefined)),
+  // espejo-1/2 (David Domínguez, creatumusica.art): mismo concepto que arriba,
+  // pero con la posición FIJA real (no el descenso inventado de manos-espejo),
+  // así que el grado de cada mano sale de la misma tabla dedo->grado que usan
+  // paralelas-1..4. El dedo 3 es el eje (misma nota, Mi, en las dos manos) y el
+  // 1/5 se intercambian entre manos — eso reemplaza el chequeo l<=0/r>=0, que
+  // solo aplica a la convención vieja de manos-espejo.
+  const espejoFam = ['espejo-1', 'espejo-2'].map(id => coord.find(d => d.id === id));
+  check(espejoFam.every(Boolean), 'espejo-1 y espejo-2 están en AGILITY_DRILLS');
+  const LH_DEG = {1:7, 2:5, 3:4, 4:2, 5:0}, RH_DEG = {1:0, 2:2, 3:4, 4:5, 5:7};
+  check(espejoFam.every(d => d.pattern.every(p =>
+      p.l !== undefined && p.r !== undefined && p.lf === p.rf &&
+      p.l === LH_DEG[p.lf] && p.r === RH_DEG[p.rf])),
+    'espejo-1/2: mismo dedo en las dos manos en todos los pasos, y el grado de cada mano sale de la posición fija (dedo 3 = Mi en las dos)');
+  const otros = coord.filter(d => !['manos-espejo', 'espejo-1', 'espejo-2'].includes(d.id));
+  check(otros.length === 5 && otros.every(d => d.pattern.some(p => p.l === undefined || p.r === undefined)),
     'los otros cinco tienen pasos donde solo entra una mano (sostener, turnarse, contratiempo)');
   // Cuadrar en compases de 4 importa aquí igual que en las piezas: la cascada
   // dibuja la rejilla de compases y es donde estos ejercicios se practican.
@@ -1590,6 +1606,22 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
       }
       return true;
     })()`), 'el espejo sortea con el mismo dedo en las dos manos y en direcciones opuestas');
+  // espejo-1/2 (partitura real) también son mismo-dedo-las-dos-manos, pero con
+  // la posición FIJA real, no el descenso inventado de manos-espejo: si el
+  // sorteo usara la tabla equivocada, el "eje" (dedo 3 = Mi en las dos manos)
+  // se rompería.
+  check(W(`(function(){
+      for(const id of ['espejo-1', 'espejo-2']){
+        const esp = AGILITY_DRILLS.find(d => d.id === id);
+        for(let i = 0; i < 30; i++){
+          const pat = randomCoordPattern(esp, 4);
+          if(!pat.every(p => p.lf === p.rf)) return false;
+          const LH = ${JSON.stringify({1:7,2:5,3:4,4:2,5:0})}, RH = ${JSON.stringify({1:0,2:2,3:4,4:5,5:7})};
+          if(!pat.every(p => p.l === LH[p.lf] && p.r === RH[p.rf])) return false;
+        }
+      }
+      return true;
+    })()`), 'espejo-1/2 sortean con el mismo dedo en las dos manos y el grado de la posición fija real (no el de manos-espejo)');
   // Los niveles mueven de verdad el tamaño del salto.
   const salto = (nivel) => W(`(function(){
       const d = AGILITY_DRILLS.find(x => x.id === 'manos-sostiene');
