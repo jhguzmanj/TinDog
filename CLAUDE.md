@@ -858,6 +858,40 @@ Orden dentro del `<script>`:
       agregó una rama `espejoReal` que usa `RND_LH[4 - r]` (la tabla de
       posición fija, despejada para el mismo índice que ya elige la derecha),
       con su propia prueba.
+    - **`alternadas-1` y `alternadas-2` (David Domínguez, creatumusica.art,
+      "Nivel 3: Manos alternadas") se insertaron después del peldaño 2**, con
+      el mismo espíritu que `espejo-1/2`. Jorge mandó CUATRO ejercicios de esa
+      hoja y esta vez pidió explícitamente depurar lo que se duplicara — así
+      que, a diferencia de "Manos Paralelas" y "Manos en Espejo" (donde entró
+      todo lo mandado), aquí **se dejaron DOS afuera a propósito**: el
+      Ejercicio 3 de la hoja es el Ejercicio 1 con la digitación simplemente
+      invertida entre manos (donde una sube ahora la otra baja, mismo
+      esqueleto rítmico), y el Ejercicio 4 es una variante más repetitiva del
+      2 (las dos manos bajan siempre juntas en vez de cruzarse). Tocar la
+      misma figura con los dedos espejados no enseña nada que el original no
+      enseñara ya — es la misma regla que ya usaba este archivo para no
+      agregar ejercicios en unísono que no cambian lo que se entrena, aplicada
+      ahora a dos ejercicios "alternados" que resultan ser el mismo con la
+      digitación dada vuelta. Las cuatro fotos quedan en el historial de la
+      sesión si algún día se quiere revisar esta decisión.
+      **Lo que SÍ aportan `alternadas-1/2` sobre `manos-alternadas`** (que ya
+      existía): esa entrada es un compás corto (8 pasos) con el MISMO dedo en
+      las dos manos, alternando siempre igual. Estos dos son 16 compases con
+      **dedos DISTINTOS entre manos** (una melodía de verdad repartida entre
+      las dos, no una figura fija) y una textura que no existía en ningún
+      `coord` drill: alternancia por MEDIO COMPÁS (dos notas seguidas de una
+      mano, después dos de la otra — Ejercicio 1, compases 9-16), aparte de la
+      alternancia tiempo-por-tiempo que ya tenía el peldaño 2. `alternadas-2`
+      es la más melódica: el dedo cambia DENTRO del compás, así que no se
+      puede tocar en piloto automático como el resto de "Manos juntas".
+      **Verificación**: con la derecha entrando siempre primero (tiempo por
+      tiempo) o en bloques de dos, el grado de cada mano sale de la misma
+      tabla dedo→grado de siempre; se comprobó columna por columna contra las
+      dos hojas (32 compases en total) y los 16 compases de cada uno suman
+      exactos 64 tiempos. A diferencia del espejo, aquí no aplica la rama
+      `espejoReal` de `randomCoordPattern`: como las dos manos ya traen dedos
+      independientes, caen en la rama normal (la que ya usan
+      `manos-sostiene`/`manos-1-y-3`), sin necesitar código nuevo.
     - **Formato nuevo, el viejo intacto.** `coord:true` y cada paso lleva `l`/`r`
       (grado de cada mano) y `lf`/`rf` (dedo). Una mano **sin grado** en un paso
       no vuelve a pulsar: sigue pisada — la misma convención de ligadura que usa
@@ -881,9 +915,9 @@ Orden dentro del `<script>`:
     - **El plan de "Hoy" sube la escalera**: mientras quede un peldaño de
       coordinación sin estrenar, el calentamiento es ese y **en orden de
       array**, no el "menos practicado" (el 6 no tiene sentido antes del 1;
-      `espejo-1/2` van justo después del peldaño 1, como refuerzo antes de
-      pasar al 2). Cuando ya pasó por los ocho vuelve la rotación normal entre
-      los veinte.
+      `espejo-1/2` van justo después del peldaño 1 y `alternadas-1/2` justo
+      después del 2, como refuerzo antes de seguir subiendo). Cuando ya pasó
+      por los diez vuelve la rotación normal entre los veintidós.
     - **Modo al azar y niveles (`agilRandom`, `agilLevel`, los dos
       persistidos).** Jorge: "está muy lineal, las canciones van saltando de
       teclas". Es el límite de cualquier patrón fijo: a la tercera vuelta la

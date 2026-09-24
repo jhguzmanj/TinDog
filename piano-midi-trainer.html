@@ -2932,6 +2932,82 @@ const COORD_DRILLS = [
       {l:0,lf:5,r:0,rf:1,dur:2,label:'Las dos juntas para cerrar'},
     ]
   },
+  // ===== Manos Alternadas con partitura real (David Domínguez, creatumusica.art,
+  // "Nivel 3: Manos alternadas") ===== Jorge mandó CUATRO ejercicios y pidió
+  // explícitamente depurar lo que se duplique. Se agregan solo DOS: los otros dos
+  // que mandó (Ejercicio 3 y Ejercicio 4 de la hoja) son el mismo esqueleto
+  // rítmico que Ejercicio 1 y 2 con la digitación simplemente invertida —
+  // Ejercicio 3 es Ejercicio 1 con las direcciones de dedo cambiadas de sitio
+  // entre las manos (donde una sube la otra ahora baja), Ejercicio 4 es una
+  // variante más repetitiva de Ejercicio 2 (las dos manos bajan siempre juntas
+  // en vez de cruzarse). Una vez que la mano aprendió "quién entra en qué
+  // tiempo", tocar la misma figura con los dedos invertidos no enseña nada
+  // nuevo — es la razón por la que este proyecto ya tiene la regla de "no
+  // agregar unísono si no cambia lo que se entrena" (ver arriba, cuando se
+  // crearon los COORD_DRILLS). Si en algún momento se quiere revisar esa
+  // decisión, las cuatro fotos originales quedan en el historial de la sesión.
+  // **Lo que SÍ aportan estos dos sobre `manos-alternadas`:** esa entrada es un
+  // solo compás corto (8 pasos) con el MISMO dedo en las dos manos; estos son
+  // 16 compases reales con DEDOS DISTINTOS entre manos (una melodía de verdad
+  // repartida, no una figura fija) y dos texturas nuevas — alternancia por
+  // TIEMPO (una nota por pulso, como ya tenía el rung 2) y alternancia por
+  // MEDIO COMPÁS (dos notas seguidas de una mano, después dos de la otra,
+  // ejercicio 1 compases 9-16) — la segunda no existía en ningún coord drill.
+  {
+    id:'alternadas-1',
+    grupo:'manos', coord:true,
+    name:'Alternadas · Ejercicio 1 (partitura)',
+    tip:'Dos texturas en un solo ejercicio. Los primeros 8 compases alternan tiempo por tiempo, como el ejercicio de arriba, pero cambiando quién empieza (primero manda la izquierda, después la derecha). Los últimos 8 compases alternan de a DOS notas: una mano toca dos seguidas y recién ahí entra la otra — es más fácil de contar que de tocar, así que ve lento y di en voz alta qué mano sigue.',
+    tempo:66,
+    pattern:[
+      {l:0,lf:5,dur:1}, {r:0,rf:1,dur:1}, {l:0,lf:5,dur:1}, {r:0,rf:1,dur:1},
+      {l:2,lf:4,dur:1}, {r:2,rf:2,dur:1}, {l:2,lf:4,dur:1}, {r:2,rf:2,dur:1},
+      {l:4,lf:3,dur:1}, {r:4,rf:3,dur:1}, {l:4,lf:3,dur:1}, {r:4,rf:3,dur:1},
+      {l:5,lf:2,dur:1}, {r:5,rf:4,dur:1}, {l:5,lf:2,dur:1}, {r:5,rf:4,dur:1},
+      {r:7,rf:5,dur:1}, {l:7,lf:1,dur:1}, {r:7,rf:5,dur:1}, {l:7,lf:1,dur:1},
+      {r:5,rf:4,dur:1}, {l:5,lf:2,dur:1}, {r:5,rf:4,dur:1}, {l:5,lf:2,dur:1},
+      {r:4,rf:3,dur:1}, {l:4,lf:3,dur:1}, {r:4,rf:3,dur:1}, {l:4,lf:3,dur:1},
+      {r:2,rf:2,dur:1}, {l:2,lf:4,dur:1}, {r:2,rf:2,dur:1}, {l:2,lf:4,dur:1},
+      {r:0,rf:1,dur:1,label:'Dos seguidas de la derecha, después dos de la izquierda'},
+      {r:0,rf:1,dur:1}, {l:0,lf:5,dur:1}, {l:0,lf:5,dur:1},
+      {r:2,rf:2,dur:1}, {r:2,rf:2,dur:1}, {l:2,lf:4,dur:1}, {l:2,lf:4,dur:1},
+      {r:4,rf:3,dur:1}, {r:4,rf:3,dur:1}, {l:4,lf:3,dur:1}, {l:4,lf:3,dur:1},
+      {r:5,rf:4,dur:1}, {r:5,rf:4,dur:1}, {l:5,lf:2,dur:1}, {l:5,lf:2,dur:1},
+      {l:7,lf:1,dur:1}, {l:7,lf:1,dur:1}, {r:7,rf:5,dur:1}, {r:7,rf:5,dur:1},
+      {l:5,lf:2,dur:1}, {l:5,lf:2,dur:1}, {r:5,rf:4,dur:1}, {r:5,rf:4,dur:1},
+      {l:4,lf:3,dur:1}, {l:4,lf:3,dur:1}, {r:4,rf:3,dur:1}, {r:4,rf:3,dur:1},
+      {l:2,lf:4,r:2,rf:2,dur:1,label:'Las dos juntas para cerrar'},
+      {l:2,lf:4,r:2,rf:2,dur:1},
+      {l:0,lf:5,r:0,rf:1,dur:2},
+    ]
+  },
+  {
+    id:'alternadas-2',
+    grupo:'manos', coord:true,
+    name:'Alternadas · Ejercicio 2 (partitura)',
+    tip:'Como el ejercicio de arriba (una nota por pulso, la derecha siempre entra primero) pero con una melodía de verdad: el dedo cambia dentro del mismo compás, así que no puedes tocar en piloto automático — cada compás hay que mirar qué dedo toca antes de tocarlo.',
+    tempo:64,
+    pattern:[
+      {r:0,rf:1,dur:1}, {l:0,lf:5,dur:1}, {r:2,rf:2,dur:1}, {l:2,lf:4,dur:1},
+      {r:4,rf:3,dur:1}, {l:4,lf:3,dur:1}, {r:5,rf:4,dur:1}, {l:5,lf:2,dur:1},
+      {r:7,rf:5,dur:1}, {l:7,lf:1,dur:1}, {r:5,rf:4,dur:1}, {l:5,lf:2,dur:1},
+      {r:4,rf:3,dur:1}, {l:4,lf:3,dur:1}, {r:2,rf:2,dur:1}, {l:2,lf:4,dur:1},
+      {r:7,rf:5,dur:1}, {l:7,lf:1,dur:1}, {r:5,rf:4,dur:1}, {l:5,lf:2,dur:1},
+      {r:7,rf:5,dur:1}, {l:7,lf:1,dur:1}, {r:4,rf:3,dur:1}, {l:4,lf:3,dur:1},
+      {r:7,rf:5,dur:1}, {l:7,lf:1,dur:1}, {r:2,rf:2,dur:1}, {l:2,lf:4,dur:1},
+      {r:7,rf:5,dur:1}, {l:7,lf:1,dur:1}, {r:0,rf:1,dur:1}, {l:0,lf:5,dur:1},
+      {r:0,rf:1,dur:1}, {l:0,lf:5,dur:1}, {r:2,rf:2,dur:1}, {l:2,lf:4,dur:1},
+      {r:0,rf:1,dur:1}, {l:0,lf:5,dur:1}, {r:4,rf:3,dur:1}, {l:4,lf:3,dur:1},
+      {r:0,rf:1,dur:1}, {l:0,lf:5,dur:1}, {r:5,rf:4,dur:1}, {l:5,lf:2,dur:1},
+      {r:0,rf:1,dur:1}, {l:0,lf:5,dur:1}, {r:7,rf:5,dur:1}, {l:7,lf:1,dur:1},
+      {r:0,rf:1,dur:1}, {l:0,lf:5,dur:1}, {r:2,rf:2,dur:1}, {l:2,lf:4,dur:1},
+      {r:4,rf:3,dur:1}, {l:4,lf:3,dur:1}, {r:5,rf:4,dur:1}, {l:5,lf:2,dur:1},
+      {r:7,rf:5,dur:1}, {l:7,lf:1,dur:1}, {r:5,rf:4,dur:1}, {l:5,lf:2,dur:1},
+      {r:4,rf:3,dur:1}, {l:4,lf:3,dur:1},
+      {l:2,lf:4,r:2,rf:2,dur:1},
+      {l:0,lf:5,r:0,rf:1,dur:1,label:'Las dos juntas para cerrar'},
+    ]
+  },
   {
     id:'manos-sostiene',
     grupo:'manos', coord:true,

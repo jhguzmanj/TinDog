@@ -1324,7 +1324,7 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
 
   section('Coordinación: las dos manos no hacen lo mismo');
   const coord = W('AGILITY_DRILLS.filter(d => d.coord)');
-  check(coord.length === 8, `${coord.length} ejercicios de coordinación (la escalera del 1 al 6, más 2 de espejo con partitura)`);
+  check(coord.length === 10, `${coord.length} ejercicios de coordinación (la escalera del 1 al 6, más 2 de espejo y 2 de alternadas con partitura)`);
   check(coord.every(d => d.grupo === 'manos'), 'todos viven en el grupo "Manos juntas"');
   // Lo que hace que estos ejercicios SIRVAN es que las manos no coincidan. Un
   // ejercicio donde las dos tocan lo mismo a la vez ya existe (los de dedos) y
@@ -1353,8 +1353,19 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
       p.l === LH_DEG[p.lf] && p.r === RH_DEG[p.rf])),
     'espejo-1/2: mismo dedo en las dos manos en todos los pasos, y el grado de cada mano sale de la posición fija (dedo 3 = Mi en las dos)');
   const otros = coord.filter(d => !['manos-espejo', 'espejo-1', 'espejo-2'].includes(d.id));
-  check(otros.length === 5 && otros.every(d => d.pattern.some(p => p.l === undefined || p.r === undefined)),
-    'los otros cinco tienen pasos donde solo entra una mano (sostener, turnarse, contratiempo)');
+  check(otros.length === 7 && otros.every(d => d.pattern.some(p => p.l === undefined || p.r === undefined)),
+    'los otros siete tienen pasos donde solo entra una mano (sostener, turnarse, contratiempo, y los dos de alternadas)');
+  // alternadas-1/2 (David Domínguez): a diferencia del espejo, cada mano trae
+  // SU PROPIO dedo distinto en el mismo paso — es la diferencia real con
+  // manos-alternadas (mismo dedo las dos manos, figura de un compás).
+  const alternadasFam = ['alternadas-1', 'alternadas-2'].map(id => coord.find(d => d.id === id));
+  check(alternadasFam.every(Boolean), 'alternadas-1 y alternadas-2 están en AGILITY_DRILLS');
+  check(alternadasFam.every(d => {
+      const beats = d.pattern.reduce((a, p) => a + p.dur, 0);
+      return beats === 64;
+    }), 'alternadas-1/2: 16 compases de 4/4 exactos (64 tiempos)');
+  check(alternadasFam.some(d => d.pattern.some(p => p.l !== undefined && p.r !== undefined && p.lf !== p.rf)),
+    'al menos uno de los dos usa dedos DISTINTOS en las dos manos cuando coinciden (no es un espejo)');
   // Cuadrar en compases de 4 importa aquí igual que en las piezas: la cascada
   // dibuja la rejilla de compases y es donde estos ejercicios se practican.
   coord.forEach(d => {
