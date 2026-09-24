@@ -178,11 +178,7 @@
   .finger-list{ margin:0; padding-left:18px; }
   .finger-list li{ margin-bottom:10px; line-height:1.6; font-size:16.5px; }
   .finger-list b{ color:var(--ivory); }
-  .scroll-tabs{
-    flex-wrap:nowrap;overflow-x:auto;
-    padding-bottom:6px;
-    -webkit-overflow-scrolling:touch;
-  }
+  .scroll-tabs{ flex-wrap:wrap; }
   .scroll-tabs .mode-tab{ flex:0 0 auto; }
   .mode-tab{
     padding:8px 15px;border-radius:20px;
@@ -218,13 +214,13 @@
   .keyboard-wrap{
     width:100%;
     max-width:min(1634px, 92vw);
-    overflow-x:auto;
     background:linear-gradient(180deg,#141210,#0a0908);
     border:1px solid var(--panel-border);
     border-radius:12px;
     padding:12px;
     box-shadow:0 10px 30px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.02);
   }
+  .kb-scroll{ overflow-x:auto; }
   svg{display:block;}
   #pianoSvg{ width:var(--kb-w, 1150px); min-width:0; margin:0 auto; }
   .white-key{fill:var(--ivory);stroke:#00000040;stroke-width:0.5;transition:fill 0.08s ease;cursor:pointer;}
@@ -550,6 +546,10 @@
   .today-title{ font-size:17px; color:var(--ivory); font-weight:600; }
   .today-sub{ font-size:14.5px; color:var(--text-dim); margin-top:2px; line-height:1.45; }
   .today-go{ white-space:nowrap; }
+  @media (max-width:560px){
+    .today-item{ grid-template-columns:30px 1fr; gap:8px 10px; }
+    .today-item .today-go{ grid-column:2; justify-self:start; }
+  }
   .today-min{ font-size:13px; color:var(--brass); letter-spacing:0.5px; margin-left:8px; }
   /* Separador de bloque: deja ver de un vistazo qué es el foco de ahora y qué
      es mantenimiento. Sin viñeta ni borde: es un rótulo, no un punto del plan. */
@@ -694,6 +694,36 @@
   /* --- Pestañas agrupadas: plan / ejercicios / consulta --- */
   #mainTabs{ align-items:center; gap:6px; }
   .tab-sep{ width:1px; height:22px; background:var(--panel-border); margin:0 5px; flex:0 0 auto; }
+  /* Menú "Más" y desplegables: <details> sin el triángulo del navegador */
+  details > summary{ list-style:none; cursor:pointer; }
+  details > summary::-webkit-details-marker{ display:none; }
+  .more-menu{ position:relative; }
+  .more-menu summary.mode-tab{ display:inline-block; }
+  .more-pop{
+    position:absolute; right:0; top:calc(100% + 6px); z-index:30;
+    display:flex; flex-direction:column; gap:6px; padding:8px;
+    background:#16130f; border:1px solid var(--panel-border); border-radius:12px;
+    box-shadow:0 12px 30px rgba(0,0,0,0.5); min-width:210px;
+  }
+  .more-pop .mode-tab{ text-align:left; }
+  .kb-more{ position:relative; }
+  .kb-more-pop{
+    position:absolute; right:0; top:calc(100% + 6px); z-index:30;
+    display:flex; flex-direction:column; align-items:stretch; gap:6px; padding:8px;
+    background:#16130f; border:1px solid var(--panel-border); border-radius:12px;
+    box-shadow:0 12px 30px rgba(0,0,0,0.5); min-width:250px;
+  }
+  .kb-more[open] > summary, .opt-box[open] > summary{ border-color:var(--brass-soft); color:var(--text); }
+  /* Opciones secundarias de cada práctica, plegadas */
+  .opt-box{ margin-bottom:10px; }
+  .opt-box > summary{
+    display:inline-block; font-size:14.5px; color:var(--text-dim);
+    padding:6px 12px; border:1px dashed var(--panel-border); border-radius:10px;
+  }
+  .opt-box > summary:hover{ color:var(--text); border-color:var(--brass-soft); }
+  .opt-box[open] > summary{ margin-bottom:8px; border-style:solid; }
+  .opt-box > .reg-bar{ margin-bottom:0; }
+  @media (max-width:760px){ .tab-sep{ display:none; } }
   .mode-tab{ font-size:15.5px; }
 
   /* --- Menos cajas dentro de cajas --- */
@@ -969,20 +999,27 @@
   </header>
 
   <div class="panel" id="modePanel">
-    <div class="mode-tabs" id="mainTabs">
+    <nav class="mode-tabs" id="mainTabs" aria-label="Prácticas">
       <button class="mode-tab active" data-cat="today">Hoy</button>
       <span class="tab-sep" aria-hidden="true"></span>
       <button class="mode-tab" data-cat="scales">Escalas</button>
+      <button class="mode-tab" data-cat="agility">Agilidad</button>
       <button class="mode-tab" data-cat="chords">Acordes</button>
+      <span class="tab-sep" aria-hidden="true"></span>
       <button class="mode-tab" data-cat="intervals">Intervalos</button>
       <button class="mode-tab" data-cat="reading">Lectura</button>
-      <button class="mode-tab" data-cat="agility">Agilidad</button>
-      <button class="mode-tab" data-cat="fragments">Fragmentos</button>
+      <span class="tab-sep" aria-hidden="true"></span>
+      <button class="mode-tab" data-cat="fragments">Piezas</button>
       <span class="tab-sep" aria-hidden="true"></span>
       <button class="mode-tab" data-cat="progress">Progreso</button>
-      <button class="mode-tab" data-cat="free">Libre</button>
-      <button class="mode-tab" data-cat="functions">Funciones</button>
-    </div>
+      <details class="more-menu" id="moreMenu">
+        <summary class="mode-tab">Más ▾</summary>
+        <div class="more-pop">
+          <button class="mode-tab" data-cat="free">Tocar libre</button>
+          <button class="mode-tab" data-cat="functions">Funciones del P-45</button>
+        </div>
+      </details>
+    </nav>
     <div class="mode-tabs sub-tabs" id="scaleFamilyTabs" style="display:none;">
       <button class="mode-tab sub active" data-family="major">Mayores</button>
       <button class="mode-tab sub" data-family="minor">Menores</button>
@@ -1039,17 +1076,6 @@
     <div id="chordGroupBar" class="reg-bar" style="display:none;">
       <span class="reg-group"><span class="reg-label g-type">Qué acordes</span>
       <div class="reg-picker g-type" id="chordGroupPicker"></div></span>
-    </div>
-    <div id="chordOctaveBar" class="reg-bar" style="display:none;">
-      <span class="reg-group"><span class="reg-label g-oct">Octava</span>
-      <div class="reg-picker g-oct" id="chordOctavePicker"></div></span>
-      <button id="chordRandomOct" class="ghost-btn">🎲 Octava al azar</button>
-      <span class="reg-group"><span class="reg-label g-type">Posición</span>
-      <div class="reg-picker g-type" id="chordInvPicker">
-        <button class="reg-btn active" data-inv="0">Fundamental</button>
-        <button class="reg-btn" data-inv="1">1ª inversión</button>
-        <button class="reg-btn" data-inv="2">2ª inversión</button>
-      </div></span>
       <span class="reg-group"><span class="reg-label g-hand">Mano</span>
       <div class="reg-picker g-hand" id="chordHandPicker">
         <button class="reg-btn" data-chand="lh">Izquierda</button>
@@ -1062,23 +1088,40 @@
         <button class="reg-btn" data-creps="4">4</button>
         <button class="reg-btn" data-creps="8">8</button>
       </div></span>
+    </div>
+    <details class="opt-box" id="chordOpts" style="display:none;">
+    <summary>⚙ Más opciones: octava, inversiones, notas exactas</summary>
+    <div id="chordOctaveBar" class="reg-bar">
+      <span class="reg-group"><span class="reg-label g-oct">Octava</span>
+      <div class="reg-picker g-oct" id="chordOctavePicker"></div></span>
+      <button id="chordRandomOct" class="ghost-btn">🎲 Octava al azar</button>
+      <span class="reg-group"><span class="reg-label g-type">Posición</span>
+      <div class="reg-picker g-type" id="chordInvPicker">
+        <button class="reg-btn active" data-inv="0">Fundamental</button>
+        <button class="reg-btn" data-inv="1">1ª inversión</button>
+        <button class="reg-btn" data-inv="2">2ª inversión</button>
+      </div></span>
       <button id="chordStrictBtn" class="ghost-btn" title="Exige las notas exactas marcadas (con la inversión y octava elegidas). Apagado: acepta el acorde en cualquier octava/posición.">🎯 Notas exactas</button>
     </div>
+    </details>
     <div id="chordTip" class="tip" style="display:none;">
-      <b>Orden recomendado:</b> empieza por C, G, F, Am, Em, Dm — son los que más vas a usar. F#m y C#m vienen después, y el resto de sostenidos al final: no te frustres si tardan más.
+      Empieza por C, G, F, Am, Em y Dm: son los que más vas a usar.
     </div>
     <div id="intervalPickBar" class="pick-bar" style="display:none;">
       <span class="reg-label">Ir directo a:</span>
       <div class="reg-picker" id="intervalPicker"></div>
+      <button id="earModeBtn" class="ghost-btn" title="La app toca el intervalo y tú lo tienes que encontrar en el piano.">👂 De oído</button>
     </div>
-    <div id="intervalRootBar" class="reg-bar" style="display:none;">
+    <details class="opt-box" id="intervalOpts" style="display:none;">
+    <summary>⚙ Más opciones: nota de partida y octava</summary>
+    <div id="intervalRootBar" class="reg-bar">
       <span class="reg-group"><span class="reg-label g-type">Nota de partida</span>
       <div class="reg-picker g-type" id="intervalRootPicker"></div></span>
       <span class="reg-group"><span class="reg-label g-oct">Octava</span>
       <div class="reg-picker g-oct" id="intervalOctavePicker"></div></span>
       <button id="intervalRandomRoot" class="ghost-btn">🎲 Al azar</button>
-      <button id="earModeBtn" class="ghost-btn" title="La app toca el intervalo y tú lo tienes que encontrar en el piano.">👂 De oído</button>
     </div>
+    </details>
     <div id="earBar" class="ear-bar" style="display:none;">
       <button id="earPlayBtn" class="ghost-btn primary">▶ Escuchar de nuevo</button>
       <button id="earHintBtn" class="ghost-btn" title="Primero te dice cómo suena el intervalo; si la pides otra vez, la distancia para contarla en el teclado. Pedir pista cuenta como fallo.">💡 Pista</button>
@@ -1108,17 +1151,20 @@
         <div class="reg-picker g-dir" id="agilLevelPicker"></div></span>
         <button id="agilShuffleBtn" class="ghost-btn primary" style="display:none;">🎲 Otro sorteo</button>
       </div>
-      <div id="agilOctaveBar" class="reg-bar" style="display:none;">
+      <details class="opt-box" id="agilOpts" style="display:none;">
+      <summary>⚙ Más opciones: octava de cada mano</summary>
+      <div id="agilOctaveBar" class="reg-bar">
         <span class="reg-group"><span class="reg-label g-oct">Octava mano izquierda</span>
         <div class="reg-picker g-oct" id="agilLhOctavePicker"></div></span>
         <span class="reg-group"><span class="reg-label g-oct">Octava mano derecha</span>
         <div class="reg-picker g-oct" id="agilRhOctavePicker"></div></span>
       </div>
+      </details>
       <div class="frag-bar">
         <div class="hand-picker g-hand">
-          <button class="hand-btn" data-hand="lh">Solo izquierda</button>
-          <button class="hand-btn" data-hand="rh">Solo derecha</button>
-          <button class="hand-btn active" data-hand="both">Ambas manos</button>
+          <button class="hand-btn" data-hand="lh">Izquierda</button>
+          <button class="hand-btn" data-hand="rh">Derecha</button>
+          <button class="hand-btn active" data-hand="both">Ambas</button>
         </div>
         <button id="listenBtn" class="ghost-btn">▶ Escuchar</button>
         <button id="cascadeBtn" class="ghost-btn">🌊 Modo cascada</button>
@@ -1143,7 +1189,7 @@
           <button id="cascadeStartBtn" class="ghost-btn primary">▶ Empezar</button>
           <span id="cascadeScore" class="cascade-score"></span>
         </div>
-        <p class="cascade-help">La cuenta de entrada son cuatro pulsos. Las notas <span class="hand-tag lh">IZQ</span> bajan en azul y las <span class="hand-tag rh">DER</span> en dorado; las líneas más marcadas son el inicio de cada compás.</p>
+        <p class="cascade-help">Cuenta de entrada de 4 pulsos. <span class="hand-tag lh">IZQ</span> en azul, <span class="hand-tag rh">DER</span> en dorado; la línea más marcada es el inicio del compás.</p>
         <div class="cascade-wrap">
           <svg id="cascadeSvg"></svg>
         </div>
@@ -1154,7 +1200,7 @@
       <div class="today-head">
         <div>
           <h3 id="todayTitle">Plan de hoy</h3>
-          <p class="info-note" id="todayNote">Se arma sola con lo que menos has practicado y lo que te toca desbloquear. Si un día no da para todo, haz el bloque de escalas e intervalos y deja el resto.</p>
+          <p class="info-note" id="todayNote">Si un día no alcanzas todo, haz al menos escalas e intervalos.</p>
         </div>
         <button id="todayRegen" class="ghost-btn">↻ Otro plan</button>
       </div>
@@ -1209,30 +1255,37 @@
       <div id="funcDetail" class="func-detail"></div>
     </div>
 
-    <div class="now-playing" id="nowPlaying">Toca una tecla para verla aquí.</div>
+    <div class="now-playing" id="nowPlaying"></div>
   </div>
 
   <div class="keyboard-wrap" id="keyboardWrap">
     <div class="kb-toolbar">
-      <span class="zoom-label">Tamaño del teclado</span>
-      <button class="ghost-btn zoom-btn" data-zoom="-1">–</button>
+      <span class="zoom-label">Tamaño</span>
+      <button class="ghost-btn zoom-btn" data-zoom="-1" aria-label="Teclado más chico">–</button>
       <span id="zoomValue" class="zoom-value">100%</span>
-      <button class="ghost-btn zoom-btn" data-zoom="1">+</button>
+      <button class="ghost-btn zoom-btn" data-zoom="1" aria-label="Teclado más grande">+</button>
       <button id="toggleSoundBtn" class="ghost-btn active" title="Sonido de la app para el teclado dibujado y para 'Escuchar'. Las notas que vienen del piano real no se duplican.">🔊 Sonido</button>
       <button id="soundOutBtn" class="ghost-btn" style="display:none;">🎹 Suena en el piano</button>
-      <button id="soundFallbackBtn" class="ghost-btn" title="Actívalo SOLO si tocas una tecla y NO sale ningún sonido (pasa en algunos iPhone). Con esto encendido cada nota se graba en silencio por adelantado y se reproduce como un audio normal, en vez de tocarse en vivo — más lento la primera vez que suena cada tecla, pero funciona donde el sonido en vivo no.">🔈 Sonido alternativo</button>
-      <button id="toggleLabelsBtn" class="ghost-btn">Mostrar nombres de notas</button>
-      <button id="labelStyleBtn" class="ghost-btn">Do Re Mi</button>
       <button id="solfaToggleBtn" class="ghost-btn">C = Do ?</button>
-      <button id="handsToggleBtn" class="ghost-btn" title="Dibujo de las dos manos con el número de cada dedo. Se abre y se cierra; cerrado no ocupa nada.">✋ Dedo 1-5 ?</button>
+      <button id="handsToggleBtn" class="ghost-btn" title="Dibujo de las dos manos con el número de cada dedo.">✋ Dedos ?</button>
+      <details class="kb-more" id="kbMore">
+        <summary class="ghost-btn">⚙ Opciones</summary>
+        <div class="kb-more-pop">
+          <button id="toggleLabelsBtn" class="ghost-btn">Mostrar nombres de notas</button>
+          <button id="labelStyleBtn" class="ghost-btn">Do Re Mi</button>
+          <button id="soundFallbackBtn" class="ghost-btn" title="Solo si tocas una tecla y NO suena nada (pasa en algunos iPhone). La primera vez que suena cada tecla tarda un poco más.">🔈 Sonido alternativo (iPhone)</button>
+        </div>
+      </details>
     </div>
     <div class="solfa-bar" id="solfaBar" style="display:none;"></div>
     <div class="hands-bar" id="handsBar" style="display:none;"></div>
-    <svg id="pianoSvg" viewBox="0 0 1040 130" role="img" aria-label="Teclado de piano" style="touch-action:none;"></svg>
+    <div class="kb-scroll" id="kbScroll">
+      <svg id="pianoSvg" viewBox="0 0 1040 130" role="img" aria-label="Teclado de piano" style="touch-action:none;"></svg>
+    </div>
   </div>
 
   <div class="no-midi-msg" id="noMidiMsg" style="display:none;margin-top:18px;">
-    Tu navegador no soporta Web MIDI, así que no vas a poder conectar el piano físico acá (prueba Chrome o Edge en computador para eso). Pero igual puedes practicar tocando el teclado dibujado con el mouse o el dedo — eso funciona en cualquier navegador.
+    Este navegador no puede conectar el piano (usa Chrome o Edge en el computador). Igual puedes practicar tocando el teclado dibujado.
   </div>
 
 <script>
@@ -2319,645 +2372,198 @@ const FUNC_KEYS = [
   ['C7','confirm','Sonidos de confirmación ON/OFF'],
 ];
 
-// Fragmentos: piezas cortas de dominio público / progresiones básicas.
-// lh = mano izquierda, rh = mano derecha. Duración en negras.
-// Ejercicios de agilidad: definidos como PATRONES relativos a una nota
-// raíz (deg = semitonos desde la raíz), no como notas fijas. Así la octava
-// se puede elegir libremente y el mismo patrón sirve para mano derecha,
-// izquierda o ambas a la vez (cada mano usa su propia raíz/octava).
+// ===== Agilidad: "Dedos" (posición fija, las dos manos hacen lo mismo) =====
+// Formato: {deg, dur, label}; el dedo derecho es el número al frente del label y
+// el izquierdo su espejo (6 - dedo). Fuentes y decisiones: ver CLAUDE.md.
 const AGILITY_DRILLS = [
   {
     id:'cinco-dedos',
-    name:'Posición de 5 dedos',
-    tip:'La posición más básica que existe: pulgar en la raíz, cada dedo en una tecla blanca. Con "ambas manos" tocas el mismo dibujo con las dos a la vez — mano izquierda 5-4-3-2-1, derecha en espejo 1-2-3-4-5. Sube y baja sin mirar el teclado si puedes.',
+    name:'1 · Posición de 5 dedos',
+    tip:'Pulgar en Do y un dedo por tecla. Sube y baja sin mirar las manos: es el calentamiento de todos los días.',
     tempo:70,
     pattern:[
-      {deg:0, dur:1, label:'1 (pulgar)'}, {deg:2, dur:1, label:'2'},
-      {deg:4, dur:1, label:'3'}, {deg:5, dur:1, label:'4'},
-      {deg:7, dur:1, label:'5 (meñique)'}, {deg:5, dur:1, label:'4'},
-      {deg:4, dur:1, label:'3'}, {deg:2, dur:1, label:'2'},
-      {deg:0, dur:1.5, label:'1 (pulgar)'},
+      {deg:0,dur:1,label:'1 (pulgar)'}, {deg:2,dur:1,label:'2'}, {deg:4,dur:1,label:'3'}, {deg:5,dur:1,label:'4'},
+      {deg:7,dur:1,label:'5 (meñique)'}, {deg:5,dur:1,label:'4'}, {deg:4,dur:1,label:'3'}, {deg:2,dur:1,label:'2'},
+      {deg:0,dur:1.5,label:'1 (pulgar)'},
     ]
   },
-  {
-    id:'alterna-pulgar-indice',
-    name:'Pulgar-índice alternado',
-    tip:'Solo dos dedos, solo dos notas. Sirve para practicar el "rebote" de la muñeca sin preocuparte de dónde va cada dedo — ese movimiento suelto es la base de la agilidad real.',
-    tempo:88,
-    pattern:[
-      {deg:0,dur:1,label:'1'},{deg:4,dur:1,label:'2'},{deg:0,dur:1,label:'1'},{deg:4,dur:1,label:'2'},
-      {deg:0,dur:1,label:'1'},{deg:4,dur:1,label:'2'},{deg:0,dur:1,label:'1'},{deg:4,dur:1.5,label:'2'},
-    ]
-  },
-  {
-    id:'notas-repetidas',
-    name:'Notas repetidas',
-    tip:'La misma tecla varias veces, cambiando de dedo cada vez (1-2-3-2). Parece tonto, pero es justo lo que te falla cuando una melodía repite una nota y se te traba la mano.',
-    tempo:92,
-    pattern:[
-      {deg:0,dur:0.5,label:'1'},{deg:0,dur:0.5,label:'2'},
-      {deg:0,dur:0.5,label:'3'},{deg:0,dur:0.5,label:'2'},
-      {deg:0,dur:0.5,label:'1'},{deg:0,dur:0.5,label:'2'},
-      {deg:0,dur:0.5,label:'3'},{deg:0,dur:1,label:'2'},
-    ]
-  },
-  {
-    id:'escalera-corta',
-    name:'Escalera corta (3 notas)',
-    tip:'La raíz, la 2ª y la 3ª una y otra vez, sin parar entre repeticiones. Cuando esto te salga fluido y sin pausas raras entre la última nota y la siguiente vuelta, ya diste un paso real en agilidad.',
-    tempo:100,
-    pattern:[
-      {deg:0,dur:0.5,label:'1'},{deg:2,dur:0.5,label:'2'},{deg:4,dur:0.5,label:'3'},
-      {deg:0,dur:0.5,label:'1'},{deg:2,dur:0.5,label:'2'},{deg:4,dur:0.5,label:'3'},
-      {deg:0,dur:0.5,label:'1'},{deg:2,dur:0.5,label:'2'},{deg:4,dur:1,label:'3'},
-    ]
-  },
-  {
-    id:'saltos-terceras',
-    name:'Saltos de terceras',
-    tip:'Hasta ahora todo era por grados, tecla vecina con tecla vecina. Acá el dedo tiene que "saltar" a una tecla que no está al lado, algo que te va a costar más al inicio. Ve lento: primero encuentra la nota con la vista, después ya lo harás de memoria.',
-    tempo:76,
-    pattern:[
-      {deg:0,dur:1,label:'1'}, {deg:4,dur:1,label:'3'},
-      {deg:7,dur:1,label:'5'}, {deg:4,dur:1,label:'3'},
-      {deg:2,dur:1,label:'2'}, {deg:5,dur:1,label:'4'},
-      {deg:0,dur:1.5,label:'1'},
-    ]
-  },
-  {
-    id:'cruce-pulgar',
-    name:'Cruce de pulgar (escala corta)',
-    tip:'El siguiente hito real después de la posición de 5 dedos: para seguir subiendo más allá del meñique, el pulgar tiene que "pasar por debajo" de la mano sin que se note el quiebre. Es el movimiento que separa tocar 5 notas de tocar escalas completas. Ve despacio — la meta hoy no es la velocidad, es que el cruce sea suave.',
-    tempo:66,
-    pattern:[
-      {deg:0,dur:0.75,label:'1'}, {deg:2,dur:0.75,label:'2'},
-      {deg:4,dur:0.75,label:'3'}, {deg:5,dur:0.75,label:'1 (cruza)'},
-      {deg:7,dur:0.75,label:'2'}, {deg:9,dur:0.75,label:'3'},
-      {deg:11,dur:0.75,label:'4'}, {deg:12,dur:1,label:'5'},
-      {deg:11,dur:0.75,label:'4'}, {deg:9,dur:0.75,label:'3'},
-      {deg:7,dur:0.75,label:'2'}, {deg:5,dur:0.75,label:'1 (cruza)'},
-      {deg:4,dur:0.75,label:'3'}, {deg:2,dur:0.75,label:'2'},
-      {deg:0,dur:1.25,label:'1'},
-    ]
-  },
-  {
-    id:'escalera-doblada',
-    name:'Escalera doblada',
-    tip:'Como la posición de 5 dedos, pero cada nota suena dos veces antes de seguir a la siguiente — así se nota enseguida si un dedo pisa más fuerte que el otro. Sube completa, y en la vuelta baja igual de doblada.',
-    tempo:80,
-    pattern:[
-      {deg:0,dur:1,label:'1'}, {deg:0,dur:1,label:'1'},
-      {deg:2,dur:1,label:'2'}, {deg:2,dur:1,label:'2'},
-      {deg:4,dur:1,label:'3'}, {deg:5,dur:1,label:'4'},
-      {deg:7,dur:2,label:'5'},
-      {deg:7,dur:1,label:'5'}, {deg:7,dur:1,label:'5'},
-      {deg:5,dur:1,label:'4'}, {deg:5,dur:1,label:'4'},
-      {deg:4,dur:1,label:'3'}, {deg:2,dur:1,label:'2'},
-      {deg:0,dur:2,label:'1'},
-    ]
-  },
-  {
-    id:'espejo-menique',
-    name:'Espejo desde el meñique',
-    tip:'Arranca al revés que los demás ejercicios: primero el meñique, bajando hacia el pulgar, y después sube de vuelta. Sirve para que el meñique no sea siempre "el que menos toca" — acá empieza y termina la frase.',
-    tempo:84,
-    pattern:[
-      {deg:7,dur:2,label:'5'},
-      {deg:5,dur:1,label:'4'}, {deg:4,dur:1,label:'3'},
-      {deg:4,dur:1,label:'3'}, {deg:2,dur:1,label:'2'},
-      {deg:0,dur:2,label:'1'},
-      {deg:0,dur:1,label:'1'}, {deg:2,dur:1,label:'2'},
-      {deg:4,dur:1,label:'3'}, {deg:5,dur:1,label:'4'},
-      {deg:7,dur:4,label:'5'},
-    ]
-  },
-  // ===== Manos Paralelas (David Domínguez, creatumusica.art/ejercicios-de-piano) =====
-  // Cuatro fotos de partitura real que Jorge pidió transcribir. Posición de 5
-  // dedos, las dos manos SIEMPRE tocan el mismo grado (movimiento paralelo, una
-  // octava de diferencia) — es exactamente lo que ya hace `materializeAgilitySteps`
-  // con `deg`/`label`, así que no hizo falta motor nuevo. Se comprobó nota por
-  // nota que la digitación de la izquierda de la hoja es SIEMPRE 6 − dedo derecho
-  // (la regla que ya usaba la app para el espejo), sin una sola excepción en las
-  // 16 filas × 4 ejercicios: eso es lo que confirma que la transcripción quedó
-  // bien leída. 16 compases cada uno, 4/4, terminan quieto (menos el último,
-  // que sí avanza). Van en "Dedos": es digitación/posición fija con las dos
-  // manos haciendo lo MISMO, no independencia real — eso ya lo cubre "Manos
-  // juntas" más abajo. El pedido de Jorge ("me sigue costando la coordinación")
-  // lo atienden mejor esos seis; estos entrenan otra cosa (soltura de dedos en
-  // posición fija) y también sirven, pero no hay que confundirlos.
   {
     id:'paralelas-1',
-    grupo:'dedos',
-    name:'Manos paralelas 1 (Do-Re)',
-    tip:'El primer ejercicio de la serie "Manos Paralelas" de David Domínguez: solo dos teclas, Do y Re, con el pulgar y el índice. Las dos manos tocan siempre el mismo dedo y la misma nota (una octava aparte) — el objetivo es que decidas TÚ cuándo cambia el dedo, no que la mano lo haga sola. Si te cuesta a dos manos, tócalo primero solo con la derecha, después solo con la izquierda, y recién ahí júntalas (así lo sugiere la hoja original).',
+    name:'2 · Paralelas: Do-Re',
+    tip:'Solo pulgar e índice, las dos manos con el mismo dibujo. Si cuesta, primero una mano, después la otra y al final juntas.',
     tempo:72,
     pattern:[
-      {deg:0,dur:1,label:'1'},
-      {deg:0,dur:1,label:'1'},
-      {deg:0,dur:1,label:'1'},
-      {deg:0,dur:1,label:'1'},
-      {deg:2,dur:1,label:'2'},
-      {deg:2,dur:1,label:'2'},
-      {deg:2,dur:1,label:'2'},
-      {deg:2,dur:1,label:'2'},
-      {deg:0,dur:1,label:'1'},
-      {deg:0,dur:1,label:'1'},
-      {deg:2,dur:1,label:'2'},
-      {deg:2,dur:1,label:'2'},
-      {deg:0,dur:1,label:'1'},
-      {deg:0,dur:1,label:'1'},
-      {deg:2,dur:1,label:'2'},
-      {deg:2,dur:1,label:'2'},
-      {deg:0,dur:1,label:'1'},
-      {deg:2,dur:1,label:'2'},
-      {deg:2,dur:1,label:'2'},
-      {deg:0,dur:1,label:'1'},
-      {deg:2,dur:1,label:'2'},
-      {deg:0,dur:1,label:'1'},
-      {deg:0,dur:1,label:'1'},
-      {deg:2,dur:1,label:'2'},
-      {deg:0,dur:1,label:'1'},
-      {deg:2,dur:1,label:'2'},
-      {deg:0,dur:1,label:'1'},
-      {deg:2,dur:1,label:'2'},
-      {deg:0,dur:1,label:'1'},
-      {deg:2,dur:1,label:'2'},
-      {deg:0,dur:1,label:'1'},
-      {deg:2,dur:1,label:'2'},
-      {deg:0,dur:1,label:'1'},
-      {deg:0,dur:1,label:'1'},
-      {deg:0,dur:1,label:'1'},
-      {deg:2,dur:1,label:'2'},
-      {deg:0,dur:1,label:'1'},
-      {deg:0,dur:1,label:'1'},
-      {deg:0,dur:1,label:'1'},
-      {deg:0,dur:1,label:'1'},
-      {deg:2,dur:1,label:'2'},
-      {deg:2,dur:1,label:'2'},
-      {deg:2,dur:1,label:'2'},
-      {deg:0,dur:1,label:'1'},
-      {deg:2,dur:1,label:'2'},
-      {deg:2,dur:1,label:'2'},
-      {deg:2,dur:1,label:'2'},
-      {deg:2,dur:1,label:'2'},
-      {deg:0,dur:1,label:'1'},
-      {deg:2,dur:1,label:'2'},
-      {deg:0,dur:1,label:'1'},
-      {deg:2,dur:1,label:'2'},
-      {deg:0,dur:1,label:'1'},
-      {deg:0,dur:1,label:'1'},
-      {deg:2,dur:1,label:'2'},
-      {deg:2,dur:1,label:'2'},
-      {deg:2,dur:1,label:'2'},
-      {deg:2,dur:1,label:'2'},
-      {deg:2,dur:1,label:'2'},
-      {deg:2,dur:1,label:'2'},
-      {deg:0,dur:1,label:'1'},
-      {deg:0,dur:1,label:'1'},
-      {deg:0,dur:2,label:'1'},
+      {deg:0,dur:1,label:'1'}, {deg:0,dur:1,label:'1'}, {deg:0,dur:1,label:'1'}, {deg:0,dur:1,label:'1'},
+      {deg:2,dur:1,label:'2'}, {deg:2,dur:1,label:'2'}, {deg:2,dur:1,label:'2'}, {deg:2,dur:1,label:'2'},
+      {deg:0,dur:1,label:'1'}, {deg:0,dur:1,label:'1'}, {deg:2,dur:1,label:'2'}, {deg:2,dur:1,label:'2'},
+      {deg:0,dur:1,label:'1'}, {deg:0,dur:1,label:'1'}, {deg:2,dur:1,label:'2'}, {deg:2,dur:1,label:'2'},
+      {deg:0,dur:1,label:'1'}, {deg:2,dur:1,label:'2'}, {deg:2,dur:1,label:'2'}, {deg:0,dur:1,label:'1'},
+      {deg:2,dur:1,label:'2'}, {deg:0,dur:1,label:'1'}, {deg:0,dur:1,label:'1'}, {deg:2,dur:1,label:'2'},
+      {deg:0,dur:1,label:'1'}, {deg:2,dur:1,label:'2'}, {deg:0,dur:1,label:'1'}, {deg:2,dur:1,label:'2'},
+      {deg:0,dur:1,label:'1'}, {deg:2,dur:1,label:'2'}, {deg:0,dur:1,label:'1'}, {deg:2,dur:1,label:'2'},
+      {deg:0,dur:1,label:'1'}, {deg:0,dur:1,label:'1'}, {deg:0,dur:1,label:'1'}, {deg:2,dur:1,label:'2'},
+      {deg:0,dur:1,label:'1'}, {deg:0,dur:1,label:'1'}, {deg:0,dur:1,label:'1'}, {deg:0,dur:1,label:'1'},
+      {deg:2,dur:1,label:'2'}, {deg:2,dur:1,label:'2'}, {deg:2,dur:1,label:'2'}, {deg:0,dur:1,label:'1'},
+      {deg:2,dur:1,label:'2'}, {deg:2,dur:1,label:'2'}, {deg:2,dur:1,label:'2'}, {deg:2,dur:1,label:'2'},
+      {deg:0,dur:1,label:'1'}, {deg:2,dur:1,label:'2'}, {deg:0,dur:1,label:'1'}, {deg:2,dur:1,label:'2'},
+      {deg:0,dur:1,label:'1'}, {deg:0,dur:1,label:'1'}, {deg:2,dur:1,label:'2'}, {deg:2,dur:1,label:'2'},
+      {deg:2,dur:1,label:'2'}, {deg:2,dur:1,label:'2'}, {deg:2,dur:1,label:'2'}, {deg:2,dur:1,label:'2'},
+      {deg:0,dur:1,label:'1'}, {deg:0,dur:1,label:'1'}, {deg:0,dur:2,label:'1'},
     ]
   },
   {
     id:'paralelas-2',
-    grupo:'dedos',
-    name:'Manos paralelas 2 (Do-Re-Mi)',
-    tip:'Segundo de la serie: se suma el dedo 3 (Mi) a lo que ya sabías del ejercicio 1. Sigue siendo movimiento paralelo — las dos manos tocan siempre el mismo dedo — pero ya no son solo dos teclas vecinas, así que presta atención a cuándo el 2 se estira hasta el 3 y cuándo vuelve.',
+    name:'3 · Paralelas: Do-Re-Mi',
+    tip:'Se suma el dedo 3. Atento al momento en que cambia el dedo: ahí es donde se descuadran las manos.',
     tempo:76,
     pattern:[
-      {deg:0,dur:1,label:'1'},
-      {deg:0,dur:1,label:'1'},
-      {deg:0,dur:1,label:'1'},
-      {deg:0,dur:1,label:'1'},
-      {deg:2,dur:1,label:'2'},
-      {deg:2,dur:1,label:'2'},
-      {deg:4,dur:1,label:'3'},
-      {deg:4,dur:1,label:'3'},
-      {deg:0,dur:1,label:'1'},
-      {deg:0,dur:1,label:'1'},
-      {deg:2,dur:1,label:'2'},
-      {deg:2,dur:1,label:'2'},
-      {deg:2,dur:1,label:'2'},
-      {deg:2,dur:1,label:'2'},
-      {deg:4,dur:1,label:'3'},
-      {deg:4,dur:1,label:'3'},
-      {deg:0,dur:1,label:'1'},
-      {deg:0,dur:1,label:'1'},
-      {deg:2,dur:1,label:'2'},
-      {deg:2,dur:1,label:'2'},
-      {deg:4,dur:1,label:'3'},
-      {deg:4,dur:1,label:'3'},
-      {deg:2,dur:1,label:'2'},
-      {deg:2,dur:1,label:'2'},
-      {deg:0,dur:1,label:'1'},
-      {deg:0,dur:1,label:'1'},
-      {deg:2,dur:1,label:'2'},
-      {deg:2,dur:1,label:'2'},
-      {deg:4,dur:1,label:'3'},
-      {deg:4,dur:1,label:'3'},
-      {deg:2,dur:1,label:'2'},
-      {deg:2,dur:1,label:'2'},
-      {deg:4,dur:1,label:'3'},
-      {deg:4,dur:1,label:'3'},
-      {deg:2,dur:1,label:'2'},
-      {deg:2,dur:1,label:'2'},
-      {deg:0,dur:1,label:'1'},
-      {deg:0,dur:1,label:'1'},
-      {deg:0,dur:1,label:'1'},
-      {deg:0,dur:1,label:'1'},
-      {deg:2,dur:1,label:'2'},
-      {deg:2,dur:1,label:'2'},
-      {deg:2,dur:1,label:'2'},
-      {deg:0,dur:1,label:'1'},
-      {deg:4,dur:1,label:'3'},
-      {deg:2,dur:1,label:'2'},
-      {deg:0,dur:1,label:'1'},
-      {deg:2,dur:1,label:'2'},
-      {deg:4,dur:1,label:'3'},
-      {deg:4,dur:1,label:'3'},
-      {deg:4,dur:1,label:'3'},
-      {deg:4,dur:1,label:'3'},
-      {deg:2,dur:1,label:'2'},
-      {deg:2,dur:1,label:'2'},
-      {deg:2,dur:1,label:'2'},
-      {deg:2,dur:1,label:'2'},
-      {deg:0,dur:1,label:'1'},
-      {deg:0,dur:1,label:'1'},
-      {deg:0,dur:1,label:'1'},
-      {deg:0,dur:1,label:'1'},
-      {deg:4,dur:1,label:'3'},
-      {deg:2,dur:1,label:'2'},
-      {deg:0,dur:2,label:'1'},
+      {deg:0,dur:1,label:'1'}, {deg:0,dur:1,label:'1'}, {deg:0,dur:1,label:'1'}, {deg:0,dur:1,label:'1'},
+      {deg:2,dur:1,label:'2'}, {deg:2,dur:1,label:'2'}, {deg:4,dur:1,label:'3'}, {deg:4,dur:1,label:'3'},
+      {deg:0,dur:1,label:'1'}, {deg:0,dur:1,label:'1'}, {deg:2,dur:1,label:'2'}, {deg:2,dur:1,label:'2'},
+      {deg:2,dur:1,label:'2'}, {deg:2,dur:1,label:'2'}, {deg:4,dur:1,label:'3'}, {deg:4,dur:1,label:'3'},
+      {deg:0,dur:1,label:'1'}, {deg:0,dur:1,label:'1'}, {deg:2,dur:1,label:'2'}, {deg:2,dur:1,label:'2'},
+      {deg:4,dur:1,label:'3'}, {deg:4,dur:1,label:'3'}, {deg:2,dur:1,label:'2'}, {deg:2,dur:1,label:'2'},
+      {deg:0,dur:1,label:'1'}, {deg:0,dur:1,label:'1'}, {deg:2,dur:1,label:'2'}, {deg:2,dur:1,label:'2'},
+      {deg:4,dur:1,label:'3'}, {deg:4,dur:1,label:'3'}, {deg:2,dur:1,label:'2'}, {deg:2,dur:1,label:'2'},
+      {deg:4,dur:1,label:'3'}, {deg:4,dur:1,label:'3'}, {deg:2,dur:1,label:'2'}, {deg:2,dur:1,label:'2'},
+      {deg:0,dur:1,label:'1'}, {deg:0,dur:1,label:'1'}, {deg:0,dur:1,label:'1'}, {deg:0,dur:1,label:'1'},
+      {deg:2,dur:1,label:'2'}, {deg:2,dur:1,label:'2'}, {deg:2,dur:1,label:'2'}, {deg:0,dur:1,label:'1'},
+      {deg:4,dur:1,label:'3'}, {deg:2,dur:1,label:'2'}, {deg:0,dur:1,label:'1'}, {deg:2,dur:1,label:'2'},
+      {deg:4,dur:1,label:'3'}, {deg:4,dur:1,label:'3'}, {deg:4,dur:1,label:'3'}, {deg:4,dur:1,label:'3'},
+      {deg:2,dur:1,label:'2'}, {deg:2,dur:1,label:'2'}, {deg:2,dur:1,label:'2'}, {deg:2,dur:1,label:'2'},
+      {deg:0,dur:1,label:'1'}, {deg:0,dur:1,label:'1'}, {deg:0,dur:1,label:'1'}, {deg:0,dur:1,label:'1'},
+      {deg:4,dur:1,label:'3'}, {deg:2,dur:1,label:'2'}, {deg:0,dur:2,label:'1'},
     ]
   },
   {
     id:'paralelas-3',
-    grupo:'dedos',
-    name:'Manos paralelas 3 (Do-Re-Mi-Fa)',
-    tip:'Tercero de la serie: entra el dedo 4 (Fa), la posición completa menos el meñique. Hay tramos con el mismo dedo repetido cuatro veces seguidas (bueno para escuchar si todos los toques suenan igual de parejo) y tramos que bajan dedo a dedo 4-3-2-1, que es la primera vez que tienes que ordenar los cuatro dedos en fila.',
+    name:'4 · Paralelas: Do a Fa',
+    tip:'Entra el dedo 4. Cuando un dedo se repite cuatro veces, escucha que los cuatro toques suenen igual de fuertes.',
     tempo:80,
     pattern:[
-      {deg:0,dur:1,label:'1'},
-      {deg:0,dur:1,label:'1'},
-      {deg:2,dur:1,label:'2'},
-      {deg:2,dur:1,label:'2'},
-      {deg:4,dur:1,label:'3'},
-      {deg:4,dur:1,label:'3'},
-      {deg:5,dur:1,label:'4'},
-      {deg:5,dur:1,label:'4'},
-      {deg:0,dur:1,label:'1'},
-      {deg:0,dur:1,label:'1'},
-      {deg:2,dur:1,label:'2'},
-      {deg:2,dur:1,label:'2'},
-      {deg:4,dur:1,label:'3'},
-      {deg:4,dur:1,label:'3'},
-      {deg:5,dur:1,label:'4'},
-      {deg:5,dur:1,label:'4'},
-      {deg:5,dur:1,label:'4'},
-      {deg:5,dur:1,label:'4'},
-      {deg:5,dur:1,label:'4'},
-      {deg:5,dur:1,label:'4'},
-      {deg:4,dur:1,label:'3'},
-      {deg:4,dur:1,label:'3'},
-      {deg:4,dur:1,label:'3'},
-      {deg:4,dur:1,label:'3'},
-      {deg:2,dur:1,label:'2'},
-      {deg:2,dur:1,label:'2'},
-      {deg:2,dur:1,label:'2'},
-      {deg:2,dur:1,label:'2'},
-      {deg:0,dur:1,label:'1'},
-      {deg:0,dur:1,label:'1'},
-      {deg:0,dur:1,label:'1'},
-      {deg:0,dur:1,label:'1'},
-      {deg:5,dur:1,label:'4'},
-      {deg:4,dur:1,label:'3'},
-      {deg:2,dur:1,label:'2'},
-      {deg:4,dur:1,label:'3'},
-      {deg:0,dur:1,label:'1'},
-      {deg:0,dur:1,label:'1'},
-      {deg:0,dur:1,label:'1'},
-      {deg:0,dur:1,label:'1'},
-      {deg:5,dur:1,label:'4'},
-      {deg:4,dur:1,label:'3'},
-      {deg:2,dur:1,label:'2'},
-      {deg:0,dur:1,label:'1'},
-      {deg:2,dur:1,label:'2'},
-      {deg:2,dur:1,label:'2'},
-      {deg:2,dur:1,label:'2'},
-      {deg:4,dur:1,label:'3'},
-      {deg:5,dur:1,label:'4'},
-      {deg:5,dur:1,label:'4'},
-      {deg:4,dur:1,label:'3'},
-      {deg:4,dur:1,label:'3'},
-      {deg:2,dur:1,label:'2'},
-      {deg:2,dur:1,label:'2'},
-      {deg:0,dur:1,label:'1'},
-      {deg:0,dur:1,label:'1'},
-      {deg:0,dur:1,label:'1'},
-      {deg:0,dur:1,label:'1'},
-      {deg:5,dur:1,label:'4'},
-      {deg:5,dur:1,label:'4'},
-      {deg:4,dur:1,label:'3'},
-      {deg:2,dur:1,label:'2'},
-      {deg:0,dur:2,label:'1'},
+      {deg:0,dur:1,label:'1'}, {deg:0,dur:1,label:'1'}, {deg:2,dur:1,label:'2'}, {deg:2,dur:1,label:'2'},
+      {deg:4,dur:1,label:'3'}, {deg:4,dur:1,label:'3'}, {deg:5,dur:1,label:'4'}, {deg:5,dur:1,label:'4'},
+      {deg:0,dur:1,label:'1'}, {deg:0,dur:1,label:'1'}, {deg:2,dur:1,label:'2'}, {deg:2,dur:1,label:'2'},
+      {deg:4,dur:1,label:'3'}, {deg:4,dur:1,label:'3'}, {deg:5,dur:1,label:'4'}, {deg:5,dur:1,label:'4'},
+      {deg:5,dur:1,label:'4'}, {deg:5,dur:1,label:'4'}, {deg:5,dur:1,label:'4'}, {deg:5,dur:1,label:'4'},
+      {deg:4,dur:1,label:'3'}, {deg:4,dur:1,label:'3'}, {deg:4,dur:1,label:'3'}, {deg:4,dur:1,label:'3'},
+      {deg:2,dur:1,label:'2'}, {deg:2,dur:1,label:'2'}, {deg:2,dur:1,label:'2'}, {deg:2,dur:1,label:'2'},
+      {deg:0,dur:1,label:'1'}, {deg:0,dur:1,label:'1'}, {deg:0,dur:1,label:'1'}, {deg:0,dur:1,label:'1'},
+      {deg:5,dur:1,label:'4'}, {deg:4,dur:1,label:'3'}, {deg:2,dur:1,label:'2'}, {deg:4,dur:1,label:'3'},
+      {deg:0,dur:1,label:'1'}, {deg:0,dur:1,label:'1'}, {deg:0,dur:1,label:'1'}, {deg:0,dur:1,label:'1'},
+      {deg:5,dur:1,label:'4'}, {deg:4,dur:1,label:'3'}, {deg:2,dur:1,label:'2'}, {deg:0,dur:1,label:'1'},
+      {deg:2,dur:1,label:'2'}, {deg:2,dur:1,label:'2'}, {deg:2,dur:1,label:'2'}, {deg:4,dur:1,label:'3'},
+      {deg:5,dur:1,label:'4'}, {deg:5,dur:1,label:'4'}, {deg:4,dur:1,label:'3'}, {deg:4,dur:1,label:'3'},
+      {deg:2,dur:1,label:'2'}, {deg:2,dur:1,label:'2'}, {deg:0,dur:1,label:'1'}, {deg:0,dur:1,label:'1'},
+      {deg:0,dur:1,label:'1'}, {deg:0,dur:1,label:'1'}, {deg:5,dur:1,label:'4'}, {deg:5,dur:1,label:'4'},
+      {deg:4,dur:1,label:'3'}, {deg:2,dur:1,label:'2'}, {deg:0,dur:2,label:'1'},
     ]
   },
   {
     id:'paralelas-4',
-    grupo:'dedos',
-    name:'Manos paralelas 4 (Do-Re-Mi-Fa-Sol)',
-    tip:'El último de la serie, con los cinco dedos y saltos de verdad (no solo la tecla vecina): 1-2-3-4-5 subiendo y bajando, y hacia el final el dedo salta de un lado a otro de la posición sin pasar por los de en medio. Ve más lento que en los otros tres — acá el reto no es la velocidad, es encontrar la tecla correcta a la primera. Termina en una nota larga con el dedo 3 sostenido.',
+    name:'5 · Paralelas: los 5 dedos',
+    tip:'Los cinco dedos y saltos que no van a la tecla vecina. Más lento que los anteriores: la meta es acertar la tecla a la primera.',
     tempo:60,
     pattern:[
-      {deg:0,dur:1,label:'1'},
-      {deg:2,dur:1,label:'2'},
-      {deg:4,dur:1,label:'3'},
-      {deg:5,dur:1,label:'4'},
-      {deg:7,dur:1,label:'5'},
-      {deg:5,dur:1,label:'4'},
-      {deg:4,dur:1,label:'3'},
-      {deg:2,dur:1,label:'2'},
-      {deg:0,dur:1,label:'1'},
-      {deg:2,dur:1,label:'2'},
-      {deg:4,dur:1,label:'3'},
-      {deg:5,dur:1,label:'4'},
-      {deg:7,dur:1,label:'5'},
-      {deg:5,dur:1,label:'4'},
-      {deg:4,dur:1,label:'3'},
-      {deg:2,dur:1,label:'2'},
-      {deg:0,dur:1,label:'1'},
-      {deg:0,dur:1,label:'1'},
-      {deg:4,dur:1,label:'3'},
-      {deg:4,dur:1,label:'3'},
-      {deg:2,dur:1,label:'2'},
-      {deg:2,dur:1,label:'2'},
-      {deg:5,dur:1,label:'4'},
-      {deg:5,dur:1,label:'4'},
-      {deg:4,dur:1,label:'3'},
-      {deg:4,dur:1,label:'3'},
-      {deg:7,dur:1,label:'5'},
-      {deg:7,dur:1,label:'5'},
-      {deg:5,dur:1,label:'4'},
-      {deg:5,dur:1,label:'4'},
-      {deg:4,dur:1,label:'3'},
-      {deg:2,dur:1,label:'2'},
-      {deg:0,dur:1,label:'1'},
-      {deg:0,dur:1,label:'1'},
-      {deg:2,dur:1,label:'2'},
-      {deg:2,dur:1,label:'2'},
-      {deg:0,dur:1,label:'1'},
-      {deg:0,dur:1,label:'1'},
-      {deg:4,dur:1,label:'3'},
-      {deg:4,dur:1,label:'3'},
-      {deg:0,dur:1,label:'1'},
-      {deg:0,dur:1,label:'1'},
-      {deg:5,dur:1,label:'4'},
-      {deg:5,dur:1,label:'4'},
-      {deg:0,dur:1,label:'1'},
-      {deg:0,dur:1,label:'1'},
-      {deg:7,dur:1,label:'5'},
-      {deg:7,dur:1,label:'5'},
-      {deg:7,dur:1,label:'5'},
-      {deg:2,dur:1,label:'2'},
-      {deg:0,dur:1,label:'1'},
-      {deg:4,dur:1,label:'3'},
-      {deg:5,dur:1,label:'4'},
-      {deg:0,dur:1,label:'1'},
-      {deg:2,dur:1,label:'2'},
-      {deg:7,dur:1,label:'5'},
-      {deg:4,dur:1,label:'3'},
-      {deg:0,dur:1,label:'1'},
-      {deg:7,dur:1,label:'5'},
-      {deg:5,dur:1,label:'4'},
+      {deg:0,dur:1,label:'1'}, {deg:2,dur:1,label:'2'}, {deg:4,dur:1,label:'3'}, {deg:5,dur:1,label:'4'},
+      {deg:7,dur:1,label:'5'}, {deg:5,dur:1,label:'4'}, {deg:4,dur:1,label:'3'}, {deg:2,dur:1,label:'2'},
+      {deg:0,dur:1,label:'1'}, {deg:2,dur:1,label:'2'}, {deg:4,dur:1,label:'3'}, {deg:5,dur:1,label:'4'},
+      {deg:7,dur:1,label:'5'}, {deg:5,dur:1,label:'4'}, {deg:4,dur:1,label:'3'}, {deg:2,dur:1,label:'2'},
+      {deg:0,dur:1,label:'1'}, {deg:0,dur:1,label:'1'}, {deg:4,dur:1,label:'3'}, {deg:4,dur:1,label:'3'},
+      {deg:2,dur:1,label:'2'}, {deg:2,dur:1,label:'2'}, {deg:5,dur:1,label:'4'}, {deg:5,dur:1,label:'4'},
+      {deg:4,dur:1,label:'3'}, {deg:4,dur:1,label:'3'}, {deg:7,dur:1,label:'5'}, {deg:7,dur:1,label:'5'},
+      {deg:5,dur:1,label:'4'}, {deg:5,dur:1,label:'4'}, {deg:4,dur:1,label:'3'}, {deg:2,dur:1,label:'2'},
+      {deg:0,dur:1,label:'1'}, {deg:0,dur:1,label:'1'}, {deg:2,dur:1,label:'2'}, {deg:2,dur:1,label:'2'},
+      {deg:0,dur:1,label:'1'}, {deg:0,dur:1,label:'1'}, {deg:4,dur:1,label:'3'}, {deg:4,dur:1,label:'3'},
+      {deg:0,dur:1,label:'1'}, {deg:0,dur:1,label:'1'}, {deg:5,dur:1,label:'4'}, {deg:5,dur:1,label:'4'},
+      {deg:0,dur:1,label:'1'}, {deg:0,dur:1,label:'1'}, {deg:7,dur:1,label:'5'}, {deg:7,dur:1,label:'5'},
+      {deg:7,dur:1,label:'5'}, {deg:2,dur:1,label:'2'}, {deg:0,dur:1,label:'1'}, {deg:4,dur:1,label:'3'},
+      {deg:5,dur:1,label:'4'}, {deg:0,dur:1,label:'1'}, {deg:2,dur:1,label:'2'}, {deg:7,dur:1,label:'5'},
+      {deg:4,dur:1,label:'3'}, {deg:0,dur:1,label:'1'}, {deg:7,dur:1,label:'5'}, {deg:5,dur:1,label:'4'},
       {deg:4,dur:4,label:'3'},
+    ]
+  },
+  {
+    id:'notas-repetidas',
+    name:'6 · Notas repetidas',
+    tip:'La misma tecla cambiando de dedo (1-2-3-2). Es lo que salva una melodía que repite nota sin que se trabe la mano.',
+    tempo:92,
+    pattern:[
+      {deg:0,dur:0.5,label:'1'}, {deg:0,dur:0.5,label:'2'}, {deg:0,dur:0.5,label:'3'}, {deg:0,dur:0.5,label:'2'}, {deg:0,dur:0.5,label:'1'}, {deg:0,dur:0.5,label:'2'},
+      {deg:0,dur:0.5,label:'3'}, {deg:0,dur:1,label:'2'},
+    ]
+  },
+  {
+    id:'cruce-pulgar',
+    name:'7 · Cruce de pulgar',
+    tip:'El paso hacia las escalas: el pulgar pasa por debajo de la mano sin que se note el corte. Lento; la meta es que el cruce suene parejo.',
+    tempo:66,
+    pattern:[
+      {deg:0,dur:0.75,label:'1'}, {deg:2,dur:0.75,label:'2'}, {deg:4,dur:0.75,label:'3'}, {deg:5,dur:0.75,label:'1 (cruza)'}, {deg:7,dur:0.75,label:'2'}, {deg:9,dur:0.75,label:'3'},
+      {deg:11,dur:0.75,label:'4'}, {deg:12,dur:1,label:'5'}, {deg:11,dur:0.75,label:'4'}, {deg:9,dur:0.75,label:'3'}, {deg:7,dur:0.75,label:'2'}, {deg:5,dur:0.75,label:'1 (cruza)'},
+      {deg:4,dur:0.75,label:'3'}, {deg:2,dur:0.75,label:'2'}, {deg:0,dur:1.25,label:'1'},
     ]
   },
 ];
 
-// ===== Ejercicios de COORDINACIÓN: las dos manos no hacen lo mismo =====
-// Todo lo que la app llamaba "ambas manos" hasta ahora —los ejercicios de
-// arriba y las escalas— toca el MISMO dibujo con las dos manos al mismo
-// tiempo. Eso es lo más fácil que existe a dos manos y, sobre todo, NO es lo
-// que se traba en las piezas: ahí la izquierda sostiene una nota larga
-// mientras la derecha se mueve, o entra en un tiempo distinto. Eso es
-// independencia, y sin ejercicios que la pidan no se entrena.
-// Estos seis son esa escalera, del 1 al 6 de menor a mayor dificultad, todos
-// en teclas blancas para que lo único nuevo sea la coordinación.
-// Formato: `coord:true`, y cada paso lleva `l`/`r` (el grado de cada mano) y
-// `lf`/`rf` (el dedo). Una mano SIN grado en ese paso no vuelve a pulsar:
-// sigue pisada. Es la misma convención de ligadura que usa SONGS.
-// Posición de la izquierda: en el espejo el PULGAR va en Do3 y la mano baja
-// (Do=1 Si=2 La=3 Sol=4 Fa=5); en los demás es la posición normal, meñique en
-// Do3 (Do=5 Re=4 Mi=3 Fa=2 Sol=1). La derecha siempre pulgar en Do4.
+// ===== Agilidad: "Manos juntas" (coordinación: las manos NO hacen lo mismo) =====
+// Formato: coord:true y por paso l/r (grado de cada mano) y lf/rf (dedo). Una mano
+// sin grado en un paso no vuelve a pulsar. El orden es la escalera de dificultad.
+// Posición fija: derecha pulgar en Do4 (Do=1…Sol=5), izquierda meñique en Do3
+// (Do=5…Sol=1).
 const COORD_DRILLS = [
   {
-    id:'manos-espejo',
-    grupo:'manos', coord:true,
-    name:'1 · Espejo (hacia afuera)',
-    tip:'El primer peldaño, y el más fácil de los seis: las dos manos pulsan <b>a la vez</b> y con el <b>mismo dedo</b>, pero en direcciones opuestas — los dos pulgares empiezan juntos en el Do y las manos se abren hacia los lados. Cuesta menos que tocar en paralelo porque no tienes que pensar dos dedos distintos: piensa "ahora el 3" y las dos manos obedecen. Mira la guía de manos (el botón encima del piano) si te pierdes con los números.',
+    id:'espejo-1', grupo:'manos', coord:true,
+    name:'1 · Espejo, ejercicio 1',
+    tip:'Las dos manos a la vez con el MISMO dedo, en direcciones opuestas. Piensa "ahora el 3" y que las dos obedezcan.',
     tempo:60,
     pattern:[
-      {l:0,lf:1,r:0,rf:1,dur:1,label:'Los dos pulgares (1 y 1)'},
-      {l:-1,lf:2,r:2,rf:2,dur:1,label:'2 y 2'},
-      {l:-3,lf:3,r:4,rf:3,dur:1,label:'3 y 3'},
-      {l:-5,lf:4,r:5,rf:4,dur:1,label:'4 y 4'},
-      {l:-7,lf:5,r:7,rf:5,dur:2,label:'Los dos meñiques (5 y 5)'},
-      {l:-5,lf:4,r:5,rf:4,dur:1,label:'4 y 4'},
-      {l:-3,lf:3,r:4,rf:3,dur:1,label:'3 y 3'},
-      {l:-1,lf:2,r:2,rf:2,dur:1,label:'2 y 2'},
-      {l:0,lf:1,r:0,rf:1,dur:3,label:'De vuelta a los pulgares'},
-    ]
-  },
-  // ===== Espejo con partitura real (David Domínguez, creatumusica.art, "Nivel 2:
-  // Manos en Espejo") ===== Jorge pidió estos después de los de "Manos Paralelas"
-  // del mismo sitio. Es el mismo CONCEPTO que `manos-espejo` de arriba (mismo dedo
-  // las dos manos, direcciones opuestas) pero con dos diferencias reales, no un
-  // duplicado: (1) usan la posición FIJA de siempre (meñique izquierdo en Do,
-  // pulgar izquierdo en Sol; pulgar derecho en Do, meñique derecho en Sol — la
-  // misma de `paralelas-1..4` y de todo "Dedos"), mientras que `manos-espejo` usa
-  // un descenso inventado para la izquierda que no corresponde a ninguna posición
-  // real; y (2) son partitura de verdad, 16 compases cada uno, con la variedad
-  // rítmica (blancas, blanca con puntillo, redonda) que el ejercicio corto de
-  // arriba no tiene. **La verificación**: con el mismo dedo en las dos manos y la
-  // posición fija, el grado de cada mano sale de la MISMA tabla que ya usa
-  // `paralelas-1..4` (dedo→grado), así que no hubo nada que inventar — el "espejo"
-  // sale solo de que el dedo 3 cae en Mi para las dos manos (eje de la simetría) y
-  // los dedos 1/5 quedan intercambiados entre ambas manos (dedo 1 izquierda = Sol,
-  // dedo 1 derecha = Do; dedo 5 izquierda = Do, dedo 5 derecha = Sol).
-  {
-    id:'espejo-1',
-    grupo:'manos', coord:true,
-    name:'Espejo · Ejercicio 1 (partitura)',
-    tip:'Mismo dedo en las dos manos a la vez, como en el ejercicio de arriba, pero ahora en la posición fija normal (pulgar derecho en Do, pulgar izquierdo en Sol — la misma que usas en "Dedos"). Fíjate que el dedo 3 suena igual en las dos manos (el eje del espejo) y que el 1 y el 5 se cambian: donde la derecha usa el pulgar, la izquierda usa el meñique.',
-    tempo:60,
-    pattern:[
-      {l:0,lf:5,r:7,rf:5,dur:1,label:'Los dos meñiques'},
-      {l:0,lf:5,r:7,rf:5,dur:1},
-      {l:4,lf:3,r:4,rf:3,dur:1},
-      {l:4,lf:3,r:4,rf:3,dur:1},
-      {l:4,lf:3,r:4,rf:3,dur:1},
-      {l:4,lf:3,r:4,rf:3,dur:1},
-      {l:0,lf:5,r:7,rf:5,dur:1},
-      {l:0,lf:5,r:7,rf:5,dur:1},
-      {l:4,lf:3,r:4,rf:3,dur:1},
-      {l:4,lf:3,r:4,rf:3,dur:1},
-      {l:0,lf:5,r:7,rf:5,dur:1},
-      {l:0,lf:5,r:7,rf:5,dur:1},
-      {l:7,lf:1,r:0,rf:1,dur:1,label:'Los dos pulgares'},
-      {l:7,lf:1,r:0,rf:1,dur:1},
-      {l:7,lf:1,r:0,rf:1,dur:2},
-      {l:7,lf:1,r:0,rf:1,dur:1},
-      {l:7,lf:1,r:0,rf:1,dur:1},
-      {l:7,lf:1,r:0,rf:1,dur:1},
-      {l:7,lf:1,r:0,rf:1,dur:1},
-      {l:5,lf:2,r:2,rf:2,dur:2},
-      {l:5,lf:2,r:2,rf:2,dur:2},
-      {l:4,lf:3,r:4,rf:3,dur:1},
-      {l:4,lf:3,r:4,rf:3,dur:1},
-      {l:4,lf:3,r:4,rf:3,dur:1},
-      {l:4,lf:3,r:4,rf:3,dur:1},
-      {l:2,lf:4,r:5,rf:4,dur:2},
-      {l:2,lf:4,r:5,rf:4,dur:2},
-      {l:0,lf:5,r:7,rf:5,dur:1},
-      {l:0,lf:5,r:7,rf:5,dur:1},
-      {l:0,lf:5,r:7,rf:5,dur:1},
-      {l:0,lf:5,r:7,rf:5,dur:1},
-      {l:2,lf:4,r:5,rf:4,dur:1},
-      {l:2,lf:4,r:5,rf:4,dur:1},
-      {l:2,lf:4,r:5,rf:4,dur:1},
-      {l:2,lf:4,r:5,rf:4,dur:1},
-      {l:4,lf:3,r:4,rf:3,dur:1},
-      {l:4,lf:3,r:4,rf:3,dur:1},
-      {l:4,lf:3,r:4,rf:3,dur:1},
-      {l:4,lf:3,r:4,rf:3,dur:1},
-      {l:5,lf:2,r:2,rf:2,dur:2},
-      {l:5,lf:2,r:2,rf:2,dur:1},
-      {l:5,lf:2,r:2,rf:2,dur:1},
-      {l:7,lf:1,r:0,rf:1,dur:3},
-      {l:5,lf:2,r:2,rf:2,dur:1},
-      {l:7,lf:1,r:0,rf:1,dur:1},
-      {l:7,lf:1,r:0,rf:1,dur:1},
-      {l:7,lf:1,r:0,rf:1,dur:1},
-      {l:7,lf:1,r:0,rf:1,dur:1},
-      {l:0,lf:5,r:7,rf:5,dur:1},
-      {l:0,lf:5,r:7,rf:5,dur:1},
-      {l:2,lf:4,r:5,rf:4,dur:1},
-      {l:2,lf:4,r:5,rf:4,dur:1},
-      {l:4,lf:3,r:4,rf:3,dur:1},
-      {l:4,lf:3,r:4,rf:3,dur:1},
-      {l:5,lf:2,r:2,rf:2,dur:1},
-      {l:7,lf:1,r:0,rf:1,dur:1,label:'Cierre'},
+      {l:0,lf:5,r:7,rf:5,dur:1,label:'Los dos meñiques'}, {l:0,lf:5,r:7,rf:5,dur:1}, {l:4,lf:3,r:4,rf:3,dur:1}, {l:4,lf:3,r:4,rf:3,dur:1},
+      {l:4,lf:3,r:4,rf:3,dur:1}, {l:4,lf:3,r:4,rf:3,dur:1}, {l:0,lf:5,r:7,rf:5,dur:1}, {l:0,lf:5,r:7,rf:5,dur:1},
+      {l:4,lf:3,r:4,rf:3,dur:1}, {l:4,lf:3,r:4,rf:3,dur:1}, {l:0,lf:5,r:7,rf:5,dur:1}, {l:0,lf:5,r:7,rf:5,dur:1},
+      {l:7,lf:1,r:0,rf:1,dur:1,label:'Los dos pulgares'}, {l:7,lf:1,r:0,rf:1,dur:1}, {l:7,lf:1,r:0,rf:1,dur:2},
+      {l:7,lf:1,r:0,rf:1,dur:1}, {l:7,lf:1,r:0,rf:1,dur:1}, {l:7,lf:1,r:0,rf:1,dur:1}, {l:7,lf:1,r:0,rf:1,dur:1},
+      {l:5,lf:2,r:2,rf:2,dur:2}, {l:5,lf:2,r:2,rf:2,dur:2},
+      {l:4,lf:3,r:4,rf:3,dur:1}, {l:4,lf:3,r:4,rf:3,dur:1}, {l:4,lf:3,r:4,rf:3,dur:1}, {l:4,lf:3,r:4,rf:3,dur:1},
+      {l:2,lf:4,r:5,rf:4,dur:2}, {l:2,lf:4,r:5,rf:4,dur:2},
+      {l:0,lf:5,r:7,rf:5,dur:1}, {l:0,lf:5,r:7,rf:5,dur:1}, {l:0,lf:5,r:7,rf:5,dur:1}, {l:0,lf:5,r:7,rf:5,dur:1},
+      {l:2,lf:4,r:5,rf:4,dur:1}, {l:2,lf:4,r:5,rf:4,dur:1}, {l:2,lf:4,r:5,rf:4,dur:1}, {l:2,lf:4,r:5,rf:4,dur:1},
+      {l:4,lf:3,r:4,rf:3,dur:1}, {l:4,lf:3,r:4,rf:3,dur:1}, {l:4,lf:3,r:4,rf:3,dur:1}, {l:4,lf:3,r:4,rf:3,dur:1},
+      {l:5,lf:2,r:2,rf:2,dur:2}, {l:5,lf:2,r:2,rf:2,dur:1}, {l:5,lf:2,r:2,rf:2,dur:1},
+      {l:7,lf:1,r:0,rf:1,dur:3}, {l:5,lf:2,r:2,rf:2,dur:1},
+      {l:7,lf:1,r:0,rf:1,dur:1}, {l:7,lf:1,r:0,rf:1,dur:1}, {l:7,lf:1,r:0,rf:1,dur:1}, {l:7,lf:1,r:0,rf:1,dur:1},
+      {l:0,lf:5,r:7,rf:5,dur:1}, {l:0,lf:5,r:7,rf:5,dur:1}, {l:2,lf:4,r:5,rf:4,dur:1}, {l:2,lf:4,r:5,rf:4,dur:1},
+      {l:4,lf:3,r:4,rf:3,dur:1}, {l:4,lf:3,r:4,rf:3,dur:1}, {l:5,lf:2,r:2,rf:2,dur:1}, {l:7,lf:1,r:0,rf:1,dur:1,label:'Cierre'},
     ]
   },
   {
-    id:'espejo-2',
-    grupo:'manos', coord:true,
-    name:'Espejo · Ejercicio 2 (partitura)',
-    tip:'Segundo de la serie: empieza clavado en el pulgar (el 1 se repite mucho) y hacia el final baja por los cinco dedos en las dos manos a la vez, del meñique al pulgar. Termina en una redonda con el pulgar sostenido cuatro tiempos — no la sueltes antes de tiempo.',
+    id:'espejo-2', grupo:'manos', coord:true,
+    name:'2 · Espejo, ejercicio 2',
+    tip:'Igual que el anterior, con más movimiento. Termina en una redonda: deja los pulgares pisados los cuatro tiempos.',
     tempo:64,
     pattern:[
-      {l:7,lf:1,r:0,rf:1,dur:1,label:'Los dos pulgares'},
-      {l:7,lf:1,r:0,rf:1,dur:1},
-      {l:5,lf:2,r:2,rf:2,dur:1},
-      {l:7,lf:1,r:0,rf:1,dur:1},
-      {l:7,lf:1,r:0,rf:1,dur:1},
-      {l:7,lf:1,r:0,rf:1,dur:1},
-      {l:4,lf:3,r:4,rf:3,dur:1},
-      {l:7,lf:1,r:0,rf:1,dur:1},
-      {l:7,lf:1,r:0,rf:1,dur:1},
-      {l:7,lf:1,r:0,rf:1,dur:1},
-      {l:2,lf:4,r:5,rf:4,dur:1},
-      {l:7,lf:1,r:0,rf:1,dur:1},
-      {l:7,lf:1,r:0,rf:1,dur:1},
-      {l:7,lf:1,r:0,rf:1,dur:1},
-      {l:0,lf:5,r:7,rf:5,dur:1},
-      {l:7,lf:1,r:0,rf:1,dur:1},
-      {l:0,lf:5,r:7,rf:5,dur:1},
-      {l:0,lf:5,r:7,rf:5,dur:1},
-      {l:2,lf:4,r:5,rf:4,dur:1},
-      {l:4,lf:3,r:4,rf:3,dur:1},
-      {l:2,lf:4,r:5,rf:4,dur:1},
-      {l:2,lf:4,r:5,rf:4,dur:1},
-      {l:2,lf:4,r:5,rf:4,dur:2},
-      {l:2,lf:4,r:5,rf:4,dur:1},
-      {l:2,lf:4,r:5,rf:4,dur:1},
-      {l:4,lf:3,r:4,rf:3,dur:1},
-      {l:5,lf:2,r:2,rf:2,dur:1},
-      {l:4,lf:3,r:4,rf:3,dur:1},
-      {l:4,lf:3,r:4,rf:3,dur:1},
-      {l:4,lf:3,r:4,rf:3,dur:2},
-      {l:4,lf:3,r:4,rf:3,dur:1},
-      {l:4,lf:3,r:4,rf:3,dur:1},
-      {l:5,lf:2,r:2,rf:2,dur:1},
-      {l:7,lf:1,r:0,rf:1,dur:1},
-      {l:5,lf:2,r:2,rf:2,dur:1},
-      {l:5,lf:2,r:2,rf:2,dur:1},
-      {l:5,lf:2,r:2,rf:2,dur:1},
-      {l:5,lf:2,r:2,rf:2,dur:1},
-      {l:0,lf:5,r:7,rf:5,dur:1,label:'Bajando del meñique al pulgar'},
-      {l:2,lf:4,r:5,rf:4,dur:1},
-      {l:4,lf:3,r:4,rf:3,dur:1},
-      {l:5,lf:2,r:2,rf:2,dur:1},
-      {l:0,lf:5,r:7,rf:5,dur:1},
-      {l:2,lf:4,r:5,rf:4,dur:1},
-      {l:4,lf:3,r:4,rf:3,dur:1},
-      {l:5,lf:2,r:2,rf:2,dur:1},
-      {l:0,lf:5,r:7,rf:5,dur:1},
-      {l:2,lf:4,r:5,rf:4,dur:1},
-      {l:4,lf:3,r:4,rf:3,dur:1},
-      {l:5,lf:2,r:2,rf:2,dur:1},
-      {l:2,lf:4,r:5,rf:4,dur:1},
-      {l:4,lf:3,r:4,rf:3,dur:1},
-      {l:5,lf:2,r:2,rf:2,dur:1},
-      {l:7,lf:1,r:0,rf:1,dur:1},
-      {l:7,lf:1,r:0,rf:1,dur:2},
-      {l:7,lf:1,r:0,rf:1,dur:1},
-      {l:5,lf:2,r:2,rf:2,dur:1},
+      {l:7,lf:1,r:0,rf:1,dur:1,label:'Los dos pulgares'}, {l:7,lf:1,r:0,rf:1,dur:1}, {l:5,lf:2,r:2,rf:2,dur:1}, {l:7,lf:1,r:0,rf:1,dur:1},
+      {l:7,lf:1,r:0,rf:1,dur:1}, {l:7,lf:1,r:0,rf:1,dur:1}, {l:4,lf:3,r:4,rf:3,dur:1}, {l:7,lf:1,r:0,rf:1,dur:1},
+      {l:7,lf:1,r:0,rf:1,dur:1}, {l:7,lf:1,r:0,rf:1,dur:1}, {l:2,lf:4,r:5,rf:4,dur:1}, {l:7,lf:1,r:0,rf:1,dur:1},
+      {l:7,lf:1,r:0,rf:1,dur:1}, {l:7,lf:1,r:0,rf:1,dur:1}, {l:0,lf:5,r:7,rf:5,dur:1}, {l:7,lf:1,r:0,rf:1,dur:1},
+      {l:0,lf:5,r:7,rf:5,dur:1}, {l:0,lf:5,r:7,rf:5,dur:1}, {l:2,lf:4,r:5,rf:4,dur:1}, {l:4,lf:3,r:4,rf:3,dur:1},
+      {l:2,lf:4,r:5,rf:4,dur:1}, {l:2,lf:4,r:5,rf:4,dur:1}, {l:2,lf:4,r:5,rf:4,dur:2},
+      {l:2,lf:4,r:5,rf:4,dur:1}, {l:2,lf:4,r:5,rf:4,dur:1}, {l:4,lf:3,r:4,rf:3,dur:1}, {l:5,lf:2,r:2,rf:2,dur:1},
+      {l:4,lf:3,r:4,rf:3,dur:1}, {l:4,lf:3,r:4,rf:3,dur:1}, {l:4,lf:3,r:4,rf:3,dur:2},
+      {l:4,lf:3,r:4,rf:3,dur:1}, {l:4,lf:3,r:4,rf:3,dur:1}, {l:5,lf:2,r:2,rf:2,dur:1}, {l:7,lf:1,r:0,rf:1,dur:1},
+      {l:5,lf:2,r:2,rf:2,dur:1}, {l:5,lf:2,r:2,rf:2,dur:1}, {l:5,lf:2,r:2,rf:2,dur:1}, {l:5,lf:2,r:2,rf:2,dur:1},
+      {l:0,lf:5,r:7,rf:5,dur:1,label:'Bajando del meñique al pulgar'}, {l:2,lf:4,r:5,rf:4,dur:1}, {l:4,lf:3,r:4,rf:3,dur:1}, {l:5,lf:2,r:2,rf:2,dur:1},
+      {l:0,lf:5,r:7,rf:5,dur:1}, {l:2,lf:4,r:5,rf:4,dur:1}, {l:4,lf:3,r:4,rf:3,dur:1}, {l:5,lf:2,r:2,rf:2,dur:1},
+      {l:0,lf:5,r:7,rf:5,dur:1}, {l:2,lf:4,r:5,rf:4,dur:1}, {l:4,lf:3,r:4,rf:3,dur:1}, {l:5,lf:2,r:2,rf:2,dur:1},
+      {l:2,lf:4,r:5,rf:4,dur:1}, {l:4,lf:3,r:4,rf:3,dur:1}, {l:5,lf:2,r:2,rf:2,dur:1}, {l:7,lf:1,r:0,rf:1,dur:1},
+      {l:7,lf:1,r:0,rf:1,dur:2}, {l:7,lf:1,r:0,rf:1,dur:1}, {l:5,lf:2,r:2,rf:2,dur:1},
       {l:7,lf:1,r:0,rf:1,dur:4,label:'Cierre, redonda sostenida'},
     ]
   },
   {
-    id:'manos-alternadas',
-    grupo:'manos', coord:true,
-    name:'2 · Una y otra (nunca a la vez)',
-    tip:'Las manos se turnan: izquierda, derecha, izquierda, derecha, y no coinciden nunca hasta la última nota. Es fácil de entender y por eso va temprano, pero entrena lo que de verdad falta: saber <b>a quién le toca ahora</b> sin tener que mirar. Que suene parejo — el problema típico es que la izquierda pega más fuerte.',
-    tempo:66,
-    pattern:[
-      {l:0,lf:5,dur:1,label:'Izquierda'}, {r:0,rf:1,dur:1,label:'Derecha'},
-      {l:4,lf:3,dur:1,label:'Izquierda'}, {r:4,rf:3,dur:1,label:'Derecha'},
-      {l:7,lf:1,dur:1,label:'Izquierda'}, {r:7,rf:5,dur:1,label:'Derecha'},
-      {l:4,lf:3,dur:1,label:'Izquierda'}, {r:4,rf:3,dur:1,label:'Derecha'},
-      {l:0,lf:5,dur:1,label:'Izquierda'}, {r:0,rf:1,dur:1,label:'Derecha'},
-      {l:4,lf:3,dur:1,label:'Izquierda'}, {r:4,rf:3,dur:1,label:'Derecha'},
-      {l:7,lf:1,dur:1,label:'Izquierda'}, {r:7,rf:5,dur:1,label:'Derecha'},
-      {l:0,lf:5,r:0,rf:1,dur:2,label:'Las dos juntas para cerrar'},
-    ]
-  },
-  // ===== Manos Alternadas con partitura real (David Domínguez, creatumusica.art,
-  // "Nivel 3: Manos alternadas") ===== Jorge mandó CUATRO ejercicios y pidió
-  // explícitamente depurar lo que se duplique. Se agregan solo DOS: los otros dos
-  // que mandó (Ejercicio 3 y Ejercicio 4 de la hoja) son el mismo esqueleto
-  // rítmico que Ejercicio 1 y 2 con la digitación simplemente invertida —
-  // Ejercicio 3 es Ejercicio 1 con las direcciones de dedo cambiadas de sitio
-  // entre las manos (donde una sube la otra ahora baja), Ejercicio 4 es una
-  // variante más repetitiva de Ejercicio 2 (las dos manos bajan siempre juntas
-  // en vez de cruzarse). Una vez que la mano aprendió "quién entra en qué
-  // tiempo", tocar la misma figura con los dedos invertidos no enseña nada
-  // nuevo — es la razón por la que este proyecto ya tiene la regla de "no
-  // agregar unísono si no cambia lo que se entrena" (ver arriba, cuando se
-  // crearon los COORD_DRILLS). Si en algún momento se quiere revisar esa
-  // decisión, las cuatro fotos originales quedan en el historial de la sesión.
-  // **Lo que SÍ aportan estos dos sobre `manos-alternadas`:** esa entrada es un
-  // solo compás corto (8 pasos) con el MISMO dedo en las dos manos; estos son
-  // 16 compases reales con DEDOS DISTINTOS entre manos (una melodía de verdad
-  // repartida, no una figura fija) y dos texturas nuevas — alternancia por
-  // TIEMPO (una nota por pulso, como ya tenía el rung 2) y alternancia por
-  // MEDIO COMPÁS (dos notas seguidas de una mano, después dos de la otra,
-  // ejercicio 1 compases 9-16) — la segunda no existía en ningún coord drill.
-  {
-    id:'alternadas-1',
-    grupo:'manos', coord:true,
-    name:'Alternadas · Ejercicio 1 (partitura)',
-    tip:'Dos texturas en un solo ejercicio. Los primeros 8 compases alternan tiempo por tiempo, como el ejercicio de arriba, pero cambiando quién empieza (primero manda la izquierda, después la derecha). Los últimos 8 compases alternan de a DOS notas: una mano toca dos seguidas y recién ahí entra la otra — es más fácil de contar que de tocar, así que ve lento y di en voz alta qué mano sigue.',
+    id:'alternadas-1', grupo:'manos', coord:true,
+    name:'3 · Alternadas, ejercicio 1',
+    tip:'Las manos se turnan: primero una nota cada una, y en la segunda mitad dos seguidas de cada mano. Di en voz alta qué mano sigue.',
     tempo:66,
     pattern:[
       {l:0,lf:5,dur:1}, {r:0,rf:1,dur:1}, {l:0,lf:5,dur:1}, {r:0,rf:1,dur:1},
@@ -2968,24 +2574,20 @@ const COORD_DRILLS = [
       {r:5,rf:4,dur:1}, {l:5,lf:2,dur:1}, {r:5,rf:4,dur:1}, {l:5,lf:2,dur:1},
       {r:4,rf:3,dur:1}, {l:4,lf:3,dur:1}, {r:4,rf:3,dur:1}, {l:4,lf:3,dur:1},
       {r:2,rf:2,dur:1}, {l:2,lf:4,dur:1}, {r:2,rf:2,dur:1}, {l:2,lf:4,dur:1},
-      {r:0,rf:1,dur:1,label:'Dos seguidas de la derecha, después dos de la izquierda'},
-      {r:0,rf:1,dur:1}, {l:0,lf:5,dur:1}, {l:0,lf:5,dur:1},
+      {r:0,rf:1,dur:1,label:'Dos seguidas de la derecha, después dos de la izquierda'}, {r:0,rf:1,dur:1}, {l:0,lf:5,dur:1}, {l:0,lf:5,dur:1},
       {r:2,rf:2,dur:1}, {r:2,rf:2,dur:1}, {l:2,lf:4,dur:1}, {l:2,lf:4,dur:1},
       {r:4,rf:3,dur:1}, {r:4,rf:3,dur:1}, {l:4,lf:3,dur:1}, {l:4,lf:3,dur:1},
       {r:5,rf:4,dur:1}, {r:5,rf:4,dur:1}, {l:5,lf:2,dur:1}, {l:5,lf:2,dur:1},
       {l:7,lf:1,dur:1}, {l:7,lf:1,dur:1}, {r:7,rf:5,dur:1}, {r:7,rf:5,dur:1},
       {l:5,lf:2,dur:1}, {l:5,lf:2,dur:1}, {r:5,rf:4,dur:1}, {r:5,rf:4,dur:1},
       {l:4,lf:3,dur:1}, {l:4,lf:3,dur:1}, {r:4,rf:3,dur:1}, {r:4,rf:3,dur:1},
-      {l:2,lf:4,r:2,rf:2,dur:1,label:'Las dos juntas para cerrar'},
-      {l:2,lf:4,r:2,rf:2,dur:1},
-      {l:0,lf:5,r:0,rf:1,dur:2},
+      {l:2,lf:4,r:2,rf:2,dur:1,label:'Las dos juntas para cerrar'}, {l:2,lf:4,r:2,rf:2,dur:1}, {l:0,lf:5,r:0,rf:1,dur:2},
     ]
   },
   {
-    id:'alternadas-2',
-    grupo:'manos', coord:true,
-    name:'Alternadas · Ejercicio 2 (partitura)',
-    tip:'Como el ejercicio de arriba (una nota por pulso, la derecha siempre entra primero) pero con una melodía de verdad: el dedo cambia dentro del mismo compás, así que no puedes tocar en piloto automático — cada compás hay que mirar qué dedo toca antes de tocarlo.',
+    id:'alternadas-2', grupo:'manos', coord:true,
+    name:'4 · Alternadas, ejercicio 2',
+    tip:'Se turnan nota por nota y el dedo cambia dentro del compás. Mira el número antes de cada nota: aquí no sirve el piloto automático.',
     tempo:64,
     pattern:[
       {r:0,rf:1,dur:1}, {l:0,lf:5,dur:1}, {r:2,rf:2,dur:1}, {l:2,lf:4,dur:1},
@@ -3003,105 +2605,69 @@ const COORD_DRILLS = [
       {r:0,rf:1,dur:1}, {l:0,lf:5,dur:1}, {r:2,rf:2,dur:1}, {l:2,lf:4,dur:1},
       {r:4,rf:3,dur:1}, {l:4,lf:3,dur:1}, {r:5,rf:4,dur:1}, {l:5,lf:2,dur:1},
       {r:7,rf:5,dur:1}, {l:7,lf:1,dur:1}, {r:5,rf:4,dur:1}, {l:5,lf:2,dur:1},
-      {r:4,rf:3,dur:1}, {l:4,lf:3,dur:1},
-      {l:2,lf:4,r:2,rf:2,dur:1},
-      {l:0,lf:5,r:0,rf:1,dur:1,label:'Las dos juntas para cerrar'},
+      {r:4,rf:3,dur:1}, {l:4,lf:3,dur:1}, {l:2,lf:4,r:2,rf:2,dur:1}, {l:0,lf:5,r:0,rf:1,dur:1,label:'Las dos juntas para cerrar'},
     ]
   },
   {
-    id:'manos-sostiene',
-    grupo:'manos', coord:true,
-    name:'3 · La izquierda sostiene',
-    tip:'<b>Este es el que te hace falta.</b> Es exactamente la textura de "Dios está aquí", "Espíritu de Dios" y "Dragon Ball GT": la izquierda pone UNA nota grave al empezar el compás y la <b>deja pisada</b> los cuatro tiempos, mientras la derecha camina sola. Lo difícil no es tocarla, es no levantarla cuando la derecha se mueve. La izquierda va Do–Sol–Fa–Do, que es el bajo de siempre.',
+    id:'manos-sostiene', grupo:'manos', coord:true,
+    name:'5 · La izquierda sostiene',
+    tip:'La izquierda pone una nota grave y la deja pisada el compás entero mientras la derecha camina. Es la textura de Dios está aquí y Dragon Ball GT.',
     tempo:60,
     pattern:[
-      {l:0,lf:5,r:0,rf:1,dur:1,label:'La izquierda entra y NO se levanta'},
-      {r:2,rf:2,dur:1}, {r:4,rf:3,dur:1}, {r:5,rf:4,dur:1},
-      {l:7,lf:1,r:7,rf:5,dur:1,label:'Cambia la izquierda (Sol)'},
-      {r:5,rf:4,dur:1}, {r:4,rf:3,dur:1}, {r:2,rf:2,dur:1},
-      {l:5,lf:2,r:0,rf:1,dur:1,label:'Cambia la izquierda (Fa)'},
-      {r:2,rf:2,dur:1}, {r:4,rf:3,dur:1}, {r:5,rf:4,dur:1},
-      {l:0,lf:5,r:4,rf:3,dur:2,label:'Vuelve al Do'},
-      {r:2,rf:2,dur:1}, {r:0,rf:1,dur:1},
+      {l:0,lf:5,r:0,rf:1,dur:1,label:'La izquierda entra y NO se levanta'}, {r:2,rf:2,dur:1}, {r:4,rf:3,dur:1}, {r:5,rf:4,dur:1},
+      {l:7,lf:1,r:7,rf:5,dur:1,label:'Cambia la izquierda (Sol)'}, {r:5,rf:4,dur:1}, {r:4,rf:3,dur:1}, {r:2,rf:2,dur:1},
+      {l:5,lf:2,r:0,rf:1,dur:1,label:'Cambia la izquierda (Fa)'}, {r:2,rf:2,dur:1}, {r:4,rf:3,dur:1}, {r:5,rf:4,dur:1},
+      {l:0,lf:5,r:4,rf:3,dur:2,label:'Vuelve al Do'}, {r:2,rf:2,dur:1}, {r:0,rf:1,dur:1},
     ]
   },
   {
-    id:'manos-1-y-3',
-    grupo:'manos', coord:true,
-    name:'4 · La izquierda en 1 y 3',
-    tip:'Ahora la izquierda no se queda quieta todo el compás: entra en el tiempo 1 y otra vez en el 3, mientras la derecha sigue tocando los cuatro. Es más difícil que sostener porque la izquierda tiene que <b>volver a entrar con la derecha en marcha</b>, y ese es el momento donde casi todos se paran. Cuenta en voz alta 1-2-3-4 y pisa la izquierda en el 1 y en el 3.',
+    id:'manos-1-y-3', grupo:'manos', coord:true,
+    name:'6 · La izquierda en 1 y 3',
+    tip:'La izquierda vuelve a entrar en los tiempos 1 y 3 con la derecha en marcha. Cuenta en voz alta 1-2-3-4.',
     tempo:66,
     pattern:[
-      {l:0,lf:5,r:0,rf:1,dur:1,label:'Tiempo 1 — entran las dos'},
-      {r:2,rf:2,dur:1,label:'Tiempo 2 — solo la derecha'},
-      {l:7,lf:1,r:4,rf:3,dur:1,label:'Tiempo 3 — vuelve a entrar la izquierda'},
-      {r:5,rf:4,dur:1,label:'Tiempo 4 — solo la derecha'},
-      {l:0,lf:5,r:7,rf:5,dur:1}, {r:5,rf:4,dur:1},
-      {l:7,lf:1,r:4,rf:3,dur:1}, {r:2,rf:2,dur:1},
-      {l:0,lf:5,r:0,rf:1,dur:1}, {r:2,rf:2,dur:1},
-      {l:7,lf:1,r:4,rf:3,dur:1}, {r:5,rf:4,dur:1},
-      {l:0,lf:5,r:4,rf:3,dur:1}, {r:2,rf:2,dur:1},
-      {l:7,lf:1,r:0,rf:1,dur:2,label:'Cierre'},
+      {l:0,lf:5,r:0,rf:1,dur:1,label:'Tiempo 1 — entran las dos'}, {r:2,rf:2,dur:1,label:'Tiempo 2 — solo la derecha'}, {l:7,lf:1,r:4,rf:3,dur:1,label:'Tiempo 3 — vuelve a entrar la izquierda'}, {r:5,rf:4,dur:1,label:'Tiempo 4 — solo la derecha'},
+      {l:0,lf:5,r:7,rf:5,dur:1}, {r:5,rf:4,dur:1}, {l:7,lf:1,r:4,rf:3,dur:1}, {r:2,rf:2,dur:1},
+      {l:0,lf:5,r:0,rf:1,dur:1}, {r:2,rf:2,dur:1}, {l:7,lf:1,r:4,rf:3,dur:1}, {r:5,rf:4,dur:1},
+      {l:0,lf:5,r:4,rf:3,dur:1}, {r:2,rf:2,dur:1}, {l:7,lf:1,r:0,rf:1,dur:2,label:'Cierre'},
     ]
   },
   {
-    id:'manos-dos-por-una',
-    grupo:'manos', coord:true,
-    name:'5 · Dos de la derecha por una',
-    tip:'La derecha va al doble de velocidad que la izquierda: por cada nota de la izquierda, dos de la derecha. La primera de cada par cae <b>junto</b> con la izquierda y la segunda queda sola — eso es lo que hay que sentir. Si se te descuadra, toca primero solo la izquierda contando 1-2-3-4, y después agrega la derecha diciendo "y" entre cada número: 1-y-2-y-3-y-4-y.',
+    id:'manos-dos-por-una', grupo:'manos', coord:true,
+    name:'7 · Dos de la derecha por una',
+    tip:'Por cada nota de la izquierda, dos de la derecha. Cuenta 1-y-2-y: la izquierda cae en el número, la derecha también en el "y".',
     tempo:56,
     pattern:[
-      {l:0,lf:5,r:0,rf:1,dur:0.5,label:'Juntas'}, {r:2,rf:2,dur:0.5,label:'Sola la derecha'},
-      {l:4,lf:3,r:4,rf:3,dur:0.5}, {r:5,rf:4,dur:0.5},
-      {l:7,lf:1,r:7,rf:5,dur:0.5}, {r:5,rf:4,dur:0.5},
+      {l:0,lf:5,r:0,rf:1,dur:0.5,label:'Juntas'}, {r:2,rf:2,dur:0.5,label:'Sola la derecha'}, {l:4,lf:3,r:4,rf:3,dur:0.5}, {r:5,rf:4,dur:0.5}, {l:7,lf:1,r:7,rf:5,dur:0.5}, {r:5,rf:4,dur:0.5},
       {l:4,lf:3,r:4,rf:3,dur:0.5}, {r:2,rf:2,dur:0.5},
-      {l:0,lf:5,r:0,rf:1,dur:0.5}, {r:2,rf:2,dur:0.5},
-      {l:4,lf:3,r:4,rf:3,dur:0.5}, {r:5,rf:4,dur:0.5},
-      {l:7,lf:1,r:7,rf:5,dur:0.5}, {r:5,rf:4,dur:0.5},
+      {l:0,lf:5,r:0,rf:1,dur:0.5}, {r:2,rf:2,dur:0.5}, {l:4,lf:3,r:4,rf:3,dur:0.5}, {r:5,rf:4,dur:0.5}, {l:7,lf:1,r:7,rf:5,dur:0.5}, {r:5,rf:4,dur:0.5},
       {l:4,lf:3,r:4,rf:3,dur:0.5}, {r:2,rf:2,dur:0.5},
-      {l:0,lf:5,r:0,rf:1,dur:0.5}, {r:2,rf:2,dur:0.5},
-      {l:4,lf:3,r:4,rf:3,dur:0.5}, {r:5,rf:4,dur:0.5},
-      {l:7,lf:1,r:7,rf:5,dur:0.5}, {r:5,rf:4,dur:0.5},
+      {l:0,lf:5,r:0,rf:1,dur:0.5}, {r:2,rf:2,dur:0.5}, {l:4,lf:3,r:4,rf:3,dur:0.5}, {r:5,rf:4,dur:0.5}, {l:7,lf:1,r:7,rf:5,dur:0.5}, {r:5,rf:4,dur:0.5},
       {l:0,lf:5,r:0,rf:1,dur:1,label:'Cierre, las dos juntas'},
     ]
   },
   {
-    id:'manos-contratiempo',
-    grupo:'manos', coord:true,
-    name:'6 · La derecha a contratiempo',
-    tip:'El más difícil de los seis, y el que de verdad separa a quien toca con dos manos de quien no. La izquierda cae <b>en</b> el pulso y la derecha <b>entre</b> pulsos: nunca suenan a la vez hasta el final. No lo intentes rápido — este ejercicio se gana lento. Úsalo en <b>modo cascada</b> o con el metrónomo encendido: paso a paso solo aprendes el orden de las teclas, el ritmo es el ejercicio.',
+    id:'manos-contratiempo', grupo:'manos', coord:true,
+    name:'8 · La derecha a contratiempo',
+    tip:'La izquierda en el pulso, la derecha entre pulsos. El más difícil: úsalo en modo cascada o con metrónomo, y lento.',
     tempo:52,
     pattern:[
-      {l:0,lf:5,dur:0.5,label:'Izquierda EN el pulso'}, {r:0,rf:1,dur:0.5,label:'Derecha ENTRE pulsos'},
+      {l:0,lf:5,dur:0.5,label:'Izquierda EN el pulso'}, {r:0,rf:1,dur:0.5,label:'Derecha ENTRE pulsos'}, {l:4,lf:3,dur:0.5}, {r:4,rf:3,dur:0.5}, {l:7,lf:1,dur:0.5}, {r:7,rf:5,dur:0.5},
       {l:4,lf:3,dur:0.5}, {r:4,rf:3,dur:0.5},
-      {l:7,lf:1,dur:0.5}, {r:7,rf:5,dur:0.5},
+      {l:0,lf:5,dur:0.5}, {r:0,rf:1,dur:0.5}, {l:4,lf:3,dur:0.5}, {r:4,rf:3,dur:0.5}, {l:7,lf:1,dur:0.5}, {r:7,rf:5,dur:0.5},
       {l:4,lf:3,dur:0.5}, {r:4,rf:3,dur:0.5},
-      {l:0,lf:5,dur:0.5}, {r:0,rf:1,dur:0.5},
-      {l:4,lf:3,dur:0.5}, {r:4,rf:3,dur:0.5},
-      {l:7,lf:1,dur:0.5}, {r:7,rf:5,dur:0.5},
-      {l:4,lf:3,dur:0.5}, {r:4,rf:3,dur:0.5},
-      {l:0,lf:5,dur:0.5}, {r:0,rf:1,dur:0.5},
-      {l:4,lf:3,dur:0.5}, {r:4,rf:3,dur:0.5},
-      {l:7,lf:1,dur:0.5}, {r:7,rf:5,dur:0.5},
+      {l:0,lf:5,dur:0.5}, {r:0,rf:1,dur:0.5}, {l:4,lf:3,dur:0.5}, {r:4,rf:3,dur:0.5}, {l:7,lf:1,dur:0.5}, {r:7,rf:5,dur:0.5},
       {l:0,lf:5,r:0,rf:1,dur:1,label:'Y las dos juntas al final'},
     ]
   },
 ];
 // ===== Modo aleatorio de los ejercicios de coordinación =====
-// Jorge: "está muy lineal, las canciones van saltando de teclas". Tiene razón,
-// y es el límite de cualquier patrón fijo: a la tercera vuelta la mano lo hace
-// sola y ya no se entrena la coordinación, se entrena la memoria.
-// Lo que NO se puede hacer es barajar los pasos: el esqueleto —quién pulsa en
-// qué tiempo— ES el ejercicio ("la izquierda sostiene" deja de existir si se
-// reordena). Así que se conserva el ritmo tal cual y se sortean las NOTAS
-// dentro de la posición de cinco dedos.
+// Conserva el ritmo y el reparto de manos (quién pulsa en qué tiempo ES el
+// ejercicio) y sortea solo las NOTAS dentro de la posición de cinco dedos.
 const RND_RH = [0, 2, 4, 5, 7];             // Do4..Sol4; dedo = índice + 1
 const RND_LH = [0, 2, 4, 5, 7];             // Do3..Sol3; dedo = 5 - índice
-const RND_LH_MIRROR = [0, -1, -3, -5, -7];  // Do3 bajando; dedo = índice + 1
-// Los niveles mueven DOS perillas: cuánto puede saltar la derecha de una nota
-// a la siguiente, y entre cuántas notas graves elige la izquierda. Empezar por
-// grados vecinos es lo que hace que el nivel 1 sea de verdad un nivel 1: el
-// salto es lo que descoordina, no la nota.
+// Dos perillas por nivel: cuánto salta la derecha y entre cuántas notas graves
+// elige la izquierda. El salto es lo que descoordina, no la nota.
 const RND_LEVELS = [
   {n:1, label:'Vecinas',       rhStep:1, lhPool:[0]},
   {n:2, label:'Saltos cortos', rhStep:2, lhPool:[0, 4]},
@@ -3111,18 +2677,11 @@ const RND_LEVELS = [
 function rndLevel(n){
   return RND_LEVELS[Math.max(0, Math.min(RND_LEVELS.length - 1, (n || 1) - 1))];
 }
-// Devuelve un `pattern` con el MISMO ritmo y las mismas manos que el original,
-// pero con las notas sorteadas. El dedo sale del grado (posición fija), así que
-// la regla de "cada tecla siempre con el mismo dedo" se cumple sola.
+const MIRROR_DRILLS = new Set(['espejo-1', 'espejo-2']);
 function randomCoordPattern(shape, level){
   const lv = rndLevel(level);
   const pick = a => a[Math.floor(Math.random() * a.length)];
-  const espejo = shape.id === 'manos-espejo';
-  // espejo-1/2 (partitura real) son TAMBIÉN mismo-dedo-las-dos-manos, pero con
-  // la posición fija de siempre, no el descenso inventado de manos-espejo — así
-  // que su espejo sale de la MISMA tabla que ya usa la rama no-espejo de abajo
-  // (RND_LH indexado por dedo), no de RND_LH_MIRROR.
-  const espejoReal = shape.id === 'espejo-1' || shape.id === 'espejo-2';
+  const espejo = MIRROR_DRILLS.has(shape.id);
   let r = Math.floor(Math.random() * RND_RH.length);
   let l = lv.lhPool[0];
   return shape.pattern.map(p => {
@@ -3137,13 +2696,7 @@ function randomCoordPattern(shape, level){
     }
     if(p.l !== undefined){
       if(espejo){
-        // El espejo vive de que las dos manos usen el MISMO dedo: la izquierda
-        // no sortea, sigue a la derecha hacia el otro lado.
-        out.l = RND_LH_MIRROR[r]; out.lf = r + 1;
-      } else if(espejoReal){
-        // Mismo dedo que la derecha (r + 1), pero el grado sale de la posición
-        // fija real: RND_LH[4 - r] es la izquierda con el mismo dedo que r + 1
-        // (misma cuenta que usa la rama de abajo, `lf = 5 - l` despejado).
+        // Espejo: la izquierda no sortea, usa el MISMO dedo que la derecha.
         out.l = RND_LH[4 - r]; out.lf = r + 1;
       } else {
         const cands = lv.lhPool.filter(i => i !== l);
@@ -3151,11 +2704,9 @@ function randomCoordPattern(shape, level){
         out.l = RND_LH[l]; out.lf = 5 - l;
       }
     }
-    // La etiqueta original nombra dedos y notas fijas ("3 y 3", "Cambia la
-    // izquierda (Sol)") y al azar mentiría. Se reemplaza por lo único que
-    // sigue siendo cierto en cualquier sorteo: quién pulsa en este paso.
+    // Las etiquetas originales nombran notas fijas y al azar mentirían.
     out.label = out.l !== undefined && out.r !== undefined
-      ? ((espejo || espejoReal) ? 'Las dos con el dedo ' + out.rf : 'Las dos a la vez')
+      ? (espejo ? 'Las dos con el dedo ' + out.rf : 'Las dos a la vez')
       : (out.l !== undefined ? 'Solo izquierda' : 'Solo derecha');
     return out;
   });
@@ -3388,7 +2939,7 @@ const SONGS = [
     id:'cuatro-acordes',
     cat:'patrones',
     name:'Los 4 acordes',
-    tip:'La progresión Do–Sol–Lam–Fa. Está en cientos de canciones pop. La izquierda hace el acorde completo, la derecha toca la nota más alta como melodía. Si te sale esto, ya puedes acompañar muchísimas canciones.',
+    tip:'La progresión Do–Sol–Lam–Fa, la de cientos de canciones. La izquierda toca el acorde entero; la derecha, la nota de arriba.',
     tempo:76,
     steps:[
       {lh:[48,52,55], lhF:[5,3,1], rh:[72], rhF:[5], dur:2, label:'Do (C)'},
@@ -3401,7 +2952,7 @@ const SONGS = [
     id:'oda-alegria',
     cat:'clasica',
     name:'Himno a la alegría · Parte 1',
-    tip:'Beethoven, primera mitad (8 compases). Melodía en la derecha, una sola nota por compás en la izquierda (Do, Si, La). Las dos manos se quedan quietas: la derecha con el pulgar en Do4, la izquierda con el pulgar en Re3. Son dos frases: la primera se queda "en el aire" (termina en Mi), la segunda responde y baja al Do. Cuando la tengas, sigue con la Parte 2.',
+    tip:'Compases 1-8. Ninguna mano se mueve: derecha con el pulgar en Do4, izquierda con el pulgar en Re3. La 1ª frase queda en el aire, la 2ª cierra en Do.',
     tempo:92,
     steps: ODA_P1
   },
@@ -3409,7 +2960,7 @@ const SONGS = [
     id:'oda-alegria-2',
     cat:'clasica',
     name:'Himno a la alegría · Parte 2',
-    tip:'La segunda mitad (compases 9-16). Trae lo único nuevo del tema: dos corcheas seguidas (dos notas dentro de un mismo tiempo) y, en el compás 12, el único momento en que la mano derecha se mueve — baja para tocar el Sol grave con el pulgar, la nota más baja de la pieza, y vuelve enseguida. La izquierda también se activa más: dos notas por compás en vez de una. Ojo: la mitad final es NOTA POR NOTA la segunda frase de la Parte 1, así que en realidad solo hay 4 compases nuevos que aprender.',
+    tip:'Compases 9-16. Lo nuevo: dos corcheas seguidas y, en el compás 12, la derecha baja al Sol grave con el pulgar y vuelve. La segunda mitad ya la conoces.',
     tempo:92,
     steps: ODA_P2
   },
@@ -3417,7 +2968,7 @@ const SONGS = [
     id:'oda-alegria-full',
     cat:'clasica',
     name:'Himno a la alegría (completo)',
-    tip:'Las dos partes seguidas: el tema entero de 16 compases, con la digitación y el acompañamiento de la hoja del curso. Cuando cada parte te salga sola, únelas aquí. Si una sección se te atasca, usa "Tramo" en el modo cascada para repetir solo esa.',
+    tip:'El tema completo. Únelo cuando cada parte te salga sola; si un tramo se traba, repítelo con "Tramo" en el modo cascada.',
     tempo:92,
     steps: ODA_P1.concat(ODA_P2)
   },
@@ -3425,7 +2976,7 @@ const SONGS = [
     id:'corderito',
     cat:'facil',
     name:'María tenía un corderito',
-    tip:'De las melodías infantiles más simples que hay: solo usa Do Re Mi Sol, las cuatro primeras de tu pentatónica de clase (todavía no necesita el La). Cabe entera en la posición de 5 dedos, sin cruces ni saltos raros — ideal para sentir que ya "sabes tocar algo" mientras dominas la escala.',
+    tip:'Solo Do, Re, Mi y Sol, sin mover la mano. La izquierda marca el Do en cada compás.',
     tempo:96,
     steps:[
       {lh:[48], lhF:[5], rh:[64], rhF:[3], dur:1}, {lh:[], rh:[62], rhF:[2], dur:1},
@@ -3449,7 +3000,7 @@ const SONGS = [
     id:'cumple',
     cat:'popular',
     name:'Cumpleaños feliz',
-    tip:'La única pieza de Fragmentos que cambia de posición de mano a mitad de frase: el salto agudo de "cumpleaños a ti" no cabe en una sola posición de 5 dedos, así que hay que mover TODA la mano (no solo el pulgar, como en el cruce de Agilidad). Los pasos marcados avisan cuándo moverla. Practícala despacio y separada por frases con "Tramo" en el modo cascada.',
+    tip:'La mano entera cambia de posición para el salto agudo de "cumpleaños a ti". Los pasos marcados avisan cuándo moverla.',
     tempo:104,
     steps:[
       {lh:[48], lhF:[5], rh:[67], rhF:[1], dur:0.5}, {lh:[], rh:[67], rhF:[1], dur:0.5},
@@ -3472,7 +3023,7 @@ const SONGS = [
     id:'estrellita',
     cat:'facil',
     name:'Estrellita',
-    tip:'Melodía de 5 dedos en la derecha. La izquierda solo marca UNA nota grave por compás, sin acordes: Do, Fa y Sol caben bajo la misma posición de mano (pulgar en Do3, meñique en Fa2), así que no tienes que moverla en toda la pieza. Buen primer ejercicio de coordinación entre manos.',
+    tip:'Una nota grave por compás en la izquierda (Do, Fa, Sol), todas bajo la misma posición: ninguna mano se mueve.',
     tempo:88,
     steps:[
       {lh:[48], lhF:[1], rh:[60], rhF:[1], dur:1}, {lh:[], rh:[60], rhF:[1], dur:1},
@@ -3489,7 +3040,7 @@ const SONGS = [
     id:'cadencia',
     cat:'patrones',
     name:'Cadencia I–IV–V–I',
-    tip:'El "punto final" de la música occidental: Do–Fa–Sol–Do. Suena a conclusión. Vale la pena que la reconozcas de oído, porque termina casi todas las piezas clásicas que vas a estudiar.',
+    tip:'Do–Fa–Sol–Do: el cierre de casi toda la música. Apréndela también de oído: suena a punto final.',
     tempo:66,
     steps:[
       {lh:[48], lhF:[5], rh:[60,64,67], rhF:[1,3,5], dur:2, label:'I  — Do'},
@@ -3502,7 +3053,7 @@ const SONGS = [
     id:'arpegio',
     cat:'patrones',
     name:'Arpegio de Do',
-    tip:'Las mismas 3 notas del acorde de Do, pero una a la vez en vez de juntas. Es como suena un acorde "desarmado" — muy usado en baladas. Practica que suene parejo, sin que una nota salga más fuerte.',
+    tip:'Las tres notas del acorde de Do, una a la vez. Que las tres suenen igual de fuertes.',
     tempo:80,
     steps:[
       {lh:[48], lhF:[5], rh:[60], rhF:[1], dur:1}, {lh:[], rh:[64], rhF:[2], dur:1},
@@ -3515,29 +3066,10 @@ const SONGS = [
     ]
   },
   {
-    id:'hot-cross-buns',
-    cat:'facil',
-    name:'Hot Cross Buns',
-    tip:'Canción infantil muy sencilla. Solo tres notas: Do Re Mi. Es de las más cortas — perfecta para empezar a tocar una "pieza" de verdad sin abrumarse.',
-    tempo:120,
-    steps:[
-      {lh:[48], lhF:[5], rh:[64], rhF:[3], dur:1}, {lh:[], rh:[62], rhF:[2], dur:1},
-      {lh:[], rh:[60], rhF:[1], dur:1},
-      {lh:[48], lhF:[5], rh:[64], rhF:[3], dur:1}, {lh:[], rh:[62], rhF:[2], dur:1},
-      {lh:[], rh:[60], rhF:[1], dur:2},
-      {lh:[48], lhF:[5], rh:[60], rhF:[1], dur:1}, {lh:[], rh:[60], rhF:[1], dur:1},
-      {lh:[], rh:[60], rhF:[1], dur:1}, {lh:[], rh:[62], rhF:[2], dur:1},
-      {lh:[], rh:[62], rhF:[2], dur:1}, {lh:[], rh:[62], rhF:[2], dur:1},
-      {lh:[], rh:[62], rhF:[2], dur:2},
-      {lh:[48], lhF:[5], rh:[64], rhF:[3], dur:1}, {lh:[], rh:[62], rhF:[2], dur:1},
-      {lh:[], rh:[60], rhF:[1], dur:4, label:'Fin'},
-    ]
-  },
-  {
     id:'au-clair',
     cat:'facil',
     name:'Au Clair de la Lune',
-    tip:'Canción francesa clásica. Melodía sencilla que se repite — tres notas que suben (Do Re Mi) y tres que bajan con un patrón distinto. Muy suave y equilibrada.',
+    tip:'Melodía francesa en la posición de 5 dedos, con frases que se repiten. Tócala suave y pareja.',
     tempo:88,
     steps:[
       {lh:[48], lhF:[5], rh:[60], rhF:[1], dur:1}, {lh:[], rh:[60], rhF:[1], dur:1},
@@ -3558,7 +3090,7 @@ const SONGS = [
     id:'hallelujah',
     cat:'clasica',
     name:'Hallelujah Chorus',
-    tip:'De Händel. La clave está en la nota larga al principio (Fa) que da el tiempo de la palabra "Hallelujah" — todas las demás notas salen corridas, así que concentra el pulso en ese primer Fa, luego deja que fluya. Solo Do Re Mi Fa Sol: pentatónica mayor sin La.',
+    tip:'El coro de Händel (no es la "Aleluya" famosa). La nota larga del comienzo marca el pulso; después deja que las notas corran.',
     tempo:80,
     steps:[
       {lh:[48], lhF:[5], rh:[65], rhF:[4], dur:2}, {lh:[], rh:[60], rhF:[1], dur:1},
@@ -3577,7 +3109,7 @@ const SONGS = [
     id:'jingle-bells',
     cat:'popular',
     name:'Jingle Bells',
-    tip:'Navideña de James Pierpont. Empieza con tres notas iguales (Mi Mi Mi) que dan el ritmo, luego sube (Fa Sol) y baja de nuevo. Hay repetición en la melodía así que por más que sea larga, los patrones se repiten y no se olvidan.',
+    tip:'Empieza con tres Mi iguales que marcan el ritmo. Las frases se repiten, así que se aprende rápido.',
     tempo:120,
     steps:[
       {lh:[48], lhF:[5], rh:[64], rhF:[3], dur:0.5}, {lh:[], rh:[64], rhF:[3], dur:0.5},
@@ -3602,7 +3134,7 @@ const SONGS = [
     id:'dios-esta-aqui',
     cat:'cristiana',
     name:'Dios está aquí',
-    tip:'Transcrita de la hoja guía que pasó Jorge: melodía escrita y los cifrados impresos encima (Do, Sol, Lam, Fa, Do7). Eso es lo que la hace fiable y es también de donde sale la mano IZQUIERDA: una sola nota grave por acorde, la fundamental de lo que dice la hoja, nunca un acorde de varias teclas. Las cuatro notas graves (Fa2, Sol2, La2, Do3) caben bajo UNA sola posición de mano, así que la izquierda no se mueve en toda la pieza. La derecha tiene dos posiciones: en la estrofa el pulgar vive en Re4 (y baja al Do cuando hace falta) para alcanzar el La agudo de «tan cierto como el aire», y en «me puedes oír» baja de una vez al Si3, donde se queda hasta el final — todo el coro cabe ahí. Dos cosas que la app no sabe hacer y conviene saber: los silencios se absorben alargando la nota anterior (o sea, deja la tecla pisada en vez de levantarla), y no hay repeticiones, así que va de corrido — la estrofa se toca una vez y entra directo al coro. El Do7 del compás 4 se toca como Do a secas: el Sib que lo distingue está en el acorde, y acordes todavía no. Ocho frases marcadas: practica una a la vez con «Tramo» en el modo cascada.',
+    tip:'La izquierda no se mueve en toda la pieza. La derecha: pulgar en Re4 en la estrofa y en Si3 desde "me puedes oír" hasta el final. Donde hay silencio, deja la tecla pisada. Practica frase por frase con "Tramo".',
     tempo:68,
     // Reemplaza a la transcripción automática de basic-pitch (sonaba mal: la
     // "melodía" eran armónicos y no cuadraba en compases de 4). Esta sale de la
@@ -3670,7 +3202,7 @@ const SONGS = [
     id:'bella-ciao',
     cat:'popular',
     name:'Bella Ciao',
-    tip:'La de La Casa de Papel, transcrita de la partitura real (itemfunes.com) — la que quedó pendiente dos veces por no tener una versión de melodía simple. Está en La menor, así que casi todo cae en teclas blancas. Tiene DOS posiciones de mano: la primera mitad con el pulgar en Mi4 y, desde los tres Mi5 seguidos ("bella ciao, bella ciao"), el pulgar sube a Do5; los pasos marcados avisan dónde se mueve. La izquierda alterna La y Mi (el bajo de La menor). Cuatro frases: practica una a la vez con "Tramo" en el modo cascada.',
+    tip:'La menor, casi todo teclas blancas. La derecha sube de posición en los tres Mi agudos de "bella ciao"; los pasos marcados avisan. La izquierda alterna La y Mi.',
     tempo:100,
     steps:[
       {lh:[], rh:[64], rhF:[1], dur:0.5, label:'Frase 1'},
@@ -3719,7 +3251,7 @@ const SONGS = [
     id:'espiritu-de-dios',
     cat:'cristiana',
     name:'Espíritu de Dios',
-    tip:'De la partitura de Ariel Arnhold (itemfunes.com), a ♩=70 como la marca el original. Está en Mi menor: la única tecla negra de la melodía es Fa#, más un Re# suelto en la entrada. La izquierda son notas largas (una por compás) que siguen los acordes Si–Mim–Re–Do, así que es de las piezas más cómodas para coordinar las dos manos. El original repite cada mitad; aquí va de corrido una sola vez y los pasos marcan dónde empieza cada frase.',
+    tip:'Mi menor (Fa# es la única negra). La izquierda son notas largas, una por compás: de las piezas más cómodas para coordinar las dos manos.',
     tempo:70,
     steps:[
       {lh:[47], lhF:[5], rh:[59], rhF:[1], dur:0.5, label:'Frase 1 — se repite'},
@@ -3786,7 +3318,7 @@ const SONGS = [
     id:'aleluya',
     cat:'cristiana',
     name:'Aleluya',
-    tip:'El estribillo de la Aleluya famosa (búscala como "Hallelujah" para oír el ritmo) — OJO: no es la misma que "Hallelujah Chorus", que es la de Händel. Del tutorial de AnthonyCalva, que da las notas por letra Y por número: las dos versiones dicen lo mismo, así que las notas están seguras. Dos posiciones: pulgar en Mi para todo el "Aleluya", y baja a Do para el final que resuelve (Fa Mi Re Do). El tutorial NO da el ritmo; aquí va parejo para que aprendas las teclas — el vaivén cópialo de la canción.',
+    tip:'La Aleluya famosa (no la de Händel). Pulgar en Mi y, para el final, baja a Do. Las notas están verificadas; el ritmo va parejo: el vaivén sácalo de la canción.',
     tempo:70,
     steps:[
       {lh:[48], lhF:[5], rh:[64], rhF:[1], dur:0.5, label:'Frase 1'}, {lh:[], rh:[67], rhF:[3], dur:0.5},
@@ -3806,7 +3338,7 @@ const SONGS = [
     id:'colegiala',
     cat:'popular',
     name:'La Colegiala',
-    tip:'La cumbia de Rodolfo Aicardi. Del tutorial de AnthonyCalva, que da las notas por letra Y por número y las dos coinciden, así que las teclas están seguras. Tiene DOS teclas negras (Sib y Mib) — es tu primera pieza con negras dentro de la melodía. Pulgar en Sib casi todo el tiempo; solo al final baja a Fa. El riff son tres notas iguales y una que cae: Re Re Re Sib, Do Do Do Mib, y así. El tutorial NO da el ritmo; aquí va parejo, el tumbao cópialo de la canción.',
+    tip:'Tu primera pieza con teclas negras en la melodía (Sib y Mib). Pulgar en Sib casi todo el tiempo. El ritmo va parejo: el tumbao sácalo de la canción.',
     tempo:90,
     steps:[
       {lh:[43], lhF:[5], rh:[74], rhF:[3], dur:1, label:'Frase 1'}, {lh:[], rh:[74], rhF:[3], dur:0.5},
@@ -3830,7 +3362,7 @@ const SONGS = [
     id:'flaca',
     cat:'popular',
     name:'Flaca',
-    tip:'Jarabe de Palo, de la partitura real (itemfunes.com). El bajo de la izquierda es una redonda por compás y da la progresión Sol–Si–Mim–Do–Sol–Re–Sol. La derecha repite casi siempre el mismo molde: una nota corta, una LARGA, y dos cortas de enlace. Tiene tres teclas negras (Re#, Fa#) y la segunda mitad sube hasta Sol5, así que la mano derecha se corre: pulgar en Sol4 en la primera mitad y en La4 en la segunda. El único paso incómodo es Fa#5→Mi5 con el mismo dedo 5 — ahí se desliza.',
+    tip:'La izquierda es una redonda por compás. La derecha repite un molde: corta, LARGA y dos cortas. En la segunda mitad la mano sube un paso (pulgar en La4).',
     tempo:92,
     steps:[
       {lh:[43], lhF:[5], rh:[74], rhF:[5], dur:0.5, label:'Parte 1'}, {lh:[], rh:[71], rhF:[3], dur:2.5},
@@ -3862,7 +3394,7 @@ const SONGS = [
     id:'faded',
     cat:'popular',
     name:'Faded (estribillo)',
-    tip:'Alan Walker. OJO: es SOLO el gancho, y movido a La menor. El PDF que trajiste es un arreglo en Re# menor — SEIS sostenidos, o sea casi puras teclas negras, con acordes de cuatro notas en la izquierda y carreras de semicorcheas. Leerlo se puede, tocarlo hoy no. Pasado a La menor queda en teclas blancas y cabe en una sola posición de mano (pulgar en La4). La izquierda es una nota por compás con la progresión de la canción: Lam–Fa–Do–Sol. Si algún día quieres el arreglo completo, hay que volver al PDF.',
+    tip:'Solo el gancho, pasado a La menor para que quede en teclas blancas y en una posición. La izquierda sigue la progresión Lam–Fa–Do–Sol.',
     tempo:90,
     steps:[
       {lh:[45], lhF:[5], rh:[72], rhF:[3], dur:0.5, label:'Gancho'}, {lh:[], rh:[72], rhF:[3], dur:0.5},
@@ -3889,7 +3421,7 @@ const SONGS = [
     id:'all-of-me',
     cat:'popular',
     name:'All of Me (intro)',
-    tip:'John Legend. Es la vuelta del principio, la que se repite bajo casi toda la canción — en la grabación suena CUATRO veces antes de pasar a la estrofa. <b>Las dos notas van juntas en la mano DERECHA</b> (no una en cada mano: eso era un error de una fuente anterior, corregido). El pulgar se queda fijo en Fa o Mib y solo el otro dedo se estira o encoge para alcanzar la segunda nota — la mano tampoco se mueve. Digitación tomada del tutorial, no inventada. Va en La bemol, el tono original, así que puedes tocarla encima de la canción — por eso tiene teclas negras (Mib, Sib, Reb). <b>Tres golpes IGUALES por compás</b>: "x3" en la fuente es eso, tres golpes parejos. <b>120 BPM, el tempo real de la canción</b> (verificado en varias bases de datos de música — antes tenía 66, menos de la mitad, por eso sonaba tan lenta). Para aprenderla despacio no bajes esto: usa el control VELOCIDAD del modo cascada.',
+    tip:'La vuelta del comienzo, en su tono original (La bemol). Las dos notas van en la derecha, con el pulgar fijo abajo. Tres golpes iguales por compás a 120: para ir despacio, baja la VELOCIDAD en cascada.',
     tempo:120,
     // Corrige una versión anterior que partía estas dos notas entre las dos
     // manos (la izquierda en Fa/Mib, la derecha en Do/Reb/Sib) — salió de la
@@ -3931,7 +3463,7 @@ const SONGS = [
     id:'all-of-me-2',
     cat:'popular',
     name:'All of Me · Estrofa (acordes)',
-    tip:'La MISMA canción y la MISMA armonía que el intro (Fam–Reb–Lab–Mib), pero con el acorde completo en la derecha en vez de un intervalo de dos notas. Es el siguiente escalón real de esta pieza, y es un salto: tres teclas a la vez, varias negras. En la grabación esta vuelta suena DOS veces antes de repetirse. <b>La digitación NO es inventada</b> — viene del tutorial que pasó Jorge (1-2-3 en los tres primeros, 1-2-4 en el Mib). Si un acorde te queda apretado, el agarre estándar 1-3-5 también sirve. La izquierda SÍ es añadida: la fundamental de cada acorde, una por compás y sostenida los cuatro tiempos — la misma textura del ejercicio "3 · La izquierda sostiene". <b>Tres golpes IGUALES por compás</b> en la derecha, igual que el intro. <b>120 BPM, el tempo real</b> (mismo motivo que el intro: antes tenía 66 y sonaba muy lenta). Para ir despacio, usa VELOCIDAD en cascada.',
+    tip:'Los mismos cuatro acordes del intro, ahora completos en la derecha (digitación del tutorial). La izquierda sostiene la fundamental todo el compás.',
     tempo:120,
     // Fuente: tutorial por posiciones de dedo ("1:C - 2:F - 3:G#"), que da notas
     // Y digitación. Verificado por TRES vías, ninguna redundante: (1) las cuatro
@@ -3973,7 +3505,7 @@ const SONGS = [
     id:'dbgt',
     cat:'popular',
     name:'Dragon Ball GT · Parte 1',
-    tip:'Transcrita de la partitura real (arreglo de Thiago Marconato). Es el tema, primera vez: 8 compases. La izquierda es lo más cómodo que hay: UNA redonda por compás, todas con el PULGAR, y además bajan una escala entera (Do Si La Sol Fa Mi Re) — tienes el compás entero para mover la mano. Usa el pulgar y no otro dedo: así el resto de la izquierda queda hacia abajo y no le estorba a la derecha, que en esta pieza baja bastante. La derecha se mueve dos veces: empieza con el pulgar en Re4 y baja al Do4 en el compás 3. El compás 5 son tres notas sueltas con salto — practícalo aparte. Cuando lo tengas, sigue con la Parte 2.',
+    tip:'Compases 1-8. La izquierda: una redonda por compás, siempre con el pulgar. La derecha baja de posición en el compás 3. El compás 5 tiene un salto: practícalo aparte.',
     tempo:120,
     steps: DBGT_P1
   },
@@ -3981,7 +3513,7 @@ const SONGS = [
     id:'dbgt-2',
     cat:'popular',
     name:'Dragon Ball GT · Parte 2',
-    tip:'Los 13 compases que faltan. Ojo: los 7 primeros son NOTA POR NOTA la Parte 1, así que arrancas sabiéndote la mitad. Lo nuevo son tres cosas: el tema cierra distinto (baja al Si en vez de quedarse en Re), entran las DOS únicas teclas negras de la pieza (Lab y Sib, las dos en la izquierda) y llega el clímax: la derecha alterna cada nota con la misma una octava arriba, bajando Do Si La Sol Fa Mi Re. Esa parte es la difícil de verdad — bájale la velocidad en el modo cascada hasta que salga.',
+    tip:'Los primeros 7 compases repiten la Parte 1. Lo nuevo es el final: la derecha alterna cada nota con su octava. Bájale la VELOCIDAD en cascada hasta que salga.',
     tempo:120,
     steps: DBGT_P2
   },
@@ -3989,7 +3521,7 @@ const SONGS = [
     id:'dbgt-full',
     cat:'popular',
     name:'Dragon Ball GT (tema completo)',
-    tip:'Las dos partes seguidas: los 21 compases de la partitura. Cuando cada parte te salga sola, únelas aquí. Si una sección se te atasca, usa "Tramo" en el modo cascada para repetir solo esa.',
+    tip:'El tema completo. Únelo cuando cada parte te salga sola; si un tramo se traba, repítelo con "Tramo" en el modo cascada.',
     tempo:120,
     steps: DBGT_P1.concat(DBGT_P2)
   },
@@ -3997,7 +3529,7 @@ const SONGS = [
     id:'dbgt-3',
     cat:'popular',
     name:'Dragon Ball GT · Estrofa',
-    tip:'La parte cantada, la que sigue al tema. NO viene de la partitura (esa es solo el tema) sino de la hoja de virtualpiano que encontraste, así que es otro arreglo. Dos avisos honestos: esa hoja da las teclas pero NO el ritmo — aquí los valores siguen su separación por tiempos y cuadran los compases, pero el vaivén sácalo escuchando la canción. Y está en Do menor, el paralelo del tema, o sea que aquí sí hay teclas negras en la melodía: Mib, Lab y Sib. La derecha vive con el pulgar en Fa4 y solo se mueve dos veces (marcadas); la izquierda, como siempre en esta pieza, va toda con el pulgar.',
+    tip:'La estrofa, en Do menor (Mib, Lab y Sib). Pulgar derecho en Fa4, se mueve dos veces (marcadas). El ritmo es aproximado: el vaivén sácalo de la canción.',
     tempo:120,
     steps: DBGT_V
   },
@@ -4005,7 +3537,7 @@ const SONGS = [
     id:'amanecer',
     cat:'facil',
     name:'Amanecer',
-    tip:'Escrita para ti, no es de nadie más. Tres partes: la 1ª pregunta y queda en el aire, la 2ª responde y cierra, la 3ª se mueve más y termina arriba. Usa la progresión Do–Sol–Lam–Fa, los mismos 4 acordes que ya practicas. La derecha NO mueve la mano ni una vez: pulgar en Do5 y los cinco dedos quedan puestos (Do Re Mi Fa Sol). La izquierda es una sola nota por compás, salvo en la parte 3 donde entra dos veces para empujar. Practica una parte a la vez con "Tramo" en cascada.',
+    tip:'Escrita para ti, sobre Do–Sol–Lam–Fa. La derecha no se mueve nunca: pulgar en Do5. Tres partes: pregunta, respuesta y cierre.',
     tempo:92,
     steps:[
       {lh:[48], lhF:[5], rh:[72], rhF:[1], dur:0.5, label:'Parte 1 — pregunta'}, {lh:[], rh:[74], rhF:[2], dur:0.5},
@@ -4045,7 +3577,6 @@ const SONGS = [
 // Categorías de Fragmentos. El orden manda en la barra de arriba; `facil` va
 // primero porque es donde entra alguien que recién empieza.
 const SONG_CATS = [
-  {id:'all',       name:'Todas'},
   {id:'facil',     name:'Fáciles'},
   {id:'popular',   name:'Populares'},
   {id:'cristiana', name:'Cristianas'},
@@ -4250,7 +3781,8 @@ const scaleOptBar = $('scaleOptBar');
 const todayPanel = $('todayPanel');
 const readingPanel = $('readingPanel');
 const progressPanel = $('progressPanel');
-const categoryTabs = document.querySelectorAll('#mainTabs > .mode-tab');
+const categoryTabs = document.querySelectorAll('#mainTabs [data-cat]');
+const moreMenu = $('moreMenu');
 
 function show(el, on, disp){ if(el) el.style.display = on ? (disp || 'block') : 'none'; }
 
@@ -4263,9 +3795,9 @@ function enterMode(mode){
   const isScale = !!SCALES[mode];
   show(chordTip, mode === 'chords');
   show(intervalTip, mode === 'intervals');
-  show(chordOctaveBar, mode === 'chords', 'flex');
+  show($('chordOpts'), mode === 'chords');
   show($('chordGroupBar'), mode === 'chords', 'flex');
-  show(intervalRootBar, mode === 'intervals', 'flex');
+  show($('intervalOpts'), mode === 'intervals');
   show($('chordPickBar'), mode === 'chords', 'flex');
   show($('intervalPickBar'), mode === 'intervals', 'flex');
   show(distanceBox, mode === 'intervals');
@@ -4302,6 +3834,10 @@ function enterMode(mode){
 // Cambia de pestaña principal (desde el menú o desde el plan de "Hoy").
 function selectCategory(cat){
   categoryTabs.forEach(t => t.classList.toggle('active', t.dataset.cat === cat));
+  if(moreMenu){
+    moreMenu.open = false;
+    moreMenu.querySelector('summary').classList.toggle('active', !!moreMenu.querySelector(`[data-cat="${cat}"]`));
+  }
   currentCategory = cat;
   const isScales = cat === 'scales';
   show(scaleFamilyTabs, isScales, 'flex');
@@ -4315,6 +3851,12 @@ function selectCategory(cat){
   if(typeof markActivity === 'function') markActivity();
 }
 categoryTabs.forEach(tab => tab.addEventListener('click', () => selectCategory(tab.dataset.cat)));
+// "Más" es un menú flotante: se cierra al tocar fuera de él.
+document.addEventListener('click', e => {
+  for(const m of [moreMenu, $('kbMore')]){
+    if(m && m.open && !m.contains(e.target)) m.open = false;
+  }
+});
 
 function renderScaleSubTabs(){
   scaleFamilyTabs.querySelectorAll('.mode-tab').forEach(t => t.classList.toggle('active', t.dataset.family === scaleFamily));
@@ -4458,25 +4000,21 @@ function renderScaleTip(scale){
       for(let i = 1; i < f.length; i++) if(h === 'rh' ? f[i] < f[i-1] : f[i] > f[i-1]) return n[i];
       return null;
     };
-    html += ' <b>5 notas, sin semitonos:</b> ' + n.join(' ') + ' (' + solfa + ').' +
-      ' Distancias: ' + dist + '. Los saltos (' + saltos.join(' y ') + ') son las teclas que te saltas.' +
-      ' <b>La mano cambia de sitio una vez por mano:</b>' +
-      ' <span class="hand-tag rh">DER</span>el pulgar pasa por debajo del 3 para llegar a ' + cruce('rh') + ';' +
-      ' <span class="hand-tag lh">IZQ</span>el 2 pasa por encima del pulgar para llegar a ' + cruce('lh') + '.' +
-      ' Prepara el cruce ANTES de necesitarlo: el pulgar se va acercando mientras suenan las dos notas anteriores.';
+    html += ' ' + n.join(' ') + ' (' + solfa + '). Distancias: ' + dist + '; los saltos (' +
+      saltos.join(' y ') + ') son las teclas que te saltas. <b>Cruces:</b>' +
+      ' <span class="hand-tag lh">IZQ</span>el 2 pasa por encima del pulgar para llegar a ' + cruce('lh') + ';' +
+      ' <span class="hand-tag rh">DER</span>el pulgar pasa por debajo del 3 para llegar a ' + cruce('rh') + '.' +
+      ' Acerca el pulgar antes de necesitarlo.';
     const relScale = scale.rel && SCALES[scale.rel];
-    if(relScale) html += ' <b>Ojo:</b> son exactamente las mismas teclas que <b>' + relScale.label + '</b>, empezando en otra nota. Tócalas seguidas y escucha: mismas teclas, ánimo distinto.';
-    html += menor
-      ? ' Es la escala del blues y del rock: casi todos los solos que conoces salen de aquí.'
-      : ' <b>La misma escala en otro tono</b> son las mismas distancias: pruébala en las otras pestañas. Y prueba las cinco teclas negras seguidas — Fa# Sol# La# Do# Re# — que son esta misma escala: por eso todo lo que toques ahí suena bien.';
+    if(relScale) html += ' Mismas teclas que <b>' + relScale.label + '</b>, empezando en otra nota.';
   } else if(scale.family === 'major'){
-    html += ' <b>Orden recomendado:</b> Do, Sol, Fa, Re, Sib, La, Mib, Mi, Lab, Si, Reb, Fa#.';
-    if(scale.warn) html += ' <b>Sol# mayor</b> es un ejercicio teórico de notación (con Fx doble sostenido); en la práctica se usa Lab mayor, que suena igual.';
+    html += ' Orden: Do, Sol, Fa, Re, Sib, La, Mib, Mi, Lab, Si, Reb, Fa#.';
+    if(scale.warn) html += ' Sol# mayor es solo un ejercicio de notación; en la práctica se usa Lab mayor, que suena igual.';
   } else {
-    html += ' <b>Menor natural</b> = las mismas teclas que su relativa mayor, empezando dos notas más abajo. <b>Armónica</b> = sube el 7º grado un semitono para que "pida" volver a la tónica.';
+    html += ' <b>Natural:</b> las teclas de su relativa mayor. <b>Armónica:</b> el 7º grado sube un semitono.';
   }
-  if(scaleHand === 'both') html += ' <b>Ambas manos:</b> las dos suben y bajan a la vez, una octava aparte; el cruce de pulgar cae en lugares distintos en cada mano — ahí es donde se traba todo el mundo, ve lento.';
-  if(scaleBlockMode) html += ' <b>En bloque:</b> presiona a la vez todas las notas que caen bajo la mano y suéltalas antes de cambiar de posición. Sirve para sentir la posición entera y ver de un golpe dónde está el cruce. Cuenta como práctica, pero no como pasada limpia: eso se gana tocando la escala nota por nota. Si un bloque no te alcanza cómodo, <b>no fuerces la mano</b>: ese lo haces nota por nota.';
+  if(scaleHand === 'both') html += ' <b>Ambas manos:</b> el cruce cae en lugares distintos en cada mano; ahí se traba todo el mundo, ve lento.';
+  if(scaleBlockMode) html += ' <b>En bloque:</b> presiona juntas las notas que caen bajo la mano. No cuenta como pasada limpia, y si un bloque no te alcanza cómodo, no fuerces la mano.';
   if(scaleTempoMode) html += ' <b>Con metrónomo:</b> una nota por pulso. Verde = a tiempo, azul = adelantado, naranja = atrasado.';
   scaleTip.innerHTML = html;
 }
@@ -4849,7 +4387,8 @@ const ZOOM_STEPS = [780, 900, 1020, 1150, 1300, 1500, 1900, 2400, 3000, 3800];
 const ZOOM_BASE = 1150; // referencia del 100%
 let zoomIdx = 3; // 100%
 const zoomValue = document.getElementById('zoomValue');
-const kbWrap = document.querySelector('.keyboard-wrap');
+// Solo el teclado se desplaza de lado: la barra de opciones queda fija encima.
+const kbWrap = document.getElementById('kbScroll');
 
 function applyZoom(){
   document.documentElement.style.setProperty('--kb-w', ZOOM_STEPS[zoomIdx] + 'px');
@@ -4893,8 +4432,9 @@ function scrollToTargets(){
 // ---- Fragmentos / Agilidad (comparten el mismo motor de práctica) ----
 let practiceFamily = 'songs'; // 'songs' = Fragmentos, 'agility' = Agilidad
 // Categoría de Fragmentos vigente (se recuerda). Si el valor guardado ya no
-// existe (se renombró una categoría) se cae a 'all' en vez de dejar la lista vacía.
-let fragCat = 'all';
+// existe se cae a 'facil'. Ya no hay botón "Todas" (eran 26 piezas en un muro);
+// 'all' sigue valiendo por dentro para no romper nada que lo use.
+let fragCat = 'facil';
 try {
   const saved = localStorage.getItem('fragCat');
   if(saved && SONG_CATS.some(c => c.id === saved)) fragCat = saved;
@@ -5230,7 +4770,7 @@ function renderSubTabs(){
 // Se llama al entrar a "Agilidad" o "Fragmentos" desde el menú principal.
 function loadPracticeFamily(family){
   practiceFamily = family;
-  agilOctaveBar.style.display = family === 'agility' ? 'flex' : 'none';
+  $('agilOpts').style.display = family === 'agility' ? 'block' : 'none';
   show($('fragCatBar'), family === 'songs', 'flex');
   show($('agilGroupBar'), family === 'agility', 'flex');
   if(family !== 'agility') show($('agilRandomBar'), false, 'flex');
@@ -6088,7 +5628,7 @@ function buildHandSvg(side){
   function applyHands(){
     bar.style.display = handsShown ? 'flex' : 'none';
     btn.classList.toggle('active', handsShown);
-    btn.textContent = handsShown ? 'Ocultar dedos 1-5' : '✋ Dedo 1-5 ?';
+    btn.textContent = handsShown ? '✋ Ocultar dedos' : '✋ Dedos ?';
     try { localStorage.setItem('handsShown', handsShown ? '1' : '0'); } catch(e){}
   }
   btn.addEventListener('click', () => { handsShown = !handsShown; applyHands(); });
@@ -7331,13 +6871,13 @@ function buildTodayPlan(seed){
   let drill, drillSub;
   if(coordPend.length){
     drill = coordPend[0];
-    drillSub = 'Manos juntas — es lo que dijiste que más te cuesta. Lento; si se traba, toca cada mano por separado primero.';
+    drillSub = 'Manos juntas, en orden. Si se traba, primero cada mano sola.';
   } else {
     const drills = leastPracticed(AGILITY_DRILLS, progress.drills, 'id');
     drill = drills[Math.min(rnd(2), drills.length - 1)];
     drillSub = drill.grupo === 'manos'
-      ? 'Manos juntas. Lento y parejo: la meta es que no se descuadren, no la velocidad.'
-      : 'Agilidad. Lento y parejo, sin mirar la mano si puedes.';
+      ? 'Manos juntas. Lento y parejo, que no se descuadren.'
+      : 'Lento y parejo, sin mirar la mano si puedes.';
   }
   items.push({ key:'drill', min:3, block:'warm', title:'Calentar: ' + drill.name, sub:drillSub,
     done: () => (progress.drills[drill.id] || {}).lastDay === today,
@@ -7358,14 +6898,12 @@ function buildTodayPlan(seed){
   const st = scaleStage(sc.id, hand === 'both' ? 'rh' : hand);
   let scaleSub;
   if(bothDone){
-    scaleSub = 'Las dos manos ya te salen a tiempo por separado. Ahora júntalas: ahí se ve de verdad.';
+    scaleSub = 'Cada mano ya sale a tiempo. Ahora júntalas.';
   } else if(st.step === 1){
-    scaleSub = 'Paso 1 de 2 — las NOTAS. Despacio, sin errores, el metrónomo viene después. ' +
-      'Llevas ' + st.clean + '/3 pasadas limpias.';
+    scaleSub = 'Paso 1 de 2: las notas, sin errores. Llevas ' + st.clean + '/3 pasadas limpias.';
   } else {
-    scaleSub = 'Paso 2 de 2 — el TIEMPO. Enciende ⏱ Con metrónomo y saca una pasada limpia a ' +
-      st.target + ' BPM' + (st.bpm ? ' (tu mejor marca va en ' + st.bpm + ')' : '') +
-      '. Con ' + SCALE_TEMPO_GOAL + ' BPM se abre la siguiente escala.';
+    scaleSub = 'Paso 2 de 2: a tiempo. Una pasada limpia a ' + st.target + ' BPM' +
+      (st.bpm ? ' (tu mejor: ' + st.bpm + ')' : '') + '; con ' + SCALE_TEMPO_GOAL + ' se abre la siguiente.';
   }
   items.push({ key:'scale', min:8, block:'core', title:'Escala: ' + sc.label + ' · ' + handTxt,
     sub: scaleSub,
@@ -7387,7 +6925,7 @@ function buildTodayPlan(seed){
   const ivNames = ivSt.ids.map(i => INTERVALS[i].name).join(', ');
   items.push({ key:'intervals', min:5, block:'core',
     title:'Intervalos: nivel ' + (ivIdx + 1) + ' de ' + INTERVAL_STAGES.length + ' · ' + ivSt.name,
-    sub: ivSt.tip + ' Hoy: ' + ivNames + '. Tócalos en el piano, las dos notas juntas.',
+    sub: ivNames + '. Las dos notas juntas.',
     done: () => ivSt.ids.every(i => (progress.intervals[i] || {}).lastDay === today),
     go: () => {
       selectCategory('intervals');
@@ -7400,15 +6938,15 @@ function buildTodayPlan(seed){
   const earSt = INTERVAL_STAGES[earIdx];
   items.push({ key:'ear', min:4, block:'core',
     title:'Oído: nivel ' + (earIdx + 1) + ' de ' + INTERVAL_STAGES.length + ' · ' + earSt.name,
-    sub:'La app toca dos notas y buscas la segunda. Se pregunta dentro de tu nivel, con repaso de lo anterior. ' +
-      'Para pasar de nivel: ' + EAR_ASKED_GOAL + ' preguntas y ' + Math.round(EAR_RIGHT_GOAL * 100) + '% de aciertos en cada intervalo.',
+    sub:'La app toca dos notas y buscas la segunda. Nivel superado: ' + EAR_ASKED_GOAL + ' preguntas y ' +
+      Math.round(EAR_RIGHT_GOAL * 100) + '% de aciertos en cada intervalo.',
     done: () => (dayRec().ear || 0) >= 8,
     go: () => { selectCategory('intervals'); if(!earMode) $('earModeBtn').click(); } });
 
   let lvIdx = READING_LEVELS.findIndex(lv => !readingLevelStats(lv.id).mastered);
   if(lvIdx < 0) lvIdx = READING_LEVELS.length - 1;
   const lv = READING_LEVELS[lvIdx];
-  items.push({ key:'reading', min:3, block:'keep', title:'Lectura: ' + lv.name, sub:'10 notas. Poco y todos los días: si la dejas, se pierde.',
+  items.push({ key:'reading', min:3, block:'keep', title:'Lectura: ' + lv.name, sub:'10 notas. Poco, pero todos los días.',
     done: () => (dayRec().reading || 0) >= 10,
     go: () => { readingLevel = lvIdx; selectCategory('reading'); } });
 
@@ -7421,9 +6959,11 @@ function buildTodayPlan(seed){
     done: () => chordsPick.every(c => (progress.chords[c.name] || {}).lastDay === today),
     go: () => { selectCategory('chords'); pickChordByName(chordsPick[0].name); } });
 
-  const songs = leastPracticed(SONGS, progress.songs, 'id');
+  // Los "Patrones" son acordes en la izquierda: eso ya lo cubre el punto de
+  // Acordes del plan, así que la pieza sale de las canciones de verdad.
+  const songs = leastPracticed(SONGS.filter(s => s.cat !== 'patrones'), progress.songs, 'id');
   const song = songs[Math.min(rnd(2), songs.length - 1)];
-  items.push({ key:'song', min:4, block:'keep', title:'Pieza: ' + song.name, sub:'Para que todo esto suene a música. Manos separadas primero.',
+  items.push({ key:'song', min:4, block:'keep', title:'Pieza: ' + song.name, sub:'Manos separadas primero, después juntas.',
     done: () => (progress.songs[song.id] || {}).lastDay === today || (progress.cascade[song.id] || {}).lastDay === today,
     go: () => { selectCategory('fragments'); pickFragmentById(song.id); } });
 
@@ -7489,7 +7029,7 @@ function renderToday(){
   const streak = currentStreak();
   $('todayTip').innerHTML = '<b>Hoy llevas ' + min + ' min.</b> ' +
     (doneMin >= total ? '¡Plan completo! Si te quedan ganas, cascada en la pieza o una escala nueva.' :
-      'Más vale 15 minutos todos los días que 2 horas el sábado: la memoria muscular se construye durmiendo entre sesiones.') +
+      'Mejor poco todos los días que mucho un solo día: la memoria muscular se asienta durmiendo.') +
     (streak >= 2 ? ' Vas por <b>' + streak + ' días seguidos</b>.' : '');
 }
 $('todayRegen').addEventListener('click', () => { todaySeed = (todaySeed * 7 + 3) % 1000 + 1; todayPlan = buildTodayPlan(todaySeed); renderToday(); });

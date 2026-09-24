@@ -10,6 +10,61 @@ teclado dibujado en SVG, con sintetizador Web Audio).
 Contexto de Jorge: sin conocimiento previo, prefiere retroalimentación honesta y
 directa, es corto de vista (**no reducir tamaños de letra**; el teclado tiene zoom).
 
+## Estado: CONGELADO (septiembre 2026)
+Jorge pidió dejar de agregar cosas y ponerse a practicar siguiendo el plan. Antes
+de agregar contenido nuevo (piezas, ejercicios, modos), **preguntar si de verdad
+hace falta** y, si entra, buscar qué sale a cambio. Se hizo una depuración de
+fondo; lo que se quitó y por qué:
+- **Agilidad · Dedos (12 → 7)**: fuera `alterna-pulgar-indice` (además tenía el
+  índice sobre Mi, fuera de la posición fija), `escalera-corta` (= Paralelas
+  Do-Re-Mi), `saltos-terceras` (Paralelas 5 ya trae 1-3, 2-4, 3-5),
+  `escalera-doblada` y `espejo-menique` (el doblado y el arranque desde el
+  meñique ya están en Paralelas). Quedan, numerados en orden de escalera:
+  Posición de 5 dedos, Paralelas 1-4 (partitura), Notas repetidas, Cruce de pulgar.
+- **Agilidad · Manos juntas (10 → 8)**: fuera `manos-espejo` y
+  `manos-alternadas`, inventados y reemplazados por `espejo-1/2` y
+  `alternadas-1/2` de partitura real. Con eso desapareció `RND_LH_MIRROR` (el
+  espejo semitonal inventado); el espejo al azar usa `MIRROR_DRILLS` +
+  `RND_LH[4 - r]`. Escalera 1-8: Espejo ×2, Alternadas ×2, La izquierda
+  sostiene, Izquierda en 1 y 3, Dos por una, Contratiempo. **El nombre lleva el
+  número y el orden del arreglo ES la escalera** (hay prueba que los ata).
+- **Piezas**: fuera `hot-cross-buns` (Mi-Re-Do, ya contenido en Corderito). El
+  plan de Hoy ya no propone "Patrones" como pieza (son acordes en la
+  izquierda; eso lo cubre el punto de Acordes).
+- **Textos**: los `tip` de piezas y ejercicios son 1-2 frases prácticas (antes
+  hasta 1100 caracteres con notas de fuentes). **Las fuentes, verificaciones y
+  decisiones van en este archivo, nunca en la pantalla.**
+
+Reorganización de la interfaz:
+- Pestañas agrupadas con separadores: Hoy | Escalas · Agilidad · Acordes |
+  Intervalos · Lectura | **Piezas** (antes "Fragmentos"; `data-cat` sigue siendo
+  `fragments`) | Progreso · **Más ▾** (menú flotante `#moreMenu` con Tocar libre
+  y Funciones del P-45). `categoryTabs` es `#mainTabs [data-cat]` (ya no hijos
+  directos); `selectCategory` cierra el menú y marca "Más" si la pestaña está
+  adentro. Un clic fuera cierra los desplegables.
+- Opciones secundarias plegadas en `<details class="opt-box">`: `#chordOpts`
+  (octava, inversiones, notas exactas), `#intervalOpts` (nota de partida,
+  octava, al azar), `#agilOpts` (octava de cada mano). `enterMode` muestra la
+  caja, no la barra de adentro. En Acordes, Mano y Repeticiones subieron a la
+  barra de "Qué acordes"; en Intervalos, "De oído" va junto a "Ir directo a".
+- Barra del teclado: Tamaño, Sonido, C = Do ?, Dedos ? a la vista; nombres de
+  nota, Do Re Mi y Sonido alternativo dentro de `#kbMore` (⚙ Opciones).
+- **Bug arreglado**: el scroll horizontal era de `#keyboardWrap` entero, así
+  que en el teléfono `scrollToTargets` se llevaba la barra de botones fuera de
+  pantalla (quedaba un hueco negro). Ahora solo el SVG se desplaza, dentro de
+  `#kbScroll`.
+- Las listas de piezas, ejercicios, escalas y niveles se envuelven en varias
+  filas (`.scroll-tabs` ya no hace scroll lateral, que escondía la mitad). Por
+  eso Piezas ya no tiene el botón "Todas" (26 piezas en un muro): arranca en
+  "Fáciles". `fragCat = 'all'` sigue funcionando por dentro.
+- Plan de Hoy en el teléfono: el botón "Ir" baja debajo del texto (antes le
+  robaba ancho y cada tarjeta medía el triple).
+- La línea "Toca una tecla para verla aquí." se quitó; `#nowPlaying` solo
+  aparece con "Sonando: X" al tocar.
+
+**Lo de abajo es el historial detallado**; donde menciona ejercicios o piezas
+de la lista de arriba, ya no existen en la app.
+
 ## Cómo se prueba (seguir esta convención)
 ```
 npm install        # solo jsdom, como devDependency
@@ -48,7 +103,8 @@ Orden dentro del `<script>`:
    plan de "Hoy", panel de progreso. Termina con `selectCategory('today')`.
 
 ## Pestañas (`data-cat`)
-`today | free | scales | chords | intervals | reading | agility | fragments | progress | functions`
+`today | scales | agility | chords | intervals | reading | fragments (rotulada "Piezas") | progress`,
+y dentro de "Más ▾": `free | functions`.
 
 ## Datos principales
 - **Escalas**: `SCALE_DEFS` = raíz (letra + clase de nota), familia (`major|minor`) y
@@ -1006,7 +1062,7 @@ Orden dentro del `<script>`:
   se encontraba nada. Ahora hay una barra `#fragCatBar` (mismo vocabulario que
   el resto: `.reg-bar` > `.reg-group` > `.reg-picker` en malva `g-type`) que
   filtra la lista. Grupos: `facil | popular | cristiana | clasica | patrones`,
-  más `all`. Cosas que dependen de esto:
+  (el botón `all` "Todas" se quitó en la depuración). Cosas que dependen de esto:
   - **Agilidad tiene su propia barra** (`#agilGroupBar`, `agilGroup`), no la de
     piezas: `Dedos | Manos juntas` (ver la sección de coordinación). Antes no se
     filtraba porque eran pocos; con los seis de coordinación son catorce y los
@@ -1153,7 +1209,7 @@ cualquier otro navegador funcionan igual que antes (`cloudState: 'off'`).
 
 ## Otras preferencias persistidas
 `kbZoom2`, `labelStyle`, `labelsShown` (ahora sí se recuerda; por defecto visible),
-`fragCat` (categoría de Fragmentos), `agilGroup` (Dedos / Manos juntas),
+`fragCat` (categoría de Piezas, por defecto `facil`), `agilGroup` (Dedos / Manos juntas),
 `agilRandom` / `agilLevel` (notas al azar y nivel en los ejercicios de coordinación),
 `chordReps` (repeticiones de acordes), `chordGroup` (qué acordes: básicos / demás / todos),
 `audioFallback` (sonido alternativo, ver más abajo),

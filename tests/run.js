@@ -343,8 +343,9 @@ check(doc.querySelectorAll('#pianoSvg .finger-num').length === 1, 'agilidad tamb
 const first = W('stepNotes(currentFragment.steps[0], "rh")[0]');
 W(`noteOn(${first})`); W(`noteOff(${first})`);
 check(W('practiceIndex') === 1, 'la nota correcta avanza en agilidad');
+W("fragCat = 'patrones'");
 ev('#mainTabs [data-cat="fragments"]');
-check(W("currentFragment.id") === 'cuatro-acordes', 'fragmentos carga la primera pieza');
+check(W("currentFragment.id") === 'cuatro-acordes', 'fragmentos carga la primera pieza de la categoría');
 check(doc.querySelectorAll('#pianoSvg .finger-num').length === 4, 'fragmentos dibuja un dedo por nota (3 izq + 1 der)');
 W('practiceIndex = currentFragment.steps.length - 1; currentHand = "rh"; startFragmentStep()');
 const last = W('stepNotes(currentFragment.steps[currentFragment.steps.length-1], "rh")[0]');
@@ -1324,46 +1325,27 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
 
   section('Coordinación: las dos manos no hacen lo mismo');
   const coord = W('AGILITY_DRILLS.filter(d => d.coord)');
-  check(coord.length === 10, `${coord.length} ejercicios de coordinación (la escalera del 1 al 6, más 2 de espejo y 2 de alternadas con partitura)`);
+  check(coord.length === 8, `${coord.length} ejercicios de coordinación (escalera del 1 al 8)`);
   check(coord.every(d => d.grupo === 'manos'), 'todos viven en el grupo "Manos juntas"');
-  // Lo que hace que estos ejercicios SIRVAN es que las manos no coincidan. Un
-  // ejercicio donde las dos tocan lo mismo a la vez ya existe (los de dedos) y
-  // no entrena independencia, así que aquí eso es un error de datos — salvo la
-  // FAMILIA "espejo" (mismo dedo, direcciones opuestas, las dos manos SIEMPRE
-  // pulsan juntas): esos SÍ son válidos sin pasos de una sola mano, porque el
-  // reto ahí no es la independencia rítmica sino la dirección contraria.
-  const espejo = coord.find(d => d.id === 'manos-espejo');
-  check(espejo.pattern.every(p => p.l !== undefined && p.r !== undefined),
-    'el espejo pulsa con las dos manos en todos los pasos…');
-  check(espejo.pattern.every(p => p.l <= 0 && p.r >= 0 && (p.l !== 0 || p.r === 0)),
-    '…pero en direcciones opuestas: la izquierda baja del Do y la derecha sube');
-  check(espejo.pattern.every(p => p.lf === p.rf),
-    'y con el mismo dedo en las dos manos, que es lo que lo hace el peldaño fácil');
-  // espejo-1/2 (David Domínguez, creatumusica.art): mismo concepto que arriba,
-  // pero con la posición FIJA real (no el descenso inventado de manos-espejo),
-  // así que el grado de cada mano sale de la misma tabla dedo->grado que usan
-  // paralelas-1..4. El dedo 3 es el eje (misma nota, Mi, en las dos manos) y el
-  // 1/5 se intercambian entre manos — eso reemplaza el chequeo l<=0/r>=0, que
-  // solo aplica a la convención vieja de manos-espejo.
+  check(coord.every((d, i) => d.name.startsWith((i + 1) + ' · ')),
+    'los nombres van numerados 1..8 en el mismo orden del arreglo (el orden ES la escalera)');
+  // Espejo (David Domínguez): mismo dedo en las dos manos, posición fija real.
+  // El dedo 3 es el eje (Mi en las dos) y el 1/5 se intercambian entre manos.
   const espejoFam = ['espejo-1', 'espejo-2'].map(id => coord.find(d => d.id === id));
   check(espejoFam.every(Boolean), 'espejo-1 y espejo-2 están en AGILITY_DRILLS');
   const LH_DEG = {1:7, 2:5, 3:4, 4:2, 5:0}, RH_DEG = {1:0, 2:2, 3:4, 4:5, 5:7};
   check(espejoFam.every(d => d.pattern.every(p =>
       p.l !== undefined && p.r !== undefined && p.lf === p.rf &&
       p.l === LH_DEG[p.lf] && p.r === RH_DEG[p.rf])),
-    'espejo-1/2: mismo dedo en las dos manos en todos los pasos, y el grado de cada mano sale de la posición fija (dedo 3 = Mi en las dos)');
-  const otros = coord.filter(d => !['manos-espejo', 'espejo-1', 'espejo-2'].includes(d.id));
-  check(otros.length === 7 && otros.every(d => d.pattern.some(p => p.l === undefined || p.r === undefined)),
-    'los otros siete tienen pasos donde solo entra una mano (sostener, turnarse, contratiempo, y los dos de alternadas)');
-  // alternadas-1/2 (David Domínguez): a diferencia del espejo, cada mano trae
-  // SU PROPIO dedo distinto en el mismo paso — es la diferencia real con
-  // manos-alternadas (mismo dedo las dos manos, figura de un compás).
+    'espejo: mismo dedo en las dos manos en todos los pasos, y el grado sale de la posición fija (dedo 3 = Mi en las dos)');
+  // Todo lo que NO es espejo tiene que tener pasos de una sola mano: si no,
+  // sería unísono, que ya cubren los de Dedos y no entrena independencia.
+  const otros = coord.filter(d => !['espejo-1', 'espejo-2'].includes(d.id));
+  check(otros.length === 6 && otros.every(d => d.pattern.some(p => p.l === undefined || p.r === undefined)),
+    'los otros seis tienen pasos donde solo entra una mano (turnarse, sostener, contratiempo)');
   const alternadasFam = ['alternadas-1', 'alternadas-2'].map(id => coord.find(d => d.id === id));
-  check(alternadasFam.every(Boolean), 'alternadas-1 y alternadas-2 están en AGILITY_DRILLS');
-  check(alternadasFam.every(d => {
-      const beats = d.pattern.reduce((a, p) => a + p.dur, 0);
-      return beats === 64;
-    }), 'alternadas-1/2: 16 compases de 4/4 exactos (64 tiempos)');
+  check(alternadasFam.every(d => d && d.pattern.reduce((a, p) => a + p.dur, 0) === 64),
+    'alternadas-1/2: 16 compases de 4/4 exactos (64 tiempos)');
   check(alternadasFam.some(d => d.pattern.some(p => p.l !== undefined && p.r !== undefined && p.lf !== p.rf)),
     'al menos uno de los dos usa dedos DISTINTOS en las dos manos cuando coinciden (no es un espejo)');
   // Cuadrar en compases de 4 importa aquí igual que en las piezas: la cascada
@@ -1404,13 +1386,12 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
                          (!st.rh.length || st.rhF.length === st.rh.length)),
     'cada nota materializada trae su dedo');
   // El grado 0 es falsy: si se comparara con if(p.l) el Do se perdería.
-  const esp = W('materializeAgilitySteps(AGILITY_DRILLS.find(d => d.id === "manos-espejo"), 4, 3)');
-  check(esp[0].lh[0] === 48 && esp[0].rh[0] === 60, 'el grado 0 (el Do) no se pierde por ser falsy');
-  check(Math.min(...esp.map(st => st.lh[0])) === 41,
-    'el espejo baja hasta Fa2 en la izquierda (grados negativos)');
-  check(W("shapeOctaveValid(3, AGILITY_DRILLS.find(d => d.id === 'manos-espejo'), 'lh')") === true &&
-        W("shapeOctaveValid(0, AGILITY_DRILLS.find(d => d.id === 'manos-espejo'), 'lh')") === false,
-    'la octava se valida por mano: con grados negativos la 0 no cabe');
+  const esp = W('materializeAgilitySteps(AGILITY_DRILLS.find(d => d.id === "espejo-1"), 4, 3)');
+  check(W('AGILITY_DRILLS.find(d => d.id === "espejo-1").pattern.some(p => p.l === 0)') &&
+        esp.some(st => st.lh[0] === 48), 'el grado 0 (el Do) no se pierde por ser falsy');
+  check(W("shapeOctaveValid(3, AGILITY_DRILLS.find(d => d.id === 'espejo-1'), 'lh')") === true &&
+        W("shapeOctaveValid(8, AGILITY_DRILLS.find(d => d.id === 'espejo-1'), 'lh')") === false,
+    'la octava se valida por mano: la 8 no cabe');
   // Se puede practicar una mano sola, que es el primer paso cuando se traba.
   check(W(`(function(){
       const st = materializeAgilitySteps(AGILITY_DRILLS.find(d => d.id === 'manos-contratiempo'), 4, 3);
@@ -1422,8 +1403,8 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
   const planCoord = W('buildTodayPlan(1)[0]');
   check(planCoord.title.includes('Espejo'), 'el calentamiento de Hoy arranca en el peldaño 1 de la escalera');
   W("progress.drills = {}; AGILITY_DRILLS.filter(d => d.grupo === 'manos').forEach(d => { progress.drills[d.id] = {runs:1, lastDay:'2000-01-01'}; });");
-  check(!/Espejo|Una y otra|sostiene|1 y 3|Dos de la derecha|contratiempo/.test(W('buildTodayPlan(1)[0].title')),
-    'y cuando ya pasó por los seis, vuelve la rotación normal entre todos');
+  check(W("AGILITY_DRILLS.filter(d => d.grupo === 'manos').every(d => !buildTodayPlan(1)[0].title.includes(d.name))"),
+    'y cuando ya pasó por los ocho, vuelve la rotación normal entre todos');
   W("progress.drills = {};");
 
   section('Acordes repetidos, como se tocan de verdad');
@@ -1606,21 +1587,8 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
       }
       return true;
     })()`), 'en 40 sorteos, cada tecla lleva siempre el mismo dedo (la mano no se mueve)');
-  // El espejo vive de que las dos manos usen el MISMO dedo: no puede sortear
-  // la izquierda por su cuenta.
-  check(W(`(function(){
-      const esp = AGILITY_DRILLS.find(d => d.id === 'manos-espejo');
-      for(let i = 0; i < 30; i++){
-        const pat = randomCoordPattern(esp, 4);
-        if(!pat.every(p => p.lf === p.rf)) return false;
-        if(!pat.every(p => p.l <= 0 && p.r >= 0)) return false;
-      }
-      return true;
-    })()`), 'el espejo sortea con el mismo dedo en las dos manos y en direcciones opuestas');
-  // espejo-1/2 (partitura real) también son mismo-dedo-las-dos-manos, pero con
-  // la posición FIJA real, no el descenso inventado de manos-espejo: si el
-  // sorteo usara la tabla equivocada, el "eje" (dedo 3 = Mi en las dos manos)
-  // se rompería.
+  // El espejo vive de que las dos manos usen el MISMO dedo: la izquierda no
+  // sortea por su cuenta, y el grado sale de la posición fija (eje dedo 3 = Mi).
   check(W(`(function(){
       for(const id of ['espejo-1', 'espejo-2']){
         const esp = AGILITY_DRILLS.find(d => d.id === id);
@@ -1632,7 +1600,7 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
         }
       }
       return true;
-    })()`), 'espejo-1/2 sortean con el mismo dedo en las dos manos y el grado de la posición fija real (no el de manos-espejo)');
+    })()`), 'el espejo sortea con el mismo dedo en las dos manos y el grado de la posición fija');
   // Los niveles mueven de verdad el tamaño del salto.
   const salto = (nivel) => W(`(function(){
       const d = AGILITY_DRILLS.find(x => x.id === 'manos-sostiene');
@@ -1654,11 +1622,11 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
     'las etiquetas al azar solo dicen quién pulsa, que es lo único que sigue siendo cierto');
 
   section('Vuelta limpia: se cuentan las notas equivocadas y sube el nivel');
-  W("agilRandom = true; agilLevel = 1; agilStreak = 0; pickFragmentById('manos-espejo'); currentHand = 'both'; onAgilityChange();");
+  W("agilRandom = true; agilLevel = 1; agilStreak = 0; pickFragmentById('espejo-1'); currentHand = 'both'; onAgilityChange();");
   const vuelta = (conError) => {
     W('practiceIndex = 0; startFragmentStep();');
     if(conError) W('noteOn(61); noteOff(61);');   // Do#: los ejercicios son todos de teclas blancas
-    for(let i = 0; i < 40; i++){
+    for(let i = 0; i < 100; i++){
       const ns = JSON.parse(W('JSON.stringify(stepNotes(currentFragment.steps[practiceIndex] || {lh:[],rh:[]}, currentHand))'));
       if(!ns.length) break;
       const antesIdx = W('practiceIndex');
@@ -1867,10 +1835,10 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
 
   // Cambiar de pieza mientras suena también corta: antes seguía sonando la
   // anterior encima de la nueva.
-  W("pickFragmentById('hot-cross-buns')");
+  W("pickFragmentById('au-clair')");
   await new Promise(r => setTimeout(r, 60));
   check(W('isPlayingBack') === false, 'cambiar de pieza mientras suena detiene la reproducción');
-  check(W("currentFragment.id") === 'hot-cross-buns', 'y la pieza nueva queda cargada');
+  check(W("currentFragment.id") === 'au-clair', 'y la pieza nueva queda cargada');
 
   console.log(`\n${passes} pruebas OK, ${failures} fallos`);
   if(errors.length) console.log('Errores de consola:', errors);
