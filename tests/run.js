@@ -1984,6 +1984,41 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
       'el plan de Hoy no la propone todavía (es "para más adelante")');
   }
 
+  section('Melodías de la clase (pianoencasa)');
+  {
+    const ids = ['clase-sol','clase-mim','clase-re','clase-la','clase-fa','clase-sib'];
+    const KEY = { 'clase-sol':[7,9,11,0,2,4,6], 'clase-mim':[7,9,11,0,2,4,6], 'clase-re':[2,4,6,7,9,11,1],
+                  'clase-la':[9,11,1,2,4,6,8], 'clase-fa':[5,7,9,10,0,2,4], 'clase-sib':[10,0,2,3,5,7,9] };
+    const BEATS = { 'clase-mim':36 };
+    check(W("SONG_CATS[0].id") === 'clase', 'categoría "De la clase" primera en la barra');
+    for(const id of ids){
+      const p = W(`SONGS.find(s => s.id === '${id}')`);
+      check(!!p && p.cat === 'clase', `${id}: está en De la clase`);
+      const beats = p.steps.reduce((a, s) => a + s.dur, 0);
+      check(Math.abs(beats - (BEATS[id] || 32)) < 1e-9, `${id}: ${BEATS[id] ? 9 : 8} compases de 4 (${beats})`);
+      // todo cae en la tonalidad de la hoja: una nota mal leída se saldría
+      const key = new Set(KEY[id]);
+      check(p.steps.every(s => s.rh.concat(s.lh).every(n => key.has(n % 12))), `${id}: todas las notas en su tonalidad`);
+      // la izquierda: tríadas en posición fundamental con 5-3-1
+      const chords = p.steps.filter(s => s.lh.length);
+      check(chords.every(s => s.lh.length === 3 && s.lhF.join('') === '531' &&
+        [3,4].includes(s.lh[1] - s.lh[0]) && s.lh[2] - s.lh[0] === 7), `${id}: acordes en bloque, fundamental, 5-3-1`);
+      check(p.steps.every(s => s.rh.length === 1 && s.rhF.length === 1), `${id}: una nota de melodía por paso, con dedo`);
+      // las manos no se cruzan
+      check(p.steps.every(s => !s.lh.length || Math.max(...s.lh) < s.rh[0]), `${id}: la izquierda siempre debajo de la melodía`);
+    }
+    // La melodía de Re va una octava arriba (clave con 8 encima en la hoja)
+    const re = W("SONGS.find(s => s.id === 'clase-re')");
+    check(re.steps[0].rh[0] === 74 && Math.max(...re.steps.map(s => s.rh[0])) === 86, 'Re: empieza en Re5 y llega a Re6 (8va de la hoja)');
+    // Si bemol: la hoja escribe la izquierda más grave que en las otras
+    const sib = W("SONGS.find(s => s.id === 'clase-sib')");
+    check(JSON.stringify(sib.steps[0].lh) === '[46,50,53]', 'Si♭: el acorde de Si♭ es Si♭2-Re3-Fa3');
+    check(sib.steps[0].dur === 0.75 && sib.steps[1].dur === 0.25, 'Si♭: el puntillo (corchea con puntillo + semicorchea)');
+    // el plan de Hoy puede mandar a una de estas y el enlace funciona
+    W("fragCat = 'facil'; selectCategory('fragments'); pickFragmentById('clase-la');");
+    check(W('currentFragment.id') === 'clase-la' && W('fragCat') === 'clase', 'pickFragmentById abre "De la clase"');
+  }
+
   console.log(`\n${passes} pruebas OK, ${failures} fallos`);
   if(errors.length) console.log('Errores de consola:', errors);
   process.exit(failures || errors.length ? 1 : 0);

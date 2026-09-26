@@ -3571,6 +3571,127 @@ const SONGS = [
     tempo:120,
     steps: DBGT_V
   },
+  // Tarea de la academia (septiembre): guía "Ejercicios para practicar escalas"
+  // de pianoencasa.com. Melodía + acordes en bloque, tal como la hoja (ver CLAUDE.md).
+  {
+    id:'clase-sol',
+    cat:'clase',
+    name:'Melodía 1 · Sol',
+    tip:'Tarea de escalas (pianoencasa): armadura con Fa#. La derecha no se mueve, pulgar en Sol; la izquierda, acordes en bloque con 5-3-1.',
+    tempo:72,
+    steps:[
+      {lh:[55,59,62], lhF:[5,3,1], rh:[67], rhF:[1], dur:1, label:'c. 1 · Sol'}, {lh:[], rh:[69], rhF:[2], dur:1}, {lh:[], rh:[71], rhF:[3], dur:1},
+      {lh:[], rh:[67], rhF:[1], dur:1}, {lh:[48,52,55], lhF:[5,3,1], rh:[72], rhF:[4], dur:2, label:'c. 2 · Do'}, {lh:[55,59,62], lhF:[5,3,1], rh:[71], rhF:[3], dur:2, label:'Sol'},
+      {lh:[50,54,57], lhF:[5,3,1], rh:[69], rhF:[2], dur:1, label:'c. 3 · Re'}, {lh:[], rh:[72], rhF:[4], dur:1}, {lh:[55,59,62], lhF:[5,3,1], rh:[71], rhF:[3], dur:1, label:'Sol'},
+      {lh:[], rh:[67], rhF:[1], dur:1}, {lh:[57,60,64], lhF:[5,3,1], rh:[69], rhF:[2], dur:2, label:'c. 4 · Lam'}, {lh:[55,59,62], lhF:[5,3,1], rh:[67], rhF:[1], dur:2, label:'Sol'},
+      {lh:[55,59,62], lhF:[5,3,1], rh:[67], rhF:[1], dur:1, label:'c. 5 · Sol'}, {lh:[], rh:[69], rhF:[2], dur:1}, {lh:[], rh:[71], rhF:[3], dur:1},
+      {lh:[], rh:[67], rhF:[1], dur:1}, {lh:[48,52,55], lhF:[5,3,1], rh:[72], rhF:[4], dur:2, label:'c. 6 · Do'}, {lh:[55,59,62], lhF:[5,3,1], rh:[71], rhF:[3], dur:2, label:'Sol'},
+      {lh:[50,54,57], lhF:[5,3,1], rh:[69], rhF:[2], dur:1, label:'c. 7 · Re'}, {lh:[], rh:[74], rhF:[5], dur:0.5}, {lh:[], rh:[72], rhF:[4], dur:0.5},
+      {lh:[55,59,62], lhF:[5,3,1], rh:[71], rhF:[3], dur:0.5, label:'Sol'}, {lh:[], rh:[69], rhF:[2], dur:0.5}, {lh:[], rh:[67], rhF:[1], dur:1},
+      {lh:[57,60,64], lhF:[5,3,1], rh:[69], rhF:[2], dur:2, label:'c. 8 · Lam'}, {lh:[55,59,62], lhF:[5,3,1], rh:[67], rhF:[1], dur:2, label:'Sol'},
+    ]
+  },
+  {
+    id:'clase-mim',
+    cat:'clase',
+    name:'Melodía 2 · Mi menor',
+    tip:'Tarea de escalas (pianoencasa): misma armadura que Sol (Fa#), pero en Mi menor, su relativa. Pulgar en Mi; en el compás 4 baja un paso a Re y vuelve.',
+    tempo:72,
+    steps:[
+      {lh:[52,55,59], lhF:[5,3,1], rh:[71], rhF:[5], dur:1, label:'c. 1 · Mim'}, {lh:[], rh:[69], rhF:[4], dur:1}, {lh:[], rh:[67], rhF:[3], dur:2},
+      {lh:[50,54,57], lhF:[5,3,1], rh:[69], rhF:[4], dur:1, label:'c. 2 · Re'}, {lh:[], rh:[67], rhF:[3], dur:1}, {lh:[], rh:[66], rhF:[2], dur:2},
+      {lh:[48,52,55], lhF:[5,3,1], rh:[67], rhF:[3], dur:1, label:'c. 3 · Do'}, {lh:[], rh:[66], rhF:[2], dur:1}, {lh:[], rh:[64], rhF:[1], dur:2},
+      {lh:[50,54,57], lhF:[5,3,1], rh:[62], rhF:[1], dur:1, label:'c. 4 · Re · Mano baja: pulgar a Re'}, {lh:[], rh:[64], rhF:[2], dur:1}, {lh:[], rh:[66], rhF:[3], dur:2},
+      {lh:[52,55,59], lhF:[5,3,1], rh:[71], rhF:[5], dur:1, label:'c. 5 · Mim · Vuelve: pulgar a Mi'}, {lh:[], rh:[69], rhF:[4], dur:1}, {lh:[], rh:[67], rhF:[3], dur:2},
+      {lh:[50,54,57], lhF:[5,3,1], rh:[69], rhF:[4], dur:1, label:'c. 6 · Re'}, {lh:[], rh:[67], rhF:[3], dur:1}, {lh:[], rh:[66], rhF:[2], dur:2},
+      {lh:[48,52,55], lhF:[5,3,1], rh:[67], rhF:[3], dur:1, label:'c. 7 · Do'}, {lh:[], rh:[66], rhF:[2], dur:1}, {lh:[], rh:[64], rhF:[1], dur:2},
+      {lh:[50,54,57], lhF:[5,3,1], rh:[62], rhF:[1], dur:1, label:'c. 8 · Re · Mano baja: pulgar a Re'}, {lh:[], rh:[64], rhF:[2], dur:1}, {lh:[], rh:[66], rhF:[3], dur:2},
+      {lh:[52,55,59], lhF:[5,3,1], rh:[64], rhF:[2], dur:4, label:'c. 9 · Mim'},
+    ]
+  },
+  {
+    id:'clase-re',
+    cat:'clase',
+    name:'Melodía 3 · Re',
+    tip:'Tarea de escalas (pianoencasa): Fa# y Do#. La hoja pone un 8 ARRIBA de la clave: la melodía va una octava más aguda (pulgar en el Re de arriba del Do central).',
+    tempo:66,
+    steps:[
+      {lh:[50,54,57], lhF:[5,3,1], rh:[74], rhF:[1], dur:1, label:'c. 1 · Re'}, {lh:[], rh:[76], rhF:[2], dur:1}, {lh:[], rh:[78], rhF:[3], dur:1},
+      {lh:[], rh:[81], rhF:[5], dur:1}, {lh:[55,59,62], lhF:[5,3,1], rh:[79], rhF:[4], dur:2, label:'c. 2 · Sol'}, {lh:[50,54,57], lhF:[5,3,1], rh:[78], rhF:[3], dur:2, label:'Re'},
+      {lh:[50,54,57], lhF:[5,3,1], rh:[74], rhF:[1], dur:1, label:'c. 3 · Re'}, {lh:[], rh:[78], rhF:[3], dur:1}, {lh:[52,55,59], lhF:[5,3,1], rh:[79], rhF:[4], dur:1, label:'Mim'},
+      {lh:[], rh:[78], rhF:[3], dur:1}, {lh:[57,61,64], lhF:[5,3,1], rh:[76], rhF:[2], dur:4, label:'c. 4 · La'}, {lh:[50,54,57], lhF:[5,3,1], rh:[74], rhF:[1], dur:1, label:'c. 5 · Re'},
+      {lh:[], rh:[78], rhF:[2], dur:1, label:'La mano se abre: 1-2-3 y el 5 en el Re agudo'}, {lh:[], rh:[81], rhF:[3], dur:1}, {lh:[], rh:[86], rhF:[5], dur:0.5},
+      {lh:[], rh:[85], rhF:[4], dur:0.5}, {lh:[55,59,62], lhF:[5,3,1], rh:[83], rhF:[3], dur:2, label:'c. 6 · Sol'}, {lh:[50,54,57], lhF:[5,3,1], rh:[81], rhF:[2], dur:2, label:'Re'},
+      {lh:[50,54,57], lhF:[5,3,1], rh:[74], rhF:[1], dur:1, label:'c. 7 · Re · Vuelve a la posición: pulgar en Re'}, {lh:[], rh:[78], rhF:[3], dur:1}, {lh:[52,55,59], lhF:[5,3,1], rh:[79], rhF:[4], dur:1, label:'Mim'},
+      {lh:[], rh:[78], rhF:[3], dur:1}, {lh:[57,61,64], lhF:[5,3,1], rh:[76], rhF:[2], dur:1, label:'c. 8 · La'}, {lh:[], rh:[81], rhF:[5], dur:1},
+      {lh:[50,54,57], lhF:[5,3,1], rh:[74], rhF:[1], dur:2, label:'Re'},
+    ]
+  },
+  {
+    id:'clase-la',
+    cat:'clase',
+    name:'Melodía 4 · La',
+    tip:'Tarea de escalas (pianoencasa): Fa#, Do# y Sol#, con corcheas. Pulgar en Si; en el compás 3 el pulgar pasa por debajo al Re para llegar al La agudo.',
+    tempo:66,
+    steps:[
+      {lh:[57,61,64], lhF:[5,3,1], rh:[73], rhF:[2], dur:1, label:'c. 1 · La'}, {lh:[], rh:[76], rhF:[4], dur:0.5}, {lh:[], rh:[73], rhF:[2], dur:0.5},
+      {lh:[50,54,57], lhF:[5,3,1], rh:[71], rhF:[1], dur:2, label:'Re'}, {lh:[57,61,64], lhF:[5,3,1], rh:[73], rhF:[2], dur:0.5, label:'c. 2 · La'}, {lh:[], rh:[73], rhF:[2], dur:0.5},
+      {lh:[], rh:[76], rhF:[4], dur:0.5}, {lh:[], rh:[73], rhF:[2], dur:0.5}, {lh:[50,54,57], lhF:[5,3,1], rh:[71], rhF:[1], dur:2, label:'Re'},
+      {lh:[57,61,64], lhF:[5,3,1], rh:[73], rhF:[2], dur:0.5, label:'c. 3 · La'}, {lh:[], rh:[74], rhF:[3], dur:0.5}, {lh:[], rh:[76], rhF:[4], dur:0.5},
+      {lh:[], rh:[73], rhF:[2], dur:0.5}, {lh:[52,56,59], lhF:[5,3,1], rh:[74], rhF:[1], dur:0.5, label:'Mi · Pulgar por debajo al Re'}, {lh:[], rh:[76], rhF:[2], dur:0.5},
+      {lh:[], rh:[78], rhF:[3], dur:0.5}, {lh:[], rh:[80], rhF:[4], dur:0.5}, {lh:[57,61,64], lhF:[5,3,1], rh:[81], rhF:[5], dur:1, label:'c. 4 · La'},
+      {lh:[], rh:[80], rhF:[4], dur:0.5}, {lh:[], rh:[78], rhF:[3], dur:0.5}, {lh:[52,56,59], lhF:[5,3,1], rh:[76], rhF:[2], dur:2, label:'Mi'},
+      {lh:[57,61,64], lhF:[5,3,1], rh:[73], rhF:[2], dur:1, label:'c. 5 · La · Vuelve: pulgar a Si'}, {lh:[], rh:[76], rhF:[4], dur:0.5}, {lh:[], rh:[73], rhF:[2], dur:0.5},
+      {lh:[50,54,57], lhF:[5,3,1], rh:[71], rhF:[1], dur:2, label:'Re'}, {lh:[57,61,64], lhF:[5,3,1], rh:[73], rhF:[2], dur:0.5, label:'c. 6 · La'}, {lh:[], rh:[73], rhF:[2], dur:0.5},
+      {lh:[], rh:[76], rhF:[4], dur:0.5}, {lh:[], rh:[73], rhF:[2], dur:0.5}, {lh:[50,54,57], lhF:[5,3,1], rh:[71], rhF:[1], dur:2, label:'Re'},
+      {lh:[57,61,64], lhF:[5,3,1], rh:[73], rhF:[2], dur:0.5, label:'c. 7 · La'}, {lh:[], rh:[74], rhF:[3], dur:0.5}, {lh:[], rh:[76], rhF:[4], dur:0.5},
+      {lh:[], rh:[73], rhF:[2], dur:0.5}, {lh:[52,56,59], lhF:[5,3,1], rh:[74], rhF:[1], dur:0.5, label:'Mi · Pulgar por debajo al Re'}, {lh:[], rh:[76], rhF:[2], dur:0.5},
+      {lh:[], rh:[78], rhF:[3], dur:0.5}, {lh:[], rh:[80], rhF:[4], dur:0.5}, {lh:[57,61,64], lhF:[5,3,1], rh:[81], rhF:[5], dur:2, label:'c. 8 · La'},
+      {lh:[57,61,64], lhF:[5,3,1], rh:[81], rhF:[5], dur:2, label:'La'},
+    ]
+  },
+  {
+    id:'clase-fa',
+    cat:'clase',
+    name:'Melodía 5 · Fa',
+    tip:'Tarea de escalas (pianoencasa): un bemol, Si♭ (con el dedo 4). La derecha no se mueve: pulgar en Fa.',
+    tempo:72,
+    steps:[
+      {lh:[53,57,60], lhF:[5,3,1], rh:[65], rhF:[1], dur:2, label:'c. 1 · Fa'}, {lh:[48,52,55], lhF:[5,3,1], rh:[67], rhF:[2], dur:2, label:'Do'}, {lh:[53,57,60], lhF:[5,3,1], rh:[69], rhF:[3], dur:2, label:'c. 2 · Fa'},
+      {lh:[], rh:[65], rhF:[1], dur:2}, {lh:[53,57,60], lhF:[5,3,1], rh:[69], rhF:[3], dur:1, label:'c. 3 · Fa'}, {lh:[], rh:[67], rhF:[2], dur:0.5},
+      {lh:[], rh:[69], rhF:[3], dur:0.5}, {lh:[58,62,65], lhF:[5,3,1], rh:[70], rhF:[4], dur:1, label:'Sib'}, {lh:[], rh:[69], rhF:[3], dur:0.5},
+      {lh:[], rh:[67], rhF:[2], dur:0.5}, {lh:[53,57,60], lhF:[5,3,1], rh:[69], rhF:[3], dur:2, label:'c. 4 · Fa'}, {lh:[], rh:[65], rhF:[1], dur:2},
+      {lh:[53,57,60], lhF:[5,3,1], rh:[65], rhF:[1], dur:2, label:'c. 5 · Fa'}, {lh:[48,52,55], lhF:[5,3,1], rh:[67], rhF:[2], dur:2, label:'Do'}, {lh:[53,57,60], lhF:[5,3,1], rh:[69], rhF:[3], dur:2, label:'c. 6 · Fa'},
+      {lh:[], rh:[65], rhF:[1], dur:2}, {lh:[53,57,60], lhF:[5,3,1], rh:[69], rhF:[3], dur:1, label:'c. 7 · Fa'}, {lh:[], rh:[67], rhF:[2], dur:0.5},
+      {lh:[], rh:[69], rhF:[3], dur:0.5}, {lh:[58,62,65], lhF:[5,3,1], rh:[70], rhF:[4], dur:1, label:'Sib'}, {lh:[], rh:[69], rhF:[3], dur:0.5},
+      {lh:[], rh:[67], rhF:[2], dur:0.5}, {lh:[53,57,60], lhF:[5,3,1], rh:[65], rhF:[1], dur:4, label:'c. 8 · Fa'},
+    ]
+  },
+  {
+    id:'clase-sib',
+    cat:'clase',
+    name:'Melodía 6 · Sib',
+    tip:'Tarea de escalas (pianoencasa): Si♭ y Mi♭, con puntillo y semicorchea (largo-corto). Pulgar en Si♭; en el compás 4 baja a La. Empieza bien lento.',
+    tempo:60,
+    steps:[
+      {lh:[46,50,53], lhF:[5,3,1], rh:[74], rhF:[3], dur:0.75, label:'c. 1 · Sib'}, {lh:[], rh:[72], rhF:[2], dur:0.25}, {lh:[], rh:[70], rhF:[1], dur:0.5},
+      {lh:[], rh:[77], rhF:[5], dur:0.5}, {lh:[48,51,55], lhF:[5,3,1], rh:[75], rhF:[4], dur:2, label:'Dom'}, {lh:[41,45,48], lhF:[5,3,1], rh:[72], rhF:[2], dur:0.5, label:'c. 2 · Fa'},
+      {lh:[], rh:[74], rhF:[3], dur:0.5}, {lh:[], rh:[75], rhF:[4], dur:0.5}, {lh:[], rh:[77], rhF:[5], dur:0.5},
+      {lh:[46,50,53], lhF:[5,3,1], rh:[74], rhF:[3], dur:1, label:'Sib'}, {lh:[], rh:[70], rhF:[1], dur:1}, {lh:[46,50,53], lhF:[5,3,1], rh:[70], rhF:[1], dur:0.75, label:'c. 3 · Sib'},
+      {lh:[], rh:[72], rhF:[2], dur:0.25}, {lh:[], rh:[74], rhF:[3], dur:0.5}, {lh:[], rh:[70], rhF:[1], dur:0.5},
+      {lh:[48,51,55], lhF:[5,3,1], rh:[72], rhF:[2], dur:1, label:'Dom'}, {lh:[], rh:[75], rhF:[4], dur:1}, {lh:[41,45,48], lhF:[5,3,1], rh:[74], rhF:[4], dur:0.5, label:'c. 4 · Fa · Mano baja: pulgar a La'},
+      {lh:[], rh:[72], rhF:[3], dur:0.5}, {lh:[], rh:[70], rhF:[2], dur:0.5}, {lh:[], rh:[69], rhF:[1], dur:0.5},
+      {lh:[46,50,53], lhF:[5,3,1], rh:[72], rhF:[3], dur:1, label:'Sib'}, {lh:[], rh:[70], rhF:[2], dur:1}, {lh:[46,50,53], lhF:[5,3,1], rh:[74], rhF:[3], dur:0.75, label:'c. 5 · Sib · Vuelve: pulgar a Si♭'},
+      {lh:[], rh:[72], rhF:[2], dur:0.25}, {lh:[], rh:[70], rhF:[1], dur:0.5}, {lh:[], rh:[77], rhF:[5], dur:0.5},
+      {lh:[48,51,55], lhF:[5,3,1], rh:[75], rhF:[4], dur:2, label:'Dom'}, {lh:[41,45,48], lhF:[5,3,1], rh:[72], rhF:[2], dur:0.5, label:'c. 6 · Fa'}, {lh:[], rh:[74], rhF:[3], dur:0.5},
+      {lh:[], rh:[75], rhF:[4], dur:0.5}, {lh:[], rh:[77], rhF:[5], dur:0.5}, {lh:[46,50,53], lhF:[5,3,1], rh:[74], rhF:[3], dur:1, label:'Sib'},
+      {lh:[], rh:[70], rhF:[1], dur:1}, {lh:[46,50,53], lhF:[5,3,1], rh:[70], rhF:[1], dur:0.75, label:'c. 7 · Sib'}, {lh:[], rh:[72], rhF:[2], dur:0.25},
+      {lh:[], rh:[74], rhF:[3], dur:0.5}, {lh:[], rh:[70], rhF:[1], dur:0.5}, {lh:[48,51,55], lhF:[5,3,1], rh:[72], rhF:[2], dur:1, label:'Dom'},
+      {lh:[], rh:[75], rhF:[4], dur:1}, {lh:[41,45,48], lhF:[5,3,1], rh:[74], rhF:[4], dur:0.5, label:'c. 8 · Fa · Mano baja: pulgar a La'}, {lh:[], rh:[72], rhF:[3], dur:0.5},
+      {lh:[], rh:[70], rhF:[2], dur:0.5}, {lh:[], rh:[69], rhF:[1], dur:0.5}, {lh:[46,50,53], lhF:[5,3,1], rh:[72], rhF:[3], dur:1, label:'Sib'},
+      {lh:[], rh:[70], rhF:[2], dur:1},
+    ]
+  },
   {
     id:'arpeges-agathe',
     cat:'clasica',
@@ -3656,6 +3777,7 @@ const SONGS = [
 // Categorías de Fragmentos. El orden manda en la barra de arriba; `facil` va
 // primero porque es donde entra alguien que recién empieza.
 const SONG_CATS = [
+  {id:'clase',     name:'De la clase'},
   {id:'facil',     name:'Fáciles'},
   {id:'popular',   name:'Populares'},
   {id:'cristiana', name:'Cristianas'},

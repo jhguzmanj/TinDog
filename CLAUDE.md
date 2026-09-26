@@ -329,6 +329,32 @@ y dentro de "Más ▾": `free | functions`.
   **armadura**, que la Lectura tampoco muestra; (3) la app nombra el acorde
   de Si♭ como `A#` (y Mi♭ como `D#`) — **Jorge decidió dejarlo así**, no
   "corregirlo". La menor melódica no está en la app (solo natural/armónica).
+- **"De la clase": las 6 melodías de la guía de escalas de pianoencasa**
+  (`clase-sol`, `clase-mim`, `clase-re`, `clase-la`, `clase-fa`, `clase-sib`;
+  categoría nueva `clase`, primera en `SONG_CATS`). Tarea de la academia de
+  septiembre. Jorge eligió **la versión fiel a la hoja** (acordes completos en
+  la izquierda) sobre una simplificada con una nota grave: es lo que dejó el
+  profe, aunque antes había pedido piezas sin acordes. Decisiones:
+  - **Alturas SONANTES.** La hoja escribe la izquierda en clave de Sol con un 8
+    debajo (−12). La melodía de **Re** tiene además un 8 ENCIMA de la clave
+    (+12): suena de Re5 a Re6. En **Si♭** la izquierda va una octava más grave
+    que en las demás (la hoja la escribe bajo el pentagrama con líneas
+    adicionales): Si♭2-Re3-Fa3, Do3-Mib3-Sol3, Fa2-La2-Do3. Hay pruebas.
+  - Izquierda: tríadas en posición fundamental en bloque, `lhF` 5-3-1, como las
+    escribe la hoja. Se sostienen (`lh:[]` en los pasos siguientes).
+  - **La hoja no trae digitación ni tempo**: la derecha es inventada, buscando
+    posiciones fijas (Sol, Fa: la mano no se mueve; Mi menor, La, Si♭: un
+    desplazamiento marcado en el `label`; Re: la mano se abre en el c. 5 para
+    llegar al Re agudo). Tempos sugeridos: 72 (Sol, Mi m, Fa), 66 (Re, La con
+    corcheas), 60 (Si♭, con puntillo y semicorchea).
+  - Verificación: cada compás suma 4; todas las notas (las dos manos) caen en
+    la tonalidad de su armadura; y al entrar cada acorde la melodía toca una
+    nota del acorde en 80 de 90 casos — los 10 restantes son notas de paso que
+    la hoja escribe así (Si sobre Re en La mayor, Re sobre Fa en Si♭…). El
+    generador quedó en el scratchpad de la sesión (no en el repo).
+  - Ojo, sin arreglar a propósito: el teclado y el escenario deletrean con
+    sostenidos (`A#2` para Si♭2) aunque el `label` diga "Sib". Es el mismo
+    criterio que Jorge pidió conservar en Acordes.
 - **"Arpèges à Agathe" (Christian Daguet, free-scores, nivel "2º-3er año")**,
   `arpeges-agathe`, en Clásicas. Jorge la pidió "para más adelante" y después
   "agrégala de una vez", así que está en Piezas pero **con `plan:false`**: el
@@ -1144,7 +1170,7 @@ y dentro de "Más ▾": `free | functions`.
   piezas la fila de sub-pestañas era un scroll horizontal larguísimo donde no
   se encontraba nada. Ahora hay una barra `#fragCatBar` (mismo vocabulario que
   el resto: `.reg-bar` > `.reg-group` > `.reg-picker` en malva `g-type`) que
-  filtra la lista. Grupos: `facil | popular | cristiana | clasica | patrones`,
+  filtra la lista. Grupos: `clase | facil | popular | cristiana | clasica | patrones`,
   (el botón `all` "Todas" se quitó en la depuración). Cosas que dependen de esto:
   - **Agilidad tiene su propia barra** (`#agilGroupBar`, `agilGroup`), no la de
     piezas: `Dedos | Manos juntas` (ver la sección de coordinación). Antes no se
