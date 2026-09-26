@@ -1840,6 +1840,122 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
   check(W('isPlayingBack') === false, 'cambiar de pieza mientras suena detiene la reproducción');
   check(W("currentFragment.id") === 'au-clair', 'y la pieza nueva queda cargada');
 
+  // ------------------------------------------------------------------
+  section('Nombre de intervalos (Sin pista y Tocar libre)');
+  check(W('intervalName(60, 64)') === '3ª mayor', 'Do-Mi es 3ª mayor');
+  check(W('intervalName(64, 60)') === '3ª mayor', 'el orden de las teclas no importa');
+  check(W('intervalName(60, 76)') === '3ª mayor + una octava', 'una décima se dice como 3ª mayor + una octava');
+  check(W('intervalName(60, 72)') === '8ª (octava)' && W('intervalName(60, 84)') === '2 octavas', 'octava y dos octavas');
+  check(W('intervalName(60, 60)') === 'unísono' && W("withArticle('unísono')") === 'un unísono', 'unísono, con su artículo');
+  check(W("withArticle('2 octavas')") === '2 octavas' && W("withArticle('5ª justa')") === 'una 5ª justa', 'artículo correcto');
+
+  section('Tocar libre nombra lo que se pisa');
+  W("soundEnabled = false; activeNotes.clear(); selectCategory('free');");
+  check(doc.getElementById('freeBox').style.display !== 'none', 'el recuadro se ve en Tocar libre');
+  W('noteOn(60); noteOn(64);');
+  const fr = doc.getElementById('freeRead');
+  check(fr.textContent.includes('3ª mayor') && fr.textContent.includes(W('noteLabel(60)')) && !fr.classList.contains('stale'),
+    'dos teclas: dice las notas y el intervalo');
+  W('noteOff(60); noteOff(64);');
+  check(fr.textContent.includes('3ª mayor') && fr.classList.contains('stale'), 'al soltar queda la última lectura, apagada');
+  W('noteOn(64); noteOn(67); noteOn(72);');
+  check(fr.textContent.includes('Do mayor') && fr.textContent.includes('1ª inversión'), 'Mi-Sol-Do: Do mayor en 1ª inversión');
+  W('noteOff(64); noteOff(67); noteOff(72); noteOn(60); noteOn(62); noteOn(67);');
+  check(fr.textContent.includes('2ª mayor + 4ª justa'), 'si no es tríada, el intervalo entre cada par vecino');
+  W('noteOff(60); noteOff(62); noteOff(67);');
+  W("selectCategory('intervals');");
+  check(doc.getElementById('freeBox').style.display === 'none', 'fuera de Tocar libre no aparece');
+
+  section('Intervalos · Sin pista');
+  W("if(earMode) $('earModeBtn').click(); activeNotes.clear();");
+  W('var __rnd = Math.random; Math.random = () => 0.5;');
+  ev('#ivHideBtn');
+  W('Math.random = __rnd;');
+  check(W('ivMode') === 'hide' && doc.getElementById('ivHideBtn').classList.contains('active'), 'se enciende Sin pista');
+  check(W('intervalRootPC') === 6, 'la nota de partida se sortea al encenderlo');
+  W('practiceIndex = 4; startIntervalStep();');     // 3ª mayor
+  const hRoot = W('currentIntervalRoot()'), hTop = hRoot + 4;
+  check(doc.querySelectorAll('#pianoSvg .target').length === 1 && W(`getRect(${hRoot}).classList.contains('target')`),
+    'solo se marca la nota de partida');
+  check(doc.getElementById('distanceBox').style.display === 'none', 'la distancia no se muestra (diría dónde está)');
+  check(!doc.getElementById('targetSubLabel').textContent.includes(W(`noteLabel(${hTop})`)), 'el texto no nombra la segunda nota');
+  W(`noteOn(${hRoot}); noteOn(${hRoot + 5});`);
+  check(W('feedbackText.textContent').includes('4ª justa') && W('feedbackText.textContent').includes('3ª mayor'),
+    'una nota equivocada dice qué intervalo formó y cuál se busca');
+  W(`noteOff(${hRoot + 5});`);
+  const runsBefore = W('(progress.intervals[4] || {}).runs || 0');
+  W('Math.random = () => 0.1;');
+  W(`noteOn(${hTop});`);
+  check(W('feedbackText.textContent').startsWith('Correcto'), 'con las dos juntas es correcto');
+  check(W('(progress.intervals[4] || {}).runs') === runsBefore + 1, 'y cuenta en el progreso');
+  W(`noteOff(${hRoot}); noteOff(${hTop});`);
+  await new Promise(r => setTimeout(r, 1500));
+  W('Math.random = __rnd;');
+  check(W('practiceIndex') === W('nextIntervalIdx(4)'), 'pasa al siguiente intervalo de la escalera');
+  check(W('intervalRootPC') === 1, 'con otra nota de partida (se volvió a sortear)');
+
+  section('Intervalos · A tiempo');
+  ev('#ivTempoBtn');
+  check(W('ivMode') === 'tempo' && !doc.getElementById('ivHideBtn').classList.contains('active'), 'A tiempo apaga Sin pista');
+  check(doc.getElementById('ivBeatGroup').style.display !== 'none', 'aparece el selector de tiempo');
+  check(doc.querySelectorAll('#timingBox .beat-cell').length === 4 && doc.querySelectorAll('#timingBox .beat-cell.tgt').length === 1,
+    'conteo 1 2 3 4 con el tiempo pedido marcado');
+  W('metro.on = false; practiceIndex = 4; startIntervalStep();');
+  W('noteOn(60); noteOn(64);');
+  check(W('ivT.done') === 0 && W('feedbackText.textContent').includes('metrónomo'), 'sin metrónomo no cuenta y lo dice');
+  W('noteOff(60); noteOff(64);');
+
+  // El tiempo del compás: el pulso de referencia cae en refPerf y es el número refBeat+1.
+  W("metro.on = true; metro.bpm = 60; metro.refPerf = 1000; metro.refBeat = 0; ivBeat = '1';");
+  check(W('ivBeatOffset(1000)') === 0 && W('ivBeatOffset(5050)') === 50, 'en el 1: desfase al 1 más cercano');
+  check(W('ivBeatOffset(2000)') === 1000, 'tocar en el 2 cuando se pide el 1 queda un pulso fuera');
+  W("ivBeat = '2';");
+  check(W('ivBeatOffset(2000)') === 0, 'en el 2: el pulso siguiente al 1');
+  W("metro.refBeat = 3; ivBeat = '1';");
+  check(W('ivBeatOffset(2000)') === 0, 'si el pulso de referencia era el 4, el 1 es el siguiente');
+  W("metro.refBeat = 0; ivBeat = '1'; metroFlash(false, 2);");
+  check(doc.querySelector('#timingBox .beat-cell[data-b="2"]').classList.contains('now'), 'el conteo sigue al clic');
+  W('metroRender();');
+  check(doc.querySelectorAll('#timingBox .beat-cell').length === 4, 'encender/renderizar el metrónomo no borra la cinta (la caja es compartida)');
+
+  W('var __bo = ivBeatOffset; ivBeatOffset = () => 20; practiceIndex = 4; startIntervalStep();');
+  // 7 terceras mayores desde teclas distintas + 1 intervalo equivocado
+  for(let i = 0; i < 7; i++){
+    const r = 48 + i * 2;
+    W(`noteOn(${r}); noteOn(${r + 4});`);
+    if(i === 0){
+      W(`noteOn(${r + 7});`);
+      check(W('ivT.done') === 1, 'sin soltar, otra tecla no suma un toque');
+    }
+    W(`activeNotes.forEach(n => noteOff(n));`);
+  }
+  check(W('ivT.done') === 7 && W('ivT.timing').every(v => v === 20), 'vale el intervalo desde cualquier tecla');
+  const runs4 = W('(progress.intervals[4] || {}).runs || 0');
+  W('noteOn(60); noteOn(65);');
+  check(W('feedbackText.textContent').includes('8 a tiempo') || W('ivT.timing[7]') === Infinity, 'el octavo es otro intervalo: cuenta como fallo');
+  check(doc.querySelectorAll('#timingBox .timing-chip.miss').length === 1, 'y su casilla sale en rojo');
+  check(W('feedbackText.textContent').includes('7 de 8') && W('feedbackText.textContent').includes('✓'), '7 de 8 (87%) pasa el listón');
+  check(W('(progress.intervals[4] || {}).runs') === runs4 + 1, 'una vuelta aprobada cuenta en el progreso');
+  W('noteOff(60); noteOff(65);');
+  await new Promise(r => setTimeout(r, 2300));
+  check(W('practiceIndex') === W('nextIntervalIdx(4)') && W('ivT.done') === 0, 'aprobada, pasa al siguiente intervalo');
+
+  W('ivBeatOffset = () => 200; practiceIndex = 0; startIntervalStep();');   // unísono
+  for(let i = 0; i < 8; i++){ W(`noteOn(${60 + i}); noteOff(${60 + i});`); }
+  check(W('ivT.done') === 8, 'unísono: una sola tecla es el intervalo');
+  check(W('feedbackText.textContent').includes('otra vuelta'), 'todo fuera de tiempo: otra vuelta');
+  await new Promise(r => setTimeout(r, 2300));
+  check(W('practiceIndex') === 0, 'reprobada, repite el mismo intervalo');
+
+  ev('#earModeBtn');
+  check(W('earMode') === true && W('ivMode') === 'show' && !doc.getElementById('ivTempoBtn').classList.contains('active'),
+    'De oído apaga A tiempo: los modos son excluyentes');
+  check(doc.getElementById('ivBeatGroup').style.display === 'none' && doc.getElementById('timingBox').style.display === 'none',
+    'y esconde el conteo');
+  ev('#earModeBtn');
+  W("ivBeatOffset = __bo; metro.on = false; metro.refPerf = null; ivMode = 'show'; ivBeat = '1'; applyIvModeButtons();" +
+    " try { localStorage.removeItem('ivMode'); localStorage.removeItem('ivBeat'); } catch(e){}");
+
   console.log(`\n${passes} pruebas OK, ${failures} fallos`);
   if(errors.length) console.log('Errores de consola:', errors);
   process.exit(failures || errors.length ? 1 : 0);

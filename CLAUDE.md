@@ -46,7 +46,8 @@ Reorganización de la interfaz:
   (octava, inversiones, notas exactas), `#intervalOpts` (nota de partida,
   octava, al azar), `#agilOpts` (octava de cada mano). `enterMode` muestra la
   caja, no la barra de adentro. En Acordes, Mano y Repeticiones subieron a la
-  barra de "Qué acordes"; en Intervalos, "De oído" va junto a "Ir directo a".
+  barra de "Qué acordes"; en Intervalos, "De oído" va en la barra "Cómo
+  practicar" (`#intervalModeBar`) junto a Sin pista y A tiempo.
 - Barra del teclado: Tamaño, Sonido, C = Do ?, Dedos ? a la vista; nombres de
   nota, Do Re Mi y Sonido alternativo dentro de `#kbMore` (⚙ Opciones).
 - **Bug arreglado**: el scroll horizontal era de `#keyboardWrap` entero, así
@@ -276,6 +277,66 @@ y dentro de "Más ▾": `free | functions`.
   (así se entrena el oído de verdad: se sabe entre qué elegir); decir
   `practiceIndex` sí lo sería y se sigue tapando. Con más de 6 candidatos el
   rótulo pasa a "entre todos los que llevas" en vez de listarlos.
+- **Intervalos: tres maneras de practicar además de "con marcas"** (pedido de
+  la clase de septiembre: "identificarlos y tocarlos por todo el piano" y mucho
+  énfasis en el metrónomo). `ivMode` = `show | hide | tempo`, persistido en
+  `ivMode`; **De oído sigue siendo `earMode`** y los cuatro son excluyentes
+  (`setIvMode` apaga oído; el botón de oído pone `ivMode='show'`). `ivMode` se
+  declara arriba junto a `chordReps` porque lo lee `enterMode`.
+  - **Sin pista (`hide`)**: marca SOLO la nota de partida, sin distancia ni
+    consejo (dirían dónde cae), y `randomizeIvRoot()` la sortea en cada
+    intervalo nuevo (octavas 2-5). El modo "con marcas" marca las dos teclas:
+    sirve para el primer contacto, pero entrena a copiar, no a encontrar. Una
+    nota equivocada dice **qué intervalo sí formó** (`intervalName`) — enseña
+    más que un "no".
+  - **A tiempo (`tempo`)**: el ejercicio de la clase. El profe cuenta 1 2 3 4 y
+    se toca en UN número (primero el 1, luego el 2…) o en todos (`ivBeat`
+    `1|2|3|4|all`, persistido), cambiando de notas si se quiere. Por eso **vale
+    el intervalo desde CUALQUIER tecla** (se mide la distancia `held[1]-held[0]`
+    y el momento), no la posición marcada, que es solo un ejemplo. 8 toques por
+    vuelta (`IV_TEMPO_REPS`), hay que soltar entre toque y toque (`ivT.await`,
+    `ivReleased` en el registro de note-off, igual que las repeticiones de
+    acordes), y un intervalo equivocado cuenta como fallo (`Infinity` en
+    `ivT.timing`, sale en rojo). Mismo listón de siempre: ≥80% a 90 ms.
+    Aprobada suma `recordInterval` y pasa al siguiente de la escalera;
+    reprobada repite. Sin metrónomo no cuenta nada (encenderlo pasa por
+    `setIvMode`, que lo arranca solo).
+  - **`ivBeatOffset(t)`** necesita saber en qué NÚMERO del compás cae cada
+    clic: el metrónomo ahora guarda `metro.refBeat` (0 = el "1") junto a
+    `refPerf`, y `metroFlash(accent, beatIdx)` enciende la casilla del conteo
+    (`.beat-cell`, dibujado en `#timingBox`). Tocar en el tiempo vecino da ±1
+    pulso de desfase y cae como "fuera", que es lo que es. Hay pruebas con
+    `refBeat` distinto de 0.
+  - **`#timingBox` es compartido** por escalas, acordes e intervalos:
+    `renderChordRepBox` y `renderTimingBox` ahora solo tocan la caja en SU
+    modo. Antes `metroRender()` llamaba a `renderChordRepBox`, que la vaciaba
+    fuera de Acordes — con la cinta de intervalos eso borraba el conteo al
+    encender el metrónomo. Hay prueba.
+- **Tocar libre nombra lo que se pisa** (`#freeBox`, `describeHeld`,
+  registrado como handler de note-on y note-off del modo `free`): dos teclas →
+  intervalo; tres que formen tríada mayor/menor → acorde y posición; si no, el
+  intervalo entre cada par vecino. Al soltar queda la última lectura apagada
+  (`.stale`): se lee después de tocar. Letra grande a propósito (se lee desde
+  el piano). `intervalName` dice "3ª mayor + una octava" en vez de "10ª mayor":
+  para quien aprende los 13, el compuesto se entiende mejor así.
+- **Material de clase de septiembre, revisado contra la app (no choca):**
+  pianoencasa.com "Escalas musicales" (las 6 principales Do, Sol, Re, La, Fa,
+  Sib, armaduras, menor natural/armónica/melódica, cromática; sin digitación)
+  y su guía de 5 melodías con acordes (Sol, Mi menor, Re, La, Fa, Sib). Mismas
+  seis escalas que `MAJOR_ORDER` abre primero, en otro orden. Tres cosas a
+  saber: (1) la hoja escribe la izquierda en **clave de Sol con un 8 abajo**
+  (suena una octava más grave), que la Lectura de la app no entrena; (2) usa
+  **armadura**, que la Lectura tampoco muestra; (3) la app nombra el acorde
+  de Si♭ como `A#` (y Mi♭ como `D#`) — **Jorge decidió dejarlo así**, no
+  "corregirlo". La menor melódica no está en la app (solo natural/armónica).
+- **Pendiente "para más adelante" (Jorge): "Arpèges à Agathe"** (Christian
+  Daguet, free-scores, nivel "2º-3er año"), Mi menor, 4/4, 16 compases. Derecha:
+  corchea de silencio + siete corcheas que desgranan el acorde de cada compás
+  bajando y subiendo (dedos 4-2-1 / 5-3-1 impresos); izquierda: UNA redonda por
+  compás. Acordes leídos: Mim · Mim-Lam · Re · Re-Sol · Do · Do-Lam · Si ·
+  Si-Mim · Mi(7) · Mi-Lam · Re7 · Re-Sol · Do · Do-Lam · Si7 · Mim. Es acordes
+  en arpegio, o sea el paso siguiente de Acordes. Jorge mandó la imagen y el
+  mp3; **no se transcribió todavía** porque la pidió para más adelante.
 - **Lectura**: `READING_LEVELS` (7 niveles, clave de Sol / Fa / ambas / alteraciones).
   `renderStaff(svg, [{sp, cls, clef}], {clef, width, gap, showName})`; `sp` viene de
   `spellMidi(midi, preferFlat)` o `spellFromName('B#', 60)` (respeta octava de la letra).
@@ -1490,6 +1551,8 @@ forma de onda (decaimiento, pico, registro) en vez de confiar en el oído.
   específico de un componente.
 
 ## Ideas pendientes (no pedidas aún)
+- **Armaduras en Lectura** y leer la izquierda en clave de Sol con 8 (las dos
+  aparecen en la hoja de escalas de la academia).
 - Progresiones de acordes con metrónomo (I–V–vi–IV a tempo).
 - Lectura de dos notas simultáneas / intervalos escritos.
 - Grabar y reproducir lo que tocó (MIDI in → buffer) para autoescucha.

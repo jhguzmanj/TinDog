@@ -520,6 +520,27 @@
   .timing-chip.miss{ background:var(--wrong); }
   .timing-summary{ margin-left:10px; color:var(--text); }
   .timing-summary b{ color:var(--brass); }
+  /* Conteo 1-2-3-4 de Intervalos "A tiempo": el profe cuenta en voz alta y
+     hay que ver EN QUÉ número va el clic, no solo que hay clic. */
+  .beat-count{ display:flex; gap:6px; margin-right:12px; }
+  .beat-cell{
+    width:40px; height:40px; border-radius:8px; display:flex; align-items:center; justify-content:center;
+    font-size:20px; font-weight:600; color:var(--text-dim); border:1px solid var(--panel-border); background:#1a1814;
+    transition:background 0.08s ease;
+  }
+  .beat-cell.tgt{ color:var(--ivory); border-color:var(--brass); }
+  .beat-cell.now{ background:#3a3120; }
+  .beat-cell.tgt.now{ background:var(--brass); color:#111; }
+
+  /* ===== Tocar libre: qué intervalo / acorde estás pisando ===== */
+  .free-box{
+    margin-top:14px; padding:14px 18px; border:1px solid var(--panel-border); border-radius:12px;
+    background:var(--panel);
+  }
+  .free-read{ font-size:clamp(24px,3.4vw,36px); font-weight:600; color:var(--ivory); line-height:1.25; }
+  .free-read.stale{ color:var(--text-dim); }
+  .free-read .fr-name{ color:var(--brass); }
+  .free-hint{ margin-top:6px; font-size:16px; color:var(--text-dim); }
 
   /* ===== Oído ===== */
   .ear-bar{
@@ -1110,7 +1131,20 @@
     <div id="intervalPickBar" class="pick-bar" style="display:none;">
       <span class="reg-label">Ir directo a:</span>
       <div class="reg-picker" id="intervalPicker"></div>
+    </div>
+    <div id="intervalModeBar" class="reg-bar" style="display:none;">
+      <span class="reg-label">Cómo practicar:</span>
+      <button id="ivHideBtn" class="ghost-btn" title="Solo se marca la nota de partida, que cambia de lugar en cada intervalo. La segunda la encuentras tú.">🙈 Sin pista</button>
+      <button id="ivTempoBtn" class="ghost-btn" title="Con metrónomo: tocas el intervalo en el tiempo elegido, desde la nota que quieras.">⏱ A tiempo</button>
       <button id="earModeBtn" class="ghost-btn" title="La app toca el intervalo y tú lo tienes que encontrar en el piano.">👂 De oído</button>
+      <span class="reg-group" id="ivBeatGroup" style="display:none;"><span class="reg-label g-rep">Tocar en el tiempo</span>
+      <div class="reg-picker g-rep" id="ivBeatPicker">
+        <button class="reg-btn active" data-ivbeat="1">1</button>
+        <button class="reg-btn" data-ivbeat="2">2</button>
+        <button class="reg-btn" data-ivbeat="3">3</button>
+        <button class="reg-btn" data-ivbeat="4">4</button>
+        <button class="reg-btn" data-ivbeat="all">Todos</button>
+      </div></span>
     </div>
     <details class="opt-box" id="intervalOpts" style="display:none;">
     <summary>⚙ Más opciones: nota de partida y octava</summary>
@@ -1255,6 +1289,10 @@
       <div id="funcDetail" class="func-detail"></div>
     </div>
 
+    <div id="freeBox" class="free-box" style="display:none;">
+      <div class="free-read" id="freeRead">Pisa dos teclas a la vez</div>
+      <div class="free-hint">Te digo qué intervalo es. Con tres teclas, si forman un acorde, su nombre.</div>
+    </div>
     <div class="now-playing" id="nowPlaying"></div>
   </div>
 
@@ -3711,6 +3749,16 @@ let showFingers = true, scaleTempoMode = false, scaleBlockMode = false;
 // Va aquí arriba, y no junto al resto del estado de acordes, porque lo lee
 // `enterMode` para decidir si se ve la cinta de toques — y `enterMode` está
 // declarado antes (mismo riesgo de zona muerta temporal que tuvo playbackToken).
+// Cómo se practican los intervalos: 'show' (las dos teclas marcadas), 'hide'
+// (solo la de partida, que cambia de lugar) o 'tempo' (con metrónomo, en un
+// tiempo del compás). "De oído" sigue siendo `earMode`, aparte. Arriba por lo
+// mismo que `chordReps`: lo lee `enterMode`.
+let ivMode = 'show';
+let ivBeat = '1';
+try {
+  const m = localStorage.getItem('ivMode'); if(['show','hide','tempo'].includes(m)) ivMode = m;
+  const b = localStorage.getItem('ivBeat'); if(['1','2','3','4','all'].includes(b)) ivBeat = b;
+} catch(e){}
 let chordReps = 1;
 try {
   const r = parseInt(localStorage.getItem('chordReps'), 10);
@@ -3800,11 +3848,13 @@ function enterMode(mode){
   show($('intervalOpts'), mode === 'intervals');
   show($('chordPickBar'), mode === 'chords', 'flex');
   show($('intervalPickBar'), mode === 'intervals', 'flex');
+  show($('intervalModeBar'), mode === 'intervals', 'flex');
+  show($('freeBox'), mode === 'free');
   show(distanceBox, mode === 'intervals');
   show($('earBar'), mode === 'intervals' && earMode, 'flex');
   show(scaleTip, isScale);
   show(scaleOptBar, isScale, 'flex');
-  show($('timingBox'), (isScale && scaleTempoMode) || (mode === 'chords' && chordReps > 1), 'flex');
+  show($('timingBox'), (isScale && scaleTempoMode) || (mode === 'chords' && chordReps > 1) || (mode === 'intervals' && ivMode === 'tempo' && !earMode), 'flex');
   show($('miniStaves'), isScale, 'flex');
   show(functionsPanel, mode === 'functions');
   show(fragmentsPanel, mode === 'fragments' || mode === 'agility');
@@ -4142,7 +4192,7 @@ function timingPct(arr){
 }
 function renderTimingBox(){
   const box = $('timingBox');
-  if(!box || !scaleRun) return;
+  if(!box || !scaleRun || !SCALES[currentMode]) return;
   if(!scaleTempoMode){ box.innerHTML = ''; return; }
   const chips = scaleRun.steps.map((s, i) => '<span class="timing-chip ' + timingClass(scaleRun.timing[i]) + '" title="' +
     (typeof scaleRun.timing[i] === 'number' ? (scaleRun.timing[i] > 0 ? '+' : '') + Math.round(scaleRun.timing[i]) + ' ms' : 'pendiente') + '"></span>').join('');
@@ -4228,7 +4278,8 @@ function chordVerdict(chord, pct, passed){
 function renderChordRepBox(){
   const box = $('timingBox');
   if(!box) return;
-  if(currentMode !== 'chords' || chordReps <= 1){ box.innerHTML = ''; return; }
+  if(currentMode !== 'chords') return;   // la caja es compartida: no borrar la de otro modo
+  if(chordReps <= 1){ box.innerHTML = ''; return; }
   let chips = '';
   for(let i = 0; i < chordReps; i++){
     const off = chordRepTiming[i];
@@ -5073,6 +5124,9 @@ function startIntervalStep(){
   progressText.textContent = earMode ? 'De oído' : `Intervalo ${intervalOrderPos(practiceIndex)} / ${INTERVALS.length}`;
   const rootRect = getRect(root);
   const topRect = getRect(top);
+  if(ivStepTimer){ clearTimeout(ivStepTimer); ivStepTimer = null; }
+  ivT = { done:0, timing:[], await:false };
+  show($('timingBox'), ivMode === 'tempo' && !earMode, 'flex');
   if(earMode){
     // De oído: solo se marca la nota de partida; la segunda hay que encontrarla.
     targetNoteLabel.textContent = '👂 ¿Cuál es la segunda nota?';
@@ -5091,6 +5145,29 @@ function startIntervalStep(){
     return;
   }
   targetNoteLabel.textContent = iv.name;
+  if(ivMode === 'hide'){
+    // Sin pista: solo la nota de partida. La segunda es el ejercicio, así que
+    // tampoco se muestran la distancia ni el consejo (dicen dónde cae).
+    targetSubLabel.textContent = 'Desde ' + noteLabel(root) + ' — busca la segunda nota, hacia arriba';
+    if(rootRect) rootRect.classList.add('target');
+    distanceBox.style.display = 'none';
+    intervalTip.innerHTML = '';
+    intervalTip.style.display = 'none';
+    scrollToTargets();
+    return;
+  }
+  if(ivMode === 'tempo'){
+    targetSubLabel.textContent = ivBeatText() + ' · desde la nota que quieras (por ejemplo ' + noteLabel(root) + ' + ' + noteLabel(top) + ')';
+    ivMarkExample();
+    renderDistanceBox(iv, root, top);
+    distanceBox.style.display = 'block';
+    intervalTip.innerHTML = '<b>Cuenta 1 2 3 4 con el clic</b> y toca solo en ' + (ivBeat === 'all' ? 'cada número' : 'el ' + ivBeat) +
+      '. Puedes cambiar de notas cuando quieras: vale el intervalo desde cualquier tecla. Suelta entre toque y toque.';
+    intervalTip.style.display = 'block';
+    renderIvTempoBox();
+    scrollToTargets();
+    return;
+  }
   targetSubLabel.textContent = noteLabel(root) + '  →  ' + noteLabel(top) + ' — toca ambas juntas';
   if(rootRect) rootRect.classList.add('target');
   if(topRect) topRect.classList.add('target');
@@ -5183,23 +5260,43 @@ function checkInterval(playedNote){
     }
     return;
   }
+  if(ivMode === 'tempo'){ checkIvTempo(iv); return; }
+  const hide = ivMode === 'hide';
   const allPresent = activeNotes.has(root) && activeNotes.has(top);
   if(allPresent){
-    feedbackText.textContent = 'Correcto';
+    feedbackText.textContent = hide ? 'Correcto: ' + noteLabel(root) + ' → ' + noteLabel(top) : 'Correcto';
     feedbackText.className = 'feedback correct';
     document.querySelectorAll('.target').forEach(r => { r.classList.remove('target'); r.classList.add('correct'); });
+    { const tr = getRect(top); if(tr){ tr.classList.add('correct'); } }
+    if(hide){ renderDistanceBox(iv, root, top); distanceBox.style.display = 'block'; }
     intervalDoneSet.add(practiceIndex);
     if(typeof recordInterval === 'function') recordInterval(practiceIndex);
     const wrapped = intervalOrderPos(practiceIndex) === INTERVAL_ORDER.length;
     practiceIndex = nextIntervalIdx(practiceIndex);
+    // sin pista la nota de partida cambia de lugar en cada intervalo: es lo que
+    // pidió el profe, "tocarlos por todo el piano"
+    const next = () => { if(hide) randomizeIvRoot(); startIntervalStep(); };
+    if(ivStepTimer) clearTimeout(ivStepTimer);
     if(wrapped){
-      setTimeout(() => {
+      ivStepTimer = setTimeout(() => {
         feedbackText.textContent = 'Repasaste los 13 intervalos — reiniciando';
-        setTimeout(startIntervalStep, 1000);
+        ivStepTimer = setTimeout(next, 1000);
       }, 400);
     } else {
-      setTimeout(startIntervalStep, 500);
+      ivStepTimer = setTimeout(next, hide ? 1400 : 500);
     }
+  } else if(hide && playedNote !== root){
+    // Decir qué distancia SÍ tocó enseña más que un "no": relaciona el
+    // nombre con lo que acaba de oír.
+    feedbackText.textContent = playedNote === top
+      ? 'Esa es. Ahora las dos juntas: ' + noteLabel(root) + ' + ' + noteLabel(top)
+      : playedNote < root
+      ? 'Hacia arriba: el intervalo sube desde ' + noteLabel(root)
+      : 'Esa es ' + noteLabel(playedNote) + ': con ' + noteLabel(root) + ' forma ' + withArticle(intervalName(root, playedNote)) +
+        '. Buscas ' + withArticle(iv.name.toLowerCase()) + '.';
+    feedbackText.className = 'feedback' + (playedNote === top ? '' : ' wrong');
+    const wr = playedNote === top ? null : getRect(playedNote);
+    if(wr){ wr.classList.add('wrong'); setTimeout(() => wr.classList.remove('wrong'), 350); }
   } else if(activeNotes.has(playedNote) && playedNote !== root && playedNote !== top){
     const pcOk = (playedNote % 12) === (top % 12) || (playedNote % 12) === (root % 12);
     feedbackText.textContent = pcOk ? 'Es la letra correcta pero en otra octava — la distancia no es esa' : '';
@@ -5207,6 +5304,195 @@ function checkInterval(playedNote){
   }
 }
 registerNoteHandler('intervals', checkInterval);
+
+// ---- Nombre de un intervalo cualquiera (Sin pista y Tocar libre) ----
+// Por semitonos, con las octavas de más aparte: "3ª mayor + una octava" se
+// entiende mejor que "10ª mayor" para quien recién aprende los 13.
+function intervalName(a, b){
+  const semis = Math.abs(b - a), base = semis % 12, oct = Math.floor(semis / 12);
+  if(semis === 0) return 'unísono';
+  if(semis === 12) return '8ª (octava)';
+  if(base === 0) return oct + ' octavas';
+  const nm = INTERVALS[base].name;
+  return oct ? nm + ' + ' + (oct === 1 ? 'una octava' : oct + ' octavas') : nm;
+}
+function withArticle(txt){
+  if(/^\d+ octavas/.test(txt)) return txt;
+  return (txt === 'unísono' ? 'un ' : 'una ') + txt;
+}
+
+// ---- Sin pista: la nota de partida salta por el piano ----
+function randomizeIvRoot(){
+  intervalRootPC = Math.floor(Math.random() * 12);
+  const opts = [2, 3, 4, 5].filter(o => intervalOctaveValid(o));
+  if(opts.length) intervalOctave = opts[Math.floor(Math.random() * opts.length)];
+  if(typeof buildRootPicker === 'function') buildRootPicker();
+  if(typeof refreshIntervalOctaves === 'function') refreshIntervalOctaves();
+}
+
+// ---- A tiempo: el ejercicio de la clase ----
+// El profe cuenta 1 2 3 4 y se toca el intervalo en UNO de esos números (primero
+// en el 1, después en el 2…), o en todos; en cada vuelta se puede cambiar de
+// notas. Por eso aquí vale el intervalo desde CUALQUIER tecla: lo que se mide es
+// la distancia y el momento, no una posición fija. Mismo listón que escalas y
+// acordes: ≥80% de los toques a 90 ms del tiempo pedido.
+const IV_TEMPO_REPS = 8;
+let ivT = { done:0, timing:[], await:false };
+let ivStepTimer = null;
+function ivBeatText(){ return ivBeat === 'all' ? 'En cada tiempo' : 'En el tiempo ' + ivBeat; }
+// Desfase (ms) al tiempo pedido más cercano. Con un tiempo concreto, tocar en
+// el vecino da ±1 pulso de desfase: cae como "fuera", que es lo que es.
+function ivBeatOffset(t){
+  if(!metro.on || metro.refPerf === null) return null;
+  if(ivBeat === 'all') return metroOffsetMs(t);
+  const period = 60000 / metro.bpm, m = metro.meter;
+  const d = (((parseInt(ivBeat, 10) - 1 - metro.refBeat) % m) + m) % m;
+  const x = (t - metro.refPerf) / period;
+  const k = Math.round((x - d) / m) * m + d;
+  return t - (metro.refPerf + k * period);
+}
+function ivMarkExample(){
+  clearAllHighlights();
+  const iv = INTERVALS[practiceIndex];
+  const root = currentIntervalRoot(), top = Math.min(root + iv.semitones, MAX_NOTE);
+  [root, top].forEach(n => { const r = getRect(n); if(r) r.classList.add('target'); });
+}
+function renderIvTempoBox(){
+  const box = $('timingBox');
+  if(!box || currentMode !== 'intervals' || ivMode !== 'tempo' || earMode) return;
+  let cells = '';
+  for(let b = 0; b < 4; b++){
+    const tgt = ivBeat === 'all' || parseInt(ivBeat, 10) - 1 === b;
+    cells += '<span class="beat-cell' + (tgt ? ' tgt' : '') + '" data-b="' + b + '">' + (b + 1) + '</span>';
+  }
+  let chips = '';
+  for(let i = 0; i < IV_TEMPO_REPS; i++){
+    const off = ivT.timing[i];
+    const cls = i >= ivT.done ? '' : timingClass(off);
+    const title = i >= ivT.done ? 'pendiente'
+      : off === Infinity ? 'otro intervalo' : (off > 0 ? '+' : '') + Math.round(off) + ' ms';
+    chips += '<span class="timing-chip ' + cls + '" title="' + title + '"></span>';
+  }
+  const pct = timingPct(ivT.timing);
+  const summary = metro.on
+    ? (pct === null ? 'Toca ' + (ivBeat === 'all' ? 'en cada clic' : 'en el ' + ivBeat) + ', a ' + metro.bpm + ' BPM.' : '<b>' + pct + '%</b> a tiempo')
+    : 'Enciende el metrónomo (arriba): este modo mide el tiempo.';
+  box.innerHTML = '<span class="beat-count" aria-label="Tiempos del compás">' + cells + '</span>' + chips +
+    '<span class="timing-summary">' + summary + '</span>';
+}
+function checkIvTempo(iv){
+  if(ivT.await || ivT.done >= IV_TEMPO_REPS) return;
+  if(!metro.on){
+    feedbackText.textContent = 'Enciende el metrónomo (arriba): este modo mide el tiempo.';
+    feedbackText.className = 'feedback wrong';
+    return;
+  }
+  const held = [...activeNotes].sort((a, b) => a - b);
+  const need = iv.semitones === 0 ? 1 : 2;
+  if(held.length < need) return;          // falta la segunda tecla
+  const off = ivBeatOffset(performance.now());
+  const rightShape = held.length === need && (need === 1 || held[1] - held[0] === iv.semitones);
+  ivT.timing[ivT.done] = rightShape ? off : Infinity;
+  ivT.done++;
+  ivT.await = true;                       // hay que soltar antes del siguiente toque
+  held.forEach(n => { const r = getRect(n); if(r){ r.classList.remove('target'); r.classList.add(rightShape ? 'correct' : 'wrong'); } });
+  if(!rightShape){
+    feedbackText.textContent = held.length > 2 ? 'Son ' + held.length + ' teclas: el intervalo son dos.'
+      : 'Eso fue ' + withArticle(intervalName(held[0], held[held.length - 1])) + ', no ' + withArticle(iv.name.toLowerCase()) + '.';
+    feedbackText.className = 'feedback wrong';
+  } else {
+    const c = timingClass(off);
+    feedbackText.textContent = c === 'ok' ? '¡A tiempo!' : c === 'early' ? 'Un poco antes' : c === 'late' ? 'Un poco tarde'
+      : (ivBeat === 'all' ? 'Fuera del clic' : 'Fuera del tiempo ' + ivBeat);
+    feedbackText.className = 'feedback ' + (c === 'ok' ? 'correct' : 'wrong');
+  }
+  renderIvTempoBox();
+  if(ivT.done < IV_TEMPO_REPS) return;
+  const pct = timingPct(ivT.timing);
+  const passed = pct !== null && pct >= SCALE_TIMING_OK;
+  const aTiempo = ivT.timing.filter(v => typeof v === 'number' && Math.abs(v) <= TIMING_OK).length;
+  if(passed){
+    intervalDoneSet.add(practiceIndex);
+    if(typeof recordInterval === 'function') recordInterval(practiceIndex);
+  }
+  feedbackText.textContent = iv.name + ', ' + ivBeatText().toLowerCase() + ': ' + aTiempo + ' de ' + IV_TEMPO_REPS +
+    ' a tiempo (' + pct + '%)' + (passed ? ' ✓ — sigue el próximo' : ' — otra vuelta');
+  feedbackText.className = 'feedback ' + (passed ? 'correct' : 'wrong');
+  if(passed) practiceIndex = nextIntervalIdx(practiceIndex);
+  if(ivStepTimer) clearTimeout(ivStepTimer);
+  ivStepTimer = setTimeout(() => { ivStepTimer = null; startIntervalStep(); }, 2200);
+}
+// Al soltar entre toque y toque vuelve a marcarse el ejemplo: el verde dice
+// "ese contó", el contorno "ahora otra vez".
+function ivReleased(){
+  if(currentMode !== 'intervals' || ivMode !== 'tempo' || earMode || !ivT.await) return;
+  if(activeNotes.size > 0) return;
+  ivT.await = false;
+  if(ivT.done < IV_TEMPO_REPS) ivMarkExample();
+}
+registerNoteOffHandler('intervals', ivReleased);
+
+// ---- Tocar libre: qué estás pisando ----
+// Para el ejercicio de la clase de explorar intervalos y combinarlos: dos
+// teclas dicen su intervalo, tres que formen tríada dicen el acorde (y en qué
+// posición), y si no, el intervalo entre cada par vecino. Al soltar se queda la
+// última lectura, apagada: se lee después de tocar, no durante.
+const FREE_INV = ['fundamental', '1ª inversión', '2ª inversión'];
+function describeHeld(notes){
+  const cap = t => t.charAt(0).toUpperCase() + t.slice(1);
+  const names = notes.map(noteLabel).join(' · ');
+  if(notes.length === 2){
+    return noteLabel(notes[0]) + ' → ' + noteLabel(notes[1]) + ': <span class="fr-name">' + cap(intervalName(notes[0], notes[1])) + '</span>';
+  }
+  const pcs = [...new Set(notes.map(n => n % 12))];
+  const chord = pcs.length === 3 ? CHORDS.find(c => chordTones(c).every(pc => pcs.includes(pc))) : null;
+  if(chord){
+    const inv = chordTones(chord).indexOf(notes[0] % 12);
+    return names + ': <span class="fr-name">' + chord.full + ' (' + chord.name + ')</span>, ' + FREE_INV[inv];
+  }
+  return names + ': <span class="fr-name">' + notes.slice(1).map((n, i) => intervalName(notes[i], n)).join(' + ') + '</span>';
+}
+function updateFreeBox(){
+  const el = $('freeRead');
+  if(!el || currentMode !== 'free') return;
+  const held = [...activeNotes].sort((a, b) => a - b);
+  if(held.length >= 2){
+    el.innerHTML = describeHeld(held);
+    el.classList.remove('stale');
+  } else {
+    el.classList.add('stale');
+  }
+}
+registerNoteHandler('free', updateFreeBox);
+registerNoteOffHandler('free', updateFreeBox);
+
+function applyIvModeButtons(){
+  $('ivHideBtn').classList.toggle('active', ivMode === 'hide' && !earMode);
+  $('ivTempoBtn').classList.toggle('active', ivMode === 'tempo' && !earMode);
+  show($('ivBeatGroup'), ivMode === 'tempo' && !earMode, 'inline-flex');
+}
+function setIvMode(m){
+  ivMode = m;
+  try { localStorage.setItem('ivMode', ivMode); } catch(e){}
+  if(m !== 'show' && earMode){
+    earMode = false;
+    $('earModeBtn').classList.remove('active');
+    show($('earBar'), false);
+  }
+  applyIvModeButtons();
+  if(m === 'hide') randomizeIvRoot();
+  // si hay que ir a buscar el metrónomo arriba, no se usa
+  if(m === 'tempo' && !metro.on) metroStart();
+  if(currentMode === 'intervals') startIntervalStep();
+}
+$('ivHideBtn').addEventListener('click', () => setIvMode(ivMode === 'hide' && !earMode ? 'show' : 'hide'));
+$('ivTempoBtn').addEventListener('click', () => setIvMode(ivMode === 'tempo' && !earMode ? 'show' : 'tempo'));
+bindPicker('ivBeatPicker', 'ivbeat', () => ivBeat, v => {
+  ivBeat = v;
+  try { localStorage.setItem('ivBeat', ivBeat); } catch(e){}
+  if(currentMode === 'intervals') startIntervalStep();
+});
+applyIvModeButtons();
 
 function updateEarScore(){
   const el = $('earScore');
@@ -5236,6 +5522,9 @@ $('earModeBtn').addEventListener('click', () => {
   earMode = !earMode;
   $('earModeBtn').classList.toggle('active', earMode);
   show($('earBar'), earMode, 'flex');
+  // los modos son excluyentes: de oído no se marca nada ni se mide el tiempo
+  if(earMode && ivMode !== 'show'){ ivMode = 'show'; try { localStorage.setItem('ivMode', ivMode); } catch(e){} }
+  applyIvModeButtons();
   if(earMode) practiceIndex = pickEarIndex();
   startIntervalStep();
 });
@@ -6510,7 +6799,7 @@ $('readingSkipBtn').addEventListener('click', () => { if(reading) nextReadingNot
 $('readingPlayBtn').addEventListener('click', playReadingNote);
 
 // ===== Metrónomo (Web Audio, programado por adelantado para que no tiemble) =====
-const metro = { on:false, bpm:80, meter:4, beat:0, nextTime:0, timer:null, refPerf:null };
+const metro = { on:false, bpm:80, meter:4, beat:0, nextTime:0, timer:null, refPerf:null, refBeat:0 };
 try { const b = parseInt(localStorage.getItem('metroBpm'), 10); if(!isNaN(b) && b >= 40 && b <= 208) metro.bpm = b; } catch(e){}
 const metroDot = $('metroDot'), metroBpmEl = $('metroBpm'), metroToggle = $('metroToggle');
 function metroRender(){
@@ -6521,6 +6810,7 @@ function metroRender(){
   // La cinta de repeticiones de acordes dice si hay metrónomo o no: encenderlo
   // tiene que cambiar el texto YA, o parece que el botón no hizo nada.
   if(typeof renderChordRepBox === 'function') renderChordRepBox();
+  if(typeof renderIvTempoBox === 'function') renderIvTempoBox();
 }
 function metroClick(time, accent){
   const ctx = audioCtx;
@@ -6534,19 +6824,25 @@ function metroClick(time, accent){
   osc.connect(g); g.connect(ctx.destination);
   osc.start(time); osc.stop(time + 0.08);
 }
-function metroFlash(accent){
+function metroFlash(accent, beatIdx){
   metroDot.classList.add('beat');
   metroDot.classList.toggle('accent', accent);
   setTimeout(() => metroDot.classList.remove('beat', 'accent'), 90);
+  // el conteo 1-2-3-4 de Intervalos "A tiempo" sigue al clic
+  document.querySelectorAll('.beat-cell').forEach(c => c.classList.toggle('now', parseInt(c.dataset.b, 10) === beatIdx));
 }
 function metroScheduler(){
   const ctx = audioCtx;
   while(metro.nextTime < ctx.currentTime + 0.12){
     const accent = metro.beat === 0;
+    const beatIdx = metro.beat;
     metroClick(metro.nextTime, accent);
     const perfT = performance.now() + (metro.nextTime - ctx.currentTime) * 1000;
     metro.refPerf = perfT;
-    setTimeout(() => metroFlash(accent), Math.max(0, perfT - performance.now()));
+    // en qué número del compás (0 = el "1") cae ese pulso: lo necesita
+    // Intervalos "A tiempo", que pide tocar en un tiempo concreto
+    metro.refBeat = beatIdx;
+    setTimeout(() => metroFlash(accent, beatIdx), Math.max(0, perfT - performance.now()));
     metro.nextTime += 60 / metro.bpm;
     metro.beat = (metro.beat + 1) % metro.meter;
   }
@@ -6569,6 +6865,7 @@ function metroStop(){
   metro.refPerf = null;
   metroRender();
   if(typeof renderTimingBox === 'function') renderTimingBox();
+  document.querySelectorAll('.beat-cell.now').forEach(c => c.classList.remove('now'));
 }
 // Desfase (ms) de un instante respecto al pulso más cercano: negativo = antes.
 function metroOffsetMs(tPerf){
@@ -6925,7 +7222,7 @@ function buildTodayPlan(seed){
   const ivNames = ivSt.ids.map(i => INTERVALS[i].name).join(', ');
   items.push({ key:'intervals', min:5, block:'core',
     title:'Intervalos: nivel ' + (ivIdx + 1) + ' de ' + INTERVAL_STAGES.length + ' · ' + ivSt.name,
-    sub: ivNames + '. Las dos notas juntas.',
+    sub: ivNames + '. Las dos notas juntas; después ⏱ A tiempo: en el 1, luego en el 2…',
     done: () => ivSt.ids.every(i => (progress.intervals[i] || {}).lastDay === today),
     go: () => {
       selectCategory('intervals');
