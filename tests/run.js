@@ -1956,6 +1956,34 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
   W("ivBeatOffset = __bo; metro.on = false; metro.refPerf = null; ivMode = 'show'; ivBeat = '1'; applyIvModeButtons();" +
     " try { localStorage.removeItem('ivMode'); localStorage.removeItem('ivBeat'); } catch(e){}");
 
+  section('Arpèges à Agathe (Daguet)');
+  {
+    const ag = W("SONGS.find(s => s.id === 'arpeges-agathe')");
+    check(!!ag && ag.cat === 'clasica', 'está en Clásicas');
+    const beats = ag.steps.reduce((a, s) => a + s.dur, 0);
+    check(beats === 62, `15 compases de 4 + el final de 2 tiempos (${beats})`);
+    // cada compás: el bajo solo en el 1 (la derecha empieza tras un silencio de corchea) + 7 corcheas
+    const bars = [];
+    for(let i = 0; i < 15 * 8; i += 8) bars.push(ag.steps.slice(i, i + 8));
+    check(bars.every(b => b[0].lh.length === 1 && b[0].rh.length === 0 && b.slice(1).every(s => s.lh.length === 0 && s.rh.length === 1)),
+      'cada compás: nota larga de la izquierda y siete corcheas de la derecha');
+    // las corcheas de cada mitad de compás forman una tríada (es un ejercicio de acordes en arpegio)
+    const triad = (ns) => { const pcs = [...new Set(ns.map(n => n % 12))].sort((a, b) => a - b);
+      return pcs.length === 3 && [0, 1, 2].some(r => { const root = pcs[r], iv = pcs.map(p => (p - root + 12) % 12).sort((a, b) => a - b);
+        return (iv[1] === 3 || iv[1] === 4) && (iv[2] === 6 || iv[2] === 7); }); };
+    check(bars.slice(0, 14).every(b => triad(b.slice(1, 4).map(s => s.rh[0])) && triad(b.slice(4, 8).map(s => s.rh[0]))),
+      'cada mitad de compás (1-14) es una tríada en arpegio');
+    const bajos = bars.map(b => b[0].lh[0]).concat(ag.steps[ag.steps.length - 1].lh);
+    check(JSON.stringify(bajos) === JSON.stringify([52,52,50,50,48,48,47,40,52,45,50,43,48,42,47,40]),
+      'bajos Mi Mi Re Re Do Do Si Mi Mi La Re Sol Do Fa# Si Mi (cuadran con el mp3)');
+    // dedos de la partitura: 4-2-1 al bajar el acorde
+    check(bars.slice(0, 14).every(b => b.slice(1, 4).map(s => s.rhF[0]).join('') === '421'), 'la derecha baja cada acorde con 4-2-1');
+    check(ag.steps.every(s => (s.rhF || []).length === s.rh.length && (s.lhF || []).length === s.lh.length), 'toda nota lleva dedo');
+    check(!W("buildTodayPlan(1)").some(it => it.key === 'song' && it.title.includes('Agathe')) &&
+          !W("buildTodayPlan(7)").some(it => it.key === 'song' && it.title.includes('Agathe')),
+      'el plan de Hoy no la propone todavía (es "para más adelante")');
+  }
+
   console.log(`\n${passes} pruebas OK, ${failures} fallos`);
   if(errors.length) console.log('Errores de consola:', errors);
   process.exit(failures || errors.length ? 1 : 0);

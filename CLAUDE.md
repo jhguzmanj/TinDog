@@ -329,14 +329,36 @@ y dentro de "Más ▾": `free | functions`.
   **armadura**, que la Lectura tampoco muestra; (3) la app nombra el acorde
   de Si♭ como `A#` (y Mi♭ como `D#`) — **Jorge decidió dejarlo así**, no
   "corregirlo". La menor melódica no está en la app (solo natural/armónica).
-- **Pendiente "para más adelante" (Jorge): "Arpèges à Agathe"** (Christian
-  Daguet, free-scores, nivel "2º-3er año"), Mi menor, 4/4, 16 compases. Derecha:
-  corchea de silencio + siete corcheas que desgranan el acorde de cada compás
-  bajando y subiendo (dedos 4-2-1 / 5-3-1 impresos); izquierda: UNA redonda por
-  compás. Acordes leídos: Mim · Mim-Lam · Re · Re-Sol · Do · Do-Lam · Si ·
-  Si-Mim · Mi(7) · Mi-Lam · Re7 · Re-Sol · Do · Do-Lam · Si7 · Mim. Es acordes
-  en arpegio, o sea el paso siguiente de Acordes. Jorge mandó la imagen y el
-  mp3; **no se transcribió todavía** porque la pidió para más adelante.
+- **"Arpèges à Agathe" (Christian Daguet, free-scores, nivel "2º-3er año")**,
+  `arpeges-agathe`, en Clásicas. Jorge la pidió "para más adelante" y después
+  "agrégala de una vez", así que está en Piezas pero **con `plan:false`**: el
+  plan de Hoy no la propone (filtro en `buildTodayPlan`; hay prueba). Si en un
+  futuro se quiere en la rotación, quitar la bandera.
+  - Mi menor, 4/4, 16 compases. Cada compás: silencio de corchea en la derecha
+    y siete corcheas que desgranan el acorde bajando y subiendo; la izquierda
+    UNA redonda. En `SONGS` va como un paso de izquierda sola (`rh:[]`, 0.5) +
+    7 pasos de derecha: el silencio inicial queda exacto, sin absorberlo. El
+    compás 16 es blanca + silencio de blanca: se dejó en `dur:2` (62 tiempos),
+    es el final y no descuadra nada.
+  - Acordes (van en el `label` de cada compás, porque la pieza ES un ejercicio
+    de acordes): Mim · Mim→Lam · Re · Re→Sol · Do · Do→Lam · Si · Si→Mim · Mi7
+    · Mi→Lam · Re7 · Re→Sol · Do · Do→Lam (sobre Fa#, o sea Fa#ø: ii–V–i al
+    final) · Si7 · Mim.
+  - **Verificada contra el mp3 que mandó Jorge** (se decodificó con
+    `OfflineAudioContext` en Chromium, porque no hay ffmpeg ni librosa): con los
+    onsets detectados y la nota más fuerte que aparece en cada uno, **102 de 105
+    corcheas de la derecha y los 15 bajos** coinciden. Las 3 que no son bordes
+    de compás donde el detector toma la nota vecina. Ojo: una rejilla de tempo
+    fijo se desfasa desde el compás 6 (el mp3 no es metronómico); hay que
+    re-anclar en cada onset detectado. El tempo sale de ahí: corchea ≈ 0,279 s,
+    **♩ ≈ 108**.
+  - Dedos de la derecha: los impresos (4-2-1 al bajar; 5-3-1 o 5-2-1 cuando
+    cambia el acorde a mitad de compás; 5-3-2-1 en el 15). La izquierda trae
+    impresos 1 (c.1), "4 1" (c.7, sustitución), 5 (c.8), 4 (c.14), 1 (c.15) y
+    5 (c.16); el resto se completó para que esas posiciones calcen (pulgar
+    arriba hasta el c.7; La2 5 / Re3 2 / Sol2 5 / Do3 2 en los c.10-13). La
+    sustitución del c.7 se guarda como 1 (donde termina el dedo) y se avisa en
+    el `label`.
 - **Lectura**: `READING_LEVELS` (7 niveles, clave de Sol / Fa / ambas / alteraciones).
   `renderStaff(svg, [{sp, cls, clef}], {clef, width, gap, showName})`; `sp` viene de
   `spellMidi(midi, preferFlat)` o `spellFromName('B#', 60)` (respeta octava de la letra).
