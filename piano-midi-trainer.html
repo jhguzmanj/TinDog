@@ -3356,20 +3356,20 @@ const SONGS = [
     id:'aleluya',
     cat:'cristiana',
     name:'Aleluya',
-    tip:'La Aleluya famosa (no la de Händel). Pulgar en Mi y, para el final, baja a Do. Las notas están verificadas; el ritmo va parejo: el vaivén sácalo de la canción.',
+    tip:'La Aleluya famosa (no la de Händel). Pulgar en Mi y, para el final, baja a Do. La izquierda no se mueve: pulgar en Do, 3 en La, 5 en Fa. Las notas están verificadas; el ritmo va parejo: el vaivén sácalo de la canción.',
     tempo:70,
     steps:[
-      {lh:[48], lhF:[5], rh:[64], rhF:[1], dur:0.5, label:'Frase 1'}, {lh:[], rh:[67], rhF:[3], dur:0.5},
+      {lh:[48], lhF:[1], rh:[64], rhF:[1], dur:0.5, label:'Frase 1'}, {lh:[], rh:[67], rhF:[3], dur:0.5},
       {lh:[], rh:[69], rhF:[4], dur:1}, {lh:[], rh:[69], rhF:[4], dur:2},
-      {lh:[45], lhF:[5], rh:[69], rhF:[4], dur:0.5}, {lh:[], rh:[67], rhF:[3], dur:0.5},
+      {lh:[45], lhF:[3], rh:[69], rhF:[4], dur:0.5}, {lh:[], rh:[67], rhF:[3], dur:0.5},
       {lh:[], rh:[64], rhF:[1], dur:1}, {lh:[], rh:[64], rhF:[1], dur:2},
-      {lh:[48], lhF:[5], rh:[64], rhF:[1], dur:0.5, label:'Frase 2'}, {lh:[], rh:[67], rhF:[3], dur:0.5},
+      {lh:[48], lhF:[1], rh:[64], rhF:[1], dur:0.5, label:'Frase 2'}, {lh:[], rh:[67], rhF:[3], dur:0.5},
       {lh:[], rh:[69], rhF:[4], dur:1}, {lh:[], rh:[69], rhF:[4], dur:2},
-      {lh:[45], lhF:[5], rh:[69], rhF:[4], dur:0.5}, {lh:[], rh:[67], rhF:[3], dur:0.5},
+      {lh:[45], lhF:[3], rh:[69], rhF:[4], dur:0.5}, {lh:[], rh:[67], rhF:[3], dur:0.5},
       {lh:[], rh:[64], rhF:[1], dur:1},
-      {lh:[41], lhF:[5], rh:[65], rhF:[4], dur:0.5, label:'Baja la mano: pulgar a Do'},
+      {lh:[41], lhF:[5], rh:[65], rhF:[4], dur:0.5, label:'Baja la mano derecha: pulgar a Do'},
       {lh:[], rh:[64], rhF:[3], dur:0.5}, {lh:[], rh:[62], rhF:[2], dur:1},
-      {lh:[48], lhF:[5], rh:[60], rhF:[1], dur:2}, {lh:[], rh:[60], rhF:[1], dur:2, label:'Fin'},
+      {lh:[48], lhF:[1], rh:[60], rhF:[1], dur:2}, {lh:[], rh:[60], rhF:[1], dur:2, label:'Fin'},
     ]
   },
   {
@@ -4002,6 +4002,10 @@ function enterMode(mode){
   practiceIndex = 0;
   if(typeof stopFragmentPlayback === 'function') stopFragmentPlayback(); // salir de la práctica corta "Escuchar"
   if(typeof allNotesOff === 'function') allNotesOff(); // nada colgado en el piano
+  // Cambiar de ejercicio para el metrónomo, igual que corta "Escuchar": Jorge
+  // reportó que seguía sonando solo al cambiar de práctica. Encenderlo de
+  // nuevo queda siempre en manos del botón — no se auto-reanuda al volver.
+  if(metro.on && typeof metroStop === 'function') metroStop();
   clearAllHighlights();
   const isScale = !!SCALES[mode];
   show(chordTip, mode === 'chords');
@@ -7039,6 +7043,11 @@ function metroOffsetMs(tPerf){
   return off;
 }
 metroToggle.addEventListener('click', () => { if(metro.on) metroStop(); else metroStart(); });
+// Cambiar de app (o de pestaña) en el teléfono: sin esto el metrónomo se
+// quedaba sonando de fondo aunque Jorge ya no estuviera mirando la práctica.
+document.addEventListener('visibilitychange', () => {
+  if(document.hidden && metro.on) metroStop();
+});
 document.querySelectorAll('.metro-step').forEach(b => b.addEventListener('click', () => {
   metro.bpm = Math.max(40, Math.min(208, metro.bpm + parseInt(b.dataset.bpm, 10)));
   metroRender();

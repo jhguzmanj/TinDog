@@ -2019,6 +2019,46 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
     check(W('currentFragment.id') === 'clase-la' && W('fragCat') === 'clase', 'pickFragmentById abre "De la clase"');
   }
 
+  section('El metrónomo se detiene al cambiar de ejercicio');
+  {
+    // Cambiar de práctica (Jorge reportó que seguía sonando solo).
+    W("selectCategory('chords'); metro.on = true; metro.timer = 999; metro.refPerf = 1234;");
+    W("selectCategory('scales');");
+    check(W('metro.on') === false, 'cambiar de pestaña principal apaga el metrónomo');
+    check(W('metro.timer') === null && W('metro.refPerf') === null, 'y limpia el temporizador y la referencia de pulso');
+
+    // Cambiar de escala dentro de Escalas también cuenta como cambiar de ejercicio.
+    W("selectCategory('scales'); metro.on = true;");
+    W("$('scaleFamilyTabs').querySelector('[data-family=\\'minor\\']').click();");
+    check(W('metro.on') === false, 'cambiar de familia de escala también lo apaga');
+    W("$('scaleFamilyTabs').querySelector('[data-family=\\'major\\']').click(); metro.on = true;");
+    W("document.querySelectorAll('#scaleSubTabs .mode-tab')[1].click();");
+    check(W('metro.on') === false, 'y cambiar de escala dentro de la misma familia');
+
+    // No se reanuda solo: encenderlo vuelve a depender del botón.
+    W("selectCategory('intervals');");
+    check(W('metro.on') === false, 'no se reanuda solo al volver a entrar a una pestaña');
+
+    // Cambiar de app / de pestaña del navegador.
+    W("metro.on = true;");
+    W("Object.defineProperty(document, 'hidden', { value: true, configurable: true });" +
+      "document.dispatchEvent(new window.Event('visibilitychange'));");
+    check(W('metro.on') === false, 'salir de la pestaña/app (visibilitychange) también lo apaga');
+    W("Object.defineProperty(document, 'hidden', { value: false, configurable: true });");
+  }
+
+  section('Aleluya: la izquierda queda en una sola posición');
+  {
+    const al = W("SONGS.find(s => s.id === 'aleluya')");
+    const lhSteps = al.steps.filter(s => s.lh.length);
+    check(lhSteps.every(s => s.lh.length === 1 && s.lhF.length === 1), 'una nota grave por vez, con dedo');
+    const byNote = {};
+    lhSteps.forEach(s => { byNote[s.lh[0]] = s.lhF[0]; });
+    check(JSON.stringify(byNote) === JSON.stringify({48:1, 45:3, 41:5}), 'pulgar en Do(48), 3 en La(45), 5 en Fa(41) — siempre el mismo dedo por nota');
+    check(Math.max(...lhSteps.map(s => s.lh[0])) - Math.min(...lhSteps.map(s => s.lh[0])) === 7,
+      'las tres notas caben en una sola posición de mano (una 5ª de span)');
+  }
+
   console.log(`\n${passes} pruebas OK, ${failures} fallos`);
   if(errors.length) console.log('Errores de consola:', errors);
   process.exit(failures || errors.length ? 1 : 0);

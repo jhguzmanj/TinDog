@@ -602,6 +602,19 @@ y dentro de "Más ▾": `free | functions`.
     posición marcado con `label`, como Cumpleaños feliz y Bella Ciao.
     Ojo con el nombre: `aleluya` (la famosa, tutorial) y `hallelujah`
     (el coro de Händel, del songbook) son piezas distintas y conviven.
+    **La izquierda de "Aleluya" salió de la convención genérica** ("nota
+    grave suelta = dedo 5", ver la introducción de esta sección) **a una
+    posición fija propia**, pedida por Jorge: se sentía poco natural mover
+    siempre el meñique a una nota distinta. Sus tres notas graves (Do3=48,
+    La2=45, Fa2=41) son justo Do-Si-La-Sol-Fa salteado, así que caben en la
+    posición normal de la izquierda (pulgar en Do, meñique en Fa — la misma
+    tabla dedo→grado que ya usan escalas y "Manos en Espejo": Do=1 Si=2 La=3
+    Sol=4 Fa=5): quedó `lhF` 1/3/5 según la nota, y la mano ya no se mueve en
+    toda la pieza (antes sí, sin decirlo — dedo 5 en tres notas distintas).
+    El `label` "Baja la mano: pulgar a Do" seguía en el paso donde la
+    IZQUIERDA toca su Fa(41): en realidad avisaba del cambio de posición de
+    la DERECHA (ver `tip`), y con la izquierda fija podía leerse como que
+    también se movía. Se aclaró a "Baja la mano derecha: pulgar a Do".
     **"Flaca"** (Jarabe de Palo, partitura de itemfunes.com, mismo molde que
     Bella Ciao). El bajo son redondas, una por compás, y dan Sol–Si–Mim–Do–
     Sol–Re–Sol; ese bajo sirvió además para **verificar** la melodía (las notas
@@ -1254,6 +1267,20 @@ el acento del clic — nada más dependía de él (la cascada usa su propio
 `BEATS_PER_BAR=4` fijo, no `metro.meter`). `metro.meter` queda fijo en 4 en el código
 en vez de configurable; si algún día hace falta compás real, que sea una opción
 explicada, no una fracción suelta en el encabezado sticky.
+**Se detiene solo al cambiar de ejercicio o de app, igual que `▶ Escuchar`.**
+Jorge reportó que seguía sonando de fondo al pasar a otra práctica (o al
+cambiar de app en el teléfono). Dos guardas:
+- `enterMode()` llama a `metroStop()` si `metro.on`, en el mismo lugar donde
+  ya corta `stopFragmentPlayback()` y `allNotesOff()`. Cubre las cuatro formas
+  de cambiar de ejercicio (pestaña principal, familia de escala, escala
+  dentro de la familia, y el "Más ▾"), porque las cuatro pasan por `enterMode`.
+- `visibilitychange`: si la página queda oculta (cambiar de app o de pestaña
+  del navegador) y el metrónomo está encendido, se apaga.
+**No se reanuda solo.** Encenderlo después de que estos dos caminos lo
+apagaron es siempre una acción del botón — ni `enterMode` ni el listener de
+`visibilitychange` vuelven a prenderlo. Esto es aparte del auto-encendido que
+ya existía al tocar `⏱ Con metrónomo` o `⏱ A tiempo`: esos siguen prendiéndolo
+porque son la propia acción del usuario, no una reanudación automática.
 
 ## Progreso (localStorage `pianoProgress1`)
 ```
