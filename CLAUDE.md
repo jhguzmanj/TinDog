@@ -861,6 +861,11 @@ y dentro de "Más ▾": `free | functions`.
     en Re, en el aire) / respuesta (cierra en Do) / cierre con más movimiento.
     La izquierda va a una nota por compás salvo en la parte 3, donde entra dos
     veces por compás para empujar. 52 tiempos = 13 compases.
+    **La izquierda de "Amanecer" también pasó a posición fija** (mismo pedido
+    y mismo arreglo que "Aleluya"): antes iba con el dedo 5 en las cuatro notas
+    graves; ahora Do3=1, La2=3, Sol2=4, Fa2=5 — pulgar en Do, meñique en Fa,
+    una 5ª de abertura. Así ninguna de las dos manos se mueve en toda la pieza.
+    Hay prueba que lo fija.
     **Cómo transcribir una partitura en PDF (método que funciona, reutilizable).**
     Con "Bella Ciao" y "Espíritu de Dios" se automatizó lo que en "Dios está
     aquí" se hizo a ojo, y sale mucho mejor:

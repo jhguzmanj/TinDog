@@ -2059,6 +2059,18 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
       'las tres notas caben en una sola posición de mano (una 5ª de span)');
   }
 
+  section('Amanecer: la izquierda queda en una sola posición');
+  {
+    const am = W("SONGS.find(s => s.id === 'amanecer')");
+    const lhSteps = am.steps.filter(s => s.lh.length);
+    const byNote = {};
+    let consistent = true;
+    lhSteps.forEach(s => { if(byNote[s.lh[0]] !== undefined && byNote[s.lh[0]] !== s.lhF[0]) consistent = false; byNote[s.lh[0]] = s.lhF[0]; });
+    check(consistent, 'cada nota grave lleva siempre el mismo dedo');
+    check(JSON.stringify(byNote) === JSON.stringify({41:5, 43:4, 45:3, 48:1}),
+      'pulgar en Do(48), 3 en La(45), 4 en Sol(43), 5 en Fa(41)');
+  }
+
   console.log(`\n${passes} pruebas OK, ${failures} fallos`);
   if(errors.length) console.log('Errores de consola:', errors);
   process.exit(failures || errors.length ? 1 : 0);
