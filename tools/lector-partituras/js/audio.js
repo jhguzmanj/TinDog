@@ -9,10 +9,9 @@ const LOOKAHEAD_MS = 25;
 const SCHEDULE_AHEAD = 0.2;  // segundos
 const STEP_QUARTERS = 0.25;  // granularidad de planificación
 
-// Una sola onda periódica con los armónicos ya dentro, en vez de cuatro
-// osciladores por nota: mismo timbre (triangular + parciales 2, 3 y 4) con tres
-// nodos en vez de diez. Importa al renderizar el clip, donde la pieza entera
-// llegaba a miles de nodos y el teléfono se quedaba pensando.
+// Onda periódica con los armónicos ya dentro (triangular + parciales 2, 3 y
+// 4). Se comparte entre los dos osciladores de cada voz -createPeriodicWave
+// es cara, la voz no lo es- así que sigue siendo barata de renderizar.
 const WAVES = new WeakMap();
 function pianoWave(ctx) {
   if (!WAVES.has(ctx)) {
@@ -23,28 +22,56 @@ function pianoWave(ctx) {
   return WAVES.get(ctx);
 }
 
+// Cuánto tarda en apagarse del todo una nota sostenida, según el registro:
+// las cuerdas graves de un piano real vibran mucho más tiempo que las
+// agudas. Acotado (0.5-2.7s) para no ensuciar de resonancia un pasaje
+// rápido: es un lector de partituras, no el sintetizador del entrenador.
+function noteLife(midi) {
+  const t = Math.max(0, Math.min(1, (96 - midi) / 72));
+  return 0.5 + t * 2.2;
+}
+
+// Cuatro cosas distinguen una cuerda de piano de un tono puro de sintetizador:
+// decae con vida propia según el registro (noteLife), el golpe de martillo
+// suena brillante y se apaga hacia un timbre más oscuro (filtro dinámico), y
+// el fundamental nunca es una sola frecuencia limpia sino dos cuerdas
+// ligeramente desafinadas entre sí -eso es lo que "late" y da la sensación
+// de cuerda real en vez de onda de sintetizador.
 function buildVoice(ctx, dest, midi, when, durSec, gain) {
   const freq = 440 * Math.pow(2, (midi - 69) / 12);
   const dur = Math.max(0.2, durSec);
+  const life = noteLife(midi);
+  const tail = Math.min(life, dur * 0.7 + 0.15);
+  const end = dur + tail;
+
   const out = ctx.createGain();
   const filter = ctx.createBiquadFilter();
   filter.type = 'lowpass';
-  filter.frequency.setValueAtTime(Math.min(9000, freq * 9), when);
+  filter.Q.value = 0.6;
   filter.connect(out);
   out.connect(dest);
 
-  const peak = Math.max(0.0002, gain * 0.2);
-  out.gain.setValueAtTime(0.0001, when);
-  out.gain.exponentialRampToValueAtTime(peak, when + 0.012);
-  out.gain.exponentialRampToValueAtTime(peak * 0.3, when + Math.min(0.6, dur * 0.6));
-  out.gain.exponentialRampToValueAtTime(0.0001, when + dur + 0.3);
+  const bright = Math.min(10000, freq * 10);
+  const dark = Math.max(300, Math.min(2400, freq * 3.2));
+  filter.frequency.setValueAtTime(bright, when);
+  filter.frequency.exponentialRampToValueAtTime(dark, when + end);
 
-  const osc = ctx.createOscillator();
-  osc.setPeriodicWave(pianoWave(ctx));
-  osc.frequency.setValueAtTime(freq, when);
-  osc.connect(filter);
-  osc.start(when);
-  osc.stop(when + dur + 0.35);
+  const peak = Math.max(0.0002, gain * 0.22);
+  const mid = Math.min(dur * 0.6, life * 0.5);
+  out.gain.setValueAtTime(0.0001, when);
+  out.gain.exponentialRampToValueAtTime(peak, when + 0.008);
+  out.gain.exponentialRampToValueAtTime(peak * 0.32, when + mid);
+  out.gain.exponentialRampToValueAtTime(0.0001, when + end);
+
+  for (const cents of [-4, 4]) {
+    const osc = ctx.createOscillator();
+    osc.setPeriodicWave(pianoWave(ctx));
+    osc.frequency.setValueAtTime(freq, when);
+    osc.detune.setValueAtTime(cents, when);
+    osc.connect(filter);
+    osc.start(when);
+    osc.stop(when + end + 0.3);
+  }
 }
 
 function buildClick(ctx, dest, when, strong) {
