@@ -2071,6 +2071,28 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
       'pulgar en Do(48), 3 en La(45), 4 en Sol(43), 5 en Fa(41)');
   }
 
+  section('La izquierda no salta con el meñique de nota en nota');
+  {
+    // En estas piezas la izquierda cabe en UNA posición: cada dedo toca una sola tecla.
+    for(const id of ['cadencia','arpegio','colegiala','faded','espiritu-de-dios','aleluya','amanecer','estrellita','dios-esta-aqui']){
+      const song = W(`SONGS.find(s => s.id === '${id}')`);
+      const byFinger = {};
+      song.steps.filter(s => s.lh.length === 1).forEach(s => (byFinger[s.lhF[0]] = byFinger[s.lhF[0]] || new Set()).add(s.lh[0]));
+      check(Object.values(byFinger).every(set => set.size === 1), `${id}: cada dedo de la izquierda toca siempre la misma tecla`);
+    }
+    // Flaca: meñique en Sol; solo el Mi mueve el pulgar un paso (y lo avisa).
+    const fl = W("SONGS.find(s => s.id === 'flaca')").steps.filter(s => s.lh.length === 1);
+    check(fl.every(s => ({43:5,47:3,48:2,50:1,52:1})[s.lh[0]] === s.lhF[0]), 'Flaca: Sol 5, Si 3, Do 2, Re 1, Mi 1');
+    check(fl.filter(s => s.lh[0] === 52).every(s => /pulgar sube un paso a Mi/.test(s.label || '')), 'Flaca: el paso del Mi avisa que sube el pulgar');
+    // Bella Ciao: dos posiciones, y cada mudanza de la izquierda va avisada.
+    const bc = W("SONGS.find(s => s.id === 'bella-ciao')").steps;
+    const labels = bc.map(s => s.label || '').join(' | ');
+    check(/Izquierda baja: meñique a La/.test(labels) && /Izquierda sube: pulgar a La/.test(labels) && /izquierda: pulgar a Mi/.test(labels),
+      'Bella Ciao: las tres mudanzas de la izquierda están marcadas');
+    check(bc.filter(s => s.lh.length === 1).every(s => s.lhF[0] !== 5 || s.lh[0] === 45 || s.lh[0] === 50),
+      'Bella Ciao: el meñique solo cae en La grave o en Re (fin de la bajada)');
+  }
+
   console.log(`\n${passes} pruebas OK, ${failures} fallos`);
   if(errors.length) console.log('Errores de consola:', errors);
   process.exit(failures || errors.length ? 1 : 0);

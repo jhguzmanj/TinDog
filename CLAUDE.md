@@ -483,6 +483,26 @@ y dentro de "Más ▾": `free | functions`.
     la derecha reutilizan `CHORD_FINGERS.rh` por inversión, y la melodía de la
     derecha va en posición de 5 dedos (Do=1 Re=2 Mi=3 Fa=4 Sol=5, estirando el 5
     para el La de "Estrellita"). El arpegio de Do usa el patrón estándar 1-2-3-5.
+    **La regla "nota grave suelta = dedo 5" quedó ABOLIDA (septiembre 2026).**
+    Aplicada a una izquierda que cambia de nota, hace saltar el meñique de
+    tecla en tecla — Jorge lo detectó en Aleluya y Amanecer, y una auditoría
+    de todas las piezas lo encontró en siete más. Regla nueva: si las notas
+    graves caben en cinco dedos, **posición fija con el pulgar en la más
+    aguda** y un dedo por grado hacia abajo (casi siempre pulgar en Do3:
+    Do 1, Si 2, La 3, Sol 4, Fa 5). Así quedaron Cadencia, Arpegio de Do, La
+    Colegiala, Faded (pulgar en Do) y Espíritu de Dios (pulgar en Mi3: Mi 1,
+    Re 2, Do 3, Si 4). Si no caben, se elige la posición que cubre más notas
+    y cada mudanza lleva `label`: **Flaca** (meñique en Sol2: Sol 5, Si 3,
+    Do 2, Re 1; el Mi3 sube el pulgar un paso, avisado) y **Bella Ciao** (dos
+    posiciones: pulgar en La3 para el vaivén La–Mi, pulgar en Mi3 para los
+    tramos graves; tres mudanzas marcadas). Una sola nota grave en toda la
+    pieza (Corderito, Cumpleaños, Au clair, Hallelujah, Jingle Bells) puede
+    seguir con el 5: no hay nada que salte. **Excepciones a propósito**:
+    Dragon Ball GT (todo con el pulgar para que las manos no choquen, ver su
+    sección) y Arpèges à Agathe (dedos impresos). Al pasar las izquierdas a
+    posición fija, los `label` que decían "baja/sube la mano" sin decir cuál
+    se aclararon a "mano derecha". Hay prueba que recorre las piezas de
+    posición fija y exige que cada dedo toque siempre la misma tecla.
     **"Himno a la alegría" son dos frases, a propósito** (Jorge pidió ir
     construyendo la pieza por partes): la 1ª queda "en el aire" (termina en Mi,
     grado 3), la 2ª responde y resuelve en Do. Las dos caben en la MISMA posición
