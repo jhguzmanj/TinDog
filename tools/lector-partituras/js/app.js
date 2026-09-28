@@ -276,13 +276,25 @@ function range() {
   return [Math.floor(lo / 12) * 12, Math.ceil((hi + 1) / 12) * 12 - 1];
 }
 
+// clientWidth/clientHeight pueden salir en 0 la primera vez que esto corre
+// (el layout del artifact, dentro de un iframe, tarda un poco más en asentarse
+// que en una página normal). Si se sobreescribe canvas.width/height con eso,
+// el canvas colapsa a 0x0 y se queda así para siempre: sin el atributo HTML
+// original de referencia, clientWidth/clientHeight ya no vuelven a ser nada
+// más que 0 en los frames siguientes. Por eso solo se toca el tamaño cuando
+// hay layout de verdad; si no, se deja el que ya tenía (el del atributo HTML
+// la primera vez) y el propio bucle de animación lo corrige solo apenas el
+// layout esté listo.
 function setup(canvas) {
   const dpr = window.devicePixelRatio || 1;
-  canvas.width = canvas.clientWidth * dpr;
-  canvas.height = canvas.clientHeight * dpr;
+  const cw = canvas.clientWidth, ch = canvas.clientHeight;
+  if (cw > 0 && ch > 0) {
+    canvas.width = cw * dpr;
+    canvas.height = ch * dpr;
+  }
   const ctx = canvas.getContext('2d');
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  ctx.clearRect(0, 0, canvas.clientWidth, canvas.clientHeight);
+  ctx.clearRect(0, 0, canvas.width / dpr, canvas.height / dpr);
   return ctx;
 }
 
