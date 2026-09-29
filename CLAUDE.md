@@ -476,6 +476,56 @@ y dentro de "Más ▾": `free | functions`.
     `pickup:1` (ver la sección Cascada). Cumpleaños feliz es de 3 en el
     original y **no se tocó**: sus duraciones no se revisaron contra un 3/4,
     así que ponerle `meter:3` a ciegas podría descuadrar las barras.
+- **"Clocks" (Coldplay), arreglo fácil de 22 compases** (`clocks`, Populares,
+  `plan:false`). Primera de tres piezas que una persona que sabe de piano le
+  pasó a Jorge **"para más adelante"**; llega por el flujo de JSON. Fuente
+  declarada: fotos de la partitura leídas por el otro flujo (sin MusicXML ni
+  MIDI), así que **no hay contraste con audio**.
+  - **Verificación hecha en la app**: 88 tiempos = 22 compases de 4; toda nota
+    cae en Reb mayor / Sib menor; la izquierda arma el riff **Mibm–Sibm–Sibm–
+    Fam** (bajo Mib4–Sib3–Sib3–Fa3) y la derecha lo arpegia (Mib–Sol♭–Sib,
+    Sib–Reb–Fa, Fa–Lab–Do); los mismos acordes se repiten en c. 5-8 y 12-15.
+    Ese riff coincide con lo que el JSON dice en `keyNote`.
+  - **Dudas declaradas: 15 notas en los c. 9-11** ("lectura poco nítida en la
+    partitura original"). El JSON las marca `doubt`. La app las toca tal cual
+    (acorde Reb3-Solb3-Sib3 del c. 9-10 y Reb3-Fa3-Lab3 del c. 11) y el `tip` y
+    el rótulo del c. 9 lo dicen. **Sin audio no hay forma de cerrarlo**: Jorge
+    tiene que comparar de oído con la canción. Si alguien las corrige, la
+    prueba del c. 9 fija solo la forma (acorde solo 3 tiempos), no las alturas
+    dudosas de la derecha; las de la izquierda sí están en la lista completa.
+  - **Repeticiones NO desplegadas.** `order` es A A B B C C D D E E1 E E2 (39
+    compases); en `SONGS` cada sección va **una vez** (22 compases) y los
+    rótulos dicen "va 2 veces". Motivo: las repeticiones no traen notas nuevas,
+    `SONGS` no tiene repeticiones y el Tramo de la cascada ya permite girar una
+    sección con `cascadeLoop`. El c. 19 (casilla 1) solo se toca la primera vez
+    y va antes de la casilla 2 en el orden lineal, así que **el orden lineal no
+    es el de la canción** (falta volver al c. 16 antes del c. 20). Si Jorge
+    quiere la forma completa: mismo molde que `FE_A` (arreglos compartidos +
+    `concat`).
+  - **Dedos: derecha IMPRESA (145 de 145); izquierda SUGERIDA (41).** La
+    sugerencia del JSON pone el meñique en cada bajo suelto (Sib3→Fa3, Mib3→
+    Sib2→Fa2…): el JSON mismo lista 5 casos de "meñique de tecla en tecla",
+    que es lo que Jorge pidió eliminar (ver la regla abolida). Aquí los bajos
+    sueltos van **1-3-5**: Mib 1, Sib 3, Fa 5, los mismos dedos que el acorde
+    del c. 5 (Solb3 5, Sib3 3, Mib4 1) y de los c. 6-8 (Fa3 5), así que la
+    mano de los c. 1-8 no cambia de sitio; los c. 12-15 son lo mismo una octava
+    más grave. Los acordes quedan con **5-3-1** como en el JSON. Abertura del
+    bajo: Fa3–Mib4 = 10 semitonos (7ª menor) entre meñique y pulgar: incómodo
+    para una mano pequeña, y hay una redonda entera para acomodarse. Los
+    cambios de posición van en el `label` (c. 5, 9, 12, 16).
+  - **Tempo: ♩=120 lo dijo Jorge; las bases de datos dan ~129-131** (GetSongBPM,
+    Tunebat, SongBPM…). El JSON aclara que NO está verificado contra la
+    partitura (`tempoSource:"audio"` sin audio). Se dejó 120: es el número de
+    Jorge y para aprender es más cómodo; **si la pieza se toca con la
+    grabación, subir a 130**. Ojo con la lección de "All of Me": un tempo
+    inventado sonó lento; aquí la diferencia es ~8%.
+  - Defectos del flujo, para pasarlos: (1) `credit` dice "arreglo fácil" sin
+    autor del arreglo; (2) `chordsVsBass` queda "skipped" aunque los acordes
+    salen del bajo; (3) `order` con casillas **no da los compases de vuelta**
+    (E1/E2) — hay que interpretar; (4) los bajos sueltos con meñique repiten el
+    error de "meñique de tecla en tecla" que su propia especificación dice
+    evitar. Nota en positivo: `doubt` por nota funciona y es la información
+    más honesta que ha mandado.
 - **Lectura**: `READING_LEVELS` (7 niveles, clave de Sol / Fa / ambas / alteraciones).
   `renderStaff(svg, [{sp, cls, clef}], {clef, width, gap, showName})`; `sp` viene de
   `spellMidi(midi, preferFlat)` o `spellFromName('B#', 60)` (respeta octava de la letra).

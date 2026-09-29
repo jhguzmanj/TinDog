@@ -2151,6 +2151,31 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
     W("cascadeFrom = 1; cascadeTo = null; currentFragment = FRAGMENTS[0];");
   }
 
+  section('Clocks (Coldplay, arreglo fácil, JSON con dudas)');
+  {
+    const ck = W("SONGS.find(s => s.id === 'clocks')");
+    check(!!ck && ck.cat === 'popular' && ck.plan === false && ck.tempo === 120, 'en Populares, fuera del plan de Hoy, ♩=120');
+    check(ck.steps.reduce((a, s) => a + s.dur, 0) === 88, '22 compases de 4 tiempos, sin sobras');
+    check(ck.steps.flatMap(s => s.rh).join(',') === '75,70,66,75,70,66,75,70,73,70,65,73,70,65,73,70,73,70,65,73,70,65,73,70,72,68,65,72,68,65,72,68,75,75,75,75,72,73,72,70,73,73,73,73,70,72,70,68,61,61,68,66,65,63,61,63,65,75,70,66,75,70,66,75,70,73,70,65,73,70,65,73,70,73,70,65,73,70,65,73,70,72,68,65,72,68,65,72,68,80,78,75,80,78,75,80,78,80,78,73,80,78,73,80,78,80,78,73,80,78,73,80,78,80,78,72,80,78,72,80,78,80,78,72,80,78,72,80,78,80,78,72,80,78,72,80,78,80,78,72,80,78,72,80,78', 'la derecha, nota por nota, igual al JSON');
+    check(ck.steps.flatMap(s => s.rhF).join(',') === '4,2,1,4,2,1,4,2,3,2,1,3,2,1,3,2,3,2,1,3,2,1,3,2,4,2,1,4,2,1,4,2,5,5,5,5,3,4,3,2,4,4,4,4,2,3,2,1,1,1,5,4,3,2,1,2,3,4,2,1,4,2,1,4,2,3,2,1,3,2,1,3,2,3,2,1,3,2,1,3,2,4,2,1,4,2,1,4,2,5,4,1,5,4,1,5,4,5,4,1,5,4,1,5,4,5,4,1,5,4,1,5,4,5,4,1,5,4,1,5,4,5,4,1,5,4,1,5,4,5,4,1,5,4,1,5,4,5,4,1,5,4,1,5,4', 'derecha: todos los dedos impresos');
+    check(ck.steps.flatMap(s => s.lh).join(',') === '63,58,58,53,54,58,63,53,58,61,53,58,61,53,56,60,49,54,58,49,53,56,51,46,46,41,54,58,63,53,58,61,53,58,61,53,56,60,53,56,60', 'la izquierda, nota por nota, igual al JSON');
+    check(ck.steps.every(s => s.rhF.length === s.rh.length && (s.lhF || []).length === s.lh.length), 'toda nota lleva dedo');
+    check(ck.steps.flatMap(s => s.rh.concat(s.lh)).every(n => [0, 1, 3, 5, 6, 8, 10].includes(n % 12)), 'todo cae en Reb mayor / Sib menor');
+    // Bajos sueltos: 1-3-5 (los dedos del acorde del c. 5), no el meñique en cada nota.
+    const bajos = ck.steps.filter(s => s.lh.length === 1).map(s => s.lh[0] + ':' + s.lhF[0]).join(',');
+    check(bajos === '63:1,58:3,58:3,53:5,51:1,46:3,46:3,41:5', 'bajos sueltos con 1-3-5, no con el meñique saltando de tecla en tecla');
+    check(ck.steps.filter(s => s.lh.length === 3).every(s => s.lhF.join(',') === '5,3,1'), 'acordes de la izquierda con 5-3-1');
+    check(ck.steps.every(s => !s.lh.length || s.lh[0] < Math.min(...(s.rh.length ? s.rh : [999]))), 'las manos no se cruzan');
+    // Ritmo del riff 3+3+2: en el c. 1 cada corchea es un paso de 0.5.
+    check(ck.steps.slice(0, 8).every(s => s.dur === 0.5) && ck.steps[8].label.startsWith('c. 2'), 'el riff del c. 1 son 8 corcheas seguidas');
+    // El c. 9 (lectura dudosa): acorde de la izquierda solo, 3 tiempos, y la derecha entra en el tiempo 4.
+    const i9 = ck.steps.findIndex(s => /^c\. 9/.test(s.label || ''));
+    check(ck.steps[i9].rh.length === 0 && ck.steps[i9].dur === 3 && ck.steps[i9].label.includes('dudosa'), 'c. 9: acorde solo 3 tiempos y aviso de lectura dudosa');
+    // Sostenido final: el acorde del c. 20 dura hasta el final (3 compases).
+    const i20 = ck.steps.findIndex(s => /^c\. 20/.test(s.label || ''));
+    check(ck.steps.slice(i20).reduce((a, s) => a + s.dur, 0) === 12 && ck.steps.slice(i20 + 1).every(s => !s.lh.length), 'el acorde del c. 20 se sostiene hasta el final');
+  }
+
   console.log(`\n${passes} pruebas OK, ${failures} fallos`);
   if(errors.length) console.log('Errores de consola:', errors);
   process.exit(failures || errors.length ? 1 : 0);
