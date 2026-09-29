@@ -2107,6 +2107,40 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
     check(pc.steps.every(s => !s.lh.length || s.lh[0] < Math.min(...s.rh)), 'las manos no se cruzan');
   }
 
+  section('Für Elise (JSON de eventos, 3/4 con anacrusa)');
+  {
+    const fe = W("SONGS.find(s => s.id === 'fur-elise')");
+    check(!!fe && fe.cat === 'clasica' && fe.plan === false && fe.tempo === 120 && fe.meter === 3 && fe.pickup === 1,
+      'en Clásicas, fuera del plan de Hoy, ♩=120, compás de 3 con un tiempo de anacrusa');
+    const total = fe.steps.reduce((a, s) => a + s.dur, 0);
+    check(total === 76 && (total - fe.pickup) % 3 === 0, 'anacrusa + 25 compases de 3 tiempos, sin sobras');
+    const rh = fe.steps.flatMap(s => s.rh).join(',');
+    const rhJson = '76,75,76,75,76,71,74,72,69,60,64,69,71,64,68,71,72,64,76,75,76,75,76,71,74,72,69,60,64,69,71,64,72,71,69,71,72,74,76,67,77,76,74,65,76,74,72,64,74,72,71';
+    check(rh === rhJson + ',' + rhJson, 'la derecha, nota por nota, igual al JSON (las dos vueltas)');
+    const lh = fe.steps.flatMap(s => s.lh).join(',');
+    check(lh === '57,52,57,57,52,57,60,59,57,56,57,52,57,57,52,57,60,59,57,56', 'la izquierda igual al JSON');
+    check(W("(() => { const s = SONGS.find(x => x.id === 'fur-elise').steps; return s[1] === FE_A[0] && s[52] === FE_A[0]; })()"),
+      'las dos vueltas comparten FE_A: corregir una nota corrige las dos');
+    check(fe.steps.every(s => s.rhF.length === s.rh.length && (s.lhF || []).length === s.lh.length), 'toda nota lleva dedo');
+    check(fe.steps.filter(s => s.lh.length).every(s => ({52:5,56:3,57:2,59:1,60:1})[s.lh[0]] === s.lhF[0]),
+      'izquierda en posición fija: Mi 5, Sol# 3, La 2, Si 1 (y el Do con el pulgar estirado)');
+    check(fe.steps.filter(s => s.lh[0] === 60).every(s => /pulgar sube a Do/.test(s.label || '')), 'el Do de la izquierda avisa que sube el pulgar');
+    check(fe.steps.every(s => !s.lh.length || s.lh[0] < Math.min(...s.rh)), 'las manos no se cruzan');
+  }
+
+  section('Cascada: compás y anacrusa de la pieza');
+  {
+    const bars = (id, from) => W(`(() => {
+      currentFragment = SONGS.find(s => s.id === '${id}'); cascadeFrom = ${from}; cascadeTo = null;
+      return buildCascadeSchedule().beats.filter(b => b.bar && b.k >= 0).slice(0, 3).map(b => b.k);
+    })()`);
+    check(JSON.stringify(bars('amanecer', 1)) === '[0,4,8]', '4/4 sin anacrusa: barras cada 4 tiempos, como antes');
+    check(JSON.stringify(bars('fur-elise', 1)) === '[1,4,7]', 'Für Elise: la primera barra cae después del tiempo de anacrusa, y luego cada 3');
+    // Tramo que empieza en el c. 3 (paso 9): la barra cae justo al empezar.
+    check(JSON.stringify(bars('fur-elise', 9)) === '[0,3,6]', 'un tramo a mitad de pieza sigue la rejilla de la pieza, no la del tramo');
+    W("cascadeFrom = 1; cascadeTo = null; currentFragment = FRAGMENTS[0];");
+  }
+
   console.log(`\n${passes} pruebas OK, ${failures} fallos`);
   if(errors.length) console.log('Errores de consola:', errors);
   process.exit(failures || errors.length ? 1 : 0);

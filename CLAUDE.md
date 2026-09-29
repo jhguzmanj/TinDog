@@ -410,6 +410,45 @@ y dentro de "Más ▾": `free | functions`.
     notas llegaron idénticas y el único cambio fue `artist` → "D'après
     Handel". Ninguna mejora de la especificación se aplicó. Se actualizó solo
     el nombre.
+- **"Para Elisa / Für Elise", versión simple** (`fur-elise`, Clásicas,
+  `plan:false`). Segunda pieza del flujo de JSON. `meter:"3/4"`,
+  `quarterBpm:120`, 26 compases, 122 notas, **sin digitación y sin `key`**
+  (otra vez: la especificación sigue sin aplicarse).
+  - **Qué es**: la melodía real de los primeros compases (tema A + el
+    episodio en Do, compases 9-13) en valores dobles (3/4 con corcheas en vez
+    de 3/8 con semicorcheas: suena igual). **La izquierda NO es la de
+    Beethoven**: en vez de los arpegios (La–Mi–La) trae UNA nota del acorde
+    sostenida dos tiempos (La3, Mi3, Do4, Si3, Sol#3). Y la forma está
+    simplificada: el original repite los c. 1-8 con primera casilla antes de
+    pasar a la parte B; aquí van seguidos y termina en Si + Sol# (c. 13).
+  - **Verificación**: todo cae dentro de su compás de 3; los c. 14-26 son
+    **nota por nota** los 1-13 corridos 39 tiempos (la repetición ya viene
+    desplegada, así que `order:["A","A"]` sobra — y si alguien lo aplicara
+    encima, la pieza saldría cuatro veces). Hay prueba que compara las dos
+    manos con el JSON.
+  - Se guarda como `FE_A` (una vuelta sin su primera nota ni su último
+    compás) y la pieza lo usa dos veces: la anacrusa lleva rótulo distinto en
+    cada vuelta ("Anacrusa" / "Repetición", útil en el Tramo de la cascada) y
+    el c. 13 dura 5 en la primera (absorbe los 2 tiempos de silencio antes de
+    la repetición) y 3 al final. Mismo molde que el Himno.
+  - **Defectos del JSON**: `Eb5` donde es **Re#5** y `Ab4/Ab3` donde es
+    **Sol#** (La menor, acorde de Mi mayor) — el mismo error de deletreo que
+    en la Passacaglia, así que es sistemático del conversor: parece que
+    deletrea todo con bemoles. `key` vacío otra vez.
+  - **Digitación inventada.** Derecha: el motivo Mi–Re#–Mi–Re#–Mi–Si–Re–Do–La
+    con 5-4-5-4-5-2-4-3-1 (pulgar en La); Do-Mi-La 1-2-3, Mi-Sol#-Si 1-3-4;
+    en la parte B, pulgar en la nota grave y meñique en la aguda. **Los
+    saltos son el problema real de la pieza**: Mi4→Mi5 (octava, c. 5) y
+    Sol4→Fa5 / Fa4→Mi5 / Mi4→Re5 (7ªs, c. 10-12) en corcheas a ♩=120. Van
+    avisados. Izquierda en posición fija con el **pulgar en Si3** (Mi 5,
+    Sol# 3, La 2, Si 1) y el Do4 del c. 10 con el pulgar estirado, avisado.
+    No con el pulgar en Do4 (que daría un dedo por nota sin aviso): la
+    derecha toca Do4 en los c. 3 y 7 mientras la izquierda sostiene el La, y
+    los dos pulgares chocarían.
+  - **Primera pieza en 3/4 que la cascada dibuja bien**: `meter:3` y
+    `pickup:1` (ver la sección Cascada). Cumpleaños feliz es de 3 en el
+    original y **no se tocó**: sus duraciones no se revisaron contra un 3/4,
+    así que ponerle `meter:3` a ciegas podría descuadrar las barras.
 - **Lectura**: `READING_LEVELS` (7 niveles, clave de Sol / Fa / ambas / alteraciones).
   `renderStaff(svg, [{sp, cls, clef}], {clef, width, gap, showName})`; `sp` viene de
   `spellMidi(midi, preferFlat)` o `spellFromName('B#', 60)` (respeta octava de la letra).
@@ -1293,6 +1332,13 @@ y dentro de "Más ▾": `free | functions`.
 - `beats[]`: líneas de pulso (las de compás más marcadas, `BEATS_PER_BAR=4`) y
   clics de metrónomo al cruzar cada pulso (`cascadeClicks`). Cuenta de entrada de
   `COUNT_IN_BEATS=4` pulsos dibujada en `.count-in`.
+- **Compás y anacrusa por pieza**: `meter` (tiempos por compás, 4 si falta) y
+  `pickup` (tiempos antes de la primera barra) en la entrada de `SONGS`. Cada
+  pulso de `beats[]` trae `bar` calculado en tiempos **de la pieza**, no del
+  tramo: antes la barra se contaba desde el paso donde arrancaba el tramo, así
+  que empezar a mitad de compás corría todas las barras. El acento del clic
+  usa el mismo `bar`. Hay pruebas (4/4 igual que antes, 3/4 con anacrusa, y
+  un tramo a mitad de pieza). La cuenta de entrada sigue siendo de 4.
 - Tramo: `cascadeFrom/cascadeTo` (pasos 1-based) + `cascadeLoop`. Los `<select>`
   se rellenan en `refreshCascadeRange()`; el rango se resetea al cambiar de pieza.
 - Al abrir la cascada se **esconde el teclado grande** (`#keyboardWrap`) para que
