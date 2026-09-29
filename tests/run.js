@@ -2093,6 +2093,20 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
       'Bella Ciao: el meñique solo cae en La grave o en Re (fin de la bajada)');
   }
 
+  section('Passacaglia (Händel-Halvorsen), muestra c. 1-8');
+  {
+    const pc = W("SONGS.find(s => s.id === 'passacaglia')");
+    check(!!pc && pc.cat === 'clasica' && pc.plan === false && pc.tempo === 120, 'en Clásicas, fuera del plan de Hoy, ♩=120');
+    check(pc.steps.reduce((a, s) => a + s.dur, 0) === 32, '8 compases de 4 tiempos');
+    const bajos = pc.steps.filter(s => s.lh.length).map(s => s.lh[0]);
+    check(JSON.stringify(bajos) === '[57,50,55,48,53,50,52,57]', 'bajo La–Re–Sol–Do–Fa–Re–Mi–La (la progresión de Händel, en La menor)');
+    const rh = pc.steps.map(s => s.rh[0]).join(',');
+    check(rh === '72,84,83,84,81,84,79,84,77,84,76,84,74,84,72,84,71,83,81,83,79,83,77,83,76,83,74,83,72,83,71,83,' +
+      '69,81,79,81,77,81,76,81,74,81,72,81,71,81,69,81,81,80,78,80,81,81', 'la derecha, nota por nota, igual al JSON recibido');
+    check(pc.steps.every(s => s.rhF.length === s.rh.length && (s.lhF || []).length === s.lh.length), 'toda nota lleva dedo');
+    check(pc.steps.every(s => !s.lh.length || s.lh[0] < Math.min(...s.rh)), 'las manos no se cruzan');
+  }
+
   console.log(`\n${passes} pruebas OK, ${failures} fallos`);
   if(errors.length) console.log('Errores de consola:', errors);
   process.exit(failures || errors.length ? 1 : 0);

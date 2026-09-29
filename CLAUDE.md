@@ -385,6 +385,26 @@ y dentro de "Más ▾": `free | functions`.
     arriba hasta el c.7; La2 5 / Re3 2 / Sol2 5 / Do3 2 en los c.10-13). La
     sustitución del c.7 se guarda como 1 (donde termina el dedo) y se avisa en
     el `label`.
+- **"Passacaglia" (Händel-Halvorsen), muestra c. 1-8** (`passacaglia`,
+  Clásicas, `plan:false`). Primera pieza que llega como **JSON de eventos**
+  (`notes:[{midi, hand, startBeat, durationBeats, bar}]`, `quarterBpm`) en vez
+  de partitura: Jorge lo mandó como prueba de un flujo externo. Conversión: un
+  paso por cada `startBeat` distinto, `dur` = hasta el siguiente, cada mano
+  pone sus notas solo donde empiezan (una nota larga = ligadura, `lh:[]`).
+  - **Verificación**: 4 tiempos por compás; el bajo La–Re–Sol–Do–Fa–Re–Mi–La
+    es la progresión de Händel (Solm–Dom–Fa–Sib–Mib–Dom–Re–Solm) subida un
+    tono; todo cae en La menor armónica/melódica. Hay prueba que compara la
+    derecha nota por nota con el JSON.
+  - **Defectos del JSON**, para quien arme ese flujo: `key` vacío (es La
+    menor) y el c. 7 deletreado `Ab5/Gb5` cuando sobre el acorde de Mi es
+    `Sol#5/Fa#5` — mismas teclas, nombre equivocado. **No trae digitación**.
+  - **Digitación inventada**: la derecha alterna una voz que baja con una
+    nota fija arriba, a una **octava** de abertura en todos los compases 1-6
+    (pulgar–meñique). Pedal siempre con el 5; voz de abajo 1-4-3-2 en los
+    compases 1/3/5 y 3-2-1-1 (el pulgar baja un paso) en los 2/4/6; c. 7-8
+    5-4-3-4-5. Izquierda con el pulgar en La3 (La 1, Sol 2, Fa 3, Mi 4, Re 5);
+    el Do3 del c. 4 estira el meñique un paso, avisado.
+  - `plan:false` porque la octava a ♩=120 está por encima del nivel actual.
 - **Lectura**: `READING_LEVELS` (7 niveles, clave de Sol / Fa / ambas / alteraciones).
   `renderStaff(svg, [{sp, cls, clef}], {clef, width, gap, showName})`; `sp` viene de
   `spellMidi(midi, preferFlat)` o `spellFromName('B#', 60)` (respeta octava de la letra).
