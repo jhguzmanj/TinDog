@@ -1,6 +1,28 @@
 window.SONGS = window.SONGS || [];
 window.SONGS.push({
   id: 'clocks',
+  spec: {
+    "title": "Clocks",
+    "composer": "Coldplay",
+    "credit": "arreglo fácil de 22 compases",
+    "source": "imágenes de la partitura transcritas con el lector (sin MusicXML ni MIDI): dedos de la derecha impresos, dedos de la izquierda propuestos",
+    "key": {
+      "tonic": "Db",
+      "mode": "major"
+    },
+    "keyNote": "armadura de 5 bemoles (Db mayor / Sib menor); el riff gira en torno a Mib menor (Mibm–Sibm–Fam). Se declara la armadura, no un modo",
+    "tempoSource": "audio",
+    "tempoNote": "negra con puntillo = 80 (= negra 120) lo indicó Jorge al pedir la pieza; NO está verificado contra la partitura impresa ni contra una grabación (no hay MIDI). Confirmar y cambiar tempoSource a \"printed\" si está impreso",
+    "notes_text": [
+      "el riff agrupa las corcheas de 3 en 3 + 2 (3+3+2) en compases de 4/4",
+      "orden con repeticiones y casillas: A A B B C C D D E E1 E E2 (E1 y E2 son las casillas 1ª y 2ª); las notas se entregan una vez por sección"
+    ],
+    "doubtSections": {
+      "C": "lectura poco nítida en la partitura original (compases 9-11); verificar de oído (no hay MIDI para contrastar)"
+    },
+    "allowedChromatics": [],
+    "fingersDetail": "derecha: dedos de la partitura (printed); izquierda: dedos propuestos en el lector (5-3-1 en los acordes, meñique en los bajos sueltos), no vienen de la partitura"
+  },
   text: `
 title: Clocks
 artist: Coldplay
@@ -16,43 +38,43 @@ rh: Eb5/8:4 Bb4/8:2 Gb4/8:1 Eb5/8:4 Bb4/8:2 Gb4/8:1 Eb5/8:4 Bb4/8:2 |
 rh: Db5/8:3 Bb4/8:2 F4/8:1 Db5/8:3 Bb4/8:2 F4/8:1 Db5/8:3 Bb4/8:2 |
 rh: Db5/8:3 Bb4/8:2 F4/8:1 Db5/8:3 Bb4/8:2 F4/8:1 Db5/8:3 Bb4/8:2 |
 rh: C5/8:4 Ab4/8:2 F4/8:1 C5/8:4 Ab4/8:2 F4/8:1 C5/8:4 Ab4/8:2
-lh: Eb4/1:1 | Bb3/1:5 | Bb3/1:5 | F3/1:5
+lh: Eb4/1:1? | Bb3/1:5? | Bb3/1:5? | F3/1:5?
 
 [B] Melodía (c.5-8)
 rh: Eb5/4:5 Eb5/4:5 Eb5/4:5 Eb5/8:5 C5/8:3 |
 rh: Db5/8:4 C5/4:3 Bb4/2:2 r/8 |
 rh: Db5/4:4 Db5/4:4 Db5/4:4 Db5/8:4 Bb4/8:2 |
 rh: C5/8:3 Bb4/4:2 Ab4/2:1 r/8
-lh: [Gb3,Bb3,Eb4]/1:5,3,1 | [F3,Bb3,Db4]/1:5,3,1 | [F3,Bb3,Db4]/1:5,3,1 | [F3,Ab3,C4]/1:5,3,1
+lh: [Gb3,Bb3,Eb4]/1:5?,3?,1? | [F3,Bb3,Db4]/1:5?,3?,1? | [F3,Bb3,Db4]/1:5?,3?,1? | [F3,Ab3,C4]/1:5?,3?,1?
 
 [C] Verso (c.9-11)
 rh: r/2. Db4/4:1 |
 rh: Db4/4:1 Ab4/2:5 Gb4/8:4 F4/8:3 |
 rh: Eb4/4:2 Db4/8:1 Eb4/8:2 F4/2:3
-lh: [Db3,Gb3,Bb3]/1:5,3,1~ | [Db3,Gb3,Bb3]/1:5,3,1 | [Db3,F3,Ab3]/1:5,3,1
+lh: [Db3,Gb3,Bb3]/1:5?,3?,1?~ | [Db3,Gb3,Bb3]/1:5?,3?,1? | [Db3,F3,Ab3]/1:5?,3?,1?
 
 [D] Riff grave (c.12-15)
 rh: Eb5/8:4 Bb4/8:2 Gb4/8:1 Eb5/8:4 Bb4/8:2 Gb4/8:1 Eb5/8:4 Bb4/8:2 |
 rh: Db5/8:3 Bb4/8:2 F4/8:1 Db5/8:3 Bb4/8:2 F4/8:1 Db5/8:3 Bb4/8:2 |
 rh: Db5/8:3 Bb4/8:2 F4/8:1 Db5/8:3 Bb4/8:2 F4/8:1 Db5/8:3 Bb4/8:2 |
 rh: C5/8:4 Ab4/8:2 F4/8:1 C5/8:4 Ab4/8:2 F4/8:1 C5/8:4 Ab4/8:2
-lh: Eb3/1:5 | Bb2/1:5 | Bb2/1:5 | F2/1:5
+lh: Eb3/1:5? | Bb2/1:5? | Bb2/1:5? | F2/1:5?
 
 [E] Riff agudo (c.16-18)
 rh: Ab5/8:5 Gb5/8:4 Eb5/8:1 Ab5/8:5 Gb5/8:4 Eb5/8:1 Ab5/8:5 Gb5/8:4 |
 rh: Ab5/8:5 Gb5/8:4 Db5/8:1 Ab5/8:5 Gb5/8:4 Db5/8:1 Ab5/8:5 Gb5/8:4 |
 rh: Ab5/8:5 Gb5/8:4 Db5/8:1 Ab5/8:5 Gb5/8:4 Db5/8:1 Ab5/8:5 Gb5/8:4
-lh: [Gb3,Bb3,Eb4]/1:5,3,1 | [F3,Bb3,Db4]/1:5,3,1 | [F3,Bb3,Db4]/1:5,3,1
+lh: [Gb3,Bb3,Eb4]/1:5?,3?,1? | [F3,Bb3,Db4]/1:5?,3?,1? | [F3,Bb3,Db4]/1:5?,3?,1?
 
 [E1] Casilla 1 (c.19)
 rh: Ab5/8:5 Gb5/8:4 C5/8:1 Ab5/8:5 Gb5/8:4 C5/8:1 Ab5/8:5 Gb5/8:4
-lh: [F3,Ab3,C4]/1:5,3,1
+lh: [F3,Ab3,C4]/1:5?,3?,1?
 
 [E2] Casilla 2 - final (c.20-22)
 rh: Ab5/8:5 Gb5/8:4 C5/8:1 Ab5/8:5 Gb5/8:4 C5/8:1 Ab5/8:5 Gb5/8:4 |
 rh: Ab5/8:5 Gb5/8:4 C5/8:1 Ab5/8:5 Gb5/8:4 C5/8:1 Ab5/8:5 Gb5/8:4 |
 rh: Ab5/8:5 Gb5/8:4 C5/8:1 Ab5/8:5 Gb5/8:4 C5/8:1 Ab5/8:5 Gb5/8:4
-lh: [F3,Ab3,C4]/1:5,3,1~ | [F3,Ab3,C4]/1:5,3,1~ | [F3,Ab3,C4]/1:5,3,1
+lh: [F3,Ab3,C4]/1:5?,3?,1?~ | [F3,Ab3,C4]/1:5?,3?,1?~ | [F3,Ab3,C4]/1:5?,3?,1?
 
 order: A A B B C C D D E E1 E E2
 `.trim(),

@@ -3,7 +3,7 @@
 const $ = id => document.getElementById(id);
 const player = new Player();
 
-let song = null, timeline = null, position = null, loopBlock = null, original = '';
+let song = null, timeline = null, position = null, loopBlock = null, original = '', currentEntry = null;
 
 const el = {
   select: $('song-select'), editor: $('editor'), errors: $('errors'), info: $('song-info'),
@@ -27,6 +27,7 @@ function selectSong(index) {
   const entry = (window.SONGS || [])[index];
   if (!entry) return;
   original = entry.text;
+  currentEntry = entry;
   el.editor.value = entry.text;
   apply();
 }
@@ -240,7 +241,28 @@ $('btn-midi').onclick = () => download(
     quarterBpm: song.quarterBpm, beatsPerBar: song.beatsPerBar, title: song.meta.title,
   }), `${slug(song.meta.title)}.mid`);
 
-$('btn-json').onclick = () => download(MidiExport.exportJson(song, timeline), `${slug(song.meta.title)}.json`);
+// JSON en el formato que exige la app del piano (ver piezas-json/). Si la pieza no está
+// completa -dedos en cada nota, tonalidad, compositor, fuente- NO exporta a medias: lista qué falta.
+$('btn-json').onclick = async () => {
+  const out = SpecExport.build(song, currentEntry);
+  $('export-box').hidden = false;
+  if (!out.ok) {
+    $('export-out').textContent = out.errors.map(e => '• ' + e).join('\n');
+    $('export-note').textContent = 'NO se exportó: la app del piano rechazaría este JSON.';
+    return;
+  }
+  const text = SpecExport.format(out.doc);
+  $('export-out').textContent = text;
+  const f = out.doc.checks.fingers;
+  $('export-note').textContent =
+    `JSON para la app · ${out.doc.title} · tono ${out.doc.key.tonic} ${out.doc.key.mode === 'major' ? 'mayor' : 'menor'} · ` +
+    `${out.doc.notes.length} notas, todas con dedo (${f.printed} impresos, ${f.suggested} propuestos).` +
+    (out.warnings.length ? ' ⚠ ' + out.warnings.join(' ') : '');
+  try {
+    await navigator.clipboard.writeText(text);
+    $('export-note').textContent += ' Copiado al portapapeles.';
+  } catch { /* sin portapapeles: queda visible para copiar a mano */ }
+};
 
 $('btn-trainer').onclick = async () => {
   const block = loopBlock === null ? null : timeline.blocks[loopBlock];

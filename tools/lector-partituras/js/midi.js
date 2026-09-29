@@ -53,25 +53,4 @@ function exportMidi(timeline, { quarterBpm = 100, beatsPerBar = 4, title = 'song
   return new Blob([new Uint8Array(tracks.flat())], { type: 'audio/midi' });
 }
 
-function exportJson(song, timeline) {
-  return new Blob([JSON.stringify({
-    title: song.meta.title || '',
-    artist: song.meta.artist || '',
-    key: song.meta.key || '',
-    meter: song.meta.meter || '4/4',
-    quarterBpm: song.quarterBpm,
-    tempoMark: `${song.tempoValue} ${song.tempoUnit}`,
-    bars: timeline.bars,
-    order: song.order,
-    notes: timeline.notes.map(n => ({
-      midi: n.midi,
-      name: window.Notation.midiToName(n.midi),
-      hand: n.hand,
-      startBeat: +n.start.toFixed(4),
-      durationBeats: +n.dur.toFixed(4),
-      bar: n.bar,
-    })),
-  }, null, 2)], { type: 'application/json' });
-}
-
-window.MidiExport = { exportMidi, exportJson };
+window.MidiExport = { exportMidi };

@@ -15,6 +15,25 @@ const MOZART_ARIOSO = {
   artist: 'Wolfgang Amadeus Mozart',
   tip: 'Melodía cantabile, tempo lento (71 BPM). Estructura AABB: las secciones se repiten literalmente. Solo dos acordes de 2 notas cerca del final, el resto es una nota por mano.',
   tempo: '71 quarter',
+  spec: {
+    "title": "Arioso",
+    "composer": "Mozart",
+    "credit": "Arioso — Mozart — Pianolessen.eu (tal como está impreso)",
+    "source": "partitura PDF + MusicXML (32 compases); alturas y dedos impresos del MusicXML, ritmo y tempo confirmados con el MIDI",
+    "key": {
+      "tonic": "G",
+      "mode": "major"
+    },
+    "tempoSource": "audio",
+    "tempoNote": "Impreso solo \"Adagio\", sin número. Los 71 salen del MIDI adjunto (70.9998 en el XML), no de una grabación.",
+    "notes_text": [
+      "\"Adagio\" impreso. La partitura está escrita sin barras de repetición: los compases 9-16 repiten literalmente los 1-8 y los 25-32 los 17-24, y así se entregan (order A B C D)"
+    ],
+    "allowedChromatics": [
+      "C#",
+      "G#"
+    ]
+  },
   text: `title: Mozart Arioso
 artist: Wolfgang Amadeus Mozart
 meter: 3/4
@@ -22,20 +41,20 @@ tempo: 71 quarter
 key: Sol mayor (1 sostenido)
 
 [A] Tema (c.1-8)
-rh: D5/8 B4/8 A4/8 G4/8 F#4/8 G4/8 | G4/4 A4/2 | C5/8 A4/8 G4/8 F#4/8 E4/8 F#4/8 | G4/2 r/4 | B5/4 G5/4 E5/4 | C#5/4 D5/4 r/8 A4/8 | B4/8 E5/8 D5/4 C#5/4 | D5/4 r/2 |
-lh: G3/4 B3/4 D4/4 | C4/4 C4/4 C4/4 | D4/4 D4/4 D4/4 | G3/4 B3/4 D4/4 | G3/4 B3/4 E4/4 | A3/4 F#3/4 r/4 | G3/4 A3/4 A3/4 | F#3/4 D3/4 r/4 |
+rh: D5/8:5 B4/8:3 A4/8:2 G4/8:1 F#4/8:2 G4/8:3 | G4/4:2 A4/2:3? | C5/8:5 A4/8:4 G4/8:3 F#4/8:2 E4/8:1 F#4/8:2 | G4/2:3? r/4 | B5/4:5 G5/4:3? E5/4:1 | C#5/4:2 D5/4:3 r/8 A4/8:1 | B4/8:2? E5/8:5? D5/4:3? C#5/4:2? | D5/4:3? r/2 |
+lh: G3/4:5 B3/4:3? D4/4:1? | C4/4:2? C4/4:2? C4/4:2? | D4/4:1? D4/4:1? D4/4:1? | G3/4:5? B3/4:3? D4/4:1? | G3/4:5 B3/4:3 E4/4:1 | A3/4:4 F#3/4:5? r/4 | G3/4:2 A3/4:1? A3/4:1? | F#3/4:3 D3/4:5 r/4 |
 
 [B] Repetición (c.9-16)
-rh: D5/8 B4/8 A4/8 G4/8 F#4/8 G4/8 | G4/4 A4/2 | C5/8 A4/8 G4/8 F#4/8 E4/8 F#4/8 | G4/2 r/4 | B5/4 G5/4 E5/4 | C#5/4 D5/4 r/8 A4/8 | B4/8 E5/8 D5/4 C#5/4 | D5/4 r/2 |
-lh: G3/4 B3/4 D4/4 | C4/4 C4/4 C4/4 | D4/4 D4/4 D4/4 | G3/4 B3/4 D4/4 | G3/4 B3/4 E4/4 | A3/4 F#3/4 r/4 | G3/4 A3/4 A3/4 | F#3/4 D3/4 r/4 |
+rh: D5/8:5 B4/8:3 A4/8:2 G4/8:1 F#4/8:2 G4/8:3 | G4/4:2 A4/2:3? | C5/8:5 A4/8:4 G4/8:3 F#4/8:2 E4/8:1 F#4/8:2 | G4/2:3? r/4 | B5/4:5 G5/4:3? E5/4:1 | C#5/4:2 D5/4:3 r/8 A4/8:1 | B4/8:2? E5/8:5? D5/4:3? C#5/4:2? | D5/4:3? r/2 |
+lh: G3/4:5 B3/4:3? D4/4:1? | C4/4:2? C4/4:2? C4/4:2? | D4/4:1? D4/4:1? D4/4:1? | G3/4:5? B3/4:3? D4/4:1? | G3/4:5 B3/4:3 E4/4:1 | A3/4:4 F#3/4:5? r/4 | G3/4:2 A3/4:1? A3/4:1? | F#3/4:3 D3/4:5 r/4 |
 
 [C] Desarrollo (c.17-24)
-rh: D5/8 B4/8 A4/8 G4/8 F#4/8 G4/8 | E5/2. | E5/8 C#5/8 B4/8 A4/8 G#4/8 A4/8 | F#5/2 r/4 | E5/4 C5/4 A4/4 | F#4/4 G4/4 r/8 D4/8 | E4/8 A4/8 G4/4 F#4/4 | G4/2 r/4 |
-lh: B3/4 B3/4 B3/4 | C4/4 B3/4 C4/4 | C#4/4 C#4/4 C#4/4 | D4/4 C#4/4 D4/4 | C4/4 C4/4 C4/4 | C4/4 B3/4 r/4 | C4/4 [B3,D4]/4 [A3,C4]/4 | [G3,B3]/2 r/4 |
+rh: D5/8:5 B4/8:3 A4/8:2? G4/8:1? F#4/8:2 G4/8:1 | E5/2.:5? | E5/8:5 C#5/8:3 B4/8:2? A4/8:1? G#4/8:2 A4/8:1 | F#5/2:5 r/4 | E5/4:5 C5/4:3 A4/4:1 | F#4/4:2 G4/4:3 r/8 D4/8:1 | E4/8:2? A4/8:5? G4/4:3? F#4/4:1? | G4/2:2? r/4 |
+lh: B3/4:2 B3/4:2? B3/4:2? | C4/4:1? B3/4:2? C4/4:2? | C#4/4:2 C#4/4:2? C#4/4:2? | D4/4:1 C#4/4:2? D4/4:1? | C4/4:2? C4/4:2? C4/4:1? | C4/4:1? B3/4:2? r/4 | C4/4:2 [B3,D4]/4:3?,1? [A3,C4]/4:4?,2? | [G3,B3]/2:5?,2? r/4 |
 
 [D] Cierre (c.25-32)
-rh: D5/8 B4/8 A4/8 G4/8 F#4/8 G4/8 | E5/2. | E5/8 C#5/8 B4/8 A4/8 G#4/8 A4/8 | F#5/2 r/4 | E5/4 C5/4 A4/4 | F#4/4 G4/4 r/8 D4/8 | E4/8 A4/8 G4/4 F#4/4 | G4/2 r/4 |
-lh: B3/4 B3/4 B3/4 | C4/4 B3/4 C4/4 | C#4/4 C#4/4 C#4/4 | D4/4 C#4/4 D4/4 | C4/4 C4/4 C4/4 | C4/4 B3/4 r/4 | C4/4 [B3,D4]/4 [A3,C4]/4 | [G3,B3]/2 r/4 |
+rh: D5/8:5 B4/8:3 A4/8:2? G4/8:1? F#4/8:2 G4/8:1 | E5/2.:5? | E5/8:5 C#5/8:3 B4/8:2? A4/8:1? G#4/8:2 A4/8:1 | F#5/2:5 r/4 | E5/4:5 C5/4:3 A4/4:1 | F#4/4:2 G4/4:3 r/8 D4/8:1 | E4/8:2? A4/8:5? G4/4:3? F#4/4:1? | G4/2:2? r/4 |
+lh: B3/4:2 B3/4:2? B3/4:2? | C4/4:1? B3/4:2? C4/4:2? | C#4/4:2 C#4/4:2? C#4/4:2? | D4/4:1 C#4/4:2? D4/4:1? | C4/4:2? C4/4:2? C4/4:1? | C4/4:1? B3/4:2? r/4 | C4/4:2 [B3,D4]/4:3?,1? [A3,C4]/4:4?,2? | [G3,B3]/2:5?,3? r/4 |
 
 order: A B C D
 `

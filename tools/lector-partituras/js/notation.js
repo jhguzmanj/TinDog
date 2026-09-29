@@ -51,22 +51,36 @@ function parseHand(text, meterQuarters, label) {
     const [durPart, fingerPart] = body.slice(slash + 1).split(':');
     const dur = durationToQuarters(durPart);
     if (dur === null) { errors.push(`${label} c.${barNo}: duración inválida en "${tok}"`); continue; }
-    const fingers = fingerPart ? fingerPart.split(',').map(Number) : null;
+    // Dedos: "4" viene impreso en la partitura, "4?" es una propuesta (se distingue al exportar).
+    let fingers = null, suggested = null;
+    if (fingerPart) {
+      const parts = fingerPart.split(',');
+      const bad = parts.find(f => !/^[1-5]\??$/.test(f));
+      if (bad !== undefined) {
+        errors.push(`${label} c.${barNo}: dedo inválido "${bad}" en "${tok}" (de 1 a 5; con ? si es propuesto)`);
+        continue;
+      }
+      fingers = parts.map(f => parseInt(f, 10));
+      suggested = parts.map(f => f.endsWith('?'));
+    }
 
     const head = body.slice(0, slash);
     if (head === 'r' || head === 'R') { t += dur; continue; }
 
     const raw = head.startsWith('[') ? head.slice(1, -1).split(',') : [head];
-    const pitches = [];
+    const pitches = [], names = [];
     for (const p of raw) {
       const midi = pitchToMidi(p);
       if (midi === null) errors.push(`${label} c.${barNo}: nota desconocida "${p}"`);
-      else pitches.push(midi);
+      else {
+        pitches.push(midi);
+        names.push(p.trim()[0].toUpperCase() + p.trim().slice(1));  // se conserva el deletreo escrito (F# no es Gb)
+      }
     }
     if (fingers && fingers.length !== pitches.length) {
       errors.push(`${label} c.${barNo}: "${tok}" tiene ${pitches.length} notas y ${fingers.length} dedos`);
     }
-    if (pitches.length) events.push({ start: t, dur, pitches, fingers, tie, bar: barNo });
+    if (pitches.length) events.push({ start: t, dur, pitches, names, fingers, suggested, tie, bar: barNo });
     t += dur;
   }
   if (t > barStart + 1e-6) closeBar();
@@ -141,6 +155,8 @@ function buildTimeline(song) {
           if (prev) { prev.dur += ev.dur; prev.open = ev.tie; continue; }
           notes.push({ midi, hand, start: t + ev.start, dur: ev.dur, open: ev.tie,
                        finger: ev.fingers ? ev.fingers[i] : null,
+                       fingerSuggested: ev.suggested ? ev.suggested[i] : false,
+                       spelled: ev.names[i],
                        bar: barOffset + ev.bar, block: blocks.length });
         }
       }

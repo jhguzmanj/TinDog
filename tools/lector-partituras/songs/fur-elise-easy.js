@@ -25,13 +25,32 @@ const FUR_ELISE_EASY = {
   artist: 'Ludwig van Beethoven',
   tip: 'El tema principal completo, la parte más famosa de la pieza; la partitura lo repite una vez. La izquierda no entra hasta el compás 3 (los dos primeros son solo la derecha).',
   tempo: '120 quarter',
+  spec: {
+    "title": "Für Elise",
+    "composer": "Beethoven",
+    "credit": "el archivo se titula \"Fur Elise\" y no trae compositor ni arreglista; el nombre de la obra identifica a Beethoven",
+    "source": "partitura PDF + MusicXML (13 compases); alturas y dedos impresos del MusicXML, ritmo y tempo confirmados con el MIDI",
+    "key": {
+      "tonic": "A",
+      "mode": "minor"
+    },
+    "tempoSource": "audio",
+    "tempoNote": "La partitura no imprime tempo. Los 120 salen del MIDI adjunto, no de una grabación.",
+    "notes_text": [
+      "barra de repetición hacia atrás al final del compás 13 (sin inicio de repetición): el tema completo se toca dos veces, por eso order = [\"A\",\"A\"]. El MIDI también lo toca dos veces (78 tiempos = 2 × 39)"
+    ],
+    "allowedChromatics": [
+      "D#",
+      "G#"
+    ]
+  },
   text: `title: Für Elise
 artist: Ludwig van Beethoven
 meter: 3/4
 tempo: 120 quarter
 
 [A] Tema Principal
-rh: r/2 E5/8:5 D#5/8:4 | E5/8:4 D#5/8:3 E5/8:4 B4/8:2 D5/8:4 C5/8:3 | A4/4:2 r/8 C4/8:1 E4/8:2 A4/8:4 | B4/4:5 r/8 E4/8:1 G#4/8:2 B4/8:3 | C5/4:4 r/8 E4/8:1 E5/8:5 D#5/8:4 | E5/8:4 D#5/8:3 E5/8:4 B4/8:2 D5/8:4 C5/8:3 | A4/4:2 r/8 C4/8:1 E4/8:2 A4/8:4 | B4/4:5 r/8 E4/8:1 C5/8:3 B4/8:2 | A4/4:1 r/8 B4/8:2 C5/8:3 D5/8:4 | E5/4:5 r/8 G4/8:1 F5/8:5 E5/8:4 | D5/4:3 r/8 F4/8:1 E5/8:5 D5/8:4 | C5/4:3 r/8 E4/8:1 D5/8:5 C5/8:4 | B4/2.:3 |
+rh: r/2 E5/8:5 D#5/8:4 | E5/8:4? D#5/8:3? E5/8:4? B4/8:2 D5/8:4 C5/8:3 | A4/4:2 r/8 C4/8:1 E4/8:2 A4/8:4 | B4/4:5 r/8 E4/8:1 G#4/8:2 B4/8:3 | C5/4:4 r/8 E4/8:1 E5/8:5 D#5/8:4 | E5/8:4? D#5/8:3? E5/8:4? B4/8:2 D5/8:4 C5/8:3 | A4/4:2 r/8 C4/8:1 E4/8:2 A4/8:4 | B4/4:5 r/8 E4/8:1 C5/8:3 B4/8:2 | A4/4:1 r/8 B4/8:2 C5/8:3 D5/8:4 | E5/4:5 r/8 G4/8:1 F5/8:5 E5/8:4 | D5/4:3 r/8 F4/8:1 E5/8:5 D5/8:4 | C5/4:3 r/8 E4/8:1 D5/8:5 C5/8:4 | B4/2.:3 |
 
 lh: r/2. | r/2. | A3/2:1 r/4 | E3/2:4 r/4 | A3/2:1 r/4 | r/2. | A3/2:1 r/4 | E3/2:4 r/4 | A3/2:2 r/4 | C4/2:1 r/4 | B3/2:2 r/4 | A3/2:3 r/4 | G#3/2.:4 |
 

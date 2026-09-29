@@ -80,8 +80,20 @@ ocho corcheas.
 dedo (`lhF`/`rhF` del mismo tamaño que `lh`/`rh`), así que una pieza a medio digitar no
 entra. Donde la partitura no trae dedos, pon la digitación estándar y dilo en el `tip`.
 
-También exporta MIDI estándar y un JSON plano (lista de notas con `startBeat`), por si
-hacen falta fuera del entrenador.
+También exporta MIDI estándar.
+
+### Botón «JSON para la app»
+Genera el JSON que exige la app del piano (el mismo formato de `piezas-json/`) y lo copia
+al portapapeles. **No exporta a medias**: si falta un dedo en alguna nota, la tonalidad, el
+compositor o la fuente, muestra qué falta en vez de un JSON que la app rechazaría.
+- Los dedos se escriben en el texto después de la duración: `Eb5/8:4` es impreso en la
+  partitura; `Eb5/8:4?` es propuesto (sale con `fingerSource:"suggested"`). Un acorde lleva
+  uno por nota: `[F3,Ab3]/1:5,3`.
+- Compositor, tonalidad, fuente y tempo viven en el bloque `spec` de cada archivo de
+  `songs/` (no caben en el texto de la partitura). `js/specexport.js` los lee.
+- La ortografía es la escrita (`Eb5`, no `D#5`), las ligaduras se unen y los repetidos van
+  una sola vez con `order`.
+- La prueba que lo fija: exportar las seis piezas y compararlas con `piezas-json/`.
 
 ## Añadir una canción
 

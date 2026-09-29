@@ -18,6 +18,25 @@ const PASSACAGLIA_SAMPLE = {
   artist: "D'après Handel",
   tip: 'SOLO los primeros 8 compases, para escuchar cómo suena - no para practicar todavía. La pieza completa (72 compases) es de nivel muy avanzado: la derecha salta sin parar entre una nota aguda fija y una melodía que baja debajo. Mucho más difícil que Cannon in D.',
   tempo: '120 quarter',
+  spec: {
+    "title": "Passacaglia",
+    "composer": "Händel",
+    "credit": "D'après Handel (tal como está impreso; el arreglista no aparece)",
+    "source": "partitura PDF + MusicXML (MuseScore 4.5), compases 1-8 de 72; alturas y dedos impresos del MusicXML, ritmo y tempo confirmados con el MIDI adjunto",
+    "key": {
+      "tonic": "A",
+      "mode": "minor"
+    },
+    "tempoSource": "audio",
+    "tempoNote": "La partitura no imprime tempo (solo \"rit. al fine\"). Los 120 salen del MIDI adjunto, no de una grabación.",
+    "notes_text": [
+      "solo los compases 1-8 de 72 (muestra). \"rit. al fine\" impreso en el compás 6 (y en 14, 22, 30, 46 y 70); el MIDI no baja el tempo"
+    ],
+    "allowedChromatics": [
+      "F#",
+      "G#"
+    ]
+  },
   text: `title: Passacaglia (muestra, c.1-8)
 artist: D'après Handel
 meter: 4/4
@@ -25,9 +44,9 @@ tempo: 120 quarter
 source: MusicXML + MIDI (120 BPM confirmado)
 
 [A] Apertura
-rh: C5/8 C6/8 B5/8 C6/8 A5/8 C6/8 G5/8 C6/8 | F5/8 C6/8 E5/8 C6/8 D5/8 C6/8 C5/8 C6/8 | B4/8 B5/8 A5/8 B5/8 G5/8 B5/8 F5/8 B5/8 | E5/8 B5/8 D5/8 B5/8 C5/8 B5/8 B4/8 B5/8 | A4/8 A5/8 G5/8 A5/8 F5/8 A5/8 E5/8 A5/8 | D5/8 A5/8 C5/8 A5/8 B4/8 A5/8 A4/8 A5/8 | A5/4 G#5/8 F#5/8 G#5/4. A5/8 | A5/1 |
+rh: C5/8:1 C6/8:5 B5/8:4 C6/8:5 A5/8:3 C6/8:5 G5/8:2 C6/8:5 | F5/8:1 C6/8:5 E5/8:1 C6/8:5 D5/8:1 C6/8:5 C5/8:1 C6/8:5 | B4/8:1 B5/8:5 A5/8:4 B5/8:5 G5/8:3 B5/8:5 F5/8:2 B5/8:5 | E5/8:1 B5/8:5 D5/8:1 B5/8:5 C5/8:1 B5/8:5 B4/8:1 B5/8:5 | A4/8:1 A5/8:5 G5/8:4 A5/8:5 F5/8:3 A5/8:5 E5/8:2 A5/8:5 | D5/8:1 A5/8:5 C5/8:1 A5/8:5 B4/8:1 A5/8:5 A4/8:1 A5/8:5 | A5/4:5 G#5/8:4 F#5/8:3 G#5/4.:4 A5/8:5 | A5/1:5 |
 
-lh: A3/1 | D3/1 | G3/1 | C3/1 | F3/1 | D3/1 | E3/1 | A3/1 |
+lh: A3/1:1 | D3/1:4 | G3/1:1 | C3/1:5 | F3/1:2 | D3/1:4 | E3/1:3 | A3/1:1 |
 
 order: A
 `
