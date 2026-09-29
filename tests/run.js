@@ -2104,6 +2104,10 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
     check(rh === '72,84,83,84,81,84,79,84,77,84,76,84,74,84,72,84,71,83,81,83,79,83,77,83,76,83,74,83,72,83,71,83,' +
       '69,81,79,81,77,81,76,81,74,81,72,81,71,81,69,81,81,80,78,80,81,81', 'la derecha, nota por nota, igual al JSON recibido');
     check(pc.steps.every(s => s.rhF.length === s.rh.length && (s.lhF || []).length === s.lh.length), 'toda nota lleva dedo');
+    // Segunda versión del JSON: trae `finger` con fingerSource:"printed" (MusicXML). Ganan los impresos.
+    check(pc.steps.filter(s => s.lh.length).map(s => s.lhF[0]).join(',') === '1,4,1,5,2,4,3,1', 'izquierda: dedos impresos 1-4-1-5-2-4-3-1');
+    check(pc.steps.flatMap(s => s.rhF).join(',') === '1,5,4,5,3,5,2,5,1,5,1,5,1,5,1,5,1,5,4,5,3,5,2,5,1,5,1,5,1,5,1,5,' +
+      '1,5,4,5,3,5,2,5,1,5,1,5,1,5,1,5,5,4,3,4,5,5', 'derecha: dedos impresos, nota por nota');
     check(pc.steps.every(s => !s.lh.length || s.lh[0] < Math.min(...s.rh)), 'las manos no se cruzan');
   }
 

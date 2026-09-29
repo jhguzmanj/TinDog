@@ -398,18 +398,33 @@ y dentro de "Más ▾": `free | functions`.
   - **Defectos del JSON**, para quien arme ese flujo: `key` vacío (es La
     menor) y el c. 7 deletreado `Ab5/Gb5` cuando sobre el acorde de Mi es
     `Sol#5/Fa#5` — mismas teclas, nombre equivocado. **No trae digitación**.
-  - **Digitación inventada**: la derecha alterna una voz que baja con una
-    nota fija arriba, a una **octava** de abertura en todos los compases 1-6
-    (pulgar–meñique). Pedal siempre con el 5; voz de abajo 1-4-3-2 en los
-    compases 1/3/5 y 3-2-1-1 (el pulgar baja un paso) en los 2/4/6; c. 7-8
-    5-4-3-4-5. Izquierda con el pulgar en La3 (La 1, Sol 2, Fa 3, Mi 4, Re 5);
-    el Do3 del c. 4 estira el meñique un paso, avisado.
+  - **Digitación: IMPRESA** (tercera entrega del JSON, ver abajo). La primera
+    versión de la app llevaba dedos inventados; el MusicXML trae los reales y
+    ganan. Derecha: meñique (5) en la nota fija de arriba en los c. 1-6; la voz
+    de abajo va 1-4-3-2 en los c. 1/3/5 y **pulgar en cada tecla** (1-1-1-1) en
+    los 2/4/6; c. 7 con 5-4-3-4-5. Izquierda: 1-4-1-5-2-4-3-1 (La, Re, Sol, Do,
+    Fa, Re, Mi, La): **NO es posición fija** (pulgar en La y en Sol, meñique en
+    Do), la mano se recoloca cada compás. Es lo que dice la partitura; no
+    "arreglarlo" a posición fija ni entra en la auditoría de la izquierda. Hay
+    prueba que fija ambas listas.
   - `plan:false` porque la octava a ♩=120 está por encima del nivel actual.
   - **Segunda entrega del mismo JSON** (después de pasarle al otro flujo una
     especificación con `finger`, `key`, deletreo, `doubt` y `checks`): las 62
     notas llegaron idénticas y el único cambio fue `artist` → "D'après
     Handel". Ninguna mejora de la especificación se aplicó. Se actualizó solo
     el nombre.
+  - **Tercera entrega: la especificación SÍ se aplicó.** Llegó `id`
+    (`passacaglia-sample`), `key` `{tonic:"A", mode:"minor"}`, `pickupBeats`,
+    `tempoSource:"audio"` (los 120 salen del MIDI, la partitura no imprime
+    tempo), `sections`, y por nota `finger` + `fingerSource:"printed"` (62 de
+    62 impresos, 0 propuestos). También `checks` (duración por compás, notas en
+    la tonalidad con las cromáticas listadas, cruce de manos, abertura de
+    mano) y `notes_text`. **Deletreo corregido** (G#5/F#5 en el c. 7). Verificado
+    contra la app: las 54 entradas de notas y ritmo son **idénticas** a las que
+    ya estaban; solo cambiaron 9 dedos. Dos avisos que el JSON sí da y la app
+    no usa: `"rit. al fine"` impreso en el c. 6 (el MIDI no baja el tempo, así
+    que la pieza no frena) y `credit`. Ojo con el `credit`: dice "el arreglista
+    no aparece" — no inventar autor.
 - **"Para Elisa / Für Elise", versión simple** (`fur-elise`, Clásicas,
   `plan:false`). Segunda pieza del flujo de JSON. `meter:"3/4"`,
   `quarterBpm:120`, 26 compases, 122 notas, **sin digitación y sin `key`**
