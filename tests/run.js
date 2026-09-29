@@ -2126,9 +2126,15 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
     check(W("(() => { const s = SONGS.find(x => x.id === 'fur-elise').steps; return s[1] === FE_A[0] && s[52] === FE_A[0]; })()"),
       'las dos vueltas comparten FE_A: corregir una nota corrige las dos');
     check(fe.steps.every(s => s.rhF.length === s.rh.length && (s.lhF || []).length === s.lh.length), 'toda nota lleva dedo');
-    check(fe.steps.filter(s => s.lh.length).every(s => ({52:5,56:3,57:2,59:1,60:1})[s.lh[0]] === s.lhF[0]),
-      'izquierda en posición fija: Mi 5, Sol# 3, La 2, Si 1 (y el Do con el pulgar estirado)');
-    check(fe.steps.filter(s => s.lh[0] === 60).every(s => /pulgar sube a Do/.test(s.label || '')), 'el Do de la izquierda avisa que sube el pulgar');
+    // Dedos: los impresos del MusicXML (segunda entrega del JSON). Los 6 "sugeridos" (E-D#-E de los c. 2 y 6,
+    // que el proponedor dio como 4-3-4) se dejaron 5-4-5: es el motivo de la anacrusa (5-4 impreso).
+    const lhOne = '1,4,1,1,4,2,1,2,3,4';
+    check(fe.steps.filter(s => s.lh.length).map(s => s.lhF[0]).join(',') === lhOne + ',' + lhOne,
+      'izquierda: dedos impresos 1-4-1-1-4-2-1-2-3-4, en las dos vueltas (no es posición fija)');
+    const rhOne = '5,4,5,4,5,2,4,3,2,1,2,4,5,1,2,3,4,1,5,4,5,4,5,2,4,3,2,1,2,4,5,1,3,2,1,2,3,4,5,1,5,4,3,1,5,4,3,1,5,4,3';
+    check(fe.steps.flatMap(s => s.rhF).join(',') === rhOne + ',' + rhOne, 'derecha: dedos impresos nota por nota, en las dos vueltas');
+    check(fe.steps.flatMap(s => s.rh.map((n, i) => (n === 76 || n === 75) ? s.rhF[i] : null)).filter(x => x).slice(0, 5).join(',') === '5,4,5,4,5',
+      'el motivo Mi-Re#-Mi-Re#-Mi lleva 5-4-5-4-5 (sin el 4-3-4 sugerido)');
     check(fe.steps.every(s => !s.lh.length || s.lh[0] < Math.min(...s.rh)), 'las manos no se cruzan');
   }
 

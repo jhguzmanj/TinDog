@@ -427,8 +427,8 @@ y dentro de "Más ▾": `free | functions`.
     no aparece" — no inventar autor.
 - **"Para Elisa / Für Elise", versión simple** (`fur-elise`, Clásicas,
   `plan:false`). Segunda pieza del flujo de JSON. `meter:"3/4"`,
-  `quarterBpm:120`, 26 compases, 122 notas, **sin digitación y sin `key`**
-  (otra vez: la especificación sigue sin aplicarse).
+  `quarterBpm:120`. Primera entrega: 26 compases, 122 notas, **sin digitación
+  y sin `key`**. Segunda: la especificación sí se aplicó (ver abajo).
   - **Qué es**: la melodía real de los primeros compases (tema A + el
     episodio en Do, compases 9-13) en valores dobles (3/4 con corcheas en vez
     de 3/8 con semicorcheas: suena igual). **La izquierda NO es la de
@@ -446,20 +446,32 @@ y dentro de "Más ▾": `free | functions`.
     cada vuelta ("Anacrusa" / "Repetición", útil en el Tramo de la cascada) y
     el c. 13 dura 5 en la primera (absorbe los 2 tiempos de silencio antes de
     la repetición) y 3 al final. Mismo molde que el Himno.
-  - **Defectos del JSON**: `Eb5` donde es **Re#5** y `Ab4/Ab3` donde es
-    **Sol#** (La menor, acorde de Mi mayor) — el mismo error de deletreo que
-    en la Passacaglia, así que es sistemático del conversor: parece que
-    deletrea todo con bemoles. `key` vacío otra vez.
-  - **Digitación inventada.** Derecha: el motivo Mi–Re#–Mi–Re#–Mi–Si–Re–Do–La
-    con 5-4-5-4-5-2-4-3-1 (pulgar en La); Do-Mi-La 1-2-3, Mi-Sol#-Si 1-3-4;
-    en la parte B, pulgar en la nota grave y meñique en la aguda. **Los
-    saltos son el problema real de la pieza**: Mi4→Mi5 (octava, c. 5) y
-    Sol4→Fa5 / Fa4→Mi5 / Mi4→Re5 (7ªs, c. 10-12) en corcheas a ♩=120. Van
-    avisados. Izquierda en posición fija con el **pulgar en Si3** (Mi 5,
-    Sol# 3, La 2, Si 1) y el Do4 del c. 10 con el pulgar estirado, avisado.
-    No con el pulgar en Do4 (que daría un dedo por nota sin aviso): la
-    derecha toca Do4 en los c. 3 y 7 mientras la izquierda sostiene el La, y
-    los dos pulgares chocarían.
+  - **Defectos de la primera entrega** (ya corregidos en la segunda):
+    `Eb5` donde es **Re#5**, `Ab4/Ab3` donde es **Sol#**, `key` vacío, sin
+    dedos, y los c. 14-26 ya desplegados junto con `order:["A","A"]`.
+  - **Segunda entrega (`fur-elise-easy`, 13 compases, `order:["A","A"]`)**:
+    `key` La menor, deletreo con sostenidos, `fingerSource` por nota
+    (55 impresos, 6 `suggested`) y `checks`. Verificado contra la app: las 61
+    notas y su ritmo son **idénticos** a los c. 1-13 de la primera entrega; solo
+    cambian los dedos. La repetición ya no viene desplegada: la app la sigue
+    armando con `FE_A` (una sola vez en el JSON, dos en `SONGS`).
+    Quedan dos defectos: `pickupBeats:0` aunque la primera nota cae en el
+    tiempo 2 (es una anacrusa de 1 tiempo dentro de un c. 1 con silencio; la
+    app usa `pickup:1`) y `credit` sin compositor.
+  - **Los 6 dedos "sugeridos" NO se aceptaron.** Son el Mi–Re#–Mi de los c. 2
+    y 6, y el proponedor los dio como 4-3-4: deja el 4 en el Re# de la anacrusa
+    y otra vez en el Mi que sigue. Es el mismo motivo que la anacrusa imprime
+    como 5-4, así que quedó **5-4-5** (el 5-4-5-4-5-2-4-3-1 de siempre). Si el
+    otro flujo lo corrige (regla: un motivo que se repite copia los dedos
+    impresos de su primera aparición), volver a comparar. Hay prueba.
+  - **Digitación IMPRESA** (55 de 61). Derecha: 5-4-5-4-5-2-4-3 / 2-1-2-4 /
+    5-1-2-3 / 4-1-5-4 …; en la parte B, pulgar en la nota grave y 5 en la
+    aguda (5-1-5-4 / 3-1-5-4 / 3-1-5-4). Izquierda: **1-4-1-1-4-2-1-2-3-4**
+    (La, Mi, La, La, Mi, La, Do, Si, La, Sol#): NO es posición fija, la mano
+    se recoloca — pulgar en La3, luego en Do4 desde el c. 10. La versión
+    anterior (pulgar en Si3, inventada) se descartó; no volver a "arreglarla".
+    **Los saltos siguen siendo el problema real**: Mi4→Mi5 (octava, c. 5) y
+    Sol4→Fa5 / Fa4→Mi5 / Mi4→Re5 (7ªs, c. 10-12) en corcheas a ♩=120.
   - **Primera pieza en 3/4 que la cascada dibuja bien**: `meter:3` y
     `pickup:1` (ver la sección Cascada). Cumpleaños feliz es de 3 en el
     original y **no se tocó**: sus duraciones no se revisaron contra un 3/4,
