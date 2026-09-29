@@ -90,6 +90,47 @@ Copia `songs/clocks.js`, cambia el texto y añade el `<script>` en `index.html`.
 
 ## Estado
 
-- `songs/clocks.js` — Coldplay, arreglo fácil de 22 compases, sacado de las imágenes de
-  la partitura (decodificando los PNG, no a ojo). La sección C (c.9-11) es la menos
-  nítida en el original: conviene verificarla de oído antes de darla por buena.
+Piezas del lector (`songs/`):
+
+- `clocks.js` — Coldplay, arreglo fácil de 22 compases, sacado de las imágenes de la
+  partitura (decodificando los PNG, no a ojo). La sección C (c.9-11) es la menos nítida
+  en el original: conviene verificarla de oído antes de darla por buena. No hay MusicXML
+  ni MIDI de esta pieza, así que es la única sin contraste externo.
+- `fur-elise-easy.js` — el tema de 13 compases, **tocado dos veces**: la partitura trae una
+  barra de repetición al final (`order: A A`). Dedos: 55 de 61 impresos en la partitura.
+- `cannon-in-d.js` / `cannon-in-d-easy.js` — Pachelbel, 49 compases. La fácil es una
+  derivación mecánica de la completa (derecha = nota más aguda de cada acorde, izquierda =
+  la más grave). El ritardando del final está impreso (♩=90/70/45 en los c.47-49) pero
+  el formato de texto no puede escribir cambios de tempo.
+- `passacaglia-sample.js` — solo los compases 1-8 de 72, como muestra para escuchar.
+  El PDF dice "D'après Handel" y nada más: no se atribuye a ningún arreglista.
+- `mozart-arioso.js` — 32 compases, escritos sin barras de repetición (AABB literal).
+
+## Exportar a la app del piano: `piezas-json/`
+
+Una pieza por archivo, en el formato de la especificación de la app ("Piano MIDI
+Trainer": notas con `midi`, `name`, `hand`, `finger`, `startBeat`, `durationBeats`, `bar`).
+Reglas que se siguieron: las alturas salen de la partitura, el MIDI solo confirma tempo y
+ritmo y **si no coinciden gana la partitura**; el dedo es el impreso (`"fingerSource":
+"printed"`) o, si falta, uno propuesto (`"suggested"`).
+
+Campos que la especificación no define y se añadieron (la app puede ignorarlos): `id`,
+`credit` (créditos tal como están impresos), `tempoNote`, `tempoChanges` (Cannon),
+`keyNote` y `checks`. Los `checks` reportan compases completos, tonalidad, cruce de manos,
+abertura, y el cruce nota por nota con el MIDI.
+
+Cosas que conviene saber al leerlos:
+
+- `tempoSource` solo admite `printed` o `audio`. Solo Cannon trae tempo impreso; en el resto
+  el tempo sale del MIDI (`audio`) o, en Clocks, de lo que indicó Jorge (sin verificar).
+- Los dedos `suggested` los propone un algoritmo con las reglas de la especificación; en una
+  prueba ciega contra los dedos impresos coincidió en ~73%. En Clocks los dedos de la
+  izquierda son los del lector (meñique en los bajos sueltos), que la especificación
+  pediría evitar: aparece en `checks.fingers.pinkyKeyToKey`.
+- El MIDI de Für Elise trae 58 notas más que la partitura (acordes y octavas graves en la
+  izquierda). No se agregaron; están en `checks.midiCrossCheck.onlyInMidi`.
+- En Cannon, compás 38, la izquierda queda más aguda que notas de la derecha: así está en
+  la partitura (`checks.handsCross`).
+
+Los JSON los generó un script aparte a partir de los `.mxl` y `.mid` originales, que no
+están en el repositorio; para regenerarlos hacen falta esos archivos.
