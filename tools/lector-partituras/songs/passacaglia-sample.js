@@ -1,4 +1,7 @@
-// Passacaglia (Handel-Halvorsen) - Sample/preview only
+// Passacaglia (d'après Handel) - Sample/preview only
+// Attribution: the PDF prints "Passacaglia / D'après Handel" and nothing else.
+// An earlier version of this file said "Handel-Halvorsen"; the Halvorsen part
+// was a guess from the musical pattern, not something in the source.
 // Extracted from MusicXML, tempo cross-checked against the MIDI (120 BPM).
 // This is ONLY the opening 8 measures, as a listening preview - NOT meant to
 // be practiced yet. The full piece is 72 measures and 776 notes, 84% of them
@@ -12,11 +15,11 @@ const PASSACAGLIA_SAMPLE = {
   id: 'passacaglia-sample',
   cat: 'clasica',
   name: 'Passacaglia (muestra)',
-  artist: 'Handel-Halvorsen',
+  artist: "D'après Handel",
   tip: 'SOLO los primeros 8 compases, para escuchar cómo suena - no para practicar todavía. La pieza completa (72 compases) es de nivel muy avanzado: la derecha salta sin parar entre una nota aguda fija y una melodía que baja debajo. Mucho más difícil que Cannon in D.',
   tempo: '120 quarter',
   text: `title: Passacaglia (muestra, c.1-8)
-artist: Handel-Halvorsen
+artist: D'après Handel
 meter: 4/4
 tempo: 120 quarter
 source: MusicXML + MIDI (120 BPM confirmado)
