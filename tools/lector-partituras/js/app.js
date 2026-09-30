@@ -104,11 +104,18 @@ function playRange() {
   return { from: b ? b.start : 0, to: b ? b.end : timeline.quarters };
 }
 
-function startPlay() {
+async function startPlay() {
   const s = settings();
   const r = playRange();
   if (output() === 'clip') return startClip(s, r);
 
+  // El piano de muestras hay que tenerlo decodificado ANTES de programar la primera nota.
+  // El contexto de audio se crea ya, dentro del clic, para no perder el permiso del navegador.
+  if (output() === 'synth' && window.PianoSamples && PianoSamples.enabled) {
+    player.init();
+    el.play.textContent = 'Preparando…';
+    await realPianoReady(timeline.notes);
+  }
   player.gains = s.gains;
   player.metronome = s.metronome;
   player.midi = output() === 'midi' ? midiOut : null;
@@ -154,6 +161,35 @@ $('output').onchange = async () => {
   setStatus(`Sonando por ${res.ports[0].name}. El metrónomo sigue saliendo por el computador.`);
 };
 
+// ---------- piano real (muestras) ----------
+
+// Descarga y decodifica las muestras que necesita la pieza. Si no se puede, avisa y el sonido
+// sigue saliendo por el sintetizador: nunca deja al usuario sin audio por esto.
+async function realPianoReady(notes) {
+  if (!window.PianoSamples || !PianoSamples.enabled) return false;
+  if (!PianoSamples.loaded) setStatus('Descargando el piano real (~4 MB, solo la primera vez)…');
+  const ok = await PianoSamples.prepare(notes);
+  if (ok) setStatus(output() === 'synth' ? '' : $('out-status').textContent);
+  else setStatus('No se pudo cargar el piano real (' + (PianoSamples.failed ? PianoSamples.failed.message : 'sin muestras') + '): suena el sintetizador.');
+  return ok;
+}
+
+if (window.PianoSamples) {
+  let saved = null;
+  try { saved = localStorage.getItem('realPiano'); } catch { /* sin almacenamiento: queda el valor por defecto */ }
+  if (saved !== null) $('real-piano').checked = saved === '1';
+  PianoSamples.enabled = $('real-piano').checked;
+  $('real-piano').onchange = async () => {
+    PianoSamples.enabled = $('real-piano').checked;
+    try { localStorage.setItem('realPiano', PianoSamples.enabled ? '1' : '0'); } catch { /* no pasa nada */ }
+    stopAll();
+    if (PianoSamples.enabled) await realPianoReady(timeline.notes);
+    else setStatus('');
+  };
+} else {
+  $('real-piano').parentElement.hidden = true;
+}
+
 $('midi-port').onchange = () => { stopAll(); midiOut.use($('midi-port').value); };
 window.addEventListener('beforeunload', () => midiOut.allNotesOff());
 
@@ -173,6 +209,7 @@ function unlockClip() {
 
 async function startClip(s, r) {
   el.play.textContent = 'Preparando…';
+  await realPianoReady(timeline.notes);
   setStatus('Renderizando el audio…');
   // Con bucle no se pone cuenta de entrada: se repetiría en cada vuelta.
   const countIn = ($('countin').checked && loopBlock === null) ? song.beatsPerBar : 0;
@@ -199,7 +236,9 @@ async function startClip(s, r) {
   }
   clipPlaying = true;
   el.play.textContent = 'Detener';
-  setStatus('Sonando desde un clip. Tempo, manos y metrónomo se aplican al volver a reproducir.');
+  const sinReal = window.PianoSamples && PianoSamples.enabled && PianoSamples.failed
+    ? ` ⚠ Sin el piano real (${PianoSamples.failed.message}): suena el sintetizador.` : '';
+  setStatus('Sonando desde un clip. Tempo, manos y metrónomo se aplican al volver a reproducir.' + sinReal);
 }
 
 function stopClip() {

@@ -85,3 +85,6 @@ textarea {
   margin: 10px 0 0; padding: 8px 10px; font-size: 13px; color: var(--dim);
   background: #1d2231; border-left: 2px solid var(--rh); border-radius: 0 6px 6px 0;
 }
+
+.credit { margin: 8px 0 0; font-size: 13px; color: var(--dim); }
+.credit a { color: var(--dim); }

@@ -34,12 +34,14 @@
         </select>
       </label>
       <select id="midi-port" hidden></select>
+      <label class="check"><input id="real-piano" type="checkbox" checked> Piano real</label>
       <label class="check"><input id="metronome" type="checkbox"> Metrónomo</label>
       <label class="check"><input id="countin" type="checkbox" checked> Cuenta de entrada</label>
       <label class="check"><input id="mute-rh" type="checkbox" checked> Mano derecha</label>
       <label class="check"><input id="mute-lh" type="checkbox" checked> Mano izquierda</label>
     </div>
     <p id="out-status" class="out-status" hidden></p>
+    <p class="credit">Piano real: Salamander Grand Piano V3, © Alexander Holm, licencia <a href="https://creativecommons.org/licenses/by/3.0/" target="_blank" rel="noopener">CC BY 3.0</a>.</p>
     <div id="song-info" class="info"></div>
     <div id="blocks" class="blocks"></div>
     <canvas id="roll" height="160"></canvas>
@@ -75,6 +77,7 @@
 </main>
 
 <script src="js/notation.js"></script>
+<script src="js/pianosamples.js"></script>
 <script src="js/audio.js"></script>
 <script src="js/midiout.js"></script>
 <script src="js/midi.js"></script>

@@ -38,6 +38,8 @@ function noteLife(midi) {
 // ligeramente desafinadas entre sí -eso es lo que "late" y da la sensación
 // de cuerda real en vez de onda de sintetizador.
 function buildVoice(ctx, dest, midi, when, durSec, gain) {
+  // Con el piano de muestras listo, esa es la voz; el sintetizador de abajo es el respaldo.
+  if (window.PianoSamples && PianoSamples.voice(ctx, dest, midi, when, durSec, gain)) return;
   const freq = 440 * Math.pow(2, (midi - 69) / 12);
   const dur = Math.max(0.2, durSec);
   const life = noteLife(midi);
@@ -250,10 +252,14 @@ async function renderClip({ notes, from, to, secondsPerQuarter, gains, metronome
   // agudo de la pieza no pasa de ~3.5 kHz, así que estéreo a 44.1 kHz era
   // cuatro veces el trabajo para el mismo sonido. En un teléfono eso se nota:
   // la pieza entera pasó de ~23 s de render a unos pocos.
-  const sr = 22050;
+  // Con muestras de piano (grabaciones estéreo) se renderiza estéreo a 32 kHz: 16 kHz de ancho de
+  // banda sobran para piano y cuesta ~30 % menos que 44,1 kHz (medido: Cannon entero 5,6 s contra
+  // 7,9 s). El estéreo no cuesta nada extra; a 22 kHz se perdería el brillo.
+  const real = window.PianoSamples && await PianoSamples.prepare(notes.filter(n => n.start >= from - 1e-9 && n.start < to - 1e-9));
+  const sr = real ? 32000 : 22050;
   const lead = countIn * secondsPerQuarter;   // la cuenta de entrada va dentro del clip
-  const seconds = lead + (to - from) * secondsPerQuarter + 1.2;
-  const ctx = new OAC(1, Math.ceil(seconds * sr), sr);
+  const seconds = lead + (to - from) * secondsPerQuarter + (real ? 2.5 : 1.2);
+  const ctx = new OAC(real ? 2 : 1, Math.ceil(seconds * sr), sr);
 
   for (let i = 0; i < countIn; i++) {
     buildClick(ctx, ctx.destination, i * secondsPerQuarter, i % beatsPerBar === 0);

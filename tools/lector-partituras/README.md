@@ -110,6 +110,23 @@ compositor o la fuente, muestra qué falta en vez de un JSON que la app rechazar
 - `node scripts/unificar-dedos.js [--write]` iguala los dedos *propuestos* (`?`) en compases
   idénticos; los impresos nunca se tocan. Correrlo al añadir una pieza.
 
+## Sonido: piano real (muestras)
+La casilla **Piano real** (activa por defecto) reproduce grabaciones de un piano de cola en vez del
+sintetizador. Sirve en los dos caminos: el en vivo y el **clip** del móvil (se renderiza con
+`OfflineAudioContext` y suena por un `<audio>`, que es lo único que funciona en el iPhone).
+- Muestras: Salamander Grand Piano V3, © Alexander Holm, **CC BY 3.0** (hay que citarlo: está en
+  la pantalla y en la cabecera de `samples/piano.js`). 16 muestras, D#2 a C6, una cada tercera
+  menor: cada nota se estira como máximo 1,5 semitonos.
+- `samples/piano.js` (4,2 MB, base64) se descarga solo la primera vez que se pide sonido, y solo se
+  decodifican las muestras que la pieza usa. Va como `<script>` y no como `fetch` para que
+  funcione abriendo el HTML como archivo local.
+- Si no se puede descargar, **suena el sintetizador** y la pantalla lo dice; nunca se queda mudo.
+- Con piano real el clip es estéreo a 32 kHz (Cannon entero: ~14 MB, ~6 s de render en un equipo
+  de escritorio; en el teléfono aún no medido). Sin piano real sigue siendo mono a 22 kHz.
+- Regenerar: `npm pack @audio-samples/piano-mp3-velocity8`, descomprimir y
+  `node scripts/construir-muestras.js package/audio`.
+- Al publicar como artifact, `samples/piano.js` va como archivo de apoyo junto al HTML.
+
 ## Añadir una canción
 
 Copia `songs/clocks.js`, cambia el texto y añade el `<script>` en `index.html`. Van en
