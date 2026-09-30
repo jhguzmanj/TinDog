@@ -562,53 +562,90 @@ y dentro de "Más ▾": `free | functions`.
     por tiempo casi siempre y el único salto grande de la derecha es Sol4→Si5
     (c. 5 y 13), avisado en el rótulo. Es **claramente más accesible que Für
     Elise y Clocks**; si Jorge quiere adelantar una de las tres, es esta.
-- **"Canon en Re" (Pachelbel), versión fácil, 49 compases** (`canon-en-re`,
-  Clásicas, `plan:false`). Tercera y última de las piezas "para más adelante"
-  de la persona que sabe de piano; llega por el flujo de JSON como
-  `cannon-in-d-easy`. Credit: "Arranged by Arnav (tal como está impreso)".
-  ♩=108 **impreso**. **Es una versión simplificada MECÁNICAMENTE por el flujo,
-  no por una persona**: en cada acorde la derecha conserva la nota más aguda y la
-  izquierda la más grave (se quitaron 69 notas de 328; ritmo y compases
-  idénticos). El propio JSON lo dice: "una decisión de arreglo, no algo que
-  diga la partitura". Por eso puede haber saltos o giros incómodos que un
-  arreglista humano no habría dejado.
+- **"Canon en Re" (Pachelbel, arreglo de Arnav), 49 compases** (`canon-en-re`,
+  Clásicas, `plan:false`). Tercera de las piezas "para más adelante" de la
+  persona que sabe de piano. Llegó DOS veces por el flujo de JSON: primero
+  `cannon-in-d-easy` (simplificada MECÁNICAMENTE por el flujo: en cada acorde la
+  derecha se queda con la nota más aguda y la izquierda con la más grave) y
+  después `cannon-in-d` (la completa, 328 notas), porque Jorge pidió ver **cómo
+  simplificarla mejor**. La entrada actual sale de la mecánica con los ajustes de
+  abajo, contrastados con la completa. ♩=108 **impreso**.
+  - **Corrección de una duda mía**: al recibir la versión mecánica marqué como
+    sospechosos el bajo de los c. 27-31 y el del c. 35 ("se apartan de la
+    progresión canónica"). **Era falso**: la completa trae ahí acordes reales de
+    la izquierda (c. 27 Fa#2-Do#3-Fa#3 = Fa#m; c. 28 y 30 Sol2-Re3-Fa#3; c. 29
+    Si2-Fa#3-Si3 = Si m; c. 35 Sol3-Si3 = Sol). El arreglo usa otra progresión en
+    los c. 25-32 y en el 33-40. Lección: no juzgar "el bajo" contra una sola
+    progresión sin ver los acordes; una reducción mecánica borra justo esa
+    evidencia.
   - **Verificación hecha en la app**: todo cae en su compás de 4; Re mayor sin
-    notas fuera; las manos no se cruzan; el bajo de los c. 1-24 y 41-48 es
-    exactamente la progresión del canon **D–A–B–F#–G–D–G–A**. **Pero los c. 25-32
-    (F#2 en el 27, G2 en el 28, B2 en el 29, G2 en el 30) y el c. 35 (G3 donde
-    la progresión pide B3) se apartan de ella**, y el JSON trae `doubtNotes:0`.
-    Pueden ser el arreglo o una nota mal reducida por la simplificación; **sin
-    partitura no se puede cerrar**. La app las toca tal cual. Si Jorge tiene la
-    hoja, mirar esos compases primero.
-  - **Los dedos son 259 de 259 PROPUESTOS** (0 impresos); la prueba ciega del
-    flujo acierta 73%. Ningún meñique tecla a tecla y ninguna mano cruzada. Un
-    único ajuste: los c. 9-14 y 41-46 son idénticos en notas y ritmo, pero el
-    JSON daba 3 dedos distintos en las notas largas de la derecha (F#5/E5/D5
-    con 5-4-3 y luego 3-2-1); quedó **3-2-1 en las dos** porque con 5-4-3 el
-    Re5 y el Do#5 de compases seguidos llevan el mismo dedo. Por eso ese bloque
-    vive una vez (`CAN_B6`) y se usa dos veces (mismo molde que Arioso).
-    **Quedan cuatro pasos de la derecha con el mismo dedo en dos teclas
-    seguidas** (Sol4→Fa#4 con 1 en el c. 23, Si4→La4 con 3 en el 30, Sol4→Fa#4
-    con 2 en el 31 y el 37): son deslizamientos, no se cambiaron.
-  - **Abertura de mano**: c. 12 y 44 (izquierda, Fa#3 a La4 = una 10ª con 5-4-2-1),
-    c. 26 y 28 (derecha, Mi4 a La5 = una 11ª) y c. 29 (Si3 a Re5 = una 10ª) exceden
-    lo que cubre una mano sin moverse: los rótulos dicen "mueve la mano".
-  - **Re4 en las dos manos en el c. 38** (`sharedPitch`): la izquierda sostiene
-    Re4 todo el compás y la derecha lo toca en el 2º tiempo. En un piano real
-    no se puede volver a golpear una tecla pisada; es un efecto de la
-    simplificación mecánica. El rótulo pide soltar y volver a tocar.
+    notas fuera; el bajo de TODOS los compases es el de la versión completa
+    (hay prueba, con la lista de 49 notas); las manos no se cruzan ni tocan la
+    misma tecla en ninguna parte.
+  - **Qué se quitó (igual que la mecánica)**: los acordes de la izquierda quedan
+    en su nota más grave (una nota, sin acordes: Jorge aún no los domina); la
+    octava de la derecha en el primer tiempo de los c. 17-32 queda en una nota;
+    los dobles de la derecha de los c. 41-48 quedan en la nota más aguda (es la
+    melodía descendente F#5-E5-D5-Do#5-Si4-La4, igual que en los c. 9-14).
+  - **Qué se cambió respecto a la mecánica, y por qué** (cada punto medido):
+    1. **Octava con menos salto en los c. 24-29** (Mi4, Re4, La4, Fa#4, La4, Re4
+       en vez de Mi5, Re5, La5, Fa#5, La5, Re5). La mecánica dejaba saltos de 14,
+       15 y hasta 17 semitonos donde la línea real es una escala corta
+       (Re4-Mi4-Fa#4-Sol4, La4-Sol4-Fa#4-Mi4). Elegir la octava por mínimo salto
+       (programación dinámica sobre toda la línea) baja el salto total de la
+       derecha de 603 a 497 semitonos, el mayor de 17 a 12 y los saltos de más de
+       9 semitonos de 19 a 9. **Solo se tocó donde la ganancia era grande**: en el
+       c. 18 la ganancia era de 2 semitonos y se dejó la nota aguda.
+    2. **Arpegio de la izquierda de los c. 12 y 44**: la completa lo escribe
+       Fa#3-Do#4-Fa#4-La4 (una 10ª entre el 5 y el 1: no la alcanza una mano
+       pequeña). Quedó Fa#3-La3-Do#4-Fa#4 (raíz, tercera, quinta, octava): mismos
+       dedos 5-4-3-1 que los otros arpegios y una octava de abertura. Es el
+       único compás donde el arreglo pedía más que una octava.
+    3. **C. 38**: la completa (y la mecánica) tienen la izquierda en Re4(+Fa#4)
+       mientras la derecha baja a Mi4-Re4: la partitura MISMA cruza las manos
+       (el flujo lo marca en `handsCross`), y la mecánica lo dejó como Re4 en las
+       dos manos. Se bajó el bajo del compás una octava (Re3): sin cruce ni
+       unísono. Los dedos del bajo de esa sección quedaron D4 1, A3 3, G3 4,
+       F#3 5, G3 4, D3 5, G3 4, A3 3 (ningún meñique tecla a tecla).
+    4. **Acorde final en la derecha** (Re5-Fa#5-La5 con 1-3-5) sobre Re3 en vez
+       de la nota suelta La5: sin el acorde el final quedaba sin resolver. Es el
+       único acorde de la pieza; se dejó porque es uno solo y sale con los dedos
+       de siempre (Jorge ya practica tríadas en Acordes). Se puede quitar.
+    5. **Dedos de la derecha c. 23-37 rehechos** para la línea de UNA voz (los del
+       flujo estaban pensados para la octava o el dedo repetido): c. 23-24 y
+       26-28 con el pulgar en Mi4 (5-4-3-2 / 1-4-3-2 / 5-2-5-4 / 2-5-4-3 /
+       4-3-2-1), c. 25 con el pulgar en Re4 (1-2-3-4), c. 29 con Si3 en el
+       pulgar (3-1-2-3), c. 30 4-3-2-1, c. 31 3-2-1-5, c. 32 4-5-4, y los c. 35-37
+       en una sola posición con el pulgar en Mi4 (todo cabe en cinco dedos). Con
+       eso **desaparecen los cuatro deslizamientos** (mismo dedo en dos teclas
+       seguidas) que tenía la versión anterior; hay prueba que lo exige en toda la
+       derecha. Siguen siendo **propuestos**: el flujo no imprime ningún dedo.
+  - **Dedos: 100% propuestos** (0 impresos en las dos versiones; prueba ciega del
+    flujo: 73%). Los c. 9-14 y 41-46 son idénticos y comparten pasos
+    (`CAN_B6`); los tres dedos de las notas largas de los c. 9-11 salen 3-2-1 en
+    las dos vueltas (con el 5-4-3 del flujo el Re5 y el Do#5 de compases seguidos
+    llevaban el mismo dedo).
+  - **Lo que NO se simplificó, a propósito**: (a) los c. 33-40 (corcheas seguidas
+    en escala, ~216 notas por minuto a ♩=108) son el corazón de la variación; se
+    cortarían 8 compases de 49 y la pieza dejaría de ser el canon, así que quedan,
+    rotulados como "lo más difícil" (a velocidad reducida en la cascada); (b) el
+    salto de octava Si3→Si4 del c. 29 (queda el único pasaje que pide mover la
+    mano, con rótulo): moverlo una octava cambiaría el dibujo de la melodía.
   - **El ritardando impreso NO se hace**: `tempoChanges` trae ♩=90 (c. 47), 70
-    (c. 48) y 45 (c. 49) y `SONGS` solo tiene un `tempo`. Se pensó estirar las
-    duraciones de esos compases (×1,2 / ×1,54 / ×2,4) para que suene a
-    tiempo, pero **descuadra las barras de la cascada** y no es lo que se pidió:
-    queda a tempo fijo y el rótulo del c. 47 lo marca. Si algún día se
-    quiere, es un cambio de motor (tempo por tramo en cascada, Escuchar y
-    metrónomo), no de datos.
-  - **Dificultad real, para no engañarse con "fácil"**: 49 compases; los c. 33-40
-    son corcheas seguidas en la derecha (unas 216 notas por minuto por mano a
-    ♩=108) con saltos; los c. 9-16 y 41-48 piden a la izquierda un arpegio de
-    octava (Re4–Re5 con 5-4-3-1). Lo asequible: los c. 1-8 y la melodía de los
-    c. 17-24 (negras con bajo de redondas).
+    (c. 48) y 45 (c. 49) y `SONGS` solo tiene un `tempo`. Estirar las duraciones
+    de esos compases descuadra las barras de la cascada; queda a tempo fijo y el
+    rótulo del c. 47 lo marca. Si algún día se quiere, es un cambio de motor
+    (tempo por tramo en cascada, Escuchar y metrónomo), no de datos.
+  - **Lo que dice la completa y la app no puede hacer**: el flujo marca en
+    `handsCross` el cruce del c. 38 (`ok:false`), 7 tocadas de la misma tecla por
+    las dos manos (c. 29, 38, 41-45: la izquierda arpegia por donde la derecha
+    sostiene) y 5 meñiques tecla a tecla (c. 18, 21, 22, 23, 30), y una abertura de
+    22 semitonos en la derecha en el c. 20 (Do#4+Do#5 y luego una escala hasta
+    Si5). Todo eso desaparece en la versión simplificada. La versión completa NO
+    está en la app: se puede reconstruir del historial de la sesión.
+  - **Dificultad real**: 49 compases, los c. 33-40 exigen velocidad, los c. 9-16 y
+    41-48 piden a la izquierda un arpegio de octava con 5-4-3-1. Lo asequible: los
+    c. 1-8 y la melodía de los c. 17-32.
 - **Lectura**: `READING_LEVELS` (7 niveles, clave de Sol / Fa / ambas / alteraciones).
   `renderStaff(svg, [{sp, cls, clef}], {clef, width, gap, showName})`; `sp` viene de
   `spellMidi(midi, preferFlat)` o `spellFromName('B#', 60)` (respeta octava de la letra).

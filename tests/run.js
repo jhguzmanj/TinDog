@@ -2203,32 +2203,51 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
     W("cascadeFrom = 1; cascadeTo = null; currentFragment = FRAGMENTS[0];");
   }
 
-  section('Canon en Re (Pachelbel, versión fácil del flujo de JSON)');
+  section('Canon en Re (Pachelbel): versión simplificada desde la completa');
   {
     const cn = W("SONGS.find(s => s.id === 'canon-en-re')");
     check(!!cn && cn.cat === 'clasica' && cn.plan === false && cn.tempo === 108 && !cn.meter, 'en Clásicas, fuera del plan de Hoy, ♩=108, compás de 4');
     check(cn.steps.reduce((a, s) => a + s.dur, 0) === 196, '49 compases de 4 tiempos, sin sobras');
-    check(cn.steps.flatMap(s => s.rh).join(',') === '66,69,74,64,69,73,62,66,71,61,66,69,59,62,67,57,62,66,59,62,67,61,64,69,78,76,74,73,71,69,71,73,74,73,74,66,74,69,64,66,74,74,73,71,73,78,81,83,79,78,76,79,78,76,74,73,71,69,67,66,76,67,66,64,74,64,66,67,81,64,69,67,78,71,69,67,81,67,66,64,74,59,71,73,74,73,71,69,67,66,64,71,69,71,69,81,78,79,81,78,79,81,69,71,73,74,76,78,79,78,74,76,78,66,67,69,71,69,67,69,66,67,69,67,71,69,67,66,64,66,64,62,64,66,67,69,71,67,71,69,71,73,74,69,71,73,74,76,78,79,81,78,76,74,73,71,69,71,76,73,76,81', 'la derecha, nota por nota, igual al JSON');
-    check(cn.steps.flatMap(s => s.lh).join(',') === '62,57,59,54,55,50,55,57,62,66,69,74,57,61,64,69,59,62,66,71,54,61,66,69,55,59,62,67,50,54,57,62,55,59,62,67,57,61,64,69,38,45,47,42,43,38,43,45,38,45,42,43,47,43,38,45,62,57,55,54,55,62,55,57,62,66,69,74,57,61,64,69,59,62,66,71,54,61,66,69,55,59,62,67,50,54,57,62,55,59,62,67,57,61,64,69,50', 'la izquierda, nota por nota, igual al JSON');
-    check(cn.steps.flatMap(s => s.rhF).join(',') === '1,3,5,1,3,5,1,3,5,1,4,5,1,3,5,1,3,5,1,2,5,1,2,4,3,2,1,3,2,1,2,3,4,3,5,1,5,3,1,2,5,5,2,1,2,3,4,5,3,2,1,4,3,2,1,4,3,2,1,1,5,3,2,1,5,1,2,3,5,1,4,2,5,3,2,1,5,3,2,1,5,1,3,4,5,4,3,3,2,2,1,5,3,4,1,5,4,1,2,1,3,5,1,2,3,1,2,3,4,3,1,3,5,1,2,3,4,2,1,2,1,2,3,1,4,3,2,2,1,3,2,1,2,3,1,2,3,1,3,1,2,3,4,1,2,3,1,2,3,4,5,3,2,1,3,2,1,2,5,2,3,5', 'derecha: dedos del JSON, con 3-2-1 en las notas largas de los c. 9-11');
-    check(cn.steps.flatMap(s => s.lhF || []).join(',') === '1,4,2,4,3,5,4,3,5,4,3,1,5,4,3,1,5,4,3,1,5,4,2,1,5,4,3,1,5,4,3,1,5,4,3,1,5,4,3,1,5,2,1,4,3,5,2,1,5,1,4,3,1,3,5,3,1,3,4,5,4,1,5,4,5,4,3,1,5,4,3,1,5,4,3,1,5,4,2,1,5,4,3,1,5,4,3,1,5,4,3,1,5,4,3,1,5', 'izquierda: dedos del JSON');
+    check(cn.steps.flatMap(s => s.rh).join(',') === '66,69,74,64,69,73,62,66,71,61,66,69,59,62,67,57,62,66,59,62,67,61,64,69,78,76,74,73,71,69,71,73,74,73,74,66,74,69,64,66,74,74,73,71,73,78,81,83,79,78,76,79,78,76,74,73,71,69,67,66,64,67,66,64,62,64,66,67,69,64,69,67,66,71,69,67,69,67,66,64,62,59,71,73,74,73,71,69,67,66,64,71,69,71,69,81,78,79,81,78,79,81,69,71,73,74,76,78,79,78,74,76,78,66,67,69,71,69,67,69,66,67,69,67,71,69,67,66,64,66,64,62,64,66,67,69,71,67,71,69,71,73,74,69,71,73,74,76,78,79,81,78,76,74,73,71,69,71,76,73,76,74,78,81', 'la derecha: una voz, nota por nota (el acorde final aparte)');
+    check(cn.steps.flatMap(s => s.lh).join(',') === '62,57,59,54,55,50,55,57,62,66,69,74,57,61,64,69,59,62,66,71,54,57,61,66,55,59,62,67,50,54,57,62,55,59,62,67,57,61,64,69,38,45,47,42,43,38,43,45,38,45,42,43,47,43,38,45,62,57,55,54,55,50,55,57,62,66,69,74,57,61,64,69,59,62,66,71,54,57,61,66,55,59,62,67,50,54,57,62,55,59,62,67,57,61,64,69,50', 'la izquierda: nota por nota');
+    check(cn.steps.flatMap(s => s.rhF).join(',') === '1,3,5,1,3,5,1,3,5,1,4,5,1,3,5,1,3,5,1,2,5,1,2,4,3,2,1,3,2,1,2,3,4,3,5,1,5,3,1,2,5,5,2,1,2,3,4,5,3,2,1,4,3,2,1,4,5,4,3,2,1,4,3,2,1,2,3,4,5,2,5,4,2,5,4,3,4,3,2,1,3,1,2,3,4,3,2,1,3,2,1,5,4,5,4,5,4,1,2,1,3,5,1,2,3,1,2,3,4,3,1,3,5,2,3,4,5,4,3,4,2,3,4,3,5,4,3,2,1,3,2,1,2,3,1,2,3,1,3,1,2,3,4,1,2,3,1,2,3,4,5,3,2,1,3,2,1,2,5,2,3,1,3,5', 'derecha: dedos');
+    check(cn.steps.flatMap(s => s.lhF || []).join(',') === '1,4,2,4,3,5,4,3,5,4,3,1,5,4,3,1,5,4,3,1,5,4,2,1,5,4,3,1,5,4,3,1,5,4,3,1,5,4,3,1,5,2,1,4,3,5,2,1,5,1,4,3,1,3,5,3,1,3,4,5,4,5,4,3,5,4,3,1,5,4,3,1,5,4,3,1,5,4,2,1,5,4,3,1,5,4,3,1,5,4,3,1,5,4,3,1,5', 'izquierda: dedos');
     check(cn.steps.every(s => s.rhF.length === s.rh.length && (s.lhF || []).length === s.lh.length), 'toda nota lleva dedo');
-    check(cn.steps.every(s => !s.lh.length || !s.rh.length || Math.max(...s.lh) < Math.min(...s.rh)), 'las manos no se cruzan');
     // Los c. 9-14 y 41-46 son idénticos: comparten los mismos objetos de paso.
     check(W("(() => { const s = SONGS.find(x => x.id === 'canon-en-re').steps; return s.length === 216 && s[33] === CAN_B6[1] && s[184] === CAN_B6[1]; })()"),
       'los c. 9-14 y 41-46 comparten pasos: corregir una nota corrige las dos vueltas');
-    // Bajo: la progresión del canon D–A–B–F#–G–D–G–A en los c. 1-24 y 41-48 (los c. 25-32 y el 35 se apartan de ella y NO se tocaron).
+    // Bajo: el de la versión completa en todos los compases, salvo el c. 38 (una octava abajo a propósito).
+    const bajoCompleta = [62,57,59,54,55,50,55,57,62,57,59,54,55,50,55,57,38,45,47,42,43,38,43,45,38,45,42,43,47,43,38,45,62,57,55,54,55,62,55,57,62,57,59,54,55,50,55,57,50];
     const bajo = []; let beat = 0;
-    cn.steps.forEach(s => { if(beat % 4 === 0 && s.lh.length) bajo.push(Math.min(...s.lh) % 12); beat += s.dur; });
-    const prog = [2, 9, 11, 6, 7, 2, 7, 9];
-    check(bajo.slice(0, 24).every((n, i) => n === prog[i % 8]), 'bajo de los c. 1-24 = D A B F# G D G A');
-    check(bajo.slice(40, 48).every((n, i) => n === prog[i]), 'bajo de los c. 41-48 = D A B F# G D G A');
-    // Compás 1: el primer tiempo es solo de la izquierda (silencio de negra en la derecha).
-    check(cn.steps[0].rh.length === 0 && cn.steps[0].dur === 1 && cn.steps[0].lh.join() === '62', 'c. 1: la derecha entra en el 2º tiempo');
+    cn.steps.forEach(s => { if(beat % 4 === 0 && s.lh.length) bajo.push(Math.min(...s.lh)); beat += s.dur; });
+    check(bajo.length === 49 && bajo.every((n, i) => n === (i === 37 ? bajoCompleta[i] - 12 : bajoCompleta[i])), 'el bajo es el de la versión completa (el c. 38, una octava abajo)');
+    // Las manos nunca se cruzan ni tocan la misma tecla (cada nota suena hasta el siguiente ataque de su mano).
+    let lhSuena = [], rhSuena = [], choque = 0;
+    cn.steps.forEach(s => {
+      if(s.lh.length) lhSuena = s.lh;
+      if(s.rh.length) rhSuena = s.rh;
+      if(lhSuena.length && rhSuena.length && Math.max(...lhSuena) >= Math.min(...rhSuena)) choque++;
+    });
+    check(choque === 0, 'la izquierda siempre queda por debajo de la derecha: ni cruces ni la misma tecla en las dos manos');
+    // Melodía (derecha): saltos y deslizamientos
+    const rhSeq = cn.steps.flatMap(s => s.rh.map((n, i) => ({ n, f: s.rhF[i], solo: s.rh.length === 1 })));
+    const saltos = rhSeq.slice(1).map((x, i) => Math.abs(x.n - rhSeq[i].n));
+    check(Math.max(...saltos) <= 12, 'ningún salto de la derecha pasa de una octava');
+    const deslizan = rhSeq.slice(1).filter((x, i) => x.solo && rhSeq[i].solo && x.f === rhSeq[i].f && x.n !== rhSeq[i].n).length;
+    check(deslizan === 0, 'la derecha no usa el mismo dedo en dos teclas seguidas');
+    // c. 24-29: la octava con menos salto (Mi4 Re4 La4 Fa#4 La4 Re4 en el primer tiempo)
+    const pasos = []; { let b = 0; cn.steps.forEach(s => { pasos.push([b, s]); b += s.dur; }); }
+    const primerRh = c => pasos.find(([b, s]) => b === 4 * (c - 1) && s.rh.length)[1].rh[0];
+    check([24, 25, 26, 27, 28, 29].map(primerRh).join() === '64,62,69,66,69,62', 'c. 24-29: el primer tiempo de la derecha usa la octava que continúa la línea');
+    // c. 12 y 44: arpegio de la izquierda en una octava (Fa#3 La3 Do#4 Fa#4), no en una 10ª
+    const arp = c => pasos.filter(([b, s]) => b >= 4 * (c - 1) && b < 4 * c && s.lh.length).map(([, s]) => s.lh[0]).join();
+    check(arp(12) === '54,57,61,66' && arp(44) === '54,57,61,66', 'c. 12 y 44: el arpegio de la izquierda abarca una octava');
+    // Final: acorde de Re en la derecha (1-3-5) y bajo Re3
+    const fin = cn.steps[cn.steps.length - 1];
+    check(fin.rh.join() === '74,78,81' && fin.rhF.join() === '1,3,5' && fin.lh.join() === '50', 'c. 49: acorde de Re en la derecha con 1-3-5 y Re3 en la izquierda');
     const lab = cn.steps.map(s => s.label || '');
     check(['c. 1 ·', 'c. 9 ·', 'c. 17 ·', 'c. 33 ·', 'c. 41 ·', 'c. 47 ·', 'c. 49 ·'].every(p => lab.some(l => l.startsWith(p))), 'anclas de sección y del ritardando para el Tramo de la cascada');
-    check(lab.filter(l => /mueve la mano/.test(l)).length === 5, 'los pasajes que piden mover la mano (10ª/11ª) van avisados: c. 12 y 44 (bloque compartido), 26, 28 y 29');
-    check(lab.filter(l => /lo repite la derecha/.test(l)).length === 1, 'el Re4 en las dos manos del c. 38 va avisado');
+    check(lab.filter(l => /mueve la mano/.test(l)).length === 1, 'el único pasaje que pide mover la mano (Si3 a Si4, c. 29) va avisado');
     check(/ritardando/.test(cn.tip), 'el consejo avisa que el ritardando impreso no se hace');
   }
 
