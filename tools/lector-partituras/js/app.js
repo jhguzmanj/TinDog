@@ -257,7 +257,7 @@ $('btn-json').onclick = async () => {
   $('export-note').textContent =
     `JSON para la app · ${out.doc.title} · tono ${out.doc.key.tonic} ${out.doc.key.mode === 'major' ? 'mayor' : 'menor'} · ` +
     `${out.doc.notes.length} notas, todas con dedo (${f.printed} impresos, ${f.suggested} propuestos).` +
-    (out.warnings.length ? ' ⚠ ' + out.warnings.join(' ') : '');
+    (out.doc.warnings.length ? ` ⚠ ${out.doc.warnings.length} aviso(s) para la app: ` + out.doc.warnings.join(' · ') : '');
   try {
     await navigator.clipboard.writeText(text);
     $('export-note').textContent += ' Copiado al portapapeles.';

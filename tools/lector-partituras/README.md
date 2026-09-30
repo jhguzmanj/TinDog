@@ -94,6 +94,21 @@ compositor o la fuente, muestra qué falta en vez de un JSON que la app rechazar
 - La ortografía es la escrita (`Eb5`, no `D#5`), las ligaduras se unen y los repetidos van
   una sola vez con `order`.
 - La prueba que lo fija: exportar las seis piezas y compararlas con `piezas-json/`.
+- **Avisos de lo que la app debe saber** (`warnings` y campos propios, no van escondidos en `notes_text`):
+  - `ritardando`: `{present, printed, numeric, where, tempoChanges?}`. `quarterBpm` es el tempo
+    base y `startBeat`/`durationBeats` están escritos a ese tempo; el ritardando NO está aplicado
+    a las notas. Cannon trae los BPM impresos (108→90→70→45); Passacaglia dice "rit. al fine" sin
+    números.
+  - `arranger`: `null` cuando la partitura no lo trae (Für Elise, Arioso, Passacaglia, Clocks),
+    con `arrangerNote` explicando qué se miró. **Nunca se inventa.**
+  - `checks.chordsVsBass`: la partitura no trae cifrados, así que no juzga armonía en teoría.
+    Si el bajo repite un bucle (Cannon: 8 compases), marca los compases donde se aparta de sus
+    otras vueltas y pone `doubt:true` en esa nota, con la razón en `doubtReason`.
+  - `checks.identicalPassages`: compases idénticos de una misma mano llevan los mismos dedos.
+    `suggestedMismatches` debe salir vacío; `printedDifferences` son dedos que la propia
+    partitura imprime distintos y se respetan.
+- `node scripts/unificar-dedos.js [--write]` iguala los dedos *propuestos* (`?`) en compases
+  idénticos; los impresos nunca se tocan. Correrlo al añadir una pieza.
 
 ## Añadir una canción
 

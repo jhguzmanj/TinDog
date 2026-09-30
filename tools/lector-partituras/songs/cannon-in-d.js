@@ -27,7 +27,19 @@ const CANNON_IN_D = {
       "mode": "major"
     },
     "tempoSource": "printed",
-    "tempoNote": "♩=108 impreso en el compás 1; el ritardando final también está impreso (ver tempoChanges)",
+    "tempoNote": "♩=108 impreso en el compás 1; el ritardando final también está impreso (ver ritardando y tempoChanges)",
+    "ritardando": {
+      "present": true,
+      "printed": true,
+      "numeric": true,
+      "where": "compases 47-49",
+      "tempoChanges": [
+        { "bar": 47, "beat": 0, "quarterBpm": 90 },
+        { "bar": 48, "beat": 0, "quarterBpm": 70 },
+        { "bar": 49, "beat": 0, "quarterBpm": 45 }
+      ],
+      "detail": "marcas de metrónomo impresas en la partitura y confirmadas en el MIDI (108→90→70→45); los compases 47-49 sonarían más lentos que quarterBpm"
+    },
     "tempoChanges": [
       {
         "bar": 47,
@@ -48,7 +60,41 @@ const CANNON_IN_D = {
     "notes_text": [
       "ritardando impreso: ♩=90 en el compás 47, ♩=70 en el 48 y ♩=45 en el 49 (tempoChanges); la especificación solo tiene un quarterBpm, así que el ritardando queda aquí y en tempoChanges"
     ],
-    "allowedChromatics": []
+    "allowedChromatics": [],
+    "extraChecks": {
+      "midiCrossCheck": {
+        "ok": true,
+        "mode": "exact",
+        "scoreOnsets": 327,
+        "matched": 327,
+        "midiNotesInWindow": 327,
+        "onlyInScoreCount": 0,
+        "onlyInScore": [],
+        "onlyInMidiCount": 0,
+        "onlyInMidi": [],
+        "durationDisagreementCount": 0,
+        "durationDisagreements": [],
+        "durationComparisonSkippedSamePitchOverlap": 14,
+        "midiTempoEvents": [
+          [
+            0.0,
+            108.0
+          ],
+          [
+            184.0,
+            90.0
+          ],
+          [
+            188.0,
+            70.0
+          ],
+          [
+            192.0,
+            45.0
+          ]
+        ]
+      }
+    }
   },
   text: `title: Cannon in D
 artist: Johann Pachelbel

@@ -2,6 +2,8 @@
   "id": "passacaglia-sample",
   "title": "Passacaglia",
   "composer": "Händel",
+  "arranger": null,
+  "arrangerNote": "La partitura imprime \"D'après Handel\" y nada más; el MusicXML (MuseScore 4.5, 2025-04-29) no trae arreglista ni derechos. No se inventó: falta el dato de la página de origen.",
   "credit": "D'après Handel (tal como está impreso; el arreglista no aparece)",
   "source": "partitura PDF + MusicXML (MuseScore 4.5), compases 1-8 de 72; alturas y dedos impresos del MusicXML, ritmo y tempo confirmados con el MIDI adjunto",
   "key": {
@@ -13,70 +15,77 @@
   "quarterBpm": 120,
   "tempoSource": "audio",
   "tempoNote": "La partitura no imprime tempo (solo \"rit. al fine\"). Los 120 salen del MIDI adjunto, no de una grabación.",
+  "ritardando": {
+    "present": true,
+    "printed": true,
+    "numeric": false,
+    "where": "\"rit. al fine\" impreso en el c.6 de esta muestra (y en 14, 22, 30, 46 y 70 de la pieza completa)",
+    "detail": "la partitura no da porcentajes ni BPM, y el MIDI adjunto no baja el tempo; por eso no hay tempoChanges. La app decide cuánto frenar; a los 120 la muestra suena sin ritardando"
+  },
   "bars": 8,
   "notes": [
-    {"midi": 57, "name": "A3", "hand": "lh", "startBeat": 0.0, "durationBeats": 4.0, "bar": 1, "finger": 1, "fingerSource": "printed"},
-    {"midi": 72, "name": "C5", "hand": "rh", "startBeat": 0.0, "durationBeats": 0.5, "bar": 1, "finger": 1, "fingerSource": "printed"},
-    {"midi": 84, "name": "C6", "hand": "rh", "startBeat": 0.5, "durationBeats": 0.5, "bar": 1, "finger": 5, "fingerSource": "printed"},
-    {"midi": 83, "name": "B5", "hand": "rh", "startBeat": 1.0, "durationBeats": 0.5, "bar": 1, "finger": 4, "fingerSource": "printed"},
-    {"midi": 84, "name": "C6", "hand": "rh", "startBeat": 1.5, "durationBeats": 0.5, "bar": 1, "finger": 5, "fingerSource": "printed"},
-    {"midi": 81, "name": "A5", "hand": "rh", "startBeat": 2.0, "durationBeats": 0.5, "bar": 1, "finger": 3, "fingerSource": "printed"},
-    {"midi": 84, "name": "C6", "hand": "rh", "startBeat": 2.5, "durationBeats": 0.5, "bar": 1, "finger": 5, "fingerSource": "printed"},
-    {"midi": 79, "name": "G5", "hand": "rh", "startBeat": 3.0, "durationBeats": 0.5, "bar": 1, "finger": 2, "fingerSource": "printed"},
-    {"midi": 84, "name": "C6", "hand": "rh", "startBeat": 3.5, "durationBeats": 0.5, "bar": 1, "finger": 5, "fingerSource": "printed"},
-    {"midi": 50, "name": "D3", "hand": "lh", "startBeat": 4.0, "durationBeats": 4.0, "bar": 2, "finger": 4, "fingerSource": "printed"},
-    {"midi": 77, "name": "F5", "hand": "rh", "startBeat": 4.0, "durationBeats": 0.5, "bar": 2, "finger": 1, "fingerSource": "printed"},
-    {"midi": 84, "name": "C6", "hand": "rh", "startBeat": 4.5, "durationBeats": 0.5, "bar": 2, "finger": 5, "fingerSource": "printed"},
-    {"midi": 76, "name": "E5", "hand": "rh", "startBeat": 5.0, "durationBeats": 0.5, "bar": 2, "finger": 1, "fingerSource": "printed"},
-    {"midi": 84, "name": "C6", "hand": "rh", "startBeat": 5.5, "durationBeats": 0.5, "bar": 2, "finger": 5, "fingerSource": "printed"},
-    {"midi": 74, "name": "D5", "hand": "rh", "startBeat": 6.0, "durationBeats": 0.5, "bar": 2, "finger": 1, "fingerSource": "printed"},
-    {"midi": 84, "name": "C6", "hand": "rh", "startBeat": 6.5, "durationBeats": 0.5, "bar": 2, "finger": 5, "fingerSource": "printed"},
-    {"midi": 72, "name": "C5", "hand": "rh", "startBeat": 7.0, "durationBeats": 0.5, "bar": 2, "finger": 1, "fingerSource": "printed"},
-    {"midi": 84, "name": "C6", "hand": "rh", "startBeat": 7.5, "durationBeats": 0.5, "bar": 2, "finger": 5, "fingerSource": "printed"},
-    {"midi": 55, "name": "G3", "hand": "lh", "startBeat": 8.0, "durationBeats": 4.0, "bar": 3, "finger": 1, "fingerSource": "printed"},
-    {"midi": 71, "name": "B4", "hand": "rh", "startBeat": 8.0, "durationBeats": 0.5, "bar": 3, "finger": 1, "fingerSource": "printed"},
-    {"midi": 83, "name": "B5", "hand": "rh", "startBeat": 8.5, "durationBeats": 0.5, "bar": 3, "finger": 5, "fingerSource": "printed"},
-    {"midi": 81, "name": "A5", "hand": "rh", "startBeat": 9.0, "durationBeats": 0.5, "bar": 3, "finger": 4, "fingerSource": "printed"},
-    {"midi": 83, "name": "B5", "hand": "rh", "startBeat": 9.5, "durationBeats": 0.5, "bar": 3, "finger": 5, "fingerSource": "printed"},
-    {"midi": 79, "name": "G5", "hand": "rh", "startBeat": 10.0, "durationBeats": 0.5, "bar": 3, "finger": 3, "fingerSource": "printed"},
-    {"midi": 83, "name": "B5", "hand": "rh", "startBeat": 10.5, "durationBeats": 0.5, "bar": 3, "finger": 5, "fingerSource": "printed"},
-    {"midi": 77, "name": "F5", "hand": "rh", "startBeat": 11.0, "durationBeats": 0.5, "bar": 3, "finger": 2, "fingerSource": "printed"},
-    {"midi": 83, "name": "B5", "hand": "rh", "startBeat": 11.5, "durationBeats": 0.5, "bar": 3, "finger": 5, "fingerSource": "printed"},
-    {"midi": 48, "name": "C3", "hand": "lh", "startBeat": 12.0, "durationBeats": 4.0, "bar": 4, "finger": 5, "fingerSource": "printed"},
-    {"midi": 76, "name": "E5", "hand": "rh", "startBeat": 12.0, "durationBeats": 0.5, "bar": 4, "finger": 1, "fingerSource": "printed"},
-    {"midi": 83, "name": "B5", "hand": "rh", "startBeat": 12.5, "durationBeats": 0.5, "bar": 4, "finger": 5, "fingerSource": "printed"},
-    {"midi": 74, "name": "D5", "hand": "rh", "startBeat": 13.0, "durationBeats": 0.5, "bar": 4, "finger": 1, "fingerSource": "printed"},
-    {"midi": 83, "name": "B5", "hand": "rh", "startBeat": 13.5, "durationBeats": 0.5, "bar": 4, "finger": 5, "fingerSource": "printed"},
-    {"midi": 72, "name": "C5", "hand": "rh", "startBeat": 14.0, "durationBeats": 0.5, "bar": 4, "finger": 1, "fingerSource": "printed"},
-    {"midi": 83, "name": "B5", "hand": "rh", "startBeat": 14.5, "durationBeats": 0.5, "bar": 4, "finger": 5, "fingerSource": "printed"},
-    {"midi": 71, "name": "B4", "hand": "rh", "startBeat": 15.0, "durationBeats": 0.5, "bar": 4, "finger": 1, "fingerSource": "printed"},
-    {"midi": 83, "name": "B5", "hand": "rh", "startBeat": 15.5, "durationBeats": 0.5, "bar": 4, "finger": 5, "fingerSource": "printed"},
-    {"midi": 53, "name": "F3", "hand": "lh", "startBeat": 16.0, "durationBeats": 4.0, "bar": 5, "finger": 2, "fingerSource": "printed"},
-    {"midi": 69, "name": "A4", "hand": "rh", "startBeat": 16.0, "durationBeats": 0.5, "bar": 5, "finger": 1, "fingerSource": "printed"},
-    {"midi": 81, "name": "A5", "hand": "rh", "startBeat": 16.5, "durationBeats": 0.5, "bar": 5, "finger": 5, "fingerSource": "printed"},
-    {"midi": 79, "name": "G5", "hand": "rh", "startBeat": 17.0, "durationBeats": 0.5, "bar": 5, "finger": 4, "fingerSource": "printed"},
-    {"midi": 81, "name": "A5", "hand": "rh", "startBeat": 17.5, "durationBeats": 0.5, "bar": 5, "finger": 5, "fingerSource": "printed"},
-    {"midi": 77, "name": "F5", "hand": "rh", "startBeat": 18.0, "durationBeats": 0.5, "bar": 5, "finger": 3, "fingerSource": "printed"},
-    {"midi": 81, "name": "A5", "hand": "rh", "startBeat": 18.5, "durationBeats": 0.5, "bar": 5, "finger": 5, "fingerSource": "printed"},
-    {"midi": 76, "name": "E5", "hand": "rh", "startBeat": 19.0, "durationBeats": 0.5, "bar": 5, "finger": 2, "fingerSource": "printed"},
-    {"midi": 81, "name": "A5", "hand": "rh", "startBeat": 19.5, "durationBeats": 0.5, "bar": 5, "finger": 5, "fingerSource": "printed"},
-    {"midi": 50, "name": "D3", "hand": "lh", "startBeat": 20.0, "durationBeats": 4.0, "bar": 6, "finger": 4, "fingerSource": "printed"},
-    {"midi": 74, "name": "D5", "hand": "rh", "startBeat": 20.0, "durationBeats": 0.5, "bar": 6, "finger": 1, "fingerSource": "printed"},
-    {"midi": 81, "name": "A5", "hand": "rh", "startBeat": 20.5, "durationBeats": 0.5, "bar": 6, "finger": 5, "fingerSource": "printed"},
-    {"midi": 72, "name": "C5", "hand": "rh", "startBeat": 21.0, "durationBeats": 0.5, "bar": 6, "finger": 1, "fingerSource": "printed"},
-    {"midi": 81, "name": "A5", "hand": "rh", "startBeat": 21.5, "durationBeats": 0.5, "bar": 6, "finger": 5, "fingerSource": "printed"},
-    {"midi": 71, "name": "B4", "hand": "rh", "startBeat": 22.0, "durationBeats": 0.5, "bar": 6, "finger": 1, "fingerSource": "printed"},
-    {"midi": 81, "name": "A5", "hand": "rh", "startBeat": 22.5, "durationBeats": 0.5, "bar": 6, "finger": 5, "fingerSource": "printed"},
-    {"midi": 69, "name": "A4", "hand": "rh", "startBeat": 23.0, "durationBeats": 0.5, "bar": 6, "finger": 1, "fingerSource": "printed"},
-    {"midi": 81, "name": "A5", "hand": "rh", "startBeat": 23.5, "durationBeats": 0.5, "bar": 6, "finger": 5, "fingerSource": "printed"},
-    {"midi": 52, "name": "E3", "hand": "lh", "startBeat": 24.0, "durationBeats": 4.0, "bar": 7, "finger": 3, "fingerSource": "printed"},
-    {"midi": 81, "name": "A5", "hand": "rh", "startBeat": 24.0, "durationBeats": 1.0, "bar": 7, "finger": 5, "fingerSource": "printed"},
-    {"midi": 80, "name": "G#5", "hand": "rh", "startBeat": 25.0, "durationBeats": 0.5, "bar": 7, "finger": 4, "fingerSource": "printed"},
-    {"midi": 78, "name": "F#5", "hand": "rh", "startBeat": 25.5, "durationBeats": 0.5, "bar": 7, "finger": 3, "fingerSource": "printed"},
-    {"midi": 80, "name": "G#5", "hand": "rh", "startBeat": 26.0, "durationBeats": 1.5, "bar": 7, "finger": 4, "fingerSource": "printed"},
-    {"midi": 81, "name": "A5", "hand": "rh", "startBeat": 27.5, "durationBeats": 0.5, "bar": 7, "finger": 5, "fingerSource": "printed"},
-    {"midi": 57, "name": "A3", "hand": "lh", "startBeat": 28.0, "durationBeats": 4.0, "bar": 8, "finger": 1, "fingerSource": "printed"},
-    {"midi": 81, "name": "A5", "hand": "rh", "startBeat": 28.0, "durationBeats": 4.0, "bar": 8, "finger": 5, "fingerSource": "printed"}
+    {"midi":57,"name":"A3","hand":"lh","startBeat":0,"durationBeats":4,"bar":1,"finger":1,"fingerSource":"printed"},
+    {"midi":72,"name":"C5","hand":"rh","startBeat":0,"durationBeats":0.5,"bar":1,"finger":1,"fingerSource":"printed"},
+    {"midi":84,"name":"C6","hand":"rh","startBeat":0.5,"durationBeats":0.5,"bar":1,"finger":5,"fingerSource":"printed"},
+    {"midi":83,"name":"B5","hand":"rh","startBeat":1,"durationBeats":0.5,"bar":1,"finger":4,"fingerSource":"printed"},
+    {"midi":84,"name":"C6","hand":"rh","startBeat":1.5,"durationBeats":0.5,"bar":1,"finger":5,"fingerSource":"printed"},
+    {"midi":81,"name":"A5","hand":"rh","startBeat":2,"durationBeats":0.5,"bar":1,"finger":3,"fingerSource":"printed"},
+    {"midi":84,"name":"C6","hand":"rh","startBeat":2.5,"durationBeats":0.5,"bar":1,"finger":5,"fingerSource":"printed"},
+    {"midi":79,"name":"G5","hand":"rh","startBeat":3,"durationBeats":0.5,"bar":1,"finger":2,"fingerSource":"printed"},
+    {"midi":84,"name":"C6","hand":"rh","startBeat":3.5,"durationBeats":0.5,"bar":1,"finger":5,"fingerSource":"printed"},
+    {"midi":50,"name":"D3","hand":"lh","startBeat":4,"durationBeats":4,"bar":2,"finger":4,"fingerSource":"printed"},
+    {"midi":77,"name":"F5","hand":"rh","startBeat":4,"durationBeats":0.5,"bar":2,"finger":1,"fingerSource":"printed"},
+    {"midi":84,"name":"C6","hand":"rh","startBeat":4.5,"durationBeats":0.5,"bar":2,"finger":5,"fingerSource":"printed"},
+    {"midi":76,"name":"E5","hand":"rh","startBeat":5,"durationBeats":0.5,"bar":2,"finger":1,"fingerSource":"printed"},
+    {"midi":84,"name":"C6","hand":"rh","startBeat":5.5,"durationBeats":0.5,"bar":2,"finger":5,"fingerSource":"printed"},
+    {"midi":74,"name":"D5","hand":"rh","startBeat":6,"durationBeats":0.5,"bar":2,"finger":1,"fingerSource":"printed"},
+    {"midi":84,"name":"C6","hand":"rh","startBeat":6.5,"durationBeats":0.5,"bar":2,"finger":5,"fingerSource":"printed"},
+    {"midi":72,"name":"C5","hand":"rh","startBeat":7,"durationBeats":0.5,"bar":2,"finger":1,"fingerSource":"printed"},
+    {"midi":84,"name":"C6","hand":"rh","startBeat":7.5,"durationBeats":0.5,"bar":2,"finger":5,"fingerSource":"printed"},
+    {"midi":55,"name":"G3","hand":"lh","startBeat":8,"durationBeats":4,"bar":3,"finger":1,"fingerSource":"printed"},
+    {"midi":71,"name":"B4","hand":"rh","startBeat":8,"durationBeats":0.5,"bar":3,"finger":1,"fingerSource":"printed"},
+    {"midi":83,"name":"B5","hand":"rh","startBeat":8.5,"durationBeats":0.5,"bar":3,"finger":5,"fingerSource":"printed"},
+    {"midi":81,"name":"A5","hand":"rh","startBeat":9,"durationBeats":0.5,"bar":3,"finger":4,"fingerSource":"printed"},
+    {"midi":83,"name":"B5","hand":"rh","startBeat":9.5,"durationBeats":0.5,"bar":3,"finger":5,"fingerSource":"printed"},
+    {"midi":79,"name":"G5","hand":"rh","startBeat":10,"durationBeats":0.5,"bar":3,"finger":3,"fingerSource":"printed"},
+    {"midi":83,"name":"B5","hand":"rh","startBeat":10.5,"durationBeats":0.5,"bar":3,"finger":5,"fingerSource":"printed"},
+    {"midi":77,"name":"F5","hand":"rh","startBeat":11,"durationBeats":0.5,"bar":3,"finger":2,"fingerSource":"printed"},
+    {"midi":83,"name":"B5","hand":"rh","startBeat":11.5,"durationBeats":0.5,"bar":3,"finger":5,"fingerSource":"printed"},
+    {"midi":48,"name":"C3","hand":"lh","startBeat":12,"durationBeats":4,"bar":4,"finger":5,"fingerSource":"printed"},
+    {"midi":76,"name":"E5","hand":"rh","startBeat":12,"durationBeats":0.5,"bar":4,"finger":1,"fingerSource":"printed"},
+    {"midi":83,"name":"B5","hand":"rh","startBeat":12.5,"durationBeats":0.5,"bar":4,"finger":5,"fingerSource":"printed"},
+    {"midi":74,"name":"D5","hand":"rh","startBeat":13,"durationBeats":0.5,"bar":4,"finger":1,"fingerSource":"printed"},
+    {"midi":83,"name":"B5","hand":"rh","startBeat":13.5,"durationBeats":0.5,"bar":4,"finger":5,"fingerSource":"printed"},
+    {"midi":72,"name":"C5","hand":"rh","startBeat":14,"durationBeats":0.5,"bar":4,"finger":1,"fingerSource":"printed"},
+    {"midi":83,"name":"B5","hand":"rh","startBeat":14.5,"durationBeats":0.5,"bar":4,"finger":5,"fingerSource":"printed"},
+    {"midi":71,"name":"B4","hand":"rh","startBeat":15,"durationBeats":0.5,"bar":4,"finger":1,"fingerSource":"printed"},
+    {"midi":83,"name":"B5","hand":"rh","startBeat":15.5,"durationBeats":0.5,"bar":4,"finger":5,"fingerSource":"printed"},
+    {"midi":53,"name":"F3","hand":"lh","startBeat":16,"durationBeats":4,"bar":5,"finger":2,"fingerSource":"printed"},
+    {"midi":69,"name":"A4","hand":"rh","startBeat":16,"durationBeats":0.5,"bar":5,"finger":1,"fingerSource":"printed"},
+    {"midi":81,"name":"A5","hand":"rh","startBeat":16.5,"durationBeats":0.5,"bar":5,"finger":5,"fingerSource":"printed"},
+    {"midi":79,"name":"G5","hand":"rh","startBeat":17,"durationBeats":0.5,"bar":5,"finger":4,"fingerSource":"printed"},
+    {"midi":81,"name":"A5","hand":"rh","startBeat":17.5,"durationBeats":0.5,"bar":5,"finger":5,"fingerSource":"printed"},
+    {"midi":77,"name":"F5","hand":"rh","startBeat":18,"durationBeats":0.5,"bar":5,"finger":3,"fingerSource":"printed"},
+    {"midi":81,"name":"A5","hand":"rh","startBeat":18.5,"durationBeats":0.5,"bar":5,"finger":5,"fingerSource":"printed"},
+    {"midi":76,"name":"E5","hand":"rh","startBeat":19,"durationBeats":0.5,"bar":5,"finger":2,"fingerSource":"printed"},
+    {"midi":81,"name":"A5","hand":"rh","startBeat":19.5,"durationBeats":0.5,"bar":5,"finger":5,"fingerSource":"printed"},
+    {"midi":50,"name":"D3","hand":"lh","startBeat":20,"durationBeats":4,"bar":6,"finger":4,"fingerSource":"printed"},
+    {"midi":74,"name":"D5","hand":"rh","startBeat":20,"durationBeats":0.5,"bar":6,"finger":1,"fingerSource":"printed"},
+    {"midi":81,"name":"A5","hand":"rh","startBeat":20.5,"durationBeats":0.5,"bar":6,"finger":5,"fingerSource":"printed"},
+    {"midi":72,"name":"C5","hand":"rh","startBeat":21,"durationBeats":0.5,"bar":6,"finger":1,"fingerSource":"printed"},
+    {"midi":81,"name":"A5","hand":"rh","startBeat":21.5,"durationBeats":0.5,"bar":6,"finger":5,"fingerSource":"printed"},
+    {"midi":71,"name":"B4","hand":"rh","startBeat":22,"durationBeats":0.5,"bar":6,"finger":1,"fingerSource":"printed"},
+    {"midi":81,"name":"A5","hand":"rh","startBeat":22.5,"durationBeats":0.5,"bar":6,"finger":5,"fingerSource":"printed"},
+    {"midi":69,"name":"A4","hand":"rh","startBeat":23,"durationBeats":0.5,"bar":6,"finger":1,"fingerSource":"printed"},
+    {"midi":81,"name":"A5","hand":"rh","startBeat":23.5,"durationBeats":0.5,"bar":6,"finger":5,"fingerSource":"printed"},
+    {"midi":52,"name":"E3","hand":"lh","startBeat":24,"durationBeats":4,"bar":7,"finger":3,"fingerSource":"printed"},
+    {"midi":81,"name":"A5","hand":"rh","startBeat":24,"durationBeats":1,"bar":7,"finger":5,"fingerSource":"printed"},
+    {"midi":80,"name":"G#5","hand":"rh","startBeat":25,"durationBeats":0.5,"bar":7,"finger":4,"fingerSource":"printed"},
+    {"midi":78,"name":"F#5","hand":"rh","startBeat":25.5,"durationBeats":0.5,"bar":7,"finger":3,"fingerSource":"printed"},
+    {"midi":80,"name":"G#5","hand":"rh","startBeat":26,"durationBeats":1.5,"bar":7,"finger":4,"fingerSource":"printed"},
+    {"midi":81,"name":"A5","hand":"rh","startBeat":27.5,"durationBeats":0.5,"bar":7,"finger":5,"fingerSource":"printed"},
+    {"midi":57,"name":"A3","hand":"lh","startBeat":28,"durationBeats":4,"bar":8,"finger":1,"fingerSource":"printed"},
+    {"midi":81,"name":"A5","hand":"rh","startBeat":28,"durationBeats":4,"bar":8,"finger":5,"fingerSource":"printed"}
   ],
   "sections": [
     {
@@ -92,16 +101,20 @@
   "notes_text": [
     "solo los compases 1-8 de 72 (muestra). \"rit. al fine\" impreso en el compás 6 (y en 14, 22, 30, 46 y 70); el MIDI no baja el tempo"
   ],
+  "warnings": [
+    "ritardando impreso sin números (\"rit. al fine\" impreso en el c.6 de esta muestra (y en 14, 22, 30, 46 y 70 de la pieza completa)): quarterBpm es el tempo BASE y startBeat/durationBeats están escritos a ese tempo; el ritardando no está aplicado a las notas",
+    "arreglista desconocido: la partitura no lo imprime y el archivo no lo trae (arranger: null)"
+  ],
   "checks": {
     "barDurations": {
       "ok": true,
-      "detail": "notas + silencios = 4 tiempos en cada compás y mano",
+      "detail": "notas + silencios = 4 tiempos en cada compás y mano (validado por el parser del lector)",
       "bars": 8,
       "failures": {}
     },
     "inKey": {
       "ok": true,
-      "detail": "notas de la escala de la tonalidad; las cromáticas listadas llevan alteración escrita o heredada dentro del compás (la escala usada es La menor natural / Re, Sol mayor según la pieza)",
+      "detail": "notas de la escala de la tonalidad; las cromáticas listadas deben estar verificadas contra la partitura (spec.allowedChromatics); una nota fuera de la escala y de esa lista marca ok:false",
       "chromatic": [
         {
           "bar": 7,
@@ -116,13 +129,13 @@
         {
           "bar": 7,
           "name": "G#5",
-          "accidental": "heredada del mismo compás"
+          "accidental": "escrita"
         }
       ]
     },
     "chordsVsBass": {
       "skipped": true,
-      "detail": "la partitura no trae cifrados impresos; no se inventaron"
+      "detail": "la partitura no trae cifrados impresos y el bajo no repite un bucle detectable; no se inventó ninguna progresión"
     },
     "handsCross": {
       "ok": true,
@@ -156,10 +169,17 @@
       "durationComparisonSkippedSamePitchOverlap": 0,
       "midiTempoEvents": [
         [
-          0.0,
-          120.0
+          0,
+          120
         ]
       ]
+    },
+    "identicalPassages": {
+      "ok": true,
+      "groups": 0,
+      "suggestedMismatches": [],
+      "printedDifferences": [],
+      "detail": "compases idénticos de una misma mano llevan los mismos dedos. suggestedMismatches = dedo propuesto que difiere (debe estar vacío); printedDifferences = la propia partitura imprime dedos distintos en pasajes idénticos y se respeta"
     },
     "fingers": {
       "printed": 62,

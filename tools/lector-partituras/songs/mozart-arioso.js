@@ -25,6 +25,7 @@ const MOZART_ARIOSO = {
       "mode": "major"
     },
     "tempoSource": "audio",
+    "arrangerNote": "Impreso solo \"Pianolessen.eu\" (título y pie de página; en el MusicXML es el campo de derechos). Es la fuente, no un arreglista con nombre; el MusicXML (MuseScore 3.3.4, 2019-12-27) no trae más. No se inventó.",
     "tempoNote": "Impreso solo \"Adagio\", sin número. Los 71 salen del MIDI adjunto (70.9998 en el XML), no de una grabación.",
     "notes_text": [
       "\"Adagio\" impreso. La partitura está escrita sin barras de repetición: los compases 9-16 repiten literalmente los 1-8 y los 25-32 los 17-24, y así se entregan (order A B C D)"
@@ -32,7 +33,29 @@ const MOZART_ARIOSO = {
     "allowedChromatics": [
       "C#",
       "G#"
-    ]
+    ],
+    "extraChecks": {
+      "midiCrossCheck": {
+        "ok": true,
+        "mode": "exact",
+        "scoreOnsets": 194,
+        "matched": 194,
+        "midiNotesInWindow": 194,
+        "onlyInScoreCount": 0,
+        "onlyInScore": [],
+        "onlyInMidiCount": 0,
+        "onlyInMidi": [],
+        "durationDisagreementCount": 0,
+        "durationDisagreements": [],
+        "durationComparisonSkippedSamePitchOverlap": 0,
+        "midiTempoEvents": [
+          [
+            0.0,
+            71.0
+          ]
+        ]
+      }
+    }
   },
   text: `title: Mozart Arioso
 artist: Wolfgang Amadeus Mozart
@@ -54,7 +77,7 @@ lh: B3/4:2 B3/4:2? B3/4:2? | C4/4:1? B3/4:2? C4/4:2? | C#4/4:2 C#4/4:2? C#4/4:2?
 
 [D] Cierre (c.25-32)
 rh: D5/8:5 B4/8:3 A4/8:2? G4/8:1? F#4/8:2 G4/8:1 | E5/2.:5? | E5/8:5 C#5/8:3 B4/8:2? A4/8:1? G#4/8:2 A4/8:1 | F#5/2:5 r/4 | E5/4:5 C5/4:3 A4/4:1 | F#4/4:2 G4/4:3 r/8 D4/8:1 | E4/8:2? A4/8:5? G4/4:3? F#4/4:1? | G4/2:2? r/4 |
-lh: B3/4:2 B3/4:2? B3/4:2? | C4/4:1? B3/4:2? C4/4:2? | C#4/4:2 C#4/4:2? C#4/4:2? | D4/4:1 C#4/4:2? D4/4:1? | C4/4:2? C4/4:2? C4/4:1? | C4/4:1? B3/4:2? r/4 | C4/4:2 [B3,D4]/4:3?,1? [A3,C4]/4:4?,2? | [G3,B3]/2:5?,3? r/4 |
+lh: B3/4:2 B3/4:2? B3/4:2? | C4/4:1? B3/4:2? C4/4:2? | C#4/4:2 C#4/4:2? C#4/4:2? | D4/4:1 C#4/4:2? D4/4:1? | C4/4:2? C4/4:2? C4/4:1? | C4/4:1? B3/4:2? r/4 | C4/4:2 [B3,D4]/4:3?,1? [A3,C4]/4:4?,2? | [G3,B3]/2:5?,2? r/4 |
 
 order: A B C D
 `

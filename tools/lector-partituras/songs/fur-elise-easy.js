@@ -35,6 +35,7 @@ const FUR_ELISE_EASY = {
       "mode": "minor"
     },
     "tempoSource": "audio",
+    "arrangerNote": "El archivo (MuseScore Studio 4.6.5, 2026-02-11) solo trae el título \"Fur Elise\": ni compositor ni arreglista ni derechos. No se inventó: falta el dato de la página de origen.",
     "tempoNote": "La partitura no imprime tempo. Los 120 salen del MIDI adjunto, no de una grabación.",
     "notes_text": [
       "barra de repetición hacia atrás al final del compás 13 (sin inicio de repetición): el tema completo se toca dos veces, por eso order = [\"A\",\"A\"]. El MIDI también lo toca dos veces (78 tiempos = 2 × 39)"
@@ -42,7 +43,127 @@ const FUR_ELISE_EASY = {
     "allowedChromatics": [
       "D#",
       "G#"
-    ]
+    ],
+    "extraChecks": {
+      "midiCrossCheck": {
+        "ok": false,
+        "mode": "exact",
+        "scoreOnsets": 122,
+        "matched": 122,
+        "midiNotesInWindow": 180,
+        "onlyInScoreCount": 0,
+        "onlyInScore": [],
+        "onlyInMidiCount": 58,
+        "onlyInMidi": [
+          [
+            3.0,
+            40
+          ],
+          [
+            3.0,
+            64
+          ],
+          [
+            3.0,
+            68
+          ],
+          [
+            6.0,
+            45
+          ],
+          [
+            9.0,
+            40
+          ],
+          [
+            12.0,
+            45
+          ],
+          [
+            12.0,
+            60
+          ],
+          [
+            12.0,
+            69
+          ],
+          [
+            15.0,
+            40
+          ],
+          [
+            15.0,
+            64
+          ],
+          [
+            15.0,
+            68
+          ],
+          [
+            18.0,
+            45
+          ],
+          [
+            21.0,
+            40
+          ],
+          [
+            21.0,
+            68
+          ],
+          [
+            24.0,
+            45
+          ],
+          [
+            24.0,
+            60
+          ],
+          [
+            24.0,
+            64
+          ],
+          [
+            27.0,
+            36
+          ],
+          [
+            27.0,
+            64
+          ],
+          [
+            30.0,
+            43
+          ]
+        ],
+        "durationDisagreementCount": 2,
+        "durationDisagreements": [
+          [
+            27.0,
+            "C4",
+            2.0,
+            3.0
+          ],
+          [
+            66.0,
+            "C4",
+            2.0,
+            3.0
+          ]
+        ],
+        "durationComparisonSkippedSamePitchOverlap": 0,
+        "midiTempoEvents": [
+          [
+            0.0,
+            120.0
+          ],
+          [
+            39.0,
+            120.0
+          ]
+        ]
+      }
+    }
   },
   text: `title: Für Elise
 artist: Ludwig van Beethoven

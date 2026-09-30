@@ -18,7 +18,8 @@ const CANNON_IN_D_EASY = {
   spec: {
     "title": "Cannon in D (Fácil)",
     "composer": "Pachelbel",
-    "arranger": "Arnav (versión simplificada mecánicamente, ver source)",
+    "arranger": "Arnav",
+    "arrangerNote": "arreglo original de Arnav (impreso); esta versión sin acordes la derivó el lector mecánicamente, ver source",
     "credit": "Cannon in D — Originally composed by Johann Pachelbel — Arranged by Arnav (tal como está impreso)",
     "source": "derivada de cannon-in-d: en cada acorde la derecha conserva la nota MÁS AGUDA y la izquierda la MÁS GRAVE; se quitaron 69 notas, ritmo y compases idénticos. Es una decisión de arreglo, no algo que diga la partitura",
     "key": {
@@ -26,7 +27,19 @@ const CANNON_IN_D_EASY = {
       "mode": "major"
     },
     "tempoSource": "printed",
-    "tempoNote": "♩=108 impreso en el compás 1; el ritardando final también está impreso (ver tempoChanges)",
+    "tempoNote": "♩=108 impreso en el compás 1; el ritardando final también está impreso (ver ritardando y tempoChanges)",
+    "ritardando": {
+      "present": true,
+      "printed": true,
+      "numeric": true,
+      "where": "compases 47-49",
+      "tempoChanges": [
+        { "bar": 47, "beat": 0, "quarterBpm": 90 },
+        { "bar": 48, "beat": 0, "quarterBpm": 70 },
+        { "bar": 49, "beat": 0, "quarterBpm": 45 }
+      ],
+      "detail": "marcas de metrónomo impresas en la partitura y confirmadas en el MIDI (108→90→70→45); los compases 47-49 sonarían más lentos que quarterBpm"
+    },
     "tempoChanges": [
       {
         "bar": 47,
@@ -54,6 +67,119 @@ const CANNON_IN_D_EASY = {
         "rule": "derecha = nota más aguda de cada acorde; izquierda = más grave",
         "removedNotes": 69,
         "keptNotes": 259
+      },
+      "midiCrossCheck": {
+        "ok": true,
+        "mode": "subset",
+        "scoreOnsets": 259,
+        "matched": 259,
+        "midiNotesInWindow": 327,
+        "onlyInScoreCount": 0,
+        "onlyInScore": [],
+        "onlyInMidiCount": 68,
+        "onlyInMidi": [
+          [
+            64.0,
+            45
+          ],
+          [
+            64.0,
+            50
+          ],
+          [
+            64.0,
+            62
+          ],
+          [
+            68.0,
+            52
+          ],
+          [
+            68.0,
+            57
+          ],
+          [
+            68.0,
+            62
+          ],
+          [
+            72.0,
+            54
+          ],
+          [
+            72.0,
+            59
+          ],
+          [
+            72.0,
+            62
+          ],
+          [
+            76.0,
+            49
+          ],
+          [
+            76.0,
+            54
+          ],
+          [
+            76.0,
+            61
+          ],
+          [
+            80.0,
+            50
+          ],
+          [
+            80.0,
+            55
+          ],
+          [
+            80.0,
+            67
+          ],
+          [
+            84.0,
+            45
+          ],
+          [
+            84.0,
+            50
+          ],
+          [
+            84.0,
+            66
+          ],
+          [
+            88.0,
+            50
+          ],
+          [
+            88.0,
+            54
+          ]
+        ],
+        "durationDisagreementCount": 0,
+        "durationDisagreements": [],
+        "durationComparisonSkippedSamePitchOverlap": 9,
+        "midiTempoEvents": [
+          [
+            0.0,
+            108.0
+          ],
+          [
+            184.0,
+            90.0
+          ],
+          [
+            188.0,
+            70.0
+          ],
+          [
+            192.0,
+            45.0
+          ]
+        ]
       }
     }
   },
@@ -65,10 +191,10 @@ key: Re mayor (2 sostenidos)
 
 [A] Bajo y primer arpegio (c.1-8)
 rh: r/4 F#4/4:1? A4/4:3? D5/4:5? | r/4 E4/4:1? A4/4:3? C#5/4:5? | r/4 D4/4:1? F#4/4:3? B4/4:5? | r/4 C#4/4:1? F#4/4:4? A4/4:5? | r/4 B3/4:1? D4/4:3? G4/4:5? | r/4 A3/4:1? D4/4:3? F#4/4:5? | r/4 B3/4:1? D4/4:2? G4/4:5? | r/4 C#4/4:1? E4/4:2? A4/4:4? |
-lh: D4/1:1? | A3/1:4? | B3/1:2? | F#3/1:4? | G3/1:3? | D3/1:5? | G3/1:4? | A3/1:3? |
+lh: D4/1:1? | A3/1:3? | B3/1:2? | F#3/1:4? | G3/1:3? | D3/1:5? | G3/1:4? | A3/1:3? |
 
 [B] La derecha sostiene, la izquierda arpegia (c.9-16)
-rh: F#5/1:5? | E5/1:4? | D5/1:3? | C#5/1:3? | B4/1:2? | A4/1:1? | B4/1:2? | C#5/1:3? |
+rh: F#5/1:3? | E5/1:2? | D5/1:1? | C#5/1:3? | B4/1:2? | A4/1:1? | B4/1:2? | C#5/1:3? |
 lh: D4/4:5? F#4/4:4? A4/4:3? D5/4:1? | A3/4:5? C#4/4:4? E4/4:3? A4/4:1? | B3/4:5? D4/4:4? F#4/4:3? B4/4:1? | F#3/4:5? C#4/4:4? F#4/4:2? A4/4:1? | G3/4:5? B3/4:4? D4/4:3? G4/4:1? | D3/4:5? F#3/4:4? A3/4:3? D4/4:1? | G3/4:5? B3/4:4? D4/4:3? G4/4:1? | A3/4:5? C#4/4:4? E4/4:3? A4/4:1? |
 
 [C] Melodía (c.17-32)
@@ -77,7 +203,7 @@ lh: D2/1:5? | A2/1:2? | B2/1:1? | F#2/1:4? | G2/1:3? | D2/1:5? | G2/1:2? | A2/1:
 
 [D] Variación en corcheas (c.33-40)
 rh: A5/4:5? F#5/8:4? G5/8:1? A5/4:2? F#5/8:1? G5/8:3? | A5/8:5? A4/8:1? B4/8:2? C#5/8:3? D5/8:1? E5/8:2? F#5/8:3? G5/8:4? | F#5/4:3? D5/8:1? E5/8:3? F#5/4:5? F#4/8:1? G4/8:2? | A4/8:3? B4/8:4? A4/8:2? G4/8:1? A4/8:2? F#4/8:1? G4/8:2? A4/8:3? | G4/4:1? B4/8:4? A4/8:3? G4/4:2? F#4/8:2? E4/8:1? | F#4/8:3? E4/8:2? D4/8:1? E4/8:2? F#4/8:3? G4/8:1? A4/8:2? B4/8:3? | G4/4:1? B4/8:3? A4/8:1? B4/4:2? C#5/8:3? D5/8:4? | A4/8:1? B4/8:2? C#5/8:3? D5/8:1? E5/8:2? F#5/8:3? G5/8:4? A5/8:5? |
-lh: D4/1:1? | A3/1:3? | G3/1:4? | F#3/1:5? | G3/1:4? | D4/1:1? | G3/1:5? | A3/1:4? |
+lh: D4/1:1? | A3/1:3? | G3/1:4? | F#3/1:5? | G3/1:4? | D4/1:1? | G3/1:4? | A3/1:3? |
 
 [E] Melodía sostenida (c.41-48)
 rh: F#5/1:3? | E5/1:2? | D5/1:1? | C#5/1:3? | B4/1:2? | A4/1:1? | B4/2:2? E5/2:5? | C#5/2:2? E5/2:3? |

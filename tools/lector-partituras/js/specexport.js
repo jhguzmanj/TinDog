@@ -60,6 +60,94 @@ const SpecExport = (() => {
     };
   }
 
+  const PC_NAMES = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'F#', 'G', 'Ab', 'A', 'Bb', 'B'];
+
+  // El bajo de cada compás: la nota más grave de la primera entrada de la izquierda.
+  function barBass(notes) {
+    const by = {};
+    for (const n of notes) if (n.hand === 'lh') (by[n.bar] = by[n.bar] || []).push(n);
+    const bass = {};
+    for (const [bar, ns] of Object.entries(by)) {
+      const first = Math.min(...ns.map(n => n.startBeat));
+      bass[bar] = ns.filter(n => n.startBeat === first).reduce((a, b) => (b.midi < a.midi ? b : a));
+    }
+    return bass;
+  }
+
+  // La partitura no trae cifrados, así que no se juzga la armonía "en teoría" (con melodías
+  // con notas de paso eso da falsos positivos por todas partes). Se hace algo más estrecho y
+  // comprobable: si el bajo de la pieza repite un bucle (Cannon: 8 compases), se marcan los
+  // compases donde se aparta de lo que hace en las demás vueltas.
+  function bassLoopCheck(notes, bars, midiVerified) {
+    const bass = barBass(notes);
+    const spelled = {};                                   // pc -> nombre escrito en la pieza (F#, no Gb)
+    Object.values(bass).forEach(n => { spelled[n.midi % 12] = spelled[n.midi % 12] || n.name.replace(/\d+$/, ''); });
+    const pc = b => (bass[b] ? bass[b].midi % 12 : null);
+    let best = null;
+    for (let P = 2; P <= Math.floor(bars / 3); P++) {
+      let match = 0, total = 0;
+      for (let b = 1; b + P <= bars; b++) {
+        if (pc(b) === null || pc(b + P) === null) continue;
+        total++; if (pc(b) === pc(b + P)) match++;
+      }
+      if (total < 2 * P) continue;
+      const rate = match / total;
+      if (!best || rate > best.rate * 1.1) best = { P, rate, total };   // el período fundamental, no sus múltiplos
+    }
+    if (!best || best.rate < 0.6) {
+      return { skipped: true, detail: 'la partitura no trae cifrados impresos y el bajo no repite un bucle detectable; no se inventó ninguna progresión' };
+    }
+    const flagged = [];
+    for (let b = 1; b <= bars; b++) {
+      if (pc(b) === null) continue;
+      const votes = {}; let members = 0;
+      for (let k = ((b - 1) % best.P) + 1; k <= bars; k += best.P) if (pc(k) !== null) { votes[pc(k)] = (votes[pc(k)] || 0) + 1; members++; }
+      const [top, cnt] = Object.entries(votes).sort((x, y) => y[1] - x[1])[0];
+      if (+top !== pc(b) && cnt >= 3 && cnt > members / 2) {
+        flagged.push({ bar: b, bass: bass[b].name, expected: spelled[+top] || PC_NAMES[+top], support: `${cnt} de ${members} vueltas`, midi: bass[b].midi, startBeat: bass[b].startBeat });
+      }
+    }
+    return {
+      ok: flagged.length === 0, period: best.P, loopMatch: Math.round(best.rate * 100) / 100, flagged,
+      detail: `sin cifrados impresos: se compara el bajo de cada compás con el bucle de ${best.P} compases que la propia pieza repite. Detecta desvíos respecto a sí misma, no armonía teórica; las notas marcadas también llevan doubt:true. ${midiVerified ? 'Están así en la partitura y en el MIDI (no es error de lectura)' : 'No hay MIDI para contrastarlas (podría ser error de lectura)'}: variación del arreglo o error del arreglo`,
+    };
+  }
+
+  // Los mismos pasajes (mismas notas, mismo lugar, misma duración Y el mismo compás anterior y
+  // siguiente dentro de la sección) llevan los mismos dedos. El contexto importa: una redonda suelta
+  // "se repite" en cien sitios y forzarle el mismo dedo en todos empeora la digitación.
+  // Solo se exige donde el dedo es una propuesta: si la partitura imprime dedos distintos en dos
+  // pasajes idénticos, eso está en la partitura y se lista aparte, sin tocarlo.
+  // scripts/unificar-dedos.js es quien los iguala; esto comprueba que quedó hecho.
+  function identicalPassages(notes, barQuarters, sections) {
+    const secOf = bar => sections.findIndex(s => bar >= s.fromBar && bar <= s.toBar);
+    const out = { groups: 0, suggestedMismatches: [], printedDifferences: [] };
+    for (const hand of ['rh', 'lh']) {
+      const by = {};
+      for (const n of notes) if (n.hand === hand) (by[n.bar] = by[n.bar] || []).push(n);
+      for (const ns of Object.values(by)) ns.sort((a, b) => a.startBeat - b.startBeat || a.midi - b.midi);
+      const sigOf = (bar, ns) => ns.map(n => `${n.midi}@${round4(n.startBeat - (bar - 1) * barQuarters)}x${n.durationBeats}`).join(' ');
+      const sigAt = (bar, sec) => (by[bar] && secOf(bar) === sec ? sigOf(bar, by[bar]) : null);
+      const groups = {};
+      for (const [b, ns] of Object.entries(by)) {
+        const bar = +b, sec = secOf(bar);
+        const key = `${sigAt(bar - 1, sec)}<${sigOf(bar, ns)}>${sigAt(bar + 1, sec)}`;
+        (groups[key] = groups[key] || []).push({ bar, s: ns });
+      }
+      for (const g of Object.values(groups)) {
+        if (g.length < 2) continue;
+        out.groups++;
+        for (let i = 0; i < g[0].s.length; i++) {
+          if (new Set(g.map(m => m.s[i].finger)).size === 1) continue;
+          const sug = g.some(m => m.s[i].fingerSource === 'suggested');
+          const rec = { hand, note: g[0].s[i].name, bars: g.map(m => m.bar), fingers: g.map(m => m.s[i].finger) };
+          (sug ? out.suggestedMismatches : out.printedDifferences).push(rec);
+        }
+      }
+    }
+    return out;
+  }
+
   // Devuelve { ok: true, doc } o { ok: false, errors: [...] }.
   function build(song, entry) {
     const errors = [];
@@ -126,12 +214,23 @@ const SpecExport = (() => {
       n.startBeat = round4(n.startBeat);
       n.durationBeats = round4(n.durationBeats);
     }
+    const mcc = spec.extraChecks && spec.extraChecks.midiCrossCheck;
+    const midiVerified = !!(mcc && !mcc.skipped && mcc.onlyInScoreCount === 0);
+    const bassLoop = bassLoopCheck(notes, barOffset, midiVerified);
+    for (const f of bassLoop.flagged || []) {
+      const n = notes.find(x => x.hand === 'lh' && x.bar === f.bar && x.midi === f.midi && x.startBeat === f.startBeat);
+      if (n) {
+        n.doubt = true;
+        n.doubtReason = `bajo ${f.bass} en el c.${f.bar}: en las demás vueltas del bucle de ${bassLoop.period} compases aquí va ${f.expected} (${f.support}); ${midiVerified ? 'la partitura y el MIDI coinciden con la nota tal como está' : 'sin MIDI para contrastar'}`;
+      }
+      delete f.midi; delete f.startBeat;
+    }
 
     // ---- chequeos (los que pide la especificación) ----
     const keyPcs = new Set(SCALES[spec.key.mode].map(i => (pcOfName(spec.key.tonic) + i) % 12));
     const allowed = new Set((spec.allowedChromatics || []).map(pcOfName));
     const chromatic = notes.filter(n => !keyPcs.has(pcOfName(n.name)))
-      .map(n => ({ bar: n.bar, name: n.name, accidental: allowed.has(pcOfName(n.name)) ? 'verificada contra la partitura al generar el JSON' : null }));
+      .map(n => ({ bar: n.bar, name: n.name, accidental: allowed.has(pcOfName(n.name)) ? 'escrita' : null }));
     const { cross, shared, span } = soundingChecks(notes);
     const pinky = [];
     for (const h of ['rh', 'lh']) {
@@ -159,22 +258,27 @@ const SpecExport = (() => {
       const bars = [...new Set(cross.map(c => Math.floor(c.beat / (song.beatsPerBar * 4 / song.beatUnit)) + 1))].sort((a, b) => a - b);
       notesText.push(`cruce de manos en el/los compás(es) [${bars.join(', ')}]: la izquierda queda más aguda que notas de la derecha; así lo escribe la partitura (no se corrigió)`);
     }
+    const idp = identicalPassages(notes, song.meterQuarters, sections);
     const checks = {
       barDurations: { ok: true, detail: `notas + silencios = ${song.beatsPerBar * 4 / song.beatUnit} tiempos en cada compás y mano (validado por el parser del lector)`, bars: barOffset, failures: {} },
       inKey: { ok: chromatic.every(c => c.accidental), detail: 'notas de la escala de la tonalidad; las cromáticas listadas deben estar verificadas contra la partitura (spec.allowedChromatics); una nota fuera de la escala y de esa lista marca ok:false', chromatic },
-      chordsVsBass: { skipped: true, detail: 'la partitura no trae cifrados impresos; no se inventaron' },
+      chordsVsBass: bassLoop,
       handsCross: { ok: cross.length === 0, crossings: cross, sharedPitchCount: shared.length, sharedPitch: shared.slice(0, 8),
                     detail: 'cruce = la izquierda suena más aguda que la derecha; "sharedPitch" = misma nota en las dos manos a la vez (unísono)' },
       handSpanPerInstant: { ok: span <= 12, maxSemitones: span, detail: 'nota más grave a más aguda que una mano tiene sonando a la vez' },
       handPositionSpanPerBar: positionSpan(notes),
       midiCrossCheck: { skipped: true, detail: `el lector no tiene el MIDI; el cruce nota por nota con el MIDI original está en piezas-json/${entry.id}.json` },
       ...(spec.extraChecks || {}),
+      identicalPassages: { ok: idp.suggestedMismatches.length === 0, ...idp,
+        detail: 'compases idénticos de una misma mano llevan los mismos dedos. suggestedMismatches = dedo propuesto que difiere (debe estar vacío); printedDifferences = la propia partitura imprime dedos distintos en pasajes idénticos y se respeta' },
       fingers,
       doubtNotes: notes.filter(n => n.doubt).length,
     };
 
     const doc = { id: entry.id, title: spec.title || song.meta.title, composer: spec.composer };
-    if (spec.arranger) doc.arranger = spec.arranger;
+    // El arreglista nunca se inventa: si la partitura no lo trae, va null y con la razón.
+    doc.arranger = spec.arranger || null;
+    if (spec.arrangerNote) doc.arrangerNote = spec.arrangerNote;
     if (spec.credit) doc.credit = spec.credit;
     doc.source = spec.source;
     doc.key = spec.key;
@@ -182,7 +286,17 @@ const SpecExport = (() => {
     Object.assign(doc, { meter: song.meta.meter || '4/4', pickupBeats: 0, quarterBpm: song.quarterBpm, tempoSource: spec.tempoSource });
     if (spec.tempoNote) doc.tempoNote = spec.tempoNote;
     if (spec.tempoChanges) doc.tempoChanges = spec.tempoChanges;
-    Object.assign(doc, { bars: barOffset, notes, sections, order: song.order, notes_text: notesText, checks });
+    const rit = spec.ritardando || { present: false };
+    const warnings = [];
+    if (rit.present) {
+      warnings.push(`ritardando ${rit.numeric ? 'impreso con números' : 'impreso sin números'} (${rit.where}): quarterBpm es el tempo BASE y startBeat/durationBeats están escritos a ese tempo; el ritardando no está aplicado a las notas` +
+                    (rit.numeric ? ' (ver ritardando.tempoChanges)' : ''));
+    }
+    if (!doc.arranger) warnings.push('arreglista desconocido: la partitura no lo imprime y el archivo no lo trae (arranger: null)');
+    if (checks.doubtNotes) warnings.push(`${checks.doubtNotes} nota(s) con doubt:true (ver notes[].doubtReason)`);
+    if (!checks.identicalPassages.ok) warnings.push('hay pasajes idénticos con dedos propuestos distintos (checks.identicalPassages)');
+    if (!checks.inKey.ok) warnings.push('hay notas fuera de la tonalidad que no están verificadas (checks.inKey)');
+    Object.assign(doc, { ritardando: rit, bars: barOffset, notes, sections, order: song.order, notes_text: notesText, warnings, checks });
     return { ok: true, doc, warnings: checks.inKey.ok ? [] : ['Hay notas fuera de la tonalidad que no están verificadas (ver checks.inKey).'] };
   }
 

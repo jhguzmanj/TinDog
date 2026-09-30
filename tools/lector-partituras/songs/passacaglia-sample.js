@@ -28,14 +28,44 @@ const PASSACAGLIA_SAMPLE = {
       "mode": "minor"
     },
     "tempoSource": "audio",
+    "arrangerNote": "La partitura imprime \"D'après Handel\" y nada más; el MusicXML (MuseScore 4.5, 2025-04-29) no trae arreglista ni derechos. No se inventó: falta el dato de la página de origen.",
     "tempoNote": "La partitura no imprime tempo (solo \"rit. al fine\"). Los 120 salen del MIDI adjunto, no de una grabación.",
+    "ritardando": {
+      "present": true,
+      "printed": true,
+      "numeric": false,
+      "where": "\"rit. al fine\" impreso en el c.6 de esta muestra (y en 14, 22, 30, 46 y 70 de la pieza completa)",
+      "detail": "la partitura no da porcentajes ni BPM, y el MIDI adjunto no baja el tempo; por eso no hay tempoChanges. La app decide cuánto frenar; a los 120 la muestra suena sin ritardando"
+    },
     "notes_text": [
       "solo los compases 1-8 de 72 (muestra). \"rit. al fine\" impreso en el compás 6 (y en 14, 22, 30, 46 y 70); el MIDI no baja el tempo"
     ],
     "allowedChromatics": [
       "F#",
       "G#"
-    ]
+    ],
+    "extraChecks": {
+      "midiCrossCheck": {
+        "ok": true,
+        "mode": "exact",
+        "scoreOnsets": 62,
+        "matched": 62,
+        "midiNotesInWindow": 62,
+        "onlyInScoreCount": 0,
+        "onlyInScore": [],
+        "onlyInMidiCount": 0,
+        "onlyInMidi": [],
+        "durationDisagreementCount": 0,
+        "durationDisagreements": [],
+        "durationComparisonSkippedSamePitchOverlap": 0,
+        "midiTempoEvents": [
+          [
+            0.0,
+            120.0
+          ]
+        ]
+      }
+    }
   },
   text: `title: Passacaglia (muestra, c.1-8)
 artist: D'après Handel

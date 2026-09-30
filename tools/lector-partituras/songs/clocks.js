@@ -5,6 +5,7 @@ window.SONGS.push({
     "title": "Clocks",
     "composer": "Coldplay",
     "credit": "arreglo fácil de 22 compases",
+    "arrangerNote": "La partitura se transcribió desde imágenes (sin MusicXML ni MIDI) y en lo que se vio no aparece el arreglista. No se inventó: falta el dato de la página de origen.",
     "source": "imágenes de la partitura transcritas con el lector (sin MusicXML ni MIDI): dedos de la derecha impresos, dedos de la izquierda propuestos",
     "key": {
       "tonic": "Db",
@@ -21,7 +22,13 @@ window.SONGS.push({
       "C": "lectura poco nítida en la partitura original (compases 9-11); verificar de oído (no hay MIDI para contrastar)"
     },
     "allowedChromatics": [],
-    "fingersDetail": "derecha: dedos de la partitura (printed); izquierda: dedos propuestos en el lector (5-3-1 en los acordes, meñique en los bajos sueltos), no vienen de la partitura"
+    "fingersDetail": "derecha: dedos de la partitura (printed); izquierda: dedos propuestos en el lector (5-3-1 en los acordes, meñique en los bajos sueltos), no vienen de la partitura",
+    "extraChecks": {
+      "midiCrossCheck": {
+        "skipped": true,
+        "detail": "no hay MIDI de esta pieza"
+      }
+    }
   },
   text: `
 title: Clocks
