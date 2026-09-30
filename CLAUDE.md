@@ -562,6 +562,53 @@ y dentro de "Más ▾": `free | functions`.
     por tiempo casi siempre y el único salto grande de la derecha es Sol4→Si5
     (c. 5 y 13), avisado en el rótulo. Es **claramente más accesible que Für
     Elise y Clocks**; si Jorge quiere adelantar una de las tres, es esta.
+- **"Canon en Re" (Pachelbel), versión fácil, 49 compases** (`canon-en-re`,
+  Clásicas, `plan:false`). Tercera y última de las piezas "para más adelante"
+  de la persona que sabe de piano; llega por el flujo de JSON como
+  `cannon-in-d-easy`. Credit: "Arranged by Arnav (tal como está impreso)".
+  ♩=108 **impreso**. **Es una versión simplificada MECÁNICAMENTE por el flujo,
+  no por una persona**: en cada acorde la derecha conserva la nota más aguda y la
+  izquierda la más grave (se quitaron 69 notas de 328; ritmo y compases
+  idénticos). El propio JSON lo dice: "una decisión de arreglo, no algo que
+  diga la partitura". Por eso puede haber saltos o giros incómodos que un
+  arreglista humano no habría dejado.
+  - **Verificación hecha en la app**: todo cae en su compás de 4; Re mayor sin
+    notas fuera; las manos no se cruzan; el bajo de los c. 1-24 y 41-48 es
+    exactamente la progresión del canon **D–A–B–F#–G–D–G–A**. **Pero los c. 25-32
+    (F#2 en el 27, G2 en el 28, B2 en el 29, G2 en el 30) y el c. 35 (G3 donde
+    la progresión pide B3) se apartan de ella**, y el JSON trae `doubtNotes:0`.
+    Pueden ser el arreglo o una nota mal reducida por la simplificación; **sin
+    partitura no se puede cerrar**. La app las toca tal cual. Si Jorge tiene la
+    hoja, mirar esos compases primero.
+  - **Los dedos son 259 de 259 PROPUESTOS** (0 impresos); la prueba ciega del
+    flujo acierta 73%. Ningún meñique tecla a tecla y ninguna mano cruzada. Un
+    único ajuste: los c. 9-14 y 41-46 son idénticos en notas y ritmo, pero el
+    JSON daba 3 dedos distintos en las notas largas de la derecha (F#5/E5/D5
+    con 5-4-3 y luego 3-2-1); quedó **3-2-1 en las dos** porque con 5-4-3 el
+    Re5 y el Do#5 de compases seguidos llevan el mismo dedo. Por eso ese bloque
+    vive una vez (`CAN_B6`) y se usa dos veces (mismo molde que Arioso).
+    **Quedan cuatro pasos de la derecha con el mismo dedo en dos teclas
+    seguidas** (Sol4→Fa#4 con 1 en el c. 23, Si4→La4 con 3 en el 30, Sol4→Fa#4
+    con 2 en el 31 y el 37): son deslizamientos, no se cambiaron.
+  - **Abertura de mano**: c. 12 y 44 (izquierda, Fa#3 a La4 = una 10ª con 5-4-2-1),
+    c. 26 y 28 (derecha, Mi4 a La5 = una 11ª) y c. 29 (Si3 a Re5 = una 10ª) exceden
+    lo que cubre una mano sin moverse: los rótulos dicen "mueve la mano".
+  - **Re4 en las dos manos en el c. 38** (`sharedPitch`): la izquierda sostiene
+    Re4 todo el compás y la derecha lo toca en el 2º tiempo. En un piano real
+    no se puede volver a golpear una tecla pisada; es un efecto de la
+    simplificación mecánica. El rótulo pide soltar y volver a tocar.
+  - **El ritardando impreso NO se hace**: `tempoChanges` trae ♩=90 (c. 47), 70
+    (c. 48) y 45 (c. 49) y `SONGS` solo tiene un `tempo`. Se pensó estirar las
+    duraciones de esos compases (×1,2 / ×1,54 / ×2,4) para que suene a
+    tiempo, pero **descuadra las barras de la cascada** y no es lo que se pidió:
+    queda a tempo fijo y el rótulo del c. 47 lo marca. Si algún día se
+    quiere, es un cambio de motor (tempo por tramo en cascada, Escuchar y
+    metrónomo), no de datos.
+  - **Dificultad real, para no engañarse con "fácil"**: 49 compases; los c. 33-40
+    son corcheas seguidas en la derecha (unas 216 notas por minuto por mano a
+    ♩=108) con saltos; los c. 9-16 y 41-48 piden a la izquierda un arpegio de
+    octava (Re4–Re5 con 5-4-3-1). Lo asequible: los c. 1-8 y la melodía de los
+    c. 17-24 (negras con bajo de redondas).
 - **Lectura**: `READING_LEVELS` (7 niveles, clave de Sol / Fa / ambas / alteraciones).
   `renderStaff(svg, [{sp, cls, clef}], {clef, width, gap, showName})`; `sp` viene de
   `spellMidi(midi, preferFlat)` o `spellFromName('B#', 60)` (respeta octava de la letra).
