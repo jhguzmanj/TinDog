@@ -88,14 +88,14 @@ const PianoSamples = (() => {
     }
   }
 
-  // Compresor suave antes de la salida: un acorde de cuatro notas más el bajo no debe saturar.
+  // Compresor más agresivo en agudos: las muestras de piano en teléfono son muy brillantes.
   function master(ctx) {
     if (!masters.has(ctx)) {
       const gain = ctx.createGain();
-      gain.gain.value = 1.35;
+      gain.gain.value = 1.0;                          // reducido de 1.35
       const comp = ctx.createDynamicsCompressor();
-      comp.threshold.value = -16; comp.knee.value = 14; comp.ratio.value = 3;
-      comp.attack.value = 0.004; comp.release.value = 0.25;
+      comp.threshold.value = -20; comp.knee.value = 10; comp.ratio.value = 4;  // más compresión, threshold más bajo
+      comp.attack.value = 0.002; comp.release.value = 0.2;
       gain.connect(comp); comp.connect(ctx.destination);
       masters.set(ctx, gain);
     }
