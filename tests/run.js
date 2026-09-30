@@ -2176,6 +2176,33 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
     check(ck.steps.slice(i20).reduce((a, s) => a + s.dur, 0) === 12 && ck.steps.slice(i20 + 1).every(s => !s.lh.length), 'el acorde del c. 20 se sostiene hasta el final');
   }
 
+  section('Arioso (Mozart, JSON 3/4 con dedos impresos y propuestos)');
+  {
+    const ar = W("SONGS.find(s => s.id === 'mozart-arioso')");
+    check(!!ar && ar.cat === 'clasica' && ar.plan === false && ar.tempo === 71 && ar.meter === 3, 'en Clásicas, fuera del plan de Hoy, ♩=71, compás de 3');
+    check(ar.steps.reduce((a, s) => a + s.dur, 0) === 96, '32 compases de 3 tiempos, sin sobras');
+    check(ar.steps.flatMap(s => s.rh).join(',') === '74,71,69,67,66,67,67,69,72,69,67,66,64,66,67,83,79,76,73,74,69,71,76,74,73,74,74,71,69,67,66,67,67,69,72,69,67,66,64,66,67,83,79,76,73,74,69,71,76,74,73,74,74,71,69,67,66,67,76,76,73,71,69,68,69,78,76,72,69,66,67,62,64,69,67,66,67,74,71,69,67,66,67,76,76,73,71,69,68,69,78,76,72,69,66,67,62,64,69,67,66,67', 'la derecha, nota por nota, igual al JSON');
+    check(ar.steps.flatMap(s => s.lh).join(',') === '55,59,62,60,60,60,62,62,62,55,59,62,55,59,64,57,54,55,57,57,54,50,55,59,62,60,60,60,62,62,62,55,59,62,55,59,64,57,54,55,57,57,54,50,59,59,59,60,59,60,61,61,61,62,61,62,60,60,60,60,59,60,59,62,57,60,55,59,59,59,59,60,59,60,61,61,61,62,61,62,60,60,60,60,59,60,59,62,57,60,55,59', 'la izquierda, nota por nota, igual al JSON');
+    check(ar.steps.flatMap(s => s.rhF).join(',') === '5,3,2,1,2,3,2,3,5,4,3,2,1,2,3,5,3,1,2,3,1,2,5,3,2,3,5,3,2,1,2,3,2,3,5,4,3,2,1,2,3,5,3,1,2,3,1,2,5,3,2,3,5,3,2,1,2,1,5,5,3,2,1,2,1,5,5,3,1,2,3,1,2,5,3,1,2,5,3,2,1,2,1,5,5,3,2,1,2,1,5,5,3,1,2,3,1,2,5,3,1,2', 'derecha: dedos del JSON (impresos y propuestos)');
+    check(ar.steps.flatMap(s => s.lhF || []).join(',') === '5,3,1,2,2,2,1,1,1,5,3,1,5,3,1,4,5,2,1,1,3,5,5,3,1,2,2,2,1,1,1,5,3,1,5,3,1,4,5,2,1,1,3,5,2,2,2,1,2,2,2,2,2,1,2,1,2,2,1,1,2,2,3,1,4,2,5,3,2,2,2,1,2,2,2,2,2,1,2,1,2,2,1,1,2,2,3,1,4,2,5,3', 'izquierda: dedos del JSON, con el Si3 del c. 24 en 3');
+    check(ar.steps.every(s => s.rhF.length === s.rh.length && (s.lhF || []).length === s.lh.length), 'toda nota lleva dedo');
+    check(ar.steps.every(s => !s.lh.length || !s.rh.length || Math.max(...s.lh) < Math.min(...s.rh)), 'las manos no se cruzan');
+    // Repeticiones: A (c. 1-8) y C (c. 17-24) se usan dos veces y comparten los MISMOS objetos de paso.
+    check(W("(() => { const s = SONGS.find(x => x.id === 'mozart-arioso').steps; return s.length === 118 && s[1] === MOZ_A[1] && s[31] === MOZ_A[1] && s[61] === MOZ_C[1] && s[90] === MOZ_C[1]; })()"),
+      'las dos vueltas de cada sección comparten pasos: corregir una nota corrige las dos');
+    const lab = ar.steps.map(s => s.label || '').filter(Boolean);
+    check(['c. 1 · Tema', 'c. 9 · Repetición', 'c. 17 · Desarrollo', 'c. 25 · Cierre'].every(l => lab.includes(l)), 'cuatro anclas de sección para el Tramo de la cascada');
+    check(ar.steps.filter(s => s.rh.includes(83)).length === 2 && ar.steps.filter(s => /salto/.test(s.label || '')).length === 2, 'el salto Sol4 a Si5 (c. 5 y 13) va avisado');
+    // El acorde Sol3+Si3 del c. 24 (y del 32): 5-3, como Sol3 5 / Si3 3 impresos en el c. 5. El JSON daba 2 en el c. 24 y 3 en el 32.
+    const acordes = ar.steps.filter(s => s.lh.join() === '55,59').map(s => s.lhF.join());
+    check(acordes.length === 2 && acordes.every(x => x === '5,3'), 'el acorde Sol3+Si3 lleva 5-3 en las dos vueltas de la sección C');
+    // La cascada dibuja la barra cada 3 tiempos desde el primer paso.
+    const barras = W(`(() => { currentFragment = SONGS.find(s => s.id === 'mozart-arioso'); cascadeFrom = 1; cascadeTo = null;
+      return buildCascadeSchedule().beats.filter(b => b.bar && b.k >= 0).slice(0, 3).map(b => b.k); })()`);
+    check(JSON.stringify(barras) === '[0,3,6]', 'la cascada marca la barra cada 3 tiempos');
+    W("cascadeFrom = 1; cascadeTo = null; currentFragment = FRAGMENTS[0];");
+  }
+
   console.log(`\n${passes} pruebas OK, ${failures} fallos`);
   if(errors.length) console.log('Errores de consola:', errors);
   process.exit(failures || errors.length ? 1 : 0);

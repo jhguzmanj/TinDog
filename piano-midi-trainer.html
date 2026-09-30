@@ -2992,6 +2992,33 @@ const FE_A = [
   {lh:[], rh:[72], rhF:[4], dur:0.5},
 ];
 
+// "Arioso" (JSON de eventos, 32 compases): los c. 9-16 repiten literalmente los 1-8 y los
+// 25-32 los 17-24, así que cada sección vive UNA vez y la pieza las usa dos veces.
+const MOZ_A = [
+  {lh:[55], lhF:[5], rh:[74], rhF:[5], dur:0.5}, {lh:[], rh:[71], rhF:[3], dur:0.5}, {lh:[59], lhF:[3], rh:[69], rhF:[2], dur:0.5},
+  {lh:[], rh:[67], rhF:[1], dur:0.5}, {lh:[62], lhF:[1], rh:[66], rhF:[2], dur:0.5}, {lh:[], rh:[67], rhF:[3], dur:0.5},
+  {lh:[60], lhF:[2], rh:[67], rhF:[2], dur:1}, {lh:[60], lhF:[2], rh:[69], rhF:[3], dur:1}, {lh:[60], lhF:[2], rh:[], rhF:[], dur:1},
+  {lh:[62], lhF:[1], rh:[72], rhF:[5], dur:0.5}, {lh:[], rh:[69], rhF:[4], dur:0.5}, {lh:[62], lhF:[1], rh:[67], rhF:[3], dur:0.5},
+  {lh:[], rh:[66], rhF:[2], dur:0.5}, {lh:[62], lhF:[1], rh:[64], rhF:[1], dur:0.5}, {lh:[], rh:[66], rhF:[2], dur:0.5},
+  {lh:[55], lhF:[5], rh:[67], rhF:[3], dur:1}, {lh:[59], lhF:[3], rh:[], rhF:[], dur:1}, {lh:[62], lhF:[1], rh:[], rhF:[], dur:1},
+  {lh:[55], lhF:[5], rh:[83], rhF:[5], dur:1, label:'salto: la derecha sube más de una octava (Sol4 a Si5)'}, {lh:[59], lhF:[3], rh:[79], rhF:[3], dur:1}, {lh:[64], lhF:[1], rh:[76], rhF:[1], dur:1},
+  {lh:[57], lhF:[4], rh:[73], rhF:[2], dur:1}, {lh:[54], lhF:[5], rh:[74], rhF:[3], dur:1.5}, {lh:[], rh:[69], rhF:[1], dur:0.5},
+  {lh:[55], lhF:[2], rh:[71], rhF:[2], dur:0.5}, {lh:[], rh:[76], rhF:[5], dur:0.5}, {lh:[57], lhF:[1], rh:[74], rhF:[3], dur:1},
+  {lh:[57], lhF:[1], rh:[73], rhF:[2], dur:1}, {lh:[54], lhF:[3], rh:[74], rhF:[3], dur:1}, {lh:[50], lhF:[5], rh:[], rhF:[], dur:2},
+];
+const MOZ_C = [
+  {lh:[59], lhF:[2], rh:[74], rhF:[5], dur:0.5}, {lh:[], rh:[71], rhF:[3], dur:0.5}, {lh:[59], lhF:[2], rh:[69], rhF:[2], dur:0.5},
+  {lh:[], rh:[67], rhF:[1], dur:0.5}, {lh:[59], lhF:[2], rh:[66], rhF:[2], dur:0.5}, {lh:[], rh:[67], rhF:[1], dur:0.5},
+  {lh:[60], lhF:[1], rh:[76], rhF:[5], dur:1}, {lh:[59], lhF:[2], rh:[], rhF:[], dur:1}, {lh:[60], lhF:[2], rh:[], rhF:[], dur:1},
+  {lh:[61], lhF:[2], rh:[76], rhF:[5], dur:0.5}, {lh:[], rh:[73], rhF:[3], dur:0.5}, {lh:[61], lhF:[2], rh:[71], rhF:[2], dur:0.5},
+  {lh:[], rh:[69], rhF:[1], dur:0.5}, {lh:[61], lhF:[2], rh:[68], rhF:[2], dur:0.5}, {lh:[], rh:[69], rhF:[1], dur:0.5},
+  {lh:[62], lhF:[1], rh:[78], rhF:[5], dur:1}, {lh:[61], lhF:[2], rh:[], rhF:[], dur:1}, {lh:[62], lhF:[1], rh:[], rhF:[], dur:1},
+  {lh:[60], lhF:[2], rh:[76], rhF:[5], dur:1}, {lh:[60], lhF:[2], rh:[72], rhF:[3], dur:1}, {lh:[60], lhF:[1], rh:[69], rhF:[1], dur:1},
+  {lh:[60], lhF:[1], rh:[66], rhF:[2], dur:1}, {lh:[59], lhF:[2], rh:[67], rhF:[3], dur:1.5}, {lh:[], rh:[62], rhF:[1], dur:0.5},
+  {lh:[60], lhF:[2], rh:[64], rhF:[2], dur:0.5}, {lh:[], rh:[69], rhF:[5], dur:0.5}, {lh:[59,62], lhF:[3,1], rh:[67], rhF:[3], dur:1},
+  {lh:[57,60], lhF:[4,2], rh:[66], rhF:[1], dur:1}, {lh:[55,59], lhF:[5,3], rh:[67], rhF:[2], dur:3},
+];
+
 const SONGS = [
   {
     id:'cuatro-acordes',
@@ -3850,6 +3877,21 @@ const SONGS = [
       {lh:[], rh:[80], rhF:[5], dur:0.5}, {lh:[], rh:[78], rhF:[4], dur:0.5}, {lh:[], rh:[72], rhF:[1], dur:0.5},
       {lh:[], rh:[80], rhF:[5], dur:0.5}, {lh:[], rh:[78], rhF:[4], dur:0.5}, {lh:[], rh:[72], rhF:[1], dur:0.5},
       {lh:[], rh:[80], rhF:[5], dur:0.5}, {lh:[], rh:[78], rhF:[4], dur:0.5},
+    ]
+  },
+  {
+    id:'mozart-arioso',
+    cat:'clasica',
+    name:'Arioso (Mozart)',
+    plan:false,
+    meter:3,
+    tip:'Adagio en 3/4, con la izquierda de a una nota por tiempo. Más de la mitad de los dedos son propuestos, no impresos: confírmalos con tu profe.',
+    tempo:71,
+    steps:[
+      {...MOZ_A[0], label:'c. 1 · Tema'}, ...MOZ_A.slice(1),
+      {...MOZ_A[0], label:'c. 9 · Repetición'}, ...MOZ_A.slice(1),
+      {...MOZ_C[0], label:'c. 17 · Desarrollo'}, ...MOZ_C.slice(1),
+      {...MOZ_C[0], label:'c. 25 · Cierre'}, ...MOZ_C.slice(1),
     ]
   },
   {

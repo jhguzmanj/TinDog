@@ -526,6 +526,42 @@ y dentro de "Más ▾": `free | functions`.
     error de "meñique de tecla en tecla" que su propia especificación dice
     evitar. Nota en positivo: `doubt` por nota funciona y es la información
     más honesta que ha mandado.
+- **"Arioso" (Mozart), 32 compases** (`mozart-arioso`, Clásicas, `plan:false`).
+  Segunda de las tres piezas "para más adelante" que pasó la persona que sabe
+  de piano. JSON de eventos: `meter:"3/4"`, `quarterBpm:71`, `tempoSource:
+  "audio"` (impreso solo "Adagio"; los 71 salen del MIDI, no de una grabación),
+  dedos **90 impresos y 104 propuestos** (sin MusicXML de la izquierda en
+  muchos compases), `doubtNotes:0`. Credit: "Arioso — Mozart — Pianolessen.eu
+  (tal como está impreso)": **la atribución es la de la hoja, no la pude
+  verificar**.
+  - **Verificación hecha en la app**: todo cae dentro de su compás de 3;
+    Sol mayor con C#, F# y G# declarados y ninguna otra nota fuera; las manos
+    no se cruzan; los c. 9-16 son **literales** los 1-8 (notas, ritmo y dedos) y
+    los 25-32 los 17-24 salvo un dedo (abajo).
+  - **Estructura**: A = c. 1-8 (`MOZ_A`) y C = c. 17-24 (`MOZ_C`), declarados
+    antes de `SONGS`; la pieza es A, A, C, C usando **los mismos objetos de paso**
+    (corregir una nota corrige las dos vueltas; hay prueba). El primer paso de
+    cada vuelta se copia con su propio rótulo (`c. 1 · Tema`, `c. 9 · Repetición`,
+    `c. 17 · Desarrollo`, `c. 25 · Cierre`, los nombres de `sections`); los
+    rótulos interiores no llevan número de compás porque se repiten. Los
+    silencios finales de cada sección (2 tiempos en el c. 8, 1 en el c. 24) se
+    absorben en la última nota, como en el resto de `SONGS`.
+  - **Un cambio a los dedos del JSON**: el Si3 del acorde Sol3+Si3 del c. 24
+    venía con 2 y el del c. 32 (mismo pasaje) con 3. Quedó **3** en los dos:
+    el mismo Sol–Si del c. 5/13 lo trae impreso como 5-3. El resto de lo
+    propuesto se aceptó porque no viola las reglas (ningún meñique tecla a
+    tecla propuesto). **Los dos meñiques seguidos que existen son IMPRESOS**
+    (Re3→Sol3 entre c. 8 y 9; Fa#5→Mi5 entre c. 20 y 21): no tocarlos.
+  - **Dudas de dedos no resueltas, a confirmar con el profe**: en el c. 18 (y
+    26) la propuesta pone Do4 con 1, Si3 con 2 y Do4 con 2, y el c. 19 impreso
+    pone Do#4 con 2: quedan dos dedos 2 seguidos en teclas vecinas (un
+    deslizamiento). Con el pulgar en Re4 (como el c. 20 impreso) serían
+    Si3 4 / Do4 3, pero **no se cambió**: sería inventar sobre una parte que la
+    partitura no imprime. La prueba ciega del propio flujo acierta 73%.
+  - **Lo que aporta**: el ritmo es lento (♩=71), la izquierda va de a una nota
+    por tiempo casi siempre y el único salto grande de la derecha es Sol4→Si5
+    (c. 5 y 13), avisado en el rótulo. Es **claramente más accesible que Für
+    Elise y Clocks**; si Jorge quiere adelantar una de las tres, es esta.
 - **Lectura**: `READING_LEVELS` (7 niveles, clave de Sol / Fa / ambas / alteraciones).
   `renderStaff(svg, [{sp, cls, clef}], {clef, width, gap, showName})`; `sp` viene de
   `spellMidi(midi, preferFlat)` o `spellFromName('B#', 60)` (respeta octava de la letra).
