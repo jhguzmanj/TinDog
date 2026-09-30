@@ -79,6 +79,14 @@ const SpecExport = (() => {
   // comprobable: si el bajo de la pieza repite un bucle (Cannon: 8 compases), se marcan los
   // compases donde se aparta de lo que hace en las demás vueltas.
   function bassLoopCheck(notes, bars, midiVerified) {
+    // Si la izquierda solo dobla a la derecha (ejercicio en paralelo) no hay línea de bajo que
+    // comparar: marcar "desvíos" ahí sería inventar un problema.
+    const lhNotes = notes.filter(n => n.hand === 'lh');
+    const rhAt = new Set(notes.filter(n => n.hand === 'rh').map(n => `${n.startBeat}|${n.midi % 12}`));
+    const doubled = lhNotes.filter(n => rhAt.has(`${n.startBeat}|${n.midi % 12}`)).length;
+    if (lhNotes.length && doubled / lhNotes.length >= 0.8) {
+      return { skipped: true, detail: 'la izquierda dobla a la derecha (mismas notas, otra octava): no hay línea de bajo que comparar; no se inventó ninguna progresión' };
+    }
     const bass = barBass(notes);
     const spelled = {};                                   // pc -> nombre escrito en la pieza (F#, no Gb)
     Object.values(bass).forEach(n => { spelled[n.midi % 12] = spelled[n.midi % 12] || n.name.replace(/\d+$/, ''); });
