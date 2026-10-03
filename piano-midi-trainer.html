@@ -549,6 +549,26 @@
     border:1px solid rgba(127,196,168,0.4); background:rgba(127,196,168,0.06);
   }
 
+  /* ===== Nombrar intervalos ===== */
+  .name-bar{
+    display:flex; flex-direction:column; gap:12px;
+    margin-bottom:10px; padding:12px; border-radius:12px;
+    border:1px solid rgba(127,196,168,0.4); background:rgba(127,196,168,0.06);
+  }
+  .name-opts{ display:flex; gap:16px; flex-wrap:wrap; }
+  .name-actions{ display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
+  .name-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(112px,1fr)); gap:10px; }
+  .name-btn{
+    font-family:'Source Sans 3', sans-serif; font-size:26px; font-weight:700;
+    padding:18px 8px; border-radius:12px; cursor:pointer;
+    border:1px solid var(--panel-border); background:rgba(255,255,255,0.03); color:var(--ivory);
+  }
+  .name-btn:hover:not(:disabled){ border-color:var(--brass); }
+  .name-btn:disabled{ cursor:default; }
+  .name-btn.right{ background:rgba(127,196,168,0.28); border-color:var(--correct); }
+  .name-btn.bad{ background:rgba(200,90,90,0.28); border-color:var(--wrong); }
+  .name-score{ font-size:18px; color:var(--text-dim); min-height:1.4em; }
+
   /* ===== Hoy ===== */
   .today-head{ display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap; }
   .today-list{ list-style:none; margin:6px 0 0; padding:0; display:flex; flex-direction:column; gap:8px; }
@@ -1137,6 +1157,7 @@
       <button id="ivHideBtn" class="ghost-btn" title="Solo se marca la nota de partida, que cambia de lugar en cada intervalo. La segunda la encuentras tú.">🙈 Sin pista</button>
       <button id="ivTempoBtn" class="ghost-btn" title="Con metrónomo: tocas el intervalo en el tiempo elegido, desde la nota que quieras.">⏱ A tiempo</button>
       <button id="earModeBtn" class="ghost-btn" title="La app toca el intervalo y tú lo tienes que encontrar en el piano.">👂 De oído</button>
+      <button id="nameModeBtn" class="ghost-btn" title="Suenan o se ven dos notas y dices qué intervalo es, lo más rápido que puedas. Es lo que pide el profe: reconocerlos de golpe.">⚡ Nombrar</button>
       <span class="reg-group" id="ivBeatGroup" style="display:none;"><span class="reg-label g-rep">Tocar en el tiempo</span>
       <div class="reg-picker g-rep" id="ivBeatPicker">
         <button class="reg-btn active" data-ivbeat="1">1</button>
@@ -1161,6 +1182,29 @@
       <button id="earHintBtn" class="ghost-btn" title="Primero te dice cómo suena el intervalo; si la pides otra vez, la distancia para contarla en el teclado. Pedir pista cuenta como fallo.">💡 Pista</button>
       <span class="reg-label" id="earHint">Escucha las dos notas. La primera es la nota de partida (está marcada). Toca la segunda.</span>
       <span class="reg-label" id="earScore"></span>
+    </div>
+    <div id="nameBar" class="name-bar" style="display:none;">
+      <div class="name-opts">
+        <span class="reg-group"><span class="reg-label g-type">Te lo pregunto</span>
+        <div class="reg-picker g-type" id="nameSrcPicker">
+          <button class="reg-btn active" data-nsrc="ear">👂 Una tras otra</button>
+          <button class="reg-btn" data-nsrc="har">👂 Juntas</button>
+          <button class="reg-btn" data-nsrc="eye">👁 Teclas</button>
+        </div></span>
+        <span class="reg-group"><span class="reg-label g-oct">Cuáles</span>
+        <div class="reg-picker g-oct" id="namePoolPicker">
+          <button class="reg-btn active" data-npool="level">Mi nivel</button>
+          <button class="reg-btn" data-npool="clase">Los de la clase</button>
+          <button class="reg-btn" data-npool="all">Los 13</button>
+        </div></span>
+      </div>
+      <div class="name-actions">
+        <button id="namePlayBtn" class="ghost-btn primary">▶ Otra vez</button>
+        <button id="nameNextBtn" class="ghost-btn" style="display:none;">Siguiente ▶</button>
+        <span class="reg-label" id="nameLevel"></span>
+      </div>
+      <div id="nameAnswers" class="name-grid"></div>
+      <div class="name-score" id="nameScore"></div>
     </div>
     <div id="distanceBox" class="distance-box" style="display:none;"></div>
     <div id="intervalTip" class="tip" style="display:none;"></div>
@@ -3986,6 +4030,39 @@ const SONGS = [
     ]
   },
   {
+    id:'camino-intervalos',
+    cat:'clase',
+    name:'Camino de intervalos (original)',
+    tip:'Escrita para la clase: la izquierda toca SIEMPRE un intervalo de dos notas, nunca un acorde. Cada parte estrena uno: 5ª, 3ª mayor y menor, 7ª menor, tritono, 7ª mayor y octava. Dilo en voz alta al tocar.',
+    tempo:80,
+    steps:[
+      {lh:[48,55], lhF:[5,1], rh:[76], rhF:[3], dur:1, label:'Parte 1 · 5ª justa: sonido hueco y abierto · Do'}, {lh:[], rh:[79], rhF:[5], dur:1},
+      {lh:[48,55], lhF:[5,1], rh:[76], rhF:[3], dur:1}, {lh:[], rh:[72], rhF:[1], dur:1},
+      {lh:[45,52], lhF:[5,1], rh:[76], rhF:[3], dur:1, label:'Lam'}, {lh:[], rh:[74], rhF:[2], dur:1},
+      {lh:[45,52], lhF:[5,1], rh:[72], rhF:[1], dur:2}, {lh:[41,48], lhF:[5,1], rh:[77], rhF:[4], dur:1, label:'Fa'},
+      {lh:[], rh:[76], rhF:[3], dur:1}, {lh:[41,48], lhF:[5,1], rh:[72], rhF:[1], dur:1},
+      {lh:[], rh:[74], rhF:[2], dur:1}, {lh:[43,50], lhF:[5,1], rh:[74], rhF:[2], dur:1, label:'Sol: queda en el aire'},
+      {lh:[], rh:[76], rhF:[3], dur:1}, {lh:[43,50], lhF:[5,1], rh:[74], rhF:[2], dur:2},
+      {lh:[60,64], lhF:[3,1], rh:[79], rhF:[5], dur:1, label:'Parte 2 · 3ª mayor: alegre · Do (la izquierda sube una octava)'}, {lh:[], rh:[77], rhF:[4], dur:1},
+      {lh:[60,64], lhF:[3,1], rh:[76], rhF:[3], dur:1}, {lh:[], rh:[72], rhF:[1], dur:1},
+      {lh:[57,60], lhF:[3,1], rh:[72], rhF:[1], dur:1, label:'Lam: aquí la 3ª es menor, triste'}, {lh:[], rh:[74], rhF:[2], dur:1},
+      {lh:[57,60], lhF:[3,1], rh:[76], rhF:[3], dur:2}, {lh:[53,57], lhF:[3,1], rh:[77], rhF:[4], dur:2, label:'Fa: 3ª mayor otra vez'},
+      {lh:[53,57], lhF:[3,1], rh:[72], rhF:[1], dur:1}, {lh:[], rh:[74], rhF:[2], dur:1},
+      {lh:[55,59], lhF:[3,1], rh:[79], rhF:[5], dur:1, label:'Sol: 3ª mayor'}, {lh:[], rh:[77], rhF:[4], dur:1},
+      {lh:[55,59], lhF:[3,1], rh:[74], rhF:[2], dur:2}, {lh:[50,60], lhF:[5,1], rh:[77], rhF:[4], dur:2, label:'Parte 3 · 7ª menor: suena a blues · Rem (estira la mano)'},
+      {lh:[], rh:[74], rhF:[2], dur:1}, {lh:[], rh:[77], rhF:[4], dur:1},
+      {lh:[59,65], lhF:[4,1], rh:[79], rhF:[5], dur:2, label:'Tritono: tenso, pide resolver · Sol7'}, {lh:[], rh:[77], rhF:[4], dur:2},
+      {lh:[60,64], lhF:[3,1], rh:[76], rhF:[3], dur:2, label:'Se resuelve en 3ª mayor: Si→Do y Fa→Mi · Do'}, {lh:[], rh:[72], rhF:[1], dur:2},
+      {lh:[48,59], lhF:[5,1], rh:[79], rhF:[5], dur:2, label:'7ª mayor: suave, de jazz · Do (estira la mano)'}, {lh:[], rh:[76], rhF:[3], dur:2},
+      {lh:[48,55], lhF:[5,1], rh:[76], rhF:[3], dur:1, label:'Parte 4 · vuelve la 5ª: la casa · Do'}, {lh:[], rh:[79], rhF:[5], dur:1},
+      {lh:[48,55], lhF:[5,1], rh:[76], rhF:[3], dur:1}, {lh:[], rh:[72], rhF:[1], dur:1},
+      {lh:[41,48], lhF:[5,1], rh:[77], rhF:[4], dur:1, label:'Fa'}, {lh:[], rh:[76], rhF:[3], dur:1},
+      {lh:[41,48], lhF:[5,1], rh:[72], rhF:[1], dur:2}, {lh:[43,50], lhF:[5,1], rh:[74], rhF:[2], dur:1, label:'Sol'},
+      {lh:[], rh:[77], rhF:[4], dur:1}, {lh:[43,50], lhF:[5,1], rh:[74], rhF:[2], dur:2},
+      {lh:[48,60], lhF:[5,1], rh:[72], rhF:[1], dur:4, label:'8ª: final · Do'},
+    ]
+  },
+  {
     id:'amanecer',
     cat:'facil',
     name:'Amanecer',
@@ -4169,9 +4246,16 @@ let showFingers = true, scaleTempoMode = false, scaleBlockMode = false;
 // tiempo del compás). "De oído" sigue siendo `earMode`, aparte. Arriba por lo
 // mismo que `chordReps`: lo lee `enterMode`.
 let ivMode = 'show';
+// ⚡ Nombrar: ver u oír un intervalo y decir cuál es, rápido. Declarado aquí,
+// junto a ivMode, porque lo leen enterMode y startIntervalStep.
+let nameMode = false, nameQ = null, nameToken = 0, nameTimer = null;
+let nameSrc = 'ear', namePool = 'level';
+let nameStats = { asked:0, right:0, fast:0, streak:0, best:0, times:[] };
 let ivBeat = '1';
 try {
   const m = localStorage.getItem('ivMode'); if(['show','hide','tempo'].includes(m)) ivMode = m;
+  const ns = localStorage.getItem('nameSrc'); if(['ear','har','eye'].includes(ns)) nameSrc = ns;
+  const np = localStorage.getItem('namePool'); if(['level','clase','all'].includes(np)) namePool = np;
   const b = localStorage.getItem('ivBeat'); if(['1','2','3','4','all'].includes(b)) ivBeat = b;
 } catch(e){}
 let chordReps = 1;
@@ -4271,6 +4355,7 @@ function enterMode(mode){
   show($('freeBox'), mode === 'free');
   show(distanceBox, mode === 'intervals');
   show($('earBar'), mode === 'intervals' && earMode, 'flex');
+  show($('nameBar'), mode === 'intervals' && nameMode, 'flex');
   show(scaleTip, isScale);
   show(scaleOptBar, isScale, 'flex');
   show($('timingBox'), (isScale && scaleTempoMode) || (mode === 'chords' && chordReps > 1) || (mode === 'intervals' && ivMode === 'tempo' && !earMode), 'flex');
@@ -5525,6 +5610,7 @@ function keysBetween(a, b){
 }
 
 function startIntervalStep(){
+  if(nameMode){ startNameQuestion(); return; }
   if(typeof refreshIntervalPicker === 'function') refreshIntervalPicker();
   // si la octava elegida dejó de ser válida para este intervalo, se corrige
   if(typeof intervalOctaveValid === 'function' && !intervalOctaveValid(intervalOctave)){
@@ -5642,6 +5728,7 @@ let earAwaiting = false;
 
 function checkInterval(playedNote){
   if(currentMode !== 'intervals') return;
+  if(nameMode) return;   // Nombrar se contesta con los botones: tocar teclas no cuenta
   const iv = INTERVALS[practiceIndex];
   const root = currentIntervalRoot();
   const top = Math.min(root + iv.semitones, MAX_NOTE);
@@ -5886,11 +5973,13 @@ registerNoteHandler('free', updateFreeBox);
 registerNoteOffHandler('free', updateFreeBox);
 
 function applyIvModeButtons(){
-  $('ivHideBtn').classList.toggle('active', ivMode === 'hide' && !earMode);
-  $('ivTempoBtn').classList.toggle('active', ivMode === 'tempo' && !earMode);
-  show($('ivBeatGroup'), ivMode === 'tempo' && !earMode, 'inline-flex');
+  $('ivHideBtn').classList.toggle('active', ivMode === 'hide' && !earMode && !nameMode);
+  $('ivTempoBtn').classList.toggle('active', ivMode === 'tempo' && !earMode && !nameMode);
+  $('nameModeBtn').classList.toggle('active', nameMode);
+  show($('ivBeatGroup'), ivMode === 'tempo' && !earMode && !nameMode, 'inline-flex');
 }
 function setIvMode(m){
+  if(nameMode) setNameMode(false);
   ivMode = m;
   try { localStorage.setItem('ivMode', ivMode); } catch(e){}
   if(m !== 'show' && earMode){
@@ -5938,6 +6027,7 @@ async function playEarInterval(){
   }
 }
 $('earModeBtn').addEventListener('click', () => {
+  if(!earMode && nameMode) setNameMode(false);
   earMode = !earMode;
   $('earModeBtn').classList.toggle('active', earMode);
   show($('earBar'), earMode, 'flex');
@@ -5993,6 +6083,201 @@ function showEarHint(){
   }
 }
 $('earHintBtn').addEventListener('click', showEarHint);
+
+// ===== ⚡ Nombrar: reconocer el intervalo de golpe =====
+// Los otros modos piden TOCAR el intervalo. El profe pidió lo contrario:
+// verlo u oírlo y decir cuál es, rápido (3ª mayor, 5ª, tritono, 7ª menor...).
+// `INTERVALS` va por semitonos, así que el índice ES la distancia, y también la
+// respuesta: mientras la pregunta está abierta se tapa en el selector.
+const NAME_SHORT = ['Unísono','2ª m','2ª M','3ª m','3ª M','4ª J','Tritono','5ª J','6ª m','6ª M','7ª m','7ª M','8ª'];
+const NAME_FAST_MS = 3500;                         // "rápido": ≤ 3,5 s desde que suena la 2ª nota
+const NAME_ASKED_GOAL = 6, NAME_RIGHT_GOAL = 0.8, NAME_FAST_GOAL = 0.5;
+const NAME_CLASE = [3, 4, 6, 7, 10, 11];           // los de la clase + la 3ª menor (el par de la mayor)
+function nameStageDone(st){
+  return st.ids.every(i => {
+    const r = (typeof progress !== 'undefined' && progress.name && progress.name[i]) || null;
+    return !!r && r.asked >= NAME_ASKED_GOAL && r.right / r.asked >= NAME_RIGHT_GOAL && (r.fast || 0) / r.asked >= NAME_FAST_GOAL;
+  });
+}
+function namePoolIds(){
+  if(namePool === 'all') return INTERVALS.map((_, i) => i);
+  if(namePool === 'clase') return NAME_CLASE.slice();
+  const s = currentStageIdx(nameStageDone);
+  return INTERVAL_STAGES.slice(0, s + 1).reduce((a, x) => a.concat(x.ids), []).sort((a, b) => a - b);
+}
+function pickNameIndex(prev){
+  const ids = namePoolIds();
+  let cand = ids;
+  if(namePool === 'level'){
+    // como en el oído: la mitad del tiempo (o algo menos) un repaso de lo ya visto
+    const cur = INTERVAL_STAGES[currentStageIdx(nameStageDone)].ids;
+    const old = ids.filter(i => !cur.includes(i));
+    cand = (old.length && Math.random() < 0.4) ? old : cur;
+  }
+  if(cand.length > 1) cand = cand.filter(i => i !== prev);
+  return cand[Math.floor(Math.random() * cand.length)];
+}
+function nameMedian(){
+  const t = nameStats.times.slice().sort((a, b) => a - b);
+  if(!t.length) return null;
+  const m = t.length % 2 ? t[(t.length - 1) / 2] : (t[t.length / 2 - 1] + t[t.length / 2]) / 2;
+  return m;
+}
+function fmtSec(ms){ return (ms / 1000).toFixed(1).replace('.', ',') + ' s'; }
+function updateNameScore(){
+  const el = $('nameScore'); if(!el) return;
+  const s = nameStats;
+  if(!s.asked){ el.textContent = 'Tu meta: acertar y decirlo en menos de ' + fmtSec(NAME_FAST_MS) + '.'; return; }
+  const med = nameMedian();
+  el.textContent = 'Aciertos ' + s.right + ' / ' + s.asked + ' · Rápidas ' + s.fast + ' · Racha ' + s.streak +
+    (s.best > s.streak ? ' (récord ' + s.best + ')' : '') + (med !== null ? ' · Mediana ' + fmtSec(med) : '');
+}
+function updateNameLevel(){
+  const el = $('nameLevel'); if(!el) return;
+  if(namePool !== 'level'){ el.textContent = namePool === 'all' ? 'Los 13 mezclados.' : 'Los de la clase: 3ª m, 3ª M, tritono, 5ª, 7ª m y 7ª M.'; return; }
+  const s = currentStageIdx(nameStageDone);
+  el.textContent = 'Nivel ' + (s + 1) + ' de ' + INTERVAL_STAGES.length + ' · ' + INTERVAL_STAGES[s].name +
+    ' — para pasar: ' + NAME_ASKED_GOAL + ' preguntas por intervalo, ' + Math.round(NAME_RIGHT_GOAL * 100) + '% bien y la mitad en menos de ' + fmtSec(NAME_FAST_MS) + '.';
+}
+function renderNameAnswers(){
+  const cont = $('nameAnswers'); if(!cont) return;
+  cont.innerHTML = '';
+  namePoolIds().forEach(i => {
+    const b = document.createElement('button');
+    b.className = 'name-btn'; b.dataset.nameidx = i; b.textContent = NAME_SHORT[i];
+    b.title = INTERVALS[i].name;
+    b.addEventListener('click', () => answerName(i));
+    cont.appendChild(b);
+  });
+}
+const nameSleep = ms => new Promise(r => setTimeout(r, ms));
+// Suena el intervalo. El cronómetro arranca cuando suena la 2ª nota (o las dos
+// juntas): lo que cuesta es reconocer, no esperar el sonido. Si no hay audio
+// (o ya cambió la pregunta) sale sin tocar nada.
+async function playNameInterval(q, tok, startClock){
+  const wasSound = soundEnabled;
+  soundEnabled = true;
+  try {
+    if(!ensureAudioCtx()) return;
+    await warmNoteClips([q.root, q.top]);
+    if(tok !== nameToken) return;
+    if(nameSrc === 'har'){
+      if(startClock && !q.answered) q.t0 = performance.now();
+      playNoteSound(q.root); if(q.top !== q.root) playNoteSound(q.top);
+      await nameSleep(1100);
+    } else {
+      playNoteSound(q.root);
+      await nameSleep(600);
+      if(tok !== nameToken) return;
+      stopNoteSound(q.root);
+      await nameSleep(60);
+      if(tok !== nameToken) return;
+      if(startClock && !q.answered) q.t0 = performance.now();
+      playNoteSound(q.top);
+      await nameSleep(700);
+    }
+    if(tok !== nameToken) return;
+    stopNoteSound(q.root); stopNoteSound(q.top);
+  } finally {
+    soundEnabled = wasSound;
+  }
+}
+function startNameQuestion(){
+  nameToken++;
+  allNotesOff();
+  if(nameTimer){ clearTimeout(nameTimer); nameTimer = null; }
+  if(typeof ivStepTimer !== 'undefined' && ivStepTimer){ clearTimeout(ivStepTimer); ivStepTimer = null; }
+  clearAllHighlights();
+  feedbackText.textContent = ''; feedbackText.className = 'feedback';
+  distanceBox.style.display = 'none';
+  intervalTip.innerHTML = ''; intervalTip.style.display = 'none';
+  show($('timingBox'), false);
+  const idx = pickNameIndex(nameQ ? nameQ.idx : -1);
+  const iv = INTERVALS[idx];
+  let root = 48 + Math.floor(Math.random() * 25);          // Do3..Do5: por todo el piano
+  while(root + iv.semitones > MAX_NOTE) root--;
+  nameQ = { idx, root, top: root + iv.semitones, t0: performance.now(), answered: false };
+  progressText.textContent = 'Nombrar';
+  targetNoteLabel.textContent = '⚡ ¿Qué intervalo?';
+  targetSubLabel.textContent = nameSrc === 'eye' ? 'Mira las dos teclas' : nameSrc === 'har' ? 'Escucha las dos juntas' : 'Escucha las dos notas';
+  renderNameAnswers(); updateNameLevel(); updateNameScore();
+  show($('nameNextBtn'), false);
+  show($('namePlayBtn'), nameSrc !== 'eye', 'inline-block');
+  refreshIntervalPicker();    // con la pregunta abierta: tapa cuál es
+  if(nameSrc === 'eye'){
+    [nameQ.root, nameQ.top].forEach(n => { const r = getRect(n); if(r) r.classList.add('target'); });
+    scrollToTargets();
+  } else {
+    playNameInterval(nameQ, nameToken, true);
+  }
+}
+function answerName(idx){
+  const q = nameQ;
+  if(!q || q.answered || !nameMode) return;
+  q.answered = true;
+  const ms = Math.round(performance.now() - q.t0);
+  const ok = idx === q.idx, fast = ok && ms <= NAME_FAST_MS;
+  const before = currentStageIdx(nameStageDone);
+  if(typeof recordName === 'function') recordName(q.idx, ok, fast);
+  const after = currentStageIdx(nameStageDone);
+  const s = nameStats; s.asked++;
+  if(ok){ s.right++; s.streak++; s.best = Math.max(s.best, s.streak); s.times.push(ms); if(fast) s.fast++; }
+  else s.streak = 0;
+  const iv = INTERVALS[q.idx];
+  document.querySelectorAll('#nameAnswers .name-btn').forEach(b => {
+    b.disabled = true;
+    if(Number(b.dataset.nameidx) === q.idx) b.classList.add('right');
+    else if(Number(b.dataset.nameidx) === idx) b.classList.add('bad');
+  });
+  feedbackText.className = 'feedback ' + (ok ? 'correct' : 'wrong');
+  feedbackText.textContent = ok
+    ? (fast ? '¡Rápido! ' : 'Lento: ') + NAME_SHORT[q.idx] + ' · ' + fmtSec(ms)
+    : 'Era ' + NAME_SHORT[q.idx];
+  if(ok && after > before) feedbackText.textContent += ' · ¡Nivel superado!';
+  [q.root, q.top].forEach(n => { const r = getRect(n); if(r){ r.classList.remove('target'); r.classList.add(ok ? 'correct' : 'target'); } });
+  renderDistanceBox(iv, q.root, q.top); distanceBox.style.display = 'block';
+  intervalTip.innerHTML = '<b>' + iv.name + ':</b> ' + iv.ref; intervalTip.style.display = 'block';
+  updateNameScore(); updateNameLevel(); refreshIntervalPicker();
+  show($('nameNextBtn'), true, 'inline-block');
+  // se oye la respuesta correcta: asociar el nombre con el sonido ES el ejercicio
+  nameToken++; allNotesOff();
+  playNameInterval(q, nameToken, false);
+  if(nameTimer) clearTimeout(nameTimer);
+  nameTimer = setTimeout(() => { nameTimer = null; if(nameMode && currentMode === 'intervals') startIntervalStep(); }, ok ? 1600 : 3000);
+}
+function setNameMode(on){
+  if(on === nameMode) return;
+  nameMode = on;
+  nameToken++; allNotesOff();
+  if(nameTimer){ clearTimeout(nameTimer); nameTimer = null; }
+  show($('nameBar'), currentMode === 'intervals' && on, 'flex');
+  if(on){
+    if(earMode){ earMode = false; $('earModeBtn').classList.remove('active'); show($('earBar'), false); }
+    if(ivMode !== 'show'){ ivMode = 'show'; try { localStorage.setItem('ivMode', ivMode); } catch(e){} }
+    nameStats = { asked:0, right:0, fast:0, streak:0, best:0, times:[] };
+    nameQ = null;
+  } else {
+    nameQ = null;
+  }
+  applyIvModeButtons();
+}
+$('nameModeBtn').addEventListener('click', () => { setNameMode(!nameMode); if(currentMode === 'intervals') startIntervalStep(); });
+$('namePlayBtn').addEventListener('click', () => {
+  if(!nameMode || !nameQ || nameSrc === 'eye') return;
+  nameToken++; allNotesOff();
+  playNameInterval(nameQ, nameToken, false);
+});
+$('nameNextBtn').addEventListener('click', () => { if(nameMode && currentMode === 'intervals') startIntervalStep(); });
+bindPicker('nameSrcPicker', 'nsrc', () => nameSrc, v => {
+  nameSrc = v; try { localStorage.setItem('nameSrc', nameSrc); } catch(e){}
+  nameStats = { asked:0, right:0, fast:0, streak:0, best:0, times:[] };
+  if(nameMode && currentMode === 'intervals') startIntervalStep();
+});
+bindPicker('namePoolPicker', 'npool', () => namePool, v => {
+  namePool = v; try { localStorage.setItem('namePool', namePool); } catch(e){}
+  nameStats = { asked:0, right:0, fast:0, streak:0, best:0, times:[] };
+  if(nameMode && currentMode === 'intervals') startIntervalStep();
+});
 
 
 // ===== Selección directa: acordes e intervalos =====
@@ -6085,7 +6370,7 @@ function refreshIntervalPicker(){
   const cont = document.getElementById('intervalPicker');
   // De oído el intervalo se elige al azar: marcar cuál es en la lista sería
   // escribir la respuesta encima de la pregunta. Se destapa al contestar.
-  const hide = earMode && earAwaiting;
+  const hide = (earMode && earAwaiting) || (nameMode && nameQ && !nameQ.answered);
   [...cont.children].forEach((b, i) => {
     b.classList.toggle('current', !hide && i === practiceIndex);
     b.classList.toggle('done', intervalDoneSet.has(i) && (hide || i !== practiceIndex));
@@ -7321,7 +7606,7 @@ metroRender();
 // ===== Progreso persistente =====
 const PROGRESS_KEY = 'pianoProgress1';
 function emptyProgress(){
-  return { v:1, days:{}, scales:{}, chords:{}, intervals:{}, ear:{}, reading:{}, drills:{}, songs:{}, cascade:{} };
+  return { v:1, days:{}, scales:{}, chords:{}, intervals:{}, ear:{}, name:{}, reading:{}, drills:{}, songs:{}, cascade:{} };
 }
 let progress = emptyProgress();
 try {
@@ -7340,7 +7625,7 @@ function dateKey(d){
 }
 function dayRec(key){
   key = key || dateKey();
-  if(!progress.days[key]) progress.days[key] = { sec:0, notes:0, scales:0, chords:0, intervals:0, ear:0, reading:0, drills:0, songs:0, cascade:0 };
+  if(!progress.days[key]) progress.days[key] = { sec:0, notes:0, scales:0, chords:0, intervals:0, ear:0, name:0, reading:0, drills:0, songs:0, cascade:0 };
   return progress.days[key];
 }
 function bump(field, n){ dayRec()[field] = (dayRec()[field] || 0) + (n || 1); saveProgress(); }
@@ -7421,6 +7706,14 @@ function recordEar(idx, ok){
   r.lastDay = dateKey(); progress.ear[idx] = r;
   bump('ear');
 }
+// `fast` = acertó y en menos de NAME_FAST_MS. Los tres son contadores que solo
+// suben, así que la fusión por máximo del respaldo los maneja sin caso especial.
+function recordName(idx, ok, fast){
+  const r = progress.name[idx] || { asked:0, right:0, fast:0, lastDay:null };
+  r.asked++; if(ok) r.right++; if(fast) r.fast = (r.fast || 0) + 1;
+  r.lastDay = dateKey(); progress.name[idx] = r;
+  bump('name');
+}
 function recordReading(levelId, first, ms){
   const r = progress.reading[levelId] || { attempts:0, first:0, sumMs:0, lastDay:null };
   r.attempts++; if(first) r.first++; r.sumMs += Math.min(ms, 15000); r.lastDay = dateKey();
@@ -7459,7 +7752,7 @@ function recordCascadeResult(pct, mode){
 // en el servidor y se fusiona al abrir. Fuera de ahí (archivo local, otro
 // navegador) no existe `window.claude` y todo funciona exactamente igual.
 const CLOUD_DOC = 'backup/progress';
-const PROGRESS_SECTIONS = ['scales','chords','intervals','ear','reading','drills','songs','cascade'];
+const PROGRESS_SECTIONS = ['scales','chords','intervals','ear','name','reading','drills','songs','cascade'];
 let cloudDoc = null, cloudTimer = null, cloudState = 'off';
 
 // Fusión por MÁXIMOS, campo a campo. Todo el esquema son contadores que solo
@@ -7662,6 +7955,7 @@ function buildTodayPlan(seed){
     go: () => {
       selectCategory('intervals');
       if(earMode) $('earModeBtn').click();
+      if(nameMode) $('nameModeBtn').click();
       practiceIndex = ivSt.ids[0];
       startIntervalStep();
     } });
@@ -7674,6 +7968,13 @@ function buildTodayPlan(seed){
       Math.round(EAR_RIGHT_GOAL * 100) + '% de aciertos en cada intervalo.',
     done: () => (dayRec().ear || 0) >= 8,
     go: () => { selectCategory('intervals'); if(!earMode) $('earModeBtn').click(); } });
+
+  const nmIdx = currentStageIdx(nameStageDone);
+  items.push({ key:'name', min:4, block:'core',
+    title:'Nombrar rápido: nivel ' + (nmIdx + 1) + ' de ' + INTERVAL_STAGES.length + ' · ' + INTERVAL_STAGES[nmIdx].name,
+    sub:'La app suena o muestra dos notas y dices cuál es el intervalo, en menos de ' + fmtSec(NAME_FAST_MS) + '. Lo que pidió el profe: reconocerlos de golpe.',
+    done: () => (dayRec().name || 0) >= 10,
+    go: () => { selectCategory('intervals'); if(!nameMode) $('nameModeBtn').click(); } });
 
   let lvIdx = READING_LEVELS.findIndex(lv => !readingLevelStats(lv.id).mastered);
   if(lvIdx < 0) lvIdx = READING_LEVELS.length - 1;
@@ -7779,6 +8080,7 @@ function masteryRows(){
   rows.push(['Acordes', avg(CHORDS.map(c => Math.min((progress.chords[c.name] || {}).runs || 0, 3) / 3))]);
   rows.push(['Intervalos', avg(INTERVALS.map((iv, i) => Math.min((progress.intervals[i] || {}).runs || 0, 3) / 3))]);
   rows.push(['Oído', avg(INTERVALS.map((iv, i) => { const r = progress.ear[i]; return r && r.asked >= 3 ? r.right / r.asked : 0; }))]);
+  rows.push(['Nombrar (rápido)', avg(INTERVALS.map((iv, i) => { const r = progress.name[i]; return r && r.asked >= 3 ? (r.right / r.asked) * 0.5 + ((r.fast || 0) / r.asked) * 0.5 : 0; }))]);
   rows.push(['Lectura', avg(READING_LEVELS.map(lv => { const s = readingLevelStats(lv.id); return s.mastered ? 1 : Math.min(s.attempts, 20) / 20 * (s.attempts ? s.first / s.attempts : 0); }))]);
   rows.push(['Agilidad', avg(AGILITY_DRILLS.map(d => Math.min((progress.drills[d.id] || {}).runs || 0, 5) / 5))]);
   rows.push(['Fragmentos', avg(SONGS.map(s => Math.min((progress.songs[s.id] || {}).runs || 0, 3) / 3))]);

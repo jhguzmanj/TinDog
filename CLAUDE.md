@@ -312,6 +312,46 @@ y dentro de "Más ▾": `free | functions`.
     modo. Antes `metroRender()` llamaba a `renderChordRepBox`, que la vaciaba
     fuera de Acordes — con la cinta de intervalos eso borraba el conteo al
     encender el metrónomo. Hay prueba.
+- **⚡ Nombrar (Intervalos, `nameMode`)** — pedido de la clase del 3 de octubre:
+  "identificarlos rápido: ¿3ª mayor, 5ª, tritono, 7ª menor, 7ª mayor?" y "mucho
+  más énfasis". **Hueco real que cubre**: todo lo anterior entrena TOCAR el
+  intervalo (o reconocerlo de oído con la respuesta tocada); nada entrenaba
+  NOMBRARLO bajo reloj, que es lo que pidió el profe. Cuarto modo excluyente con
+  `ivMode` y `earMode` (`setIvMode` y el botón de oído apagan `nameMode`).
+  - Fuentes (`nameSrc`): `ear` una tras otra, `har` juntas, `eye` solo mirando
+    las dos teclas marcadas. Pozos (`namePool`): `level` (la escalera de
+    `INTERVAL_STAGES`, con 40% de repaso de los niveles anteriores), `clase`
+    (`NAME_CLASE` = 3ª m, 3ª M, tritono, 5ª, 7ª m, 7ª M: los de la clase más la
+    3ª menor, **que agregué yo** porque 3ª M sin 3ª m no se distingue), `all`
+    (los 13). Nunca repite el intervalo anterior.
+  - **Cronómetro**: arranca cuando suena la 2ª nota (o las dos juntas), no al
+    preguntar. Rápido = `NAME_FAST_MS` 3500 ms, **número mío, no del profe**;
+    ajustarlo si resulta muy duro o muy blando. Mediana, no promedio.
+  - **Puerta de nivel (`nameStageDone`)**: ≥6 preguntas, ≥80% de aciertos Y ≥50%
+    de aciertos rápidos. Precisión primero: la velocidad sin acierto no cuenta.
+  - Al contestar muestra el cuadro de distancia + `iv.ref` y **vuelve a tocar el
+    intervalo correcto** (auto-siguiente 1,6 s acierto / 3 s fallo). Tapa
+    `practiceIndex` mientras la pregunta está abierta (mismo cuidado que el oído).
+  - Progreso: sección `name` (`asked/right/fast/lastDay`, todo máximos o
+    contadores: `mergeProgress` lo maneja), `dayRec.name`, fila de dominio
+    "Nombrar (rápido)" (11 filas) y paso `name` en el bloque `core` del plan de
+    Hoy (4 min).
+- **"Camino de intervalos" (original, para la clase)** (`camino-intervalos`, "De la
+  clase", ♩=80, `plan` normal). Pedido: pieza que suene bien con la izquierda
+  **siempre en intervalos**. 16 compases en Do mayor sobre Do–Lam–Fa–Sol; la
+  izquierda toca solo dos notas (nunca acorde) y cada parte estrena uno: 5ª
+  (hueca, c. 1-4) → 3ª M/m (c. 5-8, la izquierda sube una octava) → 7ª m, tritono
+  y su resolución a 3ª M, 7ª M (c. 9-12) → vuelve la 5ª y cierra en 8ª. El
+  tritono (Si–Fa sobre Sol7) resuelve al Do–Mi del compás siguiente: es la
+  lección de oído más útil del rótulo. Derecha: posición fija Do5=1…Sol5=5.
+  - Verificada por script: cada compás suma 4; tiempos fuertes de la melodía
+    son nota del acorde; todo en teclas blancas; izquierda máx < derecha mín (no
+    se cruzan); 47 pasos / 64 tiempos. Dedos de la izquierda: 5ª y 7ª/8ª 5-1,
+    3ª 3-1, tritono 4-1.
+  - **Honestidad**: las 7ªs (10-11 semitonos con 5-1) son una abertura incómoda
+    para una mano pequeña; van rotuladas "estira la mano". Es MÍA: ritmo y
+    melodía no vienen de ninguna fuente, así que no hay nada que verificar
+    contra una partitura.
 - **Tocar libre nombra lo que se pisa** (`#freeBox`, `describeHeld`,
   registrado como handler de note-on y note-off del modo `free`): dos teclas →
   intervalo; tres que formen tríada mayor/menor → acorde y posición; si no, el

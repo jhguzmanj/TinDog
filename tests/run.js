@@ -434,7 +434,7 @@ W("todayPlan[1].go()");
 check(W('currentMode') === 'gmajor', 'el botón Ir lleva a Sol mayor');
 ev('#mainTabs [data-cat="progress"]');
 check(doc.querySelectorAll('#heatGrid .heat-cell').length >= 84, 'mapa de calor de 12 semanas');
-check(doc.querySelectorAll('#masteryList .mastery-item').length === 10, '10 filas de dominio');
+check(doc.querySelectorAll('#masteryList .mastery-item').length === 11, '11 filas de dominio (con Nombrar)');
 check(JSON.parse(window.localStorage.getItem('pianoProgress1') || 'null') !== null || true, 'progreso persistido (con debounce)');
 
 section('Preferencias');
@@ -937,7 +937,7 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
   section('Paso a paso: el plan pone escalas e intervalos primero');
   W("progress = emptyProgress(); todayPlan = buildTodayPlan(1); renderToday()");
   const core = W('todayPlan.filter(it => it.block === "core").map(it => it.key)');
-  check(core.join(',') === 'scale,intervals,ear', 'el bloque central es escala, intervalos y oído, en ese orden');
+  check(core.join(',') === 'scale,intervals,ear,name', 'el bloque central es escala, intervalos, oído y nombrar, en ese orden');
   const coreMin = W('todayPlan.filter(it => it.block === "core").reduce((a,it) => a + it.min, 0)');
   const keepMin = W('todayPlan.filter(it => it.block === "keep").reduce((a,it) => a + it.min, 0)');
   check(coreMin > keepMin, 'y se lleva más minutos que el mantenimiento (' + coreMin + ' vs ' + keepMin + ')');
@@ -2249,6 +2249,133 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
     check(['c. 1 ·', 'c. 9 ·', 'c. 17 ·', 'c. 33 ·', 'c. 41 ·', 'c. 47 ·', 'c. 49 ·'].every(p => lab.some(l => l.startsWith(p))), 'anclas de sección y del ritardando para el Tramo de la cascada');
     check(lab.filter(l => /mueve la mano/.test(l)).length === 1, 'el único pasaje que pide mover la mano (Si3 a Si4, c. 29) va avisado');
     check(/ritardando/.test(cn.tip), 'el consejo avisa que el ritardando impreso no se hace');
+  }
+
+  section('Camino de intervalos (original): la izquierda toca solo intervalos');
+  {
+    const ci = W("SONGS.find(s => s.id === 'camino-intervalos')");
+    check(!!ci && ci.cat === 'clase' && ci.tempo === 80 && !ci.meter, 'en "De la clase", ♩=80, compás de 4');
+    check(ci.steps.reduce((a, s) => a + s.dur, 0) === 64, '16 compases de 4 tiempos, sin sobras');
+    const hits = ci.steps.filter(s => s.lh.length);
+    check(hits.every(s => s.lh.length === 2 && s.lhF.length === 2), 'la izquierda nunca toca un acorde: siempre exactamente dos notas con su dedo');
+    const ivs = new Set(hits.map(s => s.lh[1] - s.lh[0]));
+    check([7, 4, 3, 10, 6, 11, 12].every(n => ivs.has(n)), 'estrena 5ª, 3ª M, 3ª m, 7ª m, tritono, 7ª M y 8ª');
+    check([...ivs].every(n => [7, 4, 3, 10, 6, 11, 12].includes(n)), 'ningún otro intervalo se cuela');
+    const rh = ci.steps.flatMap(s => s.rh);
+    check(Math.min(...rh) >= 72 && Math.max(...rh) <= 79 && rh.every(n => [72, 74, 76, 77, 79].includes(n)), 'derecha: posición fija de cinco dedos (Do5-Sol5)');
+    check(ci.steps.every(s => s.rhF.length === s.rh.length && s.rh.every((n, i) => s.rhF[i] === [72, 74, 76, 77, 79].indexOf(n) + 1)), 'derecha: un dedo por tecla, siempre el mismo');
+    check(Math.max(...ci.steps.flatMap(s => s.lh)) < Math.min(...rh), 'las manos no se cruzan');
+    check(ci.steps.flatMap(s => s.lh).every(n => [0, 2, 4, 5, 7, 9, 11].includes(n % 12)), 'todo en Do mayor (teclas blancas)');
+    // Cada compás empieza en el golpe 1 con un rótulo (el nombre del intervalo que estrena).
+    let t = 0, bars = 0, sinRotulo = 0;
+    ci.steps.forEach(s => { if (t % 4 === 0) { bars++; if (!s.label) sinRotulo++; } t += s.dur; });
+    check(bars === 16 && sinRotulo === 0, 'los 16 compases arrancan con rótulo');
+    // Tiempos fuertes (1 y 3): la melodía cae en una nota de la armonía de ese compás.
+    check(ci.steps[0].lh.join() === '48,55' && ci.steps[ci.steps.length - 1].lh.join() === '48,60', 'abre con la 5ª Do–Sol y cierra con la 8ª Do–Do');
+  }
+
+  section('⚡ Nombrar: reconocer el intervalo de golpe');
+  {
+    W("soundEnabled = false; progress = emptyProgress(); selectCategory('intervals'); if(earMode) $('earModeBtn').click(); if(ivMode !== 'show') setIvMode('show');");
+    check(!!doc.getElementById('nameModeBtn') && W('nameMode') === false, 'el botón ⚡ Nombrar existe y arranca apagado');
+    doc.getElementById('nameModeBtn').click();
+    check(W('nameMode') === true && W('earMode') === false && W('ivMode') === 'show', 'al encenderlo apaga De oído y deja el modo normal');
+    check(doc.getElementById('nameBar').style.display !== 'none', 'aparece la barra de Nombrar');
+    const labels = () => [...doc.querySelectorAll('#nameAnswers .name-btn')].map(b => b.textContent);
+    check(labels().join(',') === 'Unísono,5ª J,8ª', 'con el nivel 1 solo hay tres botones, ordenados por tamaño: ' + labels().join(','));
+    check(W('nameQ !== null') && W('namePoolIds()').includes(W('nameQ.idx')) && W('nameQ.top - nameQ.root') === W('INTERVALS[nameQ.idx].semitones'),
+      'la pregunta sale del nivel y la 2ª nota está a la distancia del intervalo');
+    // la respuesta no se delata mientras la pregunta está abierta
+    check(doc.querySelectorAll('#intervalPicker .current').length === 0, 'con la pregunta abierta el selector no marca cuál es');
+    check(doc.getElementById('distanceBox').style.display === 'none' && doc.getElementById('intervalTip').style.display === 'none', 'ni la distancia ni el consejo se ven antes de contestar');
+    // tocar el piano no cuenta como respuesta ni avanza el modo exacto
+    const antes = JSON.stringify(W('progress.intervals'));
+    W("noteOn(nameQ.root,'midi'); noteOn(nameQ.top,'midi'); noteOff(nameQ.root,'midi'); noteOff(nameQ.top,'midi');");
+    check(JSON.stringify(W('progress.intervals')) === antes && W('nameQ.answered') === false, 'tocar las dos teclas no responde ni cuenta como intervalo hecho');
+    // acierto rápido
+    const idx1 = W('nameQ.idx');
+    W('nameQ.t0 = performance.now() - 1200');
+    [...doc.querySelectorAll('#nameAnswers .name-btn')].find(b => Number(b.dataset.nameidx) === idx1).click();
+    check(W(`progress.name[${idx1}].asked`) === 1 && W(`progress.name[${idx1}].right`) === 1 && W(`progress.name[${idx1}].fast`) === 1, 'acierto en 1,2 s: pregunta, acierto y rápida');
+    check(W('nameStats.streak') === 1 && doc.querySelector('#nameAnswers .name-btn.right') !== null, 'racha 1 y el botón correcto se pinta');
+    check(/Rápido/.test(doc.getElementById('feedbackText').textContent), 'el mensaje dice que fue rápido');
+    check(doc.getElementById('distanceBox').style.display === 'block' && doc.querySelectorAll('#intervalPicker .current').length === 1, 'después de contestar sí se ve la distancia y cuál era');
+    check(W('dayRec().name') === 1, 'suma al día de hoy');
+    check(doc.getElementById('nameNextBtn').style.display !== 'none', 'aparece Siguiente para no esperar');
+    // doble clic no cuenta dos veces
+    [...doc.querySelectorAll('#nameAnswers .name-btn')][0].click();
+    check(W('nameStats.asked') === 1, 'una vez contestada, otro clic no cuenta');
+    // acierto lento
+    doc.getElementById('nameNextBtn').click();
+    const idx2 = W('nameQ.idx');
+    W('nameQ.t0 = performance.now() - 6000');
+    [...doc.querySelectorAll('#nameAnswers .name-btn')].find(b => Number(b.dataset.nameidx) === idx2).click();
+    check(W(`progress.name[${idx2}].right`) >= 1 && (W(`progress.name[${idx2}].fast`) || 0) === (idx2 === idx1 ? 1 : 0), 'acierto en 6 s: cuenta como acierto pero NO como rápida');
+    check(/Lento/.test(doc.getElementById('feedbackText').textContent), 'y el mensaje lo dice');
+    // fallo
+    doc.getElementById('nameNextBtn').click();
+    const idx3 = W('nameQ.idx');
+    const wrong = [...doc.querySelectorAll('#nameAnswers .name-btn')].find(b => Number(b.dataset.nameidx) !== idx3);
+    const rightBefore = W('nameStats.right');
+    wrong.click();
+    check(W('nameStats.streak') === 0 && W('nameStats.right') === rightBefore && doc.querySelector('#nameAnswers .name-btn.bad') !== null, 'un fallo corta la racha y se marca en rojo');
+    check(/Era /.test(doc.getElementById('feedbackText').textContent), 'y dice cuál era');
+    check(W('nameStats.best') === 2, 'el récord de racha queda en 2');
+    // se pregunta de un nivel a otro con progreso
+    W("progress = emptyProgress(); INTERVAL_STAGES[0].ids.forEach(i => { progress.name[i] = {asked:6, right:6, fast:6, lastDay:null}; });");
+    check(W('nameStageDone(INTERVAL_STAGES[0])') === true && W('currentStageIdx(nameStageDone)') === 1, '6 de 6 y todas rápidas dan el nivel 1 por hecho');
+    W("progress.name[INTERVAL_STAGES[0].ids[0]] = {asked:6, right:6, fast:1, lastDay:null}");
+    check(W('nameStageDone(INTERVAL_STAGES[0])') === false, 'acertar sin ser rápido NO alcanza para pasar (la velocidad es parte de la meta)');
+    W("progress.name[INTERVAL_STAGES[0].ids[0]] = {asked:6, right:4, fast:4, lastDay:null}");
+    check(W('nameStageDone(INTERVAL_STAGES[0])') === false, 'ser rápido con 67% de aciertos tampoco');
+    W("progress = emptyProgress(); INTERVAL_STAGES[0].ids.forEach(i => { progress.name[i] = {asked:6, right:6, fast:6, lastDay:null}; });");
+    const vistos = new Set();
+    for(let i = 0; i < 300; i++) vistos.add(W('pickNameIndex(-1)'));
+    const permitidos = W('INTERVAL_STAGES[0].ids.concat(INTERVAL_STAGES[1].ids)');
+    check([...vistos].every(i => permitidos.includes(i)) && W('INTERVAL_STAGES[1].ids').every(i => vistos.has(i)), 'con el nivel 1 hecho pregunta el 2 y repasa el 1, nada más adelante');
+    // la misma pregunta no sale dos veces seguidas
+    let repetida = false;
+    for(let i = 0; i < 300; i++){ const a = W('pickNameIndex(4)'); if(a === 4) repetida = true; }
+    check(!repetida, 'nunca repite el intervalo recién preguntado (si hay otros)');
+    // las otras fuentes de preguntas
+    doc.querySelector('#namePoolPicker [data-npool="clase"]').click();
+    check([...doc.querySelectorAll('#nameAnswers .name-btn')].map(b => b.textContent).join(',') === '3ª m,3ª M,Tritono,5ª J,7ª m,7ª M', 'Los de la clase: 3ª m, 3ª M, tritono, 5ª, 7ª m y 7ª M');
+    doc.querySelector('#namePoolPicker [data-npool="all"]').click();
+    check(doc.querySelectorAll('#nameAnswers .name-btn').length === 13, 'Los 13: un botón por intervalo');
+    check(W("localStorage.getItem('namePool')") === 'all', 'la elección se recuerda');
+    doc.querySelector('#nameSrcPicker [data-nsrc="eye"]').click();
+    check(doc.querySelectorAll('.white-key.target, .black-key.target').length === 2 || W('nameQ.top === nameQ.root'), 'en Teclas se marcan las dos teclas en el piano');
+    check(doc.getElementById('namePlayBtn').style.display === 'none', 'y ahí no hay botón de volver a oír');
+    doc.querySelector('#nameSrcPicker [data-nsrc="har"]').click();
+    check(doc.querySelectorAll('.white-key.target, .black-key.target').length === 0 && doc.getElementById('namePlayBtn').style.display !== 'none', 'Juntas y Una tras otra no marcan teclas: es de oído puro');
+    // el cronómetro mide desde el estímulo y el tiempo se redondea a ms
+    check(W('fmtSec(1234)') === '1,2 s' && W('fmtSec(3500)') === '3,5 s', 'los tiempos se muestran con coma: 1,2 s');
+    W("nameStats.times = [1000, 3000, 2000]");
+    check(W('nameMedian()') === 2000, 'la mediana de 1, 3 y 2 s es 2 s');
+    // exclusión con los otros modos
+    doc.getElementById('earModeBtn').click();
+    check(W('nameMode') === false && W('earMode') === true && doc.getElementById('nameBar').style.display === 'none', 'encender De oído apaga Nombrar');
+    doc.getElementById('nameModeBtn').click();
+    check(W('nameMode') === true && W('earMode') === false, 'y al revés');
+    doc.getElementById('ivHideBtn').click();
+    check(W('nameMode') === false && W('ivMode') === 'hide', 'Sin pista también lo apaga');
+    W("setIvMode('show')");
+    // el respaldo y la fusión conocen la sección nueva
+    check(W("PROGRESS_SECTIONS.includes('name')") && W("emptyProgress().name !== undefined"), 'el progreso trae la sección name y el respaldo la fusiona');
+    W(`window.__NA = Object.assign(emptyProgress(), { name:{ '4': {asked:5,right:4,fast:3,lastDay:'2026-10-01'} } });
+       window.__NB = Object.assign(emptyProgress(), { name:{ '4': {asked:8,right:6,fast:2,lastDay:'2026-10-03'} } });
+       window.__NM = mergeProgress(window.__NA, window.__NB); window.__NM2 = mergeProgress(window.__NM, window.__NB);`);
+    check(W("window.__NM.name['4'].asked") === 8 && W("window.__NM.name['4'].fast") === 3 && W("window.__NM.name['4'].lastDay") === '2026-10-03', 'la fusión es por máximo, campo a campo');
+    check(JSON.stringify(W('window.__NM2.name')) === JSON.stringify(W('window.__NM.name')), 'y es idempotente');
+    // el plan de Hoy lo incluye y lleva al modo
+    W("progress = emptyProgress(); todayPlan = buildTodayPlan(1); renderToday()");
+    check(W('todayPlan.map(it => it.key).includes("name")'), 'Hoy propone Nombrar');
+    W("todayPlan.find(it => it.key === 'name').go()");
+    check(W('currentMode') === 'intervals' && W('nameMode') === true, 'el botón Ir abre Nombrar');
+    W("todayPlan.find(it => it.key === 'intervals').go()");
+    check(W('nameMode') === false, 'y el paso de Intervalos lo apaga');
+    // limpieza
+    W("if(nameMode) setNameMode(false); selectCategory('today');");
   }
 
   console.log(`\n${passes} pruebas OK, ${failures} fallos`);
