@@ -104,7 +104,7 @@ Orden dentro del `<script>`:
    plan de "Hoy", panel de progreso. Termina con `selectCategory('today')`.
 
 ## Pestañas (`data-cat`)
-`today | scales | agility | chords | intervals | reading | fragments (rotulada "Piezas") | progress`,
+`today | scales | agility | chords | intervals | reading | rhythm | fragments (rotulada "Piezas") | progress`,
 y dentro de "Más ▾": `free | functions`.
 
 ## Datos principales
@@ -1616,6 +1616,26 @@ el acento del clic — nada más dependía de él (la cascada usa su propio
 `BEATS_PER_BAR=4` fijo, no `metro.meter`). `metro.meter` queda fijo en 4 en el código
 en vez de configurable; si algún día hace falta compás real, que sea una opción
 explicada, no una fracción suelta en el encabezado sticky.
+**Compás visible (`#metroBeats`).** Pedido de la clase: "tomar el tempo". El
+punto único se cambió por una casilla numerada por tiempo (1 2 3 4, la del 1
+con borde marfil y más fuerte en el audio: 1600 Hz / ganancia 0.42 contra 900 /
+0.2); la que suena se enciende (`metroFlash(accent, beatIdx)`). Las casillas son
+UN botón: tocarlas cambia los tiempos por compás (4 → 2 → 3 → 4, `metroUserMeter`,
+persistido en `metroMeter`). **No es el selector de fracciones que se quitó**: no
+dice "3/4", dice cuántas casillas hay. Se hizo botón y no selector aparte porque
+el encabezado sticky no tiene ancho: con 3 botones extra la caja medía 564 px,
+se salía en el teléfono y en escritorio subía el encabezado de 66 a 110 px.
+La etiqueta "Metrónomo" se oculta bajo 1300 px por lo mismo (medido en Chromium).
+- **`metro.meter` (el que suena) ≠ `metroUserMeter` (el que eligió Jorge).**
+  `metroLocked()` fuerza 4 en Ritmo y en Intervalos "A tiempo" (su selector de
+  tiempo 1-2-3-4 y `ivBeatOffset` lo suponen) sin tocar lo elegido, y al salir
+  vuelve solo; el botón queda `disabled` con la explicación en el `title`.
+  `metroApplyMeter()` se llama desde `metroRender`, `enterMode` y
+  `applyIvModeButtons`. La cascada sigue con su `BEATS_PER_BAR=4` propio.
+- **Banderas `metroReady` / `rhythmReady`** (declaradas arriba, junto a
+  `namePool`): `metro` y `rhythm` son `const` declarados MÁS ABAJO que
+  `enterMode`/`applyIvModeButtons`, que corren al cargar. Sin las banderas, tocar
+  `metro` ahí daba "Cannot access before initialization" (lo atrapó la prueba).
 **Se detiene solo al cambiar de ejercicio o de app, igual que `▶ Escuchar`.**
 Jorge reportó que seguía sonando de fondo al pasar a otra práctica (o al
 cambiar de app en el teléfono). Dos guardas:
@@ -1630,6 +1650,56 @@ apagaron es siempre una acción del botón — ni `enterMode` ni el listener de
 `visibilitychange` vuelven a prenderlo. Esto es aparte del auto-encendido que
 ya existía al tocar `⏱ Con metrónomo` o `⏱ A tiempo`: esos siguen prendiéndolo
 porque son la propia acción del usuario, no una reanudación automática.
+
+## Ritmo (`rhythm`, pestaña "Ritmo")
+Pedido de la clase del 3 de octubre: "a veces tocaba antes o después, por eso es
+importante tomar el tempo" y "ejercicios que me permitan tomar ritmo e ir subiendo
+el nivel de a poco". **Lo que no existía**: todo lo demás mide cada nota contra el
+pulso más cercano; nada pedía un RITMO (silencios, corcheas, contratiempo) ni
+decía hacia qué lado se equivoca Jorge.
+- Cualquier tecla vale (el ejercicio es el ritmo, no la nota) y hay un pad
+  "Toca aquí" para quien practica sin piano; entra por `noteOn(60,'ui')`, o sea
+  por el mismo camino que una tecla (`registerNoteHandler('rhythm', checkRhythm)`).
+- **9 niveles** (`RHYTHM_LEVELS`, posiciones en tiempos dentro de un compás de 4):
+  cada pulso → solo el 1 → 1 y 3 → 2 y 4 → corcheas → negra y corcheas →
+  contratiempo → 3+3+2 → tresillos. Orden mío (tocar en todos los pulsos es lo
+  más fácil; esperar en silencio, contratiempo y tresillos es lo difícil).
+- **Ronda**: 1 compás de cuenta (no se toca) + N compases (`rhythmBars`: los
+  patrones ralos duran más, hasta 8, para que haya ≥ 8 toques y el 80% no sea
+  regalado). El clic se REINICIA al empezar: el 1 del primer compás cae en
+  `metro.refPerf`, y de ahí salen los tiempos exactos de cada toque pedido
+  (`rhythmTargets`). **Probado con el reloj real** en Chromium (toques simulados
+  +25 ms → medido +25 ms, desv. 0), no solo con tiempos inventados en jsdom.
+- **Calificación (`rhythmGrade`)**: cada toque se empareja con el pedido libre más
+  cercano dentro de una ventana (`rhythmWindow`: media distancia al vecino, tope
+  `TIMING_FAR`; en tresillos 125 ms a 80 BPM). Sin pareja = "de más"; pedido sin
+  pareja = fallo. Aprueba con ≥ `SCALE_TIMING_OK` (80%) dentro de ±90 ms y ≤
+  `RHYTHM_EXTRA_MAX` (2) toques de más. **Esos umbrales son los de las escalas,
+  no algo que diera el profe.** Dos teclas a < 50 ms cuentan como un toque.
+- **Adelantado vs atrasado (`rhythmBias`) es lo central.** Promedio con signo y
+  desviación: desviación ≥ 55 ms → "unas veces antes y otras después" (se corrige
+  bajando el tempo, no con una instrucción); promedio ≤ −15 → ADELANTADO ("espera
+  el clic"); ≥ +15 → ATRASADO ("anticípate"); si no, "bien centrado". Un promedio
+  de 0 con desviación alta NO es "bien": por eso se mira la desviación primero.
+  **Los ms incluyen el retraso del altavoz/MIDI**; la app no lo compensa (el tip lo
+  dice). Si siempre sale atrasado en todo, sospechar del equipo antes que de Jorge.
+- **Escalera**: dentro de un nivel, tempos 60 → 70 → 80 (`RHYTHM_BPMS`); una ronda
+  aprobada sube `bestBpm` y la app pone el siguiente BPM sola; con 80 el nivel
+  queda superado y se abre el siguiente (`rhythmUnlocked`, los bloqueados se ven
+  apagados y dicen qué falta). `bestBpm` solo sube con ronda APROBADA (igual que
+  las escalas: el % sin el BPM no dice nada). Un BPM más alto puesto a mano también
+  acredita (aprobar a 120 supera el nivel): es mérito, no trampa.
+- **La ronda se cancela** si se apaga el metrónomo (`metroStop` → `rhythmCancel`),
+  si se cambia el BPM, o si se sale de la pestaña. `rhythm.starting` evita que el
+  reinicio del clic de `rhythmStart` cancele su propia ronda.
+- Progreso: sección `rhythm` (`runs, clean, bestPct, bestBpm, lastDay`, todo
+  máximos/contadores → `mergeProgress` sin caso especial), `dayRec.rhythm`, fila
+  "Ritmo" de dominio (12 filas) y paso `rhythm` (3 min) en el bloque `warm` del
+  plan de Hoy, justo después del calentamiento de dedos.
+- Preferencia persistida: `rhythmLevel`.
+- **No se hizo** (no se eligió): subdivisiones audibles en el metrónomo, tap tempo
+  y volumen del clic. Si el ritmo en corcheas cuesta, la primera mejora sería el
+  clic de la subdivisión.
 
 ## Progreso (localStorage `pianoProgress1`)
 ```
@@ -1699,7 +1769,7 @@ cualquier otro navegador funcionan igual que antes (`cloudState: 'off'`).
 `chordReps` (repeticiones de acordes), `chordGroup` (qué acordes: básicos / demás / todos),
 `audioFallback` (sonido alternativo, ver más abajo),
 `solfaShown`, `cascadeSpeed`, `scaleOpts` (mano/octavas/sentido/dedos/variante menor),
-`metroBpm`, `readingLevel`, `handsShown`, `soundTarget`.
+`metroBpm`, `metroMeter`, `rhythmLevel`, `readingLevel`, `handsShown`, `soundTarget`.
 
 ## Diseño (jerarquía deliberada)
 Regla que manda: el 90% del tiempo Jorge mira **una sola cosa** — qué tecla toca

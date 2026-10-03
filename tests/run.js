@@ -418,23 +418,23 @@ const plan = W('todayPlan');
 check(plan.length >= 5 && plan.every(p => typeof p.go === 'function' && typeof p.done === 'function'), 'plan con acciones');
 // la escala del día es la tarea de la academia hasta que esté limpia; después
 // el plan retoma la progresión de mayores donde iba
-check(plan[1].title.includes('pentatónica'), 'la escala del día arranca en la pentatónica de la clase');
-W("todayPlan[1].go()");
+check(plan.find(it => it.key === 'scale').title.includes('pentatónica'), 'la escala del día arranca en la pentatónica de la clase');
+W("todayPlan.find(it => it.key === 'scale').go()");
 check(W('currentMode') === 'cpenta' && W('scaleFamily') === 'pentatonic', 'el botón Ir abre la pentatónica en su propia pestaña');
 // Limpia pero sin tempo NO abre la siguiente: ese es el paso 2.
 W("progress.scales['cpenta:rh'] = {runs:3, clean:3, bestBpm:0, lastDay:null}; progress.scales['cpenta:lh'] = {runs:3, clean:3, bestBpm:0, lastDay:null}; todayPlan = buildTodayPlan(1)");
-check(W('todayPlan[1].title').includes('pentatónica'), 'limpia pero sin metrónomo sigue en la pentatónica');
-check(W('todayPlan[1].sub').includes('Paso 2 de 2'), 'y el plan dice que va en el paso del tiempo');
-check(W('todayPlan[1].sub').includes('60 BPM'), 'con el primer peldaño de tempo como meta');
+check(W("todayPlan.find(it => it.key === \'scale\').title").includes('pentatónica'), 'limpia pero sin metrónomo sigue en la pentatónica');
+check(W("todayPlan.find(it => it.key === \'scale\').sub").includes('Paso 2 de 2'), 'y el plan dice que va en el paso del tiempo');
+check(W("todayPlan.find(it => it.key === \'scale\').sub").includes('60 BPM'), 'con el primer peldaño de tempo como meta');
 W("progress.scales['cpenta:rh'].bestBpm = 80; progress.scales['cpenta:lh'].bestBpm = 80; todayPlan = buildTodayPlan(1)");
-check(W('todayPlan[1].title').includes('Do mayor'), 'con la pentatónica limpia Y a 80 BPM, el plan vuelve a Do mayor');
+check(W("todayPlan.find(it => it.key === \'scale\').title").includes('Do mayor'), 'con la pentatónica limpia Y a 80 BPM, el plan vuelve a Do mayor');
 W("progress.scales['cmajor:rh'] = {runs:3, clean:3, bestBpm:80, lastDay:null}; progress.scales['cmajor:lh'] = {runs:3, clean:3, bestBpm:80, lastDay:null}; todayPlan = buildTodayPlan(1)");
-check(W('todayPlan[1].title').includes('Sol mayor'), 'con Do mayor dominada por mano, propone Sol mayor');
-W("todayPlan[1].go()");
+check(W("todayPlan.find(it => it.key === \'scale\').title").includes('Sol mayor'), 'con Do mayor dominada por mano, propone Sol mayor');
+W("todayPlan.find(it => it.key === 'scale').go()");
 check(W('currentMode') === 'gmajor', 'el botón Ir lleva a Sol mayor');
 ev('#mainTabs [data-cat="progress"]');
 check(doc.querySelectorAll('#heatGrid .heat-cell').length >= 84, 'mapa de calor de 12 semanas');
-check(doc.querySelectorAll('#masteryList .mastery-item').length === 11, '11 filas de dominio (con Nombrar)');
+check(doc.querySelectorAll('#masteryList .mastery-item').length === 12, '12 filas de dominio (con Nombrar y Ritmo)');
 check(JSON.parse(window.localStorage.getItem('pianoProgress1') || 'null') !== null || true, 'progreso persistido (con debounce)');
 
 section('Preferencias');
@@ -944,9 +944,9 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
   check(W('todayPlan.filter(it => it.block === "keep").map(it => it.key)').join(',') === 'reading,chords,song',
     'lectura, acordes y pieza siguen en el plan: foco no es abandono');
   check(doc.querySelectorAll('#todayList .today-block').length === 2, 'los dos bloques se rotulan en pantalla');
-  check(W('todayPlan[2].title').includes('Anclas') && W('todayPlan[3].title').includes('Anclas'),
+  check(W("todayPlan.find(it => it.key === 'intervals').title").includes('Anclas') && W("todayPlan.find(it => it.key === 'ear').title").includes('Anclas'),
     'intervalos y oído arrancan en el nivel 1');
-  W("todayPlan[2].go()");
+  W("todayPlan.find(it => it.key === 'intervals').go()");
   check(W('currentMode') === 'intervals' && W('earMode') === false && W('practiceIndex') === W('INTERVAL_STAGES[0].ids[0]'),
     'el botón Ir de intervalos abre el modo exacto en el primer intervalo del nivel');
   // El paso 2 deja el metrónomo listo en el BPM de la meta: si hay que ir a
@@ -954,7 +954,7 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
   W(`progress = emptyProgress();
      progress.scales['cpenta:rh'] = {runs:3, clean:3, bestBpm:0, lastDay:null};
      progress.scales['cpenta:lh'] = {runs:3, clean:3, bestBpm:0, lastDay:null};
-     todayPlan = buildTodayPlan(1); todayPlan[1].go()`);
+     todayPlan = buildTodayPlan(1); todayPlan.find(it => it.key === 'scale').go()`);
   check(W('scaleTempoMode') === true && W('metro.bpm') === 60,
     'Ir → en el paso 2 enciende el metrónomo en el primer peldaño');
   W("if(scaleTempoMode) $('scaleTempoBtn').click(); if(metro.on) metroStop();");
@@ -2272,6 +2272,140 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
     check(bars === 16 && sinRotulo === 0, 'los 16 compases arrancan con rótulo');
     // Tiempos fuertes (1 y 3): la melodía cae en una nota de la armonía de ese compás.
     check(ci.steps[0].lh.join() === '48,55' && ci.steps[ci.steps.length - 1].lh.join() === '48,60', 'abre con la 5ª Do–Sol y cierra con la 8ª Do–Do');
+  }
+
+  section('Metrónomo: compás visible y acento');
+  {
+    W("progress = emptyProgress(); selectCategory('scales');");
+    const cells = () => [...doc.querySelectorAll('#metroBeats .metro-cell')];
+    check(cells().length === 4 && cells()[0].classList.contains('first') && cells().map(c => c.textContent).join('') === '1234', 'por defecto 4 casillas numeradas, el 1 marcado');
+    doc.getElementById('metroBeats').click();
+    check(W('metro.meter') === 2 && cells().length === 2, 'tocar las casillas cambia a 2 tiempos');
+    doc.getElementById('metroBeats').click();
+    check(W('metro.meter') === 3 && cells().length === 3, 'otra vez: 3 tiempos, 3 casillas, y el metrónomo cuenta de a 3');
+    check(W("localStorage.getItem('metroMeter')") === '3', 'la elección se recuerda');
+    check(/3 tiempos/.test(doc.getElementById('metroBeats').title), 'y la ayuda dice cuántos tiempos hay');
+    W('metroFlash(true, 0)');
+    check(cells()[0].classList.contains('now'), 'el clic enciende su casilla (la del 1 con acento)');
+    W('metroFlash(false, 1)');
+    check(cells()[1].classList.contains('now') && !cells()[0].classList.contains('now'), 'y la siguiente apaga la anterior');
+    // En Ritmo (y en Intervalos "A tiempo") el compás se fuerza a 4 sin perder lo elegido
+    W("selectCategory('rhythm')");
+    check(W('metro.meter') === 4 && cells().length === 4 && doc.getElementById('metroBeats').disabled, 'en Ritmo el compás es de 4 y las casillas quedan sin acción');
+    doc.getElementById('metroBeats').click();
+    check(W('metro.meter') === 4 && W('metroUserMeter') === 3, 'tocarlas ahí no cambia nada');
+    W("selectCategory('scales')");
+    check(W('metro.meter') === 3 && !doc.getElementById('metroBeats').disabled, 'al salir vuelve el compás de 3 que había elegido');
+    W("selectCategory('intervals'); setIvMode('tempo');");
+    check(W('metro.meter') === 4 && doc.getElementById('metroBeats').disabled, 'Intervalos "A tiempo" también cuenta de a 4 (su selector de tiempo lo exige)');
+    W("setIvMode('show'); selectCategory('scales');");
+    doc.getElementById('metroBeats').click();
+    check(W('metro.meter') === 4, 'se puede volver a 4');
+  }
+
+  section('Ritmo: tomar el tempo');
+  {
+    W("soundEnabled = false; progress = emptyProgress(); rhythmLevel = 0; selectCategory('rhythm');");
+    const L = W('RHYTHM_LEVELS');
+    check(!!doc.querySelector('#mainTabs [data-cat="rhythm"]') && doc.getElementById('rhythmPanel').style.display !== 'none', 'hay pestaña Ritmo y su panel');
+    check(L.length === 9 && new Set(L.map(l => l.id)).size === 9, 'nueve niveles, sin repetir');
+    check(L.every(l => l.pos.every((p, i) => p >= 0 && p < 4 && (i === 0 || p > l.pos[i - 1]))), 'cada patrón cae dentro del compás de 4, en orden y sin repetir');
+    check(L[8].pos.length === 12 && L[4].pos.length === 8 && L[1].pos.join() === '0', 'tresillos 12 por compás, corcheas 8, "solo el 1" uno');
+    check(L.every(l => W('rhythmBars(RHYTHM_LEVELS[' + L.indexOf(l) + '])') * l.pos.length >= 8), 'toda ronda pide al menos 8 toques (80% de menos sería regalado)');
+    check(W('rhythmBars(RHYTHM_LEVELS[0])') === 4 && W('rhythmBars(RHYTHM_LEVELS[1])') === 8 && W('rhythmBars(RHYTHM_LEVELS[7])') === 5, 'los patrones ralos duran más compases: 4, 8 y 5');
+    // tiempos exactos
+    const tg = W('rhythmTargets(RHYTHM_LEVELS[0], 1000, 60, 4)');
+    check(tg.length === 16 && tg[0].t === 5000 && tg[1].t === 6000 && tg[4].bar === 1, 'el primer compás es de cuenta atrás: el primer toque pedido cae 4 tiempos después');
+    check(W('rhythmWindow(RHYTHM_LEVELS[0], 60)') === 250 && Math.abs(W('rhythmWindow(RHYTHM_LEVELS[8], 80)') - 125) < 1e-6, 'ventana: media distancia al vecino, con tope; en tresillos no se pisa con el vecino');
+    // calificación
+    const T = W('rhythmTargets(RHYTHM_LEVELS[0], 0, 60, 4)'), win = 250;
+    const grade = presses => JSON.parse(JSON.stringify(W('rhythmGrade(' + JSON.stringify(T) + ', ' + JSON.stringify(presses) + ', ' + win + ')')));
+    let g = grade(T.map(x => x.t));
+    check(g.pct === 100 && g.pass && Math.round(g.mean) === 0 && g.extras === 0, 'todo exacto: 100% y aprobado');
+    g = grade(T.map(x => x.t - 40));
+    check(g.pct === 100 && g.pass && Math.round(g.mean) === -40 && /ADELANTADO/.test(W('rhythmBias(' + JSON.stringify(g) + ')')), 'siempre 40 ms antes: aprueba, pero dice que tiende a ADELANTARSE');
+    g = grade(T.map(x => x.t + 45));
+    check(/ATRASADO/.test(W('rhythmBias(' + JSON.stringify(g) + ')')), 'siempre 45 ms después: tiende a ATRASARSE');
+    g = grade(T.map((x, i) => x.t + (i % 2 ? 70 : -70)));
+    check(g.pct === 100 && g.sd >= 55 && /antes y otras después/.test(W('rhythmBias(' + JSON.stringify(g) + ')')), 'unas veces +70 y otras −70: lo llama irregular, no "adelantado"');
+    g = grade(T.map(x => x.t + 130));
+    check(g.pct === 0 && !g.pass && g.got === 16, 'siempre 130 ms tarde: los toques se emparejan pero ninguno cuenta a tiempo');
+    g = grade(T.slice(0, 10).map(x => x.t));
+    check(g.pct === 63 && !g.pass && g.offs.filter(o => o === null).length === 6, '10 de 16: 63%, no aprueba, y los 6 que faltan quedan como fallo');
+    g = grade(T.map(x => x.t).concat([T[0].t + 500, T[3].t + 500, T[5].t + 500]));
+    check(g.pct === 100 && g.extras === 3 && !g.pass, 'tocar de más (3) impide aprobar aunque todo lo pedido salga');
+    g = grade([]);
+    check(/Casi no tocaste/.test(W('rhythmBias(' + JSON.stringify(g) + ')')), 'sin toques no inventa un diagnóstico');
+
+    // una ronda completa, con tiempos controlados
+    W("metro.bpm = 60; metroRender(); rhythmLevel = 0;");
+    W("rhythmBegin(performance.now() + 200)");
+    check(W('rhythm.active') === true && W('rhythm.targets.length') === 16, 'rhythmBegin arma la ronda');
+    const t0 = W('rhythm.T0'), per = 1000;
+    W(`rhythmHit(${t0 + 1 * per})`);   // cuenta atrás: no cuenta
+    W(`rhythmHit(${t0 + 4 * per + 10})`); W(`rhythmHit(${t0 + 4 * per + 30})`); // dos teclas casi juntas = un toque
+    check(W('rhythm.presses.length') === 1, 'la cuenta atrás no se toca y dos teclas a la vez cuentan como un toque');
+    for(let i = 1; i < 16; i++) W(`rhythmHit(${t0 + (4 + i) * per - 25})`);
+    const res = W('rhythmFinish()');
+    check(res && res.pass && res.pct === 100 && W('rhythm.active') === false, 'ronda aprobada a 60 BPM');
+    check(W('progress.rhythm.pulso.clean') === 1 && W('progress.rhythm.pulso.bestBpm') === 60 && W('progress.rhythm.pulso.runs') === 1, 'queda registrada con su BPM');
+    check(W('metro.bpm') === 70, 'aprobar sube el metrónomo al siguiente peldaño (70)');
+    check(doc.querySelectorAll('#rhythmResult .rhythm-chip').length === 16 && /ADELANTADO|centrado|Bien/.test(doc.getElementById('rhythmResult').textContent), 'se dibuja un cuadro por toque y el diagnóstico de adelanto/atraso');
+    check(/a tiempo/.test(doc.getElementById('rhythmBig').textContent), 'el titular dice cuántos salieron a tiempo');
+    // reprobar no sube ni acredita BPM
+    W("rhythmBegin(performance.now() + 200)");
+    check(W('rhythm.bpm') === 70, 'la siguiente ronda va a 70');
+    W('rhythmFinish()');
+    check(W('progress.rhythm.pulso.bestBpm') === 60 && W('progress.rhythm.pulso.runs') === 2 && W('progress.rhythm.pulso.clean') === 1, 'una ronda sin tocar suma intento pero no acredita 70 BPM');
+    // escalera de tempo y desbloqueo
+    check(doc.querySelectorAll('#rhythmLevelTabs .locked').length === 8 && !W('rhythmUnlocked(1)'), 'con el nivel 1 a medias, los demás están bloqueados');
+    doc.querySelectorAll('#rhythmLevelTabs .mode-tab')[3].click();
+    check(W('rhythmLevel') === 0 && /Primero supera/.test(doc.getElementById('rhythmBig').textContent), 'tocar un nivel bloqueado dice qué falta y no cambia de nivel');
+    W("progress.rhythm.pulso.bestBpm = 80");
+    check(W('rhythmUnlocked(1)') && W('rhythmDone(0)') && W('rhythmCurrentLevel()') === 1 && W('rhythmNextBpm(1)') === 60, 'a 80 BPM el nivel 1 está superado, se abre el 2 y arranca a 60');
+    W("rhythmSelectLevel(1)");
+    check(W('rhythmLevel') === 1 && W('metro.bpm') === 60 && doc.getElementById('rhythmSay').textContent.includes('(2)'), 'elegir el nivel 2 pone 60 BPM y muestra cómo se cuenta');
+    check(doc.querySelectorAll('#rhythmBar .rhythm-dot').length === 1 && doc.querySelectorAll('#rhythmBar .rhythm-beat').length === 4, 'el compás dibujado marca 4 tiempos y los toques de ese nivel');
+    // aprobar a 80 supera el nivel
+    W("metro.bpm = 80; metroRender(); rhythmBegin(performance.now() + 200)");
+    const u0 = W('rhythm.T0');
+    W(`rhythm.targets.forEach(g => rhythmHit(g.t + 5))`);
+    const r80 = W('rhythmFinish()');
+    check(r80.pass && W('progress.rhythm["uno"].bestBpm') === 80 && W('rhythmDone(1)') && /superado/.test(doc.getElementById('rhythmBig').textContent), 'aprobar a 80 BPM supera el nivel');
+    // cancelaciones
+    W("rhythmBegin(performance.now() + 200)");
+    W("metroStop()");
+    check(W('rhythm.active') === false && /metrónomo se apagó/.test(doc.getElementById('rhythmBig').textContent), 'apagar el metrónomo a media ronda la cancela y lo dice');
+    W("rhythmBegin(performance.now() + 200)");
+    doc.querySelector('.metro-step[data-bpm="5"]').click();
+    check(W('rhythm.active') === false && /Cambiaste el tempo/.test(doc.getElementById('rhythmBig').textContent), 'cambiar el tempo a media ronda también');
+    W("rhythmBegin(performance.now() + 200)");
+    W("selectCategory('scales')");
+    check(W('rhythm.active') === false, 'salir de Ritmo corta la ronda');
+    W("selectCategory('rhythm')");
+    // sin audio (jsdom) no se puede empezar y lo dice
+    W("rhythmStart()");
+    check(W('rhythm.active') === false && /Sin audio/.test(doc.getElementById('rhythmBig').textContent), 'sin audio no empieza y dice por qué');
+    // el pad entra por el mismo camino que una tecla
+    W("rhythmBegin(performance.now() + 200)");
+    const n0 = W('rhythm.presses.length');
+    W("rhythm.T0 = performance.now() - 5000"); // ya en la zona de toque
+    doc.getElementById('rhythmPad').dispatchEvent(new window.Event('pointerdown', { bubbles: true, cancelable: true }));
+    doc.getElementById('rhythmPad').dispatchEvent(new window.Event('pointerup', { bubbles: true }));
+    check(W('rhythm.presses.length') === n0 + 1, 'el pad "Toca aquí" cuenta como una tecla');
+    W("rhythmCancel('')");
+    // plan de Hoy y progreso
+    W("progress = emptyProgress(); todayPlan = buildTodayPlan(1); renderToday()");
+    const ri = W("todayPlan.find(it => it.key === 'rhythm')");
+    check(!!ri && ri.block === 'warm' && /nivel 1 de 9/.test(ri.title) && /60 BPM/.test(ri.sub), 'el plan de Hoy trae Ritmo en el calentamiento, nivel 1 a 60 BPM');
+    W("todayPlan.find(it => it.key === 'rhythm').go()");
+    check(W('currentMode') === 'rhythm', 'el botón Ir abre Ritmo');
+    check(W('masteryRows().some(r => r[0] === "Ritmo")'), 'Progreso muestra la fila Ritmo');
+    W("progress = emptyProgress(); recordRhythm('pulso', 90, 70, true)");
+    const a = JSON.stringify(W('progress.rhythm'));
+    const merged = JSON.stringify(W('mergeProgress(progress, JSON.parse(JSON.stringify(progress))).rhythm'));
+    check(a === merged, 'fusionar el respaldo consigo mismo no infla Ritmo (idempotente)');
+    W("progress = emptyProgress(); selectCategory('today');");
   }
 
   section('Categorías de intervalos: fundamentales, anclas y otros');
