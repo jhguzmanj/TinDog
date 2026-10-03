@@ -549,6 +549,14 @@
     border:1px solid rgba(127,196,168,0.4); background:rgba(127,196,168,0.06);
   }
 
+  /* ===== Categorías de intervalos ===== */
+  .cat-list{ display:flex; flex-direction:column; gap:10px; }
+  .cat-row{ font-size:18px; line-height:1.45; color:var(--text-dim); }
+  .cat-row b{ color:var(--ivory); font-size:19px; }
+  .cat-row .cat-names{ color:var(--ivory); font-weight:600; }
+  .pick-btn[data-icat="fund"]{ border-bottom:3px solid var(--brass); font-weight:700; }
+  .pick-btn[data-icat="anclas"]{ border-bottom:3px solid var(--sage); }
+
   /* ===== Nombrar intervalos ===== */
   .name-bar{
     display:flex; flex-direction:column; gap:12px;
@@ -1152,6 +1160,10 @@
       <span class="reg-label">Ir directo a:</span>
       <div class="reg-picker" id="intervalPicker"></div>
     </div>
+    <details class="opt-box" id="intervalCatBox" style="display:none;">
+      <summary>📚 Cuáles son fundamentales y cuáles no</summary>
+      <div id="intervalCatList" class="cat-list"></div>
+    </details>
     <div id="intervalModeBar" class="reg-bar" style="display:none;">
       <span class="reg-label">Cómo practicar:</span>
       <button id="ivHideBtn" class="ghost-btn" title="Solo se marca la nota de partida, que cambia de lugar en cada intervalo. La segunda la encuentras tú.">🙈 Sin pista</button>
@@ -1194,7 +1206,8 @@
         <span class="reg-group"><span class="reg-label g-oct">Cuáles</span>
         <div class="reg-picker g-oct" id="namePoolPicker">
           <button class="reg-btn active" data-npool="level">Mi nivel</button>
-          <button class="reg-btn" data-npool="clase">Los de la clase</button>
+          <button class="reg-btn" data-npool="fund">Fundamentales</button>
+          <button class="reg-btn" data-npool="otros">Otros</button>
           <button class="reg-btn" data-npool="all">Los 13</button>
         </div></span>
       </div>
@@ -4169,6 +4182,21 @@ const INTERVAL_STAGES = [
   { name:'Los más difíciles',ids:[11, 6],
     tip:'La 7ª mayor roza contra la octava y el tritono parte la octava justo por la mitad. Si llegaste hasta aquí, ya oyes de verdad.' },
 ];
+// CATEGORÍAS: otro eje, distinto de la escalera. La escalera ordena por lo FÁCIL
+// que es oírlos; las categorías, por lo IMPORTANTES que son. La clase dio solo
+// ejemplos, así que la clasificación es mía: fundamentales = los que construyen
+// acordes (tríadas: 3ª m/M, 5ª justa o dism.; cuatriadas: 7ª m/M). Los "otros"
+// son esos mismos dados vuelta (12 − semitonos): saber un fundamental regala su
+// pareja. 2ª m ↔ 7ª M, 2ª M ↔ 7ª m, 4ª J ↔ 5ª J, 6ª M ↔ 3ª m, 6ª m ↔ 3ª M.
+const INTERVAL_CATS = [
+  { id:'fund',   name:'Fundamentales', ids:[3, 4, 7, 6, 10, 11],
+    tip:'Los que construyen los acordes: las dos 3ªs (acorde menor o mayor), la 5ª justa y el tritono (5ª disminuida) y las dos 7ªs. Es lo que pidió el profe y lo primero que hay que reconocer de golpe.' },
+  { id:'anclas', name:'Anclas',        ids:[0, 12],
+    tip:'Unísono y octava: la misma nota. No se confunden con nada; sirven para medir los demás.' },
+  { id:'otros',  name:'Otros',         ids:[1, 2, 5, 8, 9],
+    tip:'Son los fundamentales dados vuelta: 2ª m = 7ª M al revés, 2ª M = 7ª m, 4ª J = 5ª J, 6ª M = 3ª m, 6ª m = 3ª M. Si dominas los fundamentales, estos salen por comparación.' },
+];
+function intervalCatOf(idx){ const c = INTERVAL_CATS.find(c => c.ids.includes(idx)); return c ? c.id : null; }
 // Lista plana en orden de práctica. Cubre los 13 exactamente una vez (probado).
 const INTERVAL_ORDER = INTERVAL_STAGES.reduce((a, s) => a.concat(s.ids), []);
 function nextIntervalIdx(idx){
@@ -4255,7 +4283,7 @@ let ivBeat = '1';
 try {
   const m = localStorage.getItem('ivMode'); if(['show','hide','tempo'].includes(m)) ivMode = m;
   const ns = localStorage.getItem('nameSrc'); if(['ear','har','eye'].includes(ns)) nameSrc = ns;
-  const np = localStorage.getItem('namePool'); if(['level','clase','all'].includes(np)) namePool = np;
+  const np = localStorage.getItem('namePool'); namePool = np === 'clase' ? 'fund' : (['level','fund','otros','all'].includes(np) ? np : namePool);
   const b = localStorage.getItem('ivBeat'); if(['1','2','3','4','all'].includes(b)) ivBeat = b;
 } catch(e){}
 let chordReps = 1;
@@ -4351,6 +4379,7 @@ function enterMode(mode){
   show($('intervalOpts'), mode === 'intervals');
   show($('chordPickBar'), mode === 'chords', 'flex');
   show($('intervalPickBar'), mode === 'intervals', 'flex');
+  show($('intervalCatBox'), mode === 'intervals');
   show($('intervalModeBar'), mode === 'intervals', 'flex');
   show($('freeBox'), mode === 'free');
   show(distanceBox, mode === 'intervals');
@@ -6092,7 +6121,6 @@ $('earHintBtn').addEventListener('click', showEarHint);
 const NAME_SHORT = ['Unísono','2ª m','2ª M','3ª m','3ª M','4ª J','Tritono','5ª J','6ª m','6ª M','7ª m','7ª M','8ª'];
 const NAME_FAST_MS = 3500;                         // "rápido": ≤ 3,5 s desde que suena la 2ª nota
 const NAME_ASKED_GOAL = 6, NAME_RIGHT_GOAL = 0.8, NAME_FAST_GOAL = 0.5;
-const NAME_CLASE = [3, 4, 6, 7, 10, 11];           // los de la clase + la 3ª menor (el par de la mayor)
 function nameStageDone(st){
   return st.ids.every(i => {
     const r = (typeof progress !== 'undefined' && progress.name && progress.name[i]) || null;
@@ -6101,7 +6129,10 @@ function nameStageDone(st){
 }
 function namePoolIds(){
   if(namePool === 'all') return INTERVALS.map((_, i) => i);
-  if(namePool === 'clase') return NAME_CLASE.slice();
+  if(namePool === 'fund' || namePool === 'otros'){
+    const c = INTERVAL_CATS.find(x => x.id === namePool);
+    return c.ids.slice().sort((a, b) => a - b);
+  }
   const s = currentStageIdx(nameStageDone);
   return INTERVAL_STAGES.slice(0, s + 1).reduce((a, x) => a.concat(x.ids), []).sort((a, b) => a - b);
 }
@@ -6134,7 +6165,11 @@ function updateNameScore(){
 }
 function updateNameLevel(){
   const el = $('nameLevel'); if(!el) return;
-  if(namePool !== 'level'){ el.textContent = namePool === 'all' ? 'Los 13 mezclados.' : 'Los de la clase: 3ª m, 3ª M, tritono, 5ª, 7ª m y 7ª M.'; return; }
+  if(namePool !== 'level'){
+    const c = INTERVAL_CATS.find(x => x.id === namePool);
+    el.textContent = c ? c.name + ': ' + namePoolIds().map(i => NAME_SHORT[i]).join(', ') + '.' : 'Los 13 mezclados.';
+    return;
+  }
   const s = currentStageIdx(nameStageDone);
   el.textContent = 'Nivel ' + (s + 1) + ' de ' + INTERVAL_STAGES.length + ' · ' + INTERVAL_STAGES[s].name +
     ' — para pasar: ' + NAME_ASKED_GOAL + ' preguntas por intervalo, ' + Math.round(NAME_RIGHT_GOAL * 100) + '% bien y la mitad en menos de ' + fmtSec(NAME_FAST_MS) + '.';
@@ -6358,6 +6393,7 @@ function buildIntervalPicker(){
     const b = document.createElement('button');
     b.className = 'pick-btn';
     b.textContent = iv.name;
+    b.dataset.icat = intervalCatOf(i);
     b.addEventListener('click', () => {
       practiceIndex = i;
       startIntervalStep();
@@ -6365,6 +6401,17 @@ function buildIntervalPicker(){
     cont.appendChild(b);
   });
   refreshIntervalPicker();
+  renderIntervalCats();
+}
+function renderIntervalCats(){
+  const box = document.getElementById('intervalCatList'); if(!box) return;
+  box.innerHTML = '';
+  INTERVAL_CATS.forEach(c => {
+    const d = document.createElement('div'); d.className = 'cat-row';
+    const names = c.ids.slice().sort((a, b) => a - b).map(i => NAME_SHORT[i]).join(' · ');
+    d.innerHTML = '<b>' + c.name + '</b> (' + c.ids.length + ') — <span class="cat-names">' + names + '</span><br>' + c.tip;
+    box.appendChild(d);
+  });
 }
 function refreshIntervalPicker(){
   const cont = document.getElementById('intervalPicker');

@@ -320,10 +320,26 @@ y dentro de "Más ▾": `free | functions`.
   `ivMode` y `earMode` (`setIvMode` y el botón de oído apagan `nameMode`).
   - Fuentes (`nameSrc`): `ear` una tras otra, `har` juntas, `eye` solo mirando
     las dos teclas marcadas. Pozos (`namePool`): `level` (la escalera de
-    `INTERVAL_STAGES`, con 40% de repaso de los niveles anteriores), `clase`
-    (`NAME_CLASE` = 3ª m, 3ª M, tritono, 5ª, 7ª m, 7ª M: los de la clase más la
-    3ª menor, **que agregué yo** porque 3ª M sin 3ª m no se distingue), `all`
-    (los 13). Nunca repite el intervalo anterior.
+    `INTERVAL_STAGES`, con 40% de repaso de los niveles anteriores), `fund`,
+    `otros` (ver Categorías, abajo) y `all` (los 13). Nunca repite el intervalo
+    anterior. El valor viejo `clase` (guardado antes) migra a `fund`.
+  - **Categorías (`INTERVAL_CATS`, `intervalCatOf`)** — Jorge dijo que los
+    intervalos que nombró la clase eran solo ejemplos y que los clasificara yo.
+    **La clasificación es mía, no del profe.** Otro eje distinto de la escalera:
+    la escalera ordena por lo FÁCIL que es oírlos, las categorías por lo
+    IMPORTANTE. `fund` (6) = 3ª m, 3ª M, 5ª J, tritono, 7ª m, 7ª M: los que
+    construyen acordes (tríadas mayor/menor/disminuida y cuatriadas con 7ª) y
+    todo lo que nombró el profe. `anclas` (2) = unísono y 8ª (no hay nada que
+    distinguir, por eso no tienen pozo propio en Nombrar). `otros` (5) = 2ª m,
+    2ª M, 4ª J, 6ª m, 6ª M: **cada uno es un fundamental dado vuelta** (12 −
+    semitonos; hay prueba), así que saber un fundamental regala su pareja.
+    Dato que importa: la escalera deja 7ª m, 7ª M y tritono para el final (son
+    los más difíciles de oír), pero son fundamentales; por eso Nombrar deja
+    elegir "Fundamentales" sin pasar por la escalera. **De oído y exacto siguen
+    por la escalera** (no se les puso filtro de categoría: Nombrar "Una tras
+    otra" ya es oído con reloj). En el selector "Ir directo a" cada botón lleva
+    `data-icat` (fundamentales en negrita con subrayado dorado, anclas en
+    verde) y la tarjeta plegada `#intervalCatBox` explica las tres.
   - **Cronómetro**: arranca cuando suena la 2ª nota (o las dos juntas), no al
     preguntar. Rápido = `NAME_FAST_MS` 3500 ms, **número mío, no del profe**;
     ajustarlo si resulta muy duro o muy blando. Mediana, no promedio.

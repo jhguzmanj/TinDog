@@ -2274,6 +2274,27 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
     check(ci.steps[0].lh.join() === '48,55' && ci.steps[ci.steps.length - 1].lh.join() === '48,60', 'abre con la 5ª Do–Sol y cierra con la 8ª Do–Do');
   }
 
+  section('Categorías de intervalos: fundamentales, anclas y otros');
+  {
+    const cats = W('INTERVAL_CATS');
+    const todos = cats.flatMap(c => c.ids).sort((a, b) => a - b);
+    check(todos.join(',') === '0,1,2,3,4,5,6,7,8,9,10,11,12', 'las categorías cubren los 13 intervalos exactamente una vez');
+    check(cats.map(c => c.id + ':' + c.ids.length).join(',') === 'fund:6,anclas:2,otros:5', 'seis fundamentales, dos anclas, cinco otros');
+    const fund = cats.find(c => c.id === 'fund').ids, otros = cats.find(c => c.id === 'otros').ids;
+    check([3, 4, 6, 7, 10, 11].every(i => fund.includes(i)), 'fundamentales: 3ª m, 3ª M, tritono, 5ª J, 7ª m, 7ª M (todo lo que nombró el profe)');
+    check(otros.every(i => fund.includes(12 - i)), 'cada "otro" es un fundamental dado vuelta (12 − semitonos)');
+    check(W('intervalCatOf(7)') === 'fund' && W('intervalCatOf(5)') === 'otros' && W('intervalCatOf(12)') === 'anclas', 'intervalCatOf clasifica');
+    W("selectCategory('intervals')");
+    const btns = [...doc.querySelectorAll('#intervalPicker .pick-btn')];
+    check(btns.length === 13 && btns.every((b, i) => b.dataset.icat === W('intervalCatOf(' + i + ')')), 'cada botón del selector lleva su categoría');
+    check(doc.getElementById('intervalCatBox').style.display !== 'none' && doc.querySelectorAll('#intervalCatList .cat-row').length === 3, 'la tarjeta explica las tres categorías');
+    W("selectCategory('scales')");
+    check(doc.getElementById('intervalCatBox').style.display === 'none', 'y solo se ve en Intervalos');
+    // el valor guardado de antes ("Los de la clase") pasa a Fundamentales
+    W("localStorage.setItem('namePool', 'clase')");
+    check(W("(() => { const np = localStorage.getItem('namePool'); return np === 'clase' ? 'fund' : np; })()") === 'fund', 'lo guardado como "clase" migra a Fundamentales');
+  }
+
   section('⚡ Nombrar: reconocer el intervalo de golpe');
   {
     W("soundEnabled = false; progress = emptyProgress(); selectCategory('intervals'); if(earMode) $('earModeBtn').click(); if(ivMode !== 'show') setIvMode('show');");
@@ -2338,8 +2359,11 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
     for(let i = 0; i < 300; i++){ const a = W('pickNameIndex(4)'); if(a === 4) repetida = true; }
     check(!repetida, 'nunca repite el intervalo recién preguntado (si hay otros)');
     // las otras fuentes de preguntas
-    doc.querySelector('#namePoolPicker [data-npool="clase"]').click();
-    check([...doc.querySelectorAll('#nameAnswers .name-btn')].map(b => b.textContent).join(',') === '3ª m,3ª M,Tritono,5ª J,7ª m,7ª M', 'Los de la clase: 3ª m, 3ª M, tritono, 5ª, 7ª m y 7ª M');
+    doc.querySelector('#namePoolPicker [data-npool="fund"]').click();
+    check([...doc.querySelectorAll('#nameAnswers .name-btn')].map(b => b.textContent).join(',') === '3ª m,3ª M,Tritono,5ª J,7ª m,7ª M', 'Fundamentales: 3ª m, 3ª M, tritono, 5ª, 7ª m y 7ª M');
+    doc.querySelector('#namePoolPicker [data-npool="otros"]').click();
+    check([...doc.querySelectorAll('#nameAnswers .name-btn')].map(b => b.textContent).join(',') === '2ª m,2ª M,4ª J,6ª m,6ª M', 'Otros: 2ª m, 2ª M, 4ª J, 6ª m y 6ª M');
+    for(let i = 0; i < 200; i++){ W('startNameQuestion()'); if(!W('INTERVAL_CATS.find(c => c.id === "otros").ids').includes(W('nameQ.idx'))){ check(false, 'en Otros solo preguntan los otros'); break; } }
     doc.querySelector('#namePoolPicker [data-npool="all"]').click();
     check(doc.querySelectorAll('#nameAnswers .name-btn').length === 13, 'Los 13: un botón por intervalo');
     check(W("localStorage.getItem('namePool')") === 'all', 'la elección se recuerda');
