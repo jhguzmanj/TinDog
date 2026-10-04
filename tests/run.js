@@ -2271,7 +2271,21 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
     ci.steps.forEach(s => { if (t % 4 === 0) { bars++; if (!s.label) sinRotulo++; } t += s.dur; });
     check(bars === 16 && sinRotulo === 0, 'los 16 compases arrancan con rótulo');
     // Tiempos fuertes (1 y 3): la melodía cae en una nota de la armonía de ese compás.
-    check(ci.steps[0].lh.join() === '48,55' && ci.steps[ci.steps.length - 1].lh.join() === '48,60', 'abre con la 5ª Do–Sol y cierra con la 8ª Do–Do');
+    check(ci.steps[0].lh.join() === '48,55', 'abre con la 5ª Do–Sol');
+    // Tensión y resolución: lo que hace que la pieza respire
+    const cb = []; { let tt = 0; ci.steps.forEach(s => { const b = Math.floor(tt / 4 + 1e-9); (cb[b] = cb[b] || []).push(s); tt += s.dur; }); }
+    check(cb.length === 16, '16 compases');
+    const corch = cb.map(b => b.some(s => s.dur === 0.5 && s.rh.length));
+    check(corch[8] && corch[9] && corch.filter(Boolean).length === 2, 'las corcheas (más tensión por ritmo) van solo en los c. 9-10, justo antes de resolver');
+    check(cb[9][0].lh.join() === '59,65' && cb[10][0].lh.join() === '60,64', 'c. 10-11: tritono Si–Fa que resuelve en Do–Mi (Si sube, Fa baja)');
+    check(cb[10].every(s => s.dur >= 2), 'la resolución va en notas largas: el ritmo también descansa');
+    check(cb[11][0].lh.join() === '48,59' && cb[11].some(s => s.lh.join() === '48,60'), 'c. 12: la 7ª mayor se resuelve en la octava (Si sube a Do)');
+    // Final estándar: IV – V7 – I
+    check(cb[13][0].lh.join() === '41,48', 'c. 14: Fa (IV)');
+    check(cb[14][0].lh.join() === '43,53' && cb[14].some(s => s.lh.join() === '47,53'), 'c. 15: Sol7 (V7) con la 7ª y después el tritono');
+    const fin = ci.steps[ci.steps.length - 1];
+    check(fin.lh.join() === '36,48' && fin.rh.join() === '72,76,79' && fin.rhF.join() === '1,3,5' && fin.dur === 4, 'c. 16: octava grave de Do y el acorde de Do en la derecha, redonda');
+    check(fin.lh.includes(48) && cb[14].some(s => s.lh.includes(47)), 'el Si del tritono sube medio tono al Do del final');
   }
 
   section('Metrónomo: compás visible y acento');

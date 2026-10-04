@@ -368,6 +368,25 @@ y dentro de "Más ▾": `free | functions`.
     para una mano pequeña; van rotuladas "estira la mano". Es MÍA: ritmo y
     melodía no vienen de ninguna fuente, así que no hay nada que verificar
     contra una partitura.
+  - **Segunda versión: tensión y reposo** (Jorge preguntó si la pieza usaba el
+    principio de tensión/distensión — consonancia/disonancia — y la respuesta
+    honesta fue "a medias"). Tres arreglos, todos con prueba:
+    1. **Final estándar IV–V7–I** (c. 14-16). Antes el c. 15 era una 5ª hueca
+       Sol–Re (sin la sensible Si) y el final una 8ª suelta: final débil. Ahora
+       el c. 15 es Sol2–Fa3 (7ª m) y luego Si2–Fa3 (tritono, dedos 3-1 con el
+       pulgar quieto en Fa), y el c. 16 es la **octava grave Do2–Do3 (5-1) con el
+       acorde Do5–Mi5–Sol5 (1-3-5) en la derecha**, redonda. El Si2 sube a Do3
+       (hay prueba); el Fa baja al Mi del acorde de la derecha. La izquierda
+       sigue sin tocar acordes nunca; el único acorde es el final de la derecha,
+       que cae justo en su posición fija.
+    2. **La tensión también por ritmo**: corcheas en la derecha SOLO en los c.
+       9-10 (Rem7 y el tritono), y la resolución del c. 11 en blancas. Antes era
+       todo negras parejas y no había clímax que se sintiera.
+    3. **La 7ª mayor del c. 12 se resuelve** dentro del mismo compás: Do3–Si3 y
+       en el tiempo 3 Do3–Do4 (Si sube a Do). Antes el Si iba a Sol.
+    Queda sin resolver a propósito: la app no tiene dinámicas (forte/piano) ni
+    ritardando, que son la otra mitad de un final; eso lo pone Jorge al tocar.
+    56 pasos / 64 tiempos.
 - **Tocar libre nombra lo que se pisa** (`#freeBox`, `describeHeld`,
   registrado como handler de note-on y note-off del modo `free`): dos teclas →
   intervalo; tres que formen tríada mayor/menor → acorde y posición; si no, el
