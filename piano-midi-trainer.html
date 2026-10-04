@@ -518,6 +518,8 @@
   .reading-stats{ font-size:15px; color:var(--text-dim); line-height:1.6; font-variant-numeric:tabular-nums; }
   .reading-stats b{ color:var(--brass); }
   .reading-actions{ display:flex; gap:8px; flex-wrap:wrap; }
+  .read-target{ font-size:60px; color:var(--brass); font-weight:700; line-height:1.1; }
+  .read-sub{ font-size:19px; color:var(--text-dim); line-height:1.4; display:block; margin-top:4px; font-family:'Source Sans 3',sans-serif; }
 
   /* ===== Ritmo ===== */
   .rhythm-stage{ display:flex; flex-direction:column; gap:14px; margin-top:6px; }
@@ -1364,6 +1366,7 @@
         <svg id="readingStaff" class="reading-staff" aria-label="Pentagrama con la nota a tocar"></svg>
         <div class="reading-side">
           <div class="reading-big" id="readingFeedback">Toca la nota que ves.</div>
+          <div class="name-grid" id="readingAnswers" style="display:none;"></div>
           <div class="reading-stats" id="readingStats"></div>
           <div class="reading-actions">
             <button id="readingPlayBtn" class="ghost-btn">🔊 Escuchar</button>
@@ -7496,7 +7499,19 @@ function renderMiniStaff(step){
 }
 
 // ===== Lectura: la nota aparece en el pentagrama y la tocas =====
+// Antes del pentagrama hay que saber cómo se llama cada TECLA: sin eso el
+// pentagrama pide dos cosas nuevas a la vez (leer el símbolo Y encontrar la tecla).
+// `kind`: explore (toca y mira, sin examen) · find (toca CUALQUIER tecla con ese
+// nombre) · key (se ilumina una tecla y dices el nombre) · chroma (subir con ♯ /
+// bajar con ♭, el ejercicio de la clase) · staff (el pentagrama de siempre).
 const READING_LEVELS = [
+  {id:'x0', kind:'explore', free:true, name:'Explorar: toca y mira', clef:'grand', tip:'Toca cualquier tecla y mírala en el pentagrama. Cada negra tiene dos nombres: ♯ si vienes de la izquierda, ♭ si vienes de la derecha. Aquí no hay examen.'},
+  {id:'f1', kind:'find', name:'Encuentra: Do y Fa', pcs:[0,5], neu:[0,5], clef:'grand', tip:'Tus dos anclas: Do está justo a la izquierda del grupo de 2 negras y Fa justo a la izquierda del grupo de 3. Vale cualquiera del piano.'},
+  {id:'f2', kind:'find', name:'Encuentra: Re y Mi', pcs:[0,5,2,4], neu:[2,4], clef:'grand', tip:'Re está en medio de las 2 negras y Mi a su derecha. Do y Fa salen de repaso.'},
+  {id:'f3', kind:'find', name:'Encuentra: Sol, La y Si', pcs:[0,2,4,5,7,9,11], neu:[7,9,11], clef:'grand', tip:'Entre las 3 negras están Sol y La (Sol a la izquierda, La en medio). Si queda a la derecha del grupo de 3, justo antes de otro Do.'},
+  {id:'k1', kind:'key', name:'¿Qué tecla es?', lo:48, hi:72, clef:'grand', tip:'Se ilumina una tecla y dices su nombre con los botones. Si dudas, busca el grupo de negras más cercano (2 o 3) y cuenta desde ahí.'},
+  {id:'s1', kind:'chroma', dir:'up', name:'Negras subiendo (♯)', clef:'grand', tip:'Subiendo se nombran con sostenido, desde la blanca de la izquierda: Do, Do♯, Re, Re♯, Mi, Fa, Fa♯… Es el ejercicio de la clase.'},
+  {id:'s2', kind:'chroma', dir:'down', name:'Negras bajando (♭)', clef:'grand', tip:'Bajando se nombran con bemol, desde la blanca de la derecha: Do, Si, Si♭, La, La♭, Sol, Sol♭… Es la misma tecla con otro nombre.'},
   {id:'t5',   name:'Clave de Sol · 5 dedos',        clef:'treble', lo:60, hi:67,  acc:false, tip:'Do4 a Sol4: la posición de la mano derecha en Estrellita y el Himno a la alegría. Mi4 está en la primera línea, Do4 cuelga de una línea adicional.'},
   {id:'t8',   name:'Clave de Sol · una octava',     clef:'treble', lo:60, hi:72,  acc:false, tip:'Truco: las líneas de abajo a arriba son Mi–Sol–Si–Re–Fa y los espacios Fa–La–Do–Mi. Hasta que lo memorices, cuenta desde Mi4.'},
   {id:'tl',   name:'Clave de Sol · líneas extra',   clef:'treble', lo:57, hi:79,  acc:false, tip:'Por encima y por debajo del pentagrama se agregan líneas cortas. Cada línea adicional = una tercera más (La5 arriba, La3 abajo).'},
@@ -7508,7 +7523,35 @@ const READING_LEVELS = [
 let readingLevel = 0;
 let reading = null; // {sp, askedAt, missed}
 let readingSessionStats = { asked: 0, first: 0 };
-try { const rl = parseInt(localStorage.getItem('readingLevel'), 10); if(!isNaN(rl) && rl >= 0 && rl < READING_LEVELS.length) readingLevel = rl; } catch(e){}
+// Se guarda el ID del nivel y no su posición: al agregar niveles al principio, el
+// índice viejo apuntaría a otro nivel. `readingLevel` (índice) era la clave de antes.
+const OLD_READING_IDS = ['t5','t8','tl','b5','b8','g','ga'];
+function readingLevelFromSaved(savedId, oldIdx){
+  let idx = READING_LEVELS.findIndex(l => l.id === savedId);
+  if(idx < 0 && OLD_READING_IDS[oldIdx]) idx = READING_LEVELS.findIndex(l => l.id === OLD_READING_IDS[oldIdx]);
+  return idx;
+}
+try {
+  const idx = readingLevelFromSaved(localStorage.getItem('readingLevelId'), parseInt(localStorage.getItem('readingLevel'), 10));
+  if(idx >= 0) readingLevel = idx;
+} catch(e){}
+function saveReadingLevel(){ try { localStorage.setItem('readingLevelId', READING_LEVELS[readingLevel].id); } catch(e){} }
+const SOL_NAMES = ['Do','Re','Mi','Fa','Sol','La','Si'];
+// nombre en español de una nota (Do, Fa♯, Si♭…); la octava no va
+function solName(sp){ return SOL_NAMES[sp.letter] + (sp.acc === 1 ? '♯' : sp.acc === -1 ? '♭' : ''); }
+function solPc(pc, flat){ return solName(spellMidi(60 + pc, flat)); }
+// Dónde está cada tecla blanca respecto a los grupos de negras: el mapa del piano.
+const KEY_ANCHOR = {
+  0:'la blanca justo a la izquierda del grupo de 2 negras', 2:'la blanca de en medio de las 2 negras',
+  4:'la blanca justo a la derecha del grupo de 2 negras', 5:'la blanca justo a la izquierda del grupo de 3 negras',
+  7:'la primera blanca entre las 3 negras (la de la izquierda)', 9:'la blanca de en medio de las 3 negras',
+  11:'la blanca justo a la derecha del grupo de 3 negras',
+};
+function keyWhere(midi){
+  const pc = midi % 12;
+  if(BLACK_SET.has(pc)) return 'tecla negra, entre ' + solPc(pc - 1, false) + ' y ' + solPc(pc + 1, false);
+  return 'tecla blanca: ' + KEY_ANCHOR[pc];
+}
 
 function renderReadingTabs(){
   const cont = $('readingLevelTabs');
@@ -7517,10 +7560,12 @@ function renderReadingTabs(){
     const b = document.createElement('button');
     const st = typeof readingLevelStats === 'function' ? readingLevelStats(lv.id) : null;
     b.className = 'mode-tab sub' + (i === readingLevel ? ' active' : '');
-    b.textContent = (i + 1) + '. ' + lv.name + (st && st.mastered ? ' ✓' : '');
+    b.textContent = (i + 1) + '. ' + lv.name + (st && st.mastered && !lv.free ? ' ✓' : '');
     b.addEventListener('click', () => {
       readingLevel = i;
-      try { localStorage.setItem('readingLevel', i); } catch(e){}
+      saveReadingLevel();
+      readingSeq.i = 0;
+      readingSessionStats = { asked: 0, first: 0 };
       renderReadingTabs();
       nextReadingNote();
     });
@@ -7542,9 +7587,32 @@ function pickReadingNote(){
   else sp = spellMidi(n, false);
   return sp;
 }
+// Qué botones y piezas del panel tiene cada tipo de nivel
+function applyReadingKindUi(kind){
+  const lv = READING_LEVELS[readingLevel];
+  show($('readingAnswers'), kind === 'key', 'grid');
+  show($('readingHintBtn'), kind !== 'explore' && kind !== 'key', 'inline-block');
+  show($('readingSkipBtn'), kind !== 'explore', 'inline-block');
+  show($('readingPlayBtn'), kind !== 'explore', 'inline-block');
+  $('readingTip').innerHTML = '<b>' + lv.name + ':</b> ' + lv.tip;
+}
+const readingSeq = { i: 0 };
+const CHROMA_UP = [60,61,62,63,64,65,66,67,68,69,70,71,72], CHROMA_DOWN = CHROMA_UP.slice().reverse();
+function readingTargetMidi(){
+  if(!reading) return null;
+  if(reading.kind === 'find') return 60 + reading.pc;
+  return reading.sp ? reading.sp.midi : null;
+}
+function readingGrandStaff(notes){ renderStaff($('readingStaff'), notes, { clef: 'grand', width: 300, gap: 10 }); }
 function nextReadingNote(){
+  // el avance automático (700-1500 ms) puede llegar cuando ya saliste de Lectura:
+  // sin esto resucitaba la nota y dejaba teclas marcadas en otra práctica
+  if(currentMode !== 'reading') return;
   const lv = READING_LEVELS[readingLevel];
   stopReadingSound();
+  const kind = lv.kind || 'staff';
+  if(kind !== 'staff') return nextReadingOther(lv, kind);
+  applyReadingKindUi('staff');
   reading = { sp: pickReadingNote(), askedAt: performance.now(), missed: false, hinted: false, answered: false };
   const hb = $('readingHintBtn');
   if(hb) hb.classList.remove('used');
@@ -7554,13 +7622,110 @@ function nextReadingNote(){
   const fb = $('readingFeedback');
   fb.textContent = 'Toca la nota que ves.';
   fb.className = 'reading-big';
-  $('readingTip').innerHTML = '<b>' + lv.name + ':</b> ' + lv.tip;
   renderReadingStats();
+}
+// Los niveles de antes del pentagrama: explorar, encontrar, nombrar, ♯/♭.
+function pickFindPc(lv){
+  const prevPc = reading && reading.kind === 'find' ? reading.pc : -1;
+  const neu = lv.neu || lv.pcs;
+  let pc;
+  do { const list = Math.random() < 0.6 ? neu : lv.pcs; pc = list[Math.floor(Math.random() * list.length)]; } while(lv.pcs.length > 1 && pc === prevPc);
+  return pc;
+}
+function pickKeyNote(lv){
+  const pool = [];
+  for(let n = lv.lo; n <= lv.hi; n++) if(!BLACK_SET.has(n % 12)) pool.push(n);
+  let n;
+  do { n = pool[Math.floor(Math.random() * pool.length)]; } while(reading && reading.sp && pool.length > 1 && n === reading.sp.midi);
+  return spellMidi(n, false);
+}
+function nextReadingOther(lv, kind){
+  applyReadingKindUi(kind);
+  clearAllHighlights();
+  const fb = $('readingFeedback');
+  const hb = $('readingHintBtn'); if(hb) hb.classList.remove('used');
+  if(kind === 'explore'){
+    reading = { kind, recent: [], answered: false };
+    readingGrandStaff([]);
+    fb.innerHTML = 'Toca cualquier tecla.';
+    fb.className = 'reading-big';
+    $('readingStats').innerHTML = 'Mira cómo se escribe cada nota y cómo se llama. Sin examen.';
+    return;
+  }
+  if(kind === 'find'){
+    const pc = pickFindPc(lv);
+    reading = { kind, pc, askedAt: performance.now(), missed: false, hinted: false, answered: false };
+    readingGrandStaff([]);
+    fb.innerHTML = 'Toca un <span class="read-target">' + solPc(pc, false) + '</span><span class="read-sub">en cualquier parte del piano</span>';
+    fb.className = 'reading-big';
+  } else if(kind === 'key'){
+    const sp = pickKeyNote(lv);
+    reading = { kind, sp, askedAt: performance.now(), missed: false, hinted: false, answered: false };
+    readingGrandStaff([]);
+    const r = getRect(sp.midi); if(r) r.classList.add('target');
+    scrollToTargets();
+    fb.innerHTML = '¿Cómo se llama la tecla iluminada?';
+    fb.className = 'reading-big';
+    renderReadingAnswers();
+  } else { // chroma
+    const seq = lv.dir === 'up' ? CHROMA_UP : CHROMA_DOWN;
+    const sp = spellMidi(seq[readingSeq.i % seq.length], lv.dir === 'down');
+    reading = { kind, sp, askedAt: performance.now(), missed: false, hinted: false, answered: false };
+    readingGrandStaff([{ sp }]);
+    fb.innerHTML = 'Toca <span class="read-target">' + solName(sp) + '</span><span class="read-sub">' + keyWhere(sp.midi) + ' · ' + (readingSeq.i + 1) + ' de ' + seq.length + '</span>';
+    fb.className = 'reading-big';
+  }
+  renderReadingStats();
+}
+function renderReadingAnswers(){
+  const cont = $('readingAnswers'); if(!cont) return;
+  cont.innerHTML = '';
+  [0,2,4,5,7,9,11].forEach(pc => {
+    const b = document.createElement('button');
+    b.className = 'name-btn'; b.dataset.pc = pc; b.textContent = solPc(pc, false);
+    b.addEventListener('click', () => answerReadingKey(pc, b));
+    cont.appendChild(b);
+  });
+}
+// ¿Qué tecla es?: se contesta con los botones (la tecla iluminada ya está a la vista).
+function answerReadingKey(pc, btn){
+  if(!reading || reading.kind !== 'key' || reading.answered) return;
+  const target = reading.sp.midi % 12, fb = $('readingFeedback');
+  if(pc === target){
+    const ms = performance.now() - reading.askedAt;
+    readingSessionStats.asked++;
+    if(!reading.missed && !reading.hinted) readingSessionStats.first++;
+    recordReading(READING_LEVELS[readingLevel].id, !reading.missed && !reading.hinted, ms);
+    btn.classList.add('right');
+    fb.innerHTML = '¡Sí! Es <b>' + solPc(target, false) + '</b><span class="read-sub">' + keyWhere(reading.sp.midi) + '</span>';
+    fb.className = 'reading-big correct';
+    readingGrandStaff([{ sp: reading.sp, cls: 'correct' }]);
+    reading.answered = true;
+    renderReadingStats();
+    setTimeout(nextReadingNote, 1500);
+  } else {
+    reading.missed = true;
+    btn.classList.add('bad');
+    fb.innerHTML = 'Esa no. Piensa: ' + (BLACK_SET.has(pc) ? '' : solPc(pc, false) + ' es ' + KEY_ANCHOR[pc] + '.');
+    fb.className = 'reading-big wrong';
+  }
+}
+// Explorar: lo que tocas se dibuja en el pentagrama con su nombre.
+function exploreNote(note){
+  const fb = $('readingFeedback');
+  reading.recent.push(note);
+  if(reading.recent.length > 5) reading.recent.shift();
+  const sp = spellMidi(note, false);
+  readingGrandStaff(reading.recent.map(n => ({ sp: spellMidi(n, false), cls: n === note ? 'correct' : '' })));
+  const alt = sp.acc ? ' = ' + solName(spellMidi(note, true)) : '';
+  fb.innerHTML = '<span class="read-target">' + solName(sp) + alt + '</span><span class="read-sub">' + keyWhere(note) + ' · octava ' + sp.octave + (note === 60 ? ' (el Do central)' : '') + '</span>';
+  fb.className = 'reading-big';
 }
 function renderReadingStats(){
   const lv = READING_LEVELS[readingLevel];
   const st = typeof readingLevelStats === 'function' ? readingLevelStats(lv.id) : { attempts:0, first:0, avgMs:0, mastered:false };
   const pct = st.attempts ? Math.round(st.first / st.attempts * 100) : 0;
+  if(lv.free){ $('readingStats').innerHTML = 'Mira cómo se escribe cada nota y cómo se llama. Sin examen.'; return; }
   $('readingStats').innerHTML =
     'Esta sesión: <b>' + readingSessionStats.first + '</b> / ' + readingSessionStats.asked + ' a la primera<br>' +
     'Nivel en total: <b>' + pct + '%</b> (' + st.attempts + ' notas) · tiempo medio <b>' + (st.avgMs ? (st.avgMs / 1000).toFixed(1) + ' s' : '—') + '</b>' +
@@ -7568,6 +7733,7 @@ function renderReadingStats(){
 }
 function startReading(){
   renderReadingTabs();
+  readingSeq.i = 0;
   readingSessionStats = { asked: 0, first: 0 };
   nextReadingNote();
 }
@@ -7592,7 +7758,8 @@ function stopReadingSound(){
 function playReadingNote(){
   if(!reading) return;
   stopReadingSound();
-  const n = reading.sp.midi;
+  const n = readingTargetMidi();
+  if(n === null) return;
   const wasSound = soundEnabled;
   soundEnabled = true;
   try {
@@ -7608,23 +7775,59 @@ function checkReading(playedNote){
   // hay 700 ms en los que 🔊 Escuchar quedaba muerto — justo cuando más ganas
   // dan de volver a oír la nota que acabas de leer.
   if(!reading || reading.answered) return;
+  if(reading.kind === 'explore'){ exploreNote(playedNote); return; }
+  if(reading.kind === 'key') return;     // ahí se contesta con los botones
   const fb = $('readingFeedback');
+  if(reading.kind === 'find'){ checkReadingFind(playedNote); return; }
   const target = reading.sp.midi;
   if(playedNote === target){
     const ms = performance.now() - reading.askedAt;
     readingSessionStats.asked++;
     if(!reading.missed && !reading.hinted) readingSessionStats.first++;
     if(typeof recordReading === 'function') recordReading(READING_LEVELS[readingLevel].id, !reading.missed && !reading.hinted, ms);
-    fb.textContent = '¡Sí! Era ' + reading.sp.name + ' (' + SOLFA_NAMES[target % 12] + ')';
+    const chroma = reading.kind === 'chroma';
+    fb.textContent = chroma ? '¡Sí! ' + solName(reading.sp) : '¡Sí! Era ' + reading.sp.name + ' (' + SOLFA_NAMES[target % 12] + ')';
     fb.className = 'reading-big correct';
     renderStaff($('readingStaff'), [{ sp: reading.sp, cls: 'correct' }], { clef: READING_LEVELS[readingLevel].clef, width: 300, gap: 10 });
     const r = getRect(target); if(r) r.classList.add('correct');
     reading.answered = true;
+    if(chroma){
+      const lvc = READING_LEVELS[readingLevel], len = (lvc.dir === 'up' ? CHROMA_UP : CHROMA_DOWN).length;
+      readingSeq.i = (readingSeq.i + 1) % len;
+      if(readingSeq.i === 0) fb.textContent = '¡Vuelta completa! ' + solName(reading.sp);
+    }
     setTimeout(nextReadingNote, 700);
   } else {
     reading.missed = true;
+    const chromaFlat = reading.kind === 'chroma' && READING_LEVELS[readingLevel].dir === 'down';
+    const played = spellMidi(playedNote, chromaFlat);
+    fb.textContent = reading.kind === 'chroma'
+      ? 'Esa es ' + solName(played) + '. Busca ' + solName(reading.sp) + ': más ' + (playedNote < target ? 'aguda ↑' : 'grave ↓')
+      : 'Esa es ' + played.name + '. La nota es más ' + (playedNote < target ? 'aguda ↑' : 'grave ↓');
+    fb.className = 'reading-big wrong';
+    const wr = getRect(playedNote); if(wr){ wr.classList.add('wrong'); setTimeout(() => wr.classList.remove('wrong'), 350); }
+  }
+}
+// Encuentra: vale CUALQUIER tecla con ese nombre, en cualquier octava.
+function checkReadingFind(playedNote){
+  const fb = $('readingFeedback');
+  if(playedNote % 12 === reading.pc){
+    const ms = performance.now() - reading.askedAt;
+    readingSessionStats.asked++;
+    if(!reading.missed && !reading.hinted) readingSessionStats.first++;
+    recordReading(READING_LEVELS[readingLevel].id, !reading.missed && !reading.hinted, ms);
+    const sp = spellMidi(playedNote, false);
+    fb.innerHTML = '¡Sí! <b>' + solPc(reading.pc, false) + '</b><span class="read-sub">Así se escribe. ' + keyWhere(playedNote) + '</span>';
+    fb.className = 'reading-big correct';
+    readingGrandStaff([{ sp, cls: 'correct' }]);
+    const r = getRect(playedNote); if(r) r.classList.add('correct');
+    reading.answered = true;
+    renderReadingStats();
+    setTimeout(nextReadingNote, 1500);
+  } else {
+    reading.missed = true;
     const played = spellMidi(playedNote, false);
-    fb.textContent = 'Esa es ' + played.name + '. La nota es más ' + (playedNote < target ? 'aguda ↑' : 'grave ↓');
+    fb.innerHTML = 'Esa es <b>' + solName(played) + '</b>. Busca ' + solPc(reading.pc, false) + '<span class="read-sub">' + solPc(reading.pc, false) + ' es ' + KEY_ANCHOR[reading.pc] + '.</span>';
     fb.className = 'reading-big wrong';
     const wr = getRect(playedNote); if(wr){ wr.classList.add('wrong'); setTimeout(() => wr.classList.remove('wrong'), 350); }
   }
@@ -7635,9 +7838,17 @@ $('readingHintBtn').addEventListener('click', () => {
   if(!reading || reading.answered) return;
   reading.hinted = true;
   $('readingHintBtn').classList.add('used');
+  if(reading.kind === 'find'){
+    // marca TODAS las teclas con ese nombre: el ejercicio es reconocerlas, no adivinar la octava
+    for(let n = MIN_NOTE; n <= MAX_NOTE; n++){ if(n % 12 === reading.pc){ const rr = getRect(n); if(rr) rr.classList.add('target'); } }
+    $('readingFeedback').innerHTML = 'Todas las <b>' + solPc(reading.pc, false) + '</b> están marcadas<span class="read-sub">' + solPc(reading.pc, false) + ' es ' + KEY_ANCHOR[reading.pc] + '.</span>';
+  } else {
   const r = getRect(reading.sp.midi);
   if(r) r.classList.add('target');
-  $('readingFeedback').textContent = 'Es ' + reading.sp.name + ' (' + SOLFA_NAMES[reading.sp.midi % 12] + ') — está marcada abajo.';
+  $('readingFeedback').textContent = reading.kind === 'chroma'
+    ? 'Es ' + solName(reading.sp) + ' (' + keyWhere(reading.sp.midi) + ') — está marcada abajo.'
+    : 'Es ' + reading.sp.name + ' (' + SOLFA_NAMES[reading.sp.midi % 12] + ') — está marcada abajo.';
+  }
   scrollToTargets();
   // El pentagrama es alto y empuja el teclado fuera de la pantalla: decir
   // "está marcada abajo" no sirve si "abajo" no se ve. scrollToTargets() solo
@@ -8436,7 +8647,7 @@ function buildTodayPlan(seed){
     done: () => (dayRec().name || 0) >= 10,
     go: () => { selectCategory('intervals'); if(!nameMode) $('nameModeBtn').click(); } });
 
-  let lvIdx = READING_LEVELS.findIndex(lv => !readingLevelStats(lv.id).mastered);
+  let lvIdx = READING_LEVELS.findIndex(lv => !lv.free && !readingLevelStats(lv.id).mastered);
   if(lvIdx < 0) lvIdx = READING_LEVELS.length - 1;
   const lv = READING_LEVELS[lvIdx];
   items.push({ key:'reading', min:3, block:'keep', title:'Lectura: ' + lv.name, sub:'10 notas. Poco, pero todos los días.',
@@ -8542,7 +8753,7 @@ function masteryRows(){
   rows.push(['Oído', avg(INTERVALS.map((iv, i) => { const r = progress.ear[i]; return r && r.asked >= 3 ? r.right / r.asked : 0; }))]);
   rows.push(['Nombrar (rápido)', avg(INTERVALS.map((iv, i) => { const r = progress.name[i]; return r && r.asked >= 3 ? (r.right / r.asked) * 0.5 + ((r.fast || 0) / r.asked) * 0.5 : 0; }))]);
   rows.push(['Ritmo', avg(RHYTHM_LEVELS.map(lv => Math.min(((progress.rhythm[lv.id] || {}).bestBpm || 0), RHYTHM_GOAL_BPM) / RHYTHM_GOAL_BPM))]);
-  rows.push(['Lectura', avg(READING_LEVELS.map(lv => { const s = readingLevelStats(lv.id); return s.mastered ? 1 : Math.min(s.attempts, 20) / 20 * (s.attempts ? s.first / s.attempts : 0); }))]);
+  rows.push(['Lectura', avg(READING_LEVELS.filter(lv => !lv.free).map(lv => { const s = readingLevelStats(lv.id); return s.mastered ? 1 : Math.min(s.attempts, 20) / 20 * (s.attempts ? s.first / s.attempts : 0); }))]);
   rows.push(['Agilidad', avg(AGILITY_DRILLS.map(d => Math.min((progress.drills[d.id] || {}).runs || 0, 5) / 5))]);
   rows.push(['Fragmentos', avg(SONGS.map(s => Math.min((progress.songs[s.id] || {}).runs || 0, 3) / 3))]);
   rows.push(['Cascada', avg(SONGS.map(s => { const c = progress.cascade[s.id] || {}; return Math.max(c.best || 0, (c.bestWait || 0) * 0.7) / 100; }))]);

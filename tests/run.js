@@ -303,6 +303,7 @@ W("renderStaff(document.getElementById('readingStaff'), [{sp: spellMidi(48,false
 check(doc.querySelectorAll('#readingStaff .staff-line').length === 10 && doc.querySelectorAll('#readingStaff ellipse').length === 2, 'sistema de dos pentagramas con dos notas');
 
 section('Lectura');
+W("readingLevel = READING_LEVELS.findIndex(l => l.id === 't5')");
 ev('#mainTabs [data-cat="reading"]');
 check(W('currentMode') === 'reading' && W('reading') !== null, 'lectura activa con una nota');
 for(let i = 0; i < 30; i++){ W('reading.sp = pickReadingNote()'); const m = W('reading.sp.midi'); check(m >= 60 && m <= 67 && !W('BLACK_SET').has(m % 12), 'nivel 1: nota blanca entre Do4 y Sol4'); }
@@ -723,6 +724,7 @@ check(pickBtns()[5].classList.contains('current'), 'fuera del modo de oído la l
 section('Lectura: la nota se puede escuchar');
 W('window.__sent = [];');
 W('onMIDISuccess(window.__mk(["Digital Piano"], ["Digital Piano"]))');
+W("readingLevel = READING_LEVELS.findIndex(l => l.id === 't5')");
 ev('#mainTabs [data-cat="reading"]');
 check(W('usingPiano()') === true, 'con el piano conectado la nota sale por sus altavoces');
 W('window.__sent = [];');
@@ -743,6 +745,7 @@ check(W('midiSounding.size') === 0, 'salir de la práctica también la apaga');
 
 // Un botón de acción que no acusa recibo parece roto: sonaba 900 ms sin
 // cambiar un pixel, y con el volumen bajo no había forma de saber si funcionó.
+W("readingLevel = READING_LEVELS.findIndex(l => l.id === 't5')");
 ev('#mainTabs [data-cat="reading"]');
 const playBtn = doc.getElementById('readingPlayBtn');
 const rdHintBtn = doc.getElementById('readingHintBtn');
@@ -2286,6 +2289,89 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
     const fin = ci.steps[ci.steps.length - 1];
     check(fin.lh.join() === '36,48' && fin.rh.join() === '72,76,79' && fin.rhF.join() === '1,3,5' && fin.dur === 4, 'c. 16: octava grave de Do y el acorde de Do en la derecha, redonda');
     check(fin.lh.includes(48) && cb[14].some(s => s.lh.includes(47)), 'el Si del tritono sube medio tono al Do del final');
+  }
+
+  section('Lectura: antes del pentagrama, las teclas');
+  {
+    W("soundEnabled = false; progress = emptyProgress();");
+    const ids = W('READING_LEVELS.map(l => l.id)');
+    check(ids.slice(0, 7).join() === 'x0,f1,f2,f3,k1,s1,s2' && ids.slice(7).join() === 't5,t8,tl,b5,b8,g,ga', 'siete niveles nuevos al principio y los del pentagrama intactos detrás');
+    check(W("readingLevelFromSaved('f2', NaN)") === 2 && W("readingLevelFromSaved(null, 3)") === ids.indexOf('b5') && W("readingLevelFromSaved(null, 0)") === ids.indexOf('t5'), 'el índice guardado de antes se traduce al nivel que era, no a otro');
+    const go = id => { W("readingLevel = READING_LEVELS.findIndex(l => l.id === '" + id + "'); selectCategory('reading'); startReading();"); };
+    // nombres
+    check(W("solName(spellMidi(61, false))") === 'Do♯' && W("solName(spellMidi(70, true))") === 'Si♭' && W("solPc(11, false)") === 'Si' && W("solPc(7, false)") === 'Sol', 'nombres en español con ♯ y ♭');
+    check(/entre Do y Re/.test(W('keyWhere(61)')) && /izquierda del grupo de 3/.test(W('keyWhere(65)')) && /izquierda del grupo de 2/.test(W('keyWhere(60)')), 'cada tecla se explica por los grupos de negras');
+    // Explorar
+    go('x0');
+    check(W('reading.kind') === 'explore' && doc.getElementById('readingSkipBtn').style.display === 'none' && doc.getElementById('readingHintBtn').style.display === 'none', 'Explorar: sin pista ni saltar');
+    W("noteOn(66, 'ui')");
+    check(/Fa♯ = Sol♭/.test(doc.getElementById('readingFeedback').textContent) && doc.querySelectorAll('#readingStaff ellipse').length === 1 && doc.querySelectorAll('#readingStaff .staff-acc').length === 1, 'tocar una negra la dibuja con ♯ y dice sus dos nombres');
+    W("noteOff(66)");
+    for(const n of [60, 62, 64, 65, 67, 69, 71]){ W('noteOn(' + n + ", 'ui')"); W('noteOff(' + n + ')'); }
+    check(doc.querySelectorAll('#readingStaff ellipse').length === 5, 'se ven las últimas 5 notas');
+    check(W("progress.reading.x0") === undefined, 'explorar no cuenta como examen');
+    // Encuentra
+    go('f1');
+    check(W('reading.kind') === 'find' && [0, 5].includes(W('reading.pc')) && doc.getElementById('readingAnswers').style.display === 'none', 'Encuentra: pide Do o Fa');
+    W("reading.pc = 5; reading.missed = false;");
+    W("noteOn(60, 'ui')"); W("noteOff(60)");
+    check(doc.getElementById('readingFeedback').classList.contains('wrong') && /izquierda del grupo de 3/.test(doc.getElementById('readingFeedback').textContent) && W('reading.missed') === true, 'una tecla equivocada dice dónde está la que se pide');
+    W("noteOn(53, 'ui')"); W("noteOff(53)");   // Fa3: otra octava, también vale
+    check(doc.getElementById('readingFeedback').classList.contains('correct') && W('progress.reading.f1.attempts') === 1 && W('progress.reading.f1.first') === 0, 'cualquier Fa vale, y como se falló antes no cuenta "a la primera"');
+    check(doc.querySelectorAll('#readingStaff ellipse').length === 1, 'al acertar se enseña cómo se escribe');
+    W("nextReadingNote()"); W("reading.pc = 0");
+    W("noteOn(72, 'ui')"); W("noteOff(72)");
+    check(W('progress.reading.f1.attempts') === 2 && W('progress.reading.f1.first') === 1, 'acierto limpio: cuenta a la primera');
+    W("nextReadingNote()"); W("reading.pc = 0");
+    W("reading.hinted = false; document.getElementById('readingHintBtn').click()");
+    const nC = [...Array(88)].map((_, i) => 21 + i).filter(n => n % 12 === 0).length;
+    check(doc.querySelectorAll('.white-key.target, .black-key.target').length === nC && W('reading.hinted') === true, 'la pista marca todas las teclas con ese nombre (' + nC + ')');
+    // pozos
+    go('f2');
+    const seen = {}; let rep = false, prev = -1;
+    for(let i = 0; i < 300; i++){ W('reading = null'); W('nextReadingNote()'); const pc = W('reading.pc'); seen[pc] = (seen[pc] || 0) + 1; if(pc === prev) rep = true; prev = pc; }
+    check(Object.keys(seen).sort().join() === '0,2,4,5' && (seen[2] + seen[4]) / 300 > 0.6, 'Re y Mi (lo nuevo) salen más, con Do y Fa de repaso');
+    go('f3');
+    const seen3 = new Set(); for(let i = 0; i < 300; i++){ W('reading = null'); W('nextReadingNote()'); seen3.add(W('reading.pc')); }
+    check([7, 9, 11].every(p => seen3.has(p)) && seen3.size === 7, 'el nivel 3 usa las siete blancas');
+    // ¿Qué tecla es?
+    go('k1');
+    check(W('reading.kind') === 'key' && doc.querySelectorAll('#readingAnswers .name-btn').length === 7 && doc.querySelectorAll('.white-key.target, .black-key.target').length === 1, 'se ilumina una tecla y hay 7 botones');
+    check(!W("BLACK_SET.has(reading.sp.midi % 12)"), 'solo teclas blancas');
+    const kpc = W('reading.sp.midi') % 12;
+    W("noteOn(reading.sp.midi, 'ui')"); W("noteOff(reading.sp.midi)");
+    check(W("progress.reading.k1") === undefined, 'tocar la tecla iluminada no contesta: se contesta con los botones');
+    const wrongPc = [0, 2, 4, 5, 7, 9, 11].find(p => p !== kpc);
+    doc.querySelector('#readingAnswers [data-pc="' + wrongPc + '"]').click();
+    check(doc.getElementById('readingFeedback').classList.contains('wrong') && W('reading.missed') === true, 'botón equivocado: avisa y recuerda cómo ubicarla');
+    doc.querySelector('#readingAnswers [data-pc="' + kpc + '"]').click();
+    check(doc.getElementById('readingFeedback').classList.contains('correct') && W('progress.reading.k1.attempts') === 1 && W('progress.reading.k1.first') === 0, 'botón correcto: cuenta, pero no a la primera');
+    // Negras subiendo / bajando
+    const walk = (id) => {
+      go(id); const names = [];
+      for(let i = 0; i < 13; i++){ names.push(W('solName(reading.sp)')); const m = W('reading.sp.midi'); W('noteOn(' + m + ", 'ui')"); W('noteOff(' + m + ')'); W('nextReadingNote()'); }
+      return names.join();
+    };
+    check(walk('s1') === 'Do,Do♯,Re,Re♯,Mi,Fa,Fa♯,Sol,Sol♯,La,La♯,Si,Do', 'subiendo: sostenidos, de Do a Do');
+    check(W('readingSeq.i') === 0, 'y da la vuelta completa');
+    check(walk('s2') === 'Do,Si,Si♭,La,La♭,Sol,Sol♭,Fa,Mi,Mi♭,Re,Re♭,Do', 'bajando: bemoles, de Do a Do');
+    go('s1'); W("readingSeq.i = 1; nextReadingNote()");
+    check(doc.querySelectorAll('#readingStaff .staff-acc').length === 1 && /entre Do y Re/.test(doc.getElementById('readingFeedback').textContent), 'la negra se ve con su ♯ en el pentagrama y se explica entre qué blancas está');
+    W("noteOn(60, 'ui')"); W("noteOff(60)");
+    check(doc.getElementById('readingFeedback').classList.contains('wrong') && /Busca Do♯/.test(doc.getElementById('readingFeedback').textContent), 'una equivocada nombra lo que tocaste y lo que buscas');
+    doc.querySelectorAll('#readingLevelTabs .mode-tab')[2].click();
+    check(W("localStorage.getItem('readingLevelId')") === 'f2' && doc.querySelectorAll('#readingLevelTabs .mode-tab').length === 14, 'el nivel se guarda por su id (14 niveles en la fila)');
+    // salir de Lectura corta el avance automático
+    W("reading.answered = false; selectCategory('scales')");
+    W("nextReadingNote()");
+    check(W('reading') === null, 'si ya saliste de Lectura, el avance automático no resucita la nota');
+    // plan y dominio
+    W("progress = emptyProgress(); todayPlan = buildTodayPlan(1)");
+    check(/Encuentra: Do y Fa/.test(W("todayPlan.find(it => it.key === 'reading').title")), 'el plan de Hoy manda primero a "Encuentra: Do y Fa" (Explorar no es examen)');
+    W("READING_LEVELS.slice(1, 7).forEach(l => { progress.reading[l.id] = {attempts:30, first:30, sumMs:30000, lastDay:null}; }); todayPlan = buildTodayPlan(1)");
+    check(/Clave de Sol · 5 dedos/.test(W("todayPlan.find(it => it.key === 'reading').title")), 'con los seis niveles de teclas dominados, el plan pasa al pentagrama');
+    check(Math.abs(W("masteryRows().find(r => r[0] === 'Lectura')[1]") - 6 / 13) < 1e-9, 'el dominio de Lectura promedia 13 niveles (Explorar no cuenta)');
+    W("progress = emptyProgress(); selectCategory('today');");
   }
 
   section('Metrónomo: compás visible y acento');

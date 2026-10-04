@@ -721,7 +721,41 @@ y dentro de "Más ▾": `free | functions`.
   - **Dificultad real**: 49 compases, los c. 33-40 exigen velocidad, los c. 9-16 y
     41-48 piden a la izquierda un arpegio de octava con 5-4-3-1. Lo asequible: los
     c. 1-8 y la melodía de los c. 17-32.
-- **Lectura**: `READING_LEVELS` (7 niveles, clave de Sol / Fa / ambas / alteraciones).
+- **Lectura: siete niveles ANTES del pentagrama (octubre 2026).** Jorge, de cero
+  y sin música en el colegio: "no reconozco Fa, Mi, Sol… solo el Do", y el ejercicio
+  de oír el tono y ver la nota "es confuso porque no sé las notas escritas". **El
+  hueco real**: son tres habilidades distintas (tecla↔nombre, pentagrama↔tecla,
+  sonido↔nombre) y la app empezaba por la segunda, que pide la primera. Niveles
+  nuevos al frente de `READING_LEVELS` (campo `kind`; los viejos son `staff`):
+  `x0` Explorar (toca y mira, **sin examen**, `free:true`), `f1/f2/f3` Encuentra
+  (Do y Fa → +Re y Mi → las 7 blancas; vale CUALQUIER tecla con ese nombre, en
+  cualquier octava; `neu` pesa 60% para que lo nuevo salga más), `k1` ¿Qué tecla
+  es? (se ilumina una blanca y se contesta con 7 botones; tocar la tecla NO
+  contesta), `s1/s2` Negras subiendo (♯) / bajando (♭): la cromática Do→Do de la
+  clase, con el nombre en grande, la negra explicada ("entre Do y Re") y la nota
+  dibujada con su ♯/♭ en el pentagrama.
+  - **El mapa es el de los grupos de negras** (`KEY_ANCHOR`, `keyWhere`): Do a la
+    izquierda del grupo de 2, Re en medio, Mi a la derecha; Fa a la izquierda del
+    grupo de 3, Sol/La entre sus negras, Si a la derecha. Lo dice al fallar y al
+    acertar. Do y Fa son las dos anclas y se enseñan primero.
+  - **"Tocar y ver la nota en el pentagrama"** (pedido de Jorge) es `x0` Explorar y,
+    además, los niveles Encuentra/¿Qué tecla es?/♯♭ dibujan la nota al acertar:
+    cada acierto enseña cómo se escribe. Explorar muestra las últimas 5 notas en
+    el sistema de dos pentagramas, con los dos nombres de las negras (Fa♯ = Sol♭).
+  - Mismo registro de progreso (`recordReading`, 20 notas y 85% a la primera =
+    dominado). `free:true` queda FUERA del dominio y del plan (`buildTodayPlan` y la
+    fila "Lectura" lo saltan), si no el plan se quedaba atascado en Explorar. La
+    fila de dominio ahora promedia 13 niveles.
+  - **El nivel guardado pasó de índice a ID** (`readingLevelId`): al insertar
+    niveles delante, el índice viejo apuntaba a otro. `readingLevelFromSaved`
+    traduce el índice de antes (`OLD_READING_IDS`).
+  - `nextReadingNote` sale si `currentMode !== 'reading'`: el avance automático
+    (700-1500 ms) podía llegar ya fuera de Lectura y dejar teclas marcadas.
+  - **No se hizo**: oído de nota suelta (sonido↔nombre). `🔊 Escuchar` suena la nota
+    en Encuentra/¿Qué tecla es?/♯♭ para ir ligando; un nivel de oído propio queda
+    para cuando los nombres salgan sin pensar. Se le dijo a Jorge que deje en
+    pausa "De oído" de Intervalos hasta entonces.
+- **Lectura** (los siete niveles del pentagrama): `READING_LEVELS` (clave de Sol / Fa / ambas / alteraciones).
   `renderStaff(svg, [{sp, cls, clef}], {clef, width, gap, showName})`; `sp` viene de
   `spellMidi(midi, preferFlat)` o `spellFromName('B#', 60)` (respeta octava de la letra).
   Nivel dominado = ≥20 notas y ≥85% a la primera.
