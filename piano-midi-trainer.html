@@ -523,31 +523,52 @@
 
   /* ===== Ritmo ===== */
   .rhythm-stage{ display:flex; flex-direction:column; gap:14px; margin-top:6px; }
-  .rhythm-big{ font-family:'Fraunces',serif; font-size:30px; color:var(--ivory); line-height:1.25; text-wrap:balance; }
+  .rhythm-big{ font-family:'Fraunces',serif; font-size:36px; color:var(--ivory); line-height:1.25; text-wrap:balance; }
   .rhythm-big.count{ color:var(--text-dim); }
   .rhythm-big.go{ color:var(--brass); }
   .rhythm-big.good{ color:var(--correct); }
   .rhythm-big.bad{ color:var(--wrong); }
   .rhythm-say{ font-size:24px; font-weight:600; color:var(--ivory); letter-spacing:0.5px; }
-  .rhythm-bar{
-    position:relative; height:64px; border-radius:10px; border:1px solid var(--panel-border); background:#15130f;
-    margin-bottom:18px;
+  .rhythm-count{ display:grid; grid-template-columns:repeat(4,1fr); gap:6px; }
+  .rhythm-count .cell{
+    text-align:center; font-family:'Fraunces',serif; font-weight:700; line-height:1.05; padding:6px 0 8px;
+    font-size:clamp(56px,13vw,96px); color:#4a463d; border-radius:12px; border:2px solid transparent;
+    font-variant-numeric:tabular-nums; transition:color .06s, background .06s;
   }
+  .rhythm-count .cell:first-child{ border-color:var(--ivory); }
+  .rhythm-count .cell small{ display:block; font-family:'Source Sans 3',sans-serif; font-size:15px; font-weight:700; letter-spacing:1.5px; color:var(--text-dim); }
+  .rhythm-count .cell.now{ color:var(--ivory); background:#2a2822; }
+  .rhythm-count .cell:first-child.now{ color:#1b1405; background:var(--brass); }
+  .rhythm-count.counting .cell.now{ color:var(--text-dim); background:#1d1b16; }
+  .rhythm-count.counting .cell:first-child.now{ color:var(--ivory); background:#3a362c; }
+  .rhythm-bars{ display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+  .rhythm-bars .lab{ font-size:19px; font-weight:700; color:var(--text-dim); margin-right:4px; }
+  .rhythm-bars .bc{
+    min-width:54px; padding:8px 10px; border-radius:10px; text-align:center; font-size:22px; font-weight:700;
+    background:#1d1b16; color:var(--text-dim); border:2px solid var(--panel-border); font-variant-numeric:tabular-nums;
+  }
+  .rhythm-bars .bc.cur{ border-color:var(--brass); color:var(--ivory); background:#2a2822; }
+  .rhythm-bars .bc.cnt.cur{ border-color:var(--ivory); }
+  .rhythm-bars .bc.ok{ background:var(--correct); color:#06110b; border-color:var(--correct); }
+  .rhythm-bars .bc.bad{ background:#dba14f; color:#1d1304; border-color:#dba14f; }
+  .rhythm-bars .bc.cur.ok, .rhythm-bars .bc.cur.bad{ outline:3px solid var(--ivory); }
+  .rhythm-bar{
+    position:relative; height:84px; border-radius:10px; border:1px solid var(--panel-border); background:#15130f;
+  }
+  .rhythm-bar.flash{ border-color:var(--brass); box-shadow:0 0 0 3px var(--brass-glow); }
   .rhythm-beat{ position:absolute; top:0; bottom:0; border-left:1px solid var(--panel-border); }
-  .rhythm-beat:first-child{ border-left-color:var(--ivory); }
-  .rhythm-beat span{ position:absolute; left:6px; bottom:-22px; font-size:16px; font-weight:700; color:var(--text-dim); }
+  .rhythm-beat:first-child{ border-left:4px solid var(--ivory); }
   .rhythm-dot{
-    position:absolute; top:50%; width:22px; height:22px; margin:-11px 0 0 -11px; border-radius:50%;
+    position:absolute; top:50%; width:30px; height:30px; margin:-15px 0 0 -15px; border-radius:50%;
     background:var(--brass); box-shadow:0 0 10px var(--brass-glow);
   }
   .rhythm-actions{ display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
   .rhythm-dot.ok{ background:var(--correct); box-shadow:0 0 10px var(--correct); }
   .rhythm-dot.early{ background:#8fb3d9; box-shadow:none; }
   .rhythm-dot.late{ background:#dba14f; box-shadow:none; }
-  .rhythm-play{ position:absolute; top:-4px; bottom:-4px; width:3px; margin-left:-1px; background:var(--ivory); border-radius:2px; display:none; }
-  .rhythm-beat span.now{ color:var(--ivory); }
+  .rhythm-play{ position:absolute; top:-4px; bottom:-4px; width:5px; margin-left:-1px; background:var(--ivory); border-radius:2px; display:none; }
   .rhythm-bar.bad{ border-color:var(--wrong); }
-  .rhythm-hit{ font-size:28px; font-weight:700; min-height:1.4em; color:var(--text-dim); font-variant-numeric:tabular-nums; }
+  .rhythm-hit{ font-size:32px; font-weight:700; min-height:1.4em; color:var(--text-dim); font-variant-numeric:tabular-nums; }
   .rhythm-hit.ok{ color:var(--correct); }
   .rhythm-hit.early{ color:#8fb3d9; }
   .rhythm-hit.late{ color:#dba14f; }
@@ -1386,13 +1407,15 @@
       <div class="rhythm-stage">
         <div class="rhythm-big" id="rhythmBig">Toca con el clic.</div>
         <div class="rhythm-say" id="rhythmSay"></div>
-        <div class="read-sub" id="rhythmBarHelp">Esto es un compás: 4 tiempos, 1 · 2 · 3 · 4 (los clics del metrónomo). Cada círculo dorado es un toque que debes hacer. La raya blanca avanza con el clic; cada círculo se pinta cuando lo tocas: verde = a tiempo, azul = antes, naranja = tarde.</div>
+        <div class="rhythm-bars" id="rhythmBars" aria-label="Qué compás va"></div>
+        <div class="rhythm-count" id="rhythmCount" aria-hidden="true"></div>
         <div class="rhythm-bar" id="rhythmBar" aria-label="Un compás de 4 tiempos y dónde caen los toques"></div>
         <div class="rhythm-hit" id="rhythmHit"></div>
         <div class="rhythm-actions">
           <button id="rhythmStartBtn" class="ghost-btn primary">▶ Empezar</button>
           <span class="reg-label" id="rhythmInfo"></span>
         </div>
+        <div class="read-sub" id="rhythmBarHelp">Los números grandes son los 4 tiempos de UN compás (los clics del metrónomo); el 1, en dorado, es el inicio y cada vuelta empieza ahí. Arriba ves en qué compás vas. Cada círculo dorado es un toque que debes hacer; la raya blanca avanza con el clic y el círculo se pinta cuando lo tocas: verde = a tiempo, azul = antes, naranja = tarde. El color se queda hasta que la raya vuelve a acercarse a ese círculo.</div>
         <div class="rhythm-result" id="rhythmResult"></div>
       </div>
       <div class="tip" id="rhythmTip"></div>
@@ -8030,7 +8053,7 @@ const RHYTHM_READY_S = 4;             // segundos para poner las manos en el pia
 let rhythmLevel = 0;
 try { const v = parseInt(localStorage.getItem('rhythmLevel'), 10); if(!isNaN(v) && v >= 0 && v < RHYTHM_LEVELS.length) rhythmLevel = v; } catch(e){}
 const rhythm = { active:false, preparing:false, starting:false, token:0, timers:[], tick:null, used:[], uiBar:-1, T0:0, bpm:80, bars:4, win:125,
-                 targets:[], presses:[], lastPress:-1e9, lv:null, last:null };
+                 targets:[], presses:[], lastPress:-1e9, lv:null, last:null, res:[], dotBar:[] };
 
 function rhythmDone(i){ return (((progress.rhythm || {})[RHYTHM_LEVELS[i].id]) || {}).bestBpm >= RHYTHM_GOAL_BPM; }
 function rhythmUnlocked(i){ return i === 0 || rhythmDone(i - 1); }
@@ -8103,7 +8126,7 @@ function rhythmClearTimers(){
   rhythm.timers.forEach(clearTimeout); rhythm.timers = [];
   if(rhythm.tick){ clearInterval(rhythm.tick); rhythm.tick = null; }
 }
-let rhythmDots = [], rhythmBeatLabels = [];
+let rhythmDots = [], rhythmBeatLabels = [], rhythmBarChips = [];
 function rhythmRenderStart(){
   const b = $('rhythmStartBtn'); if(!b) return;
   const on = rhythm.active || rhythm.preparing;
@@ -8113,13 +8136,11 @@ function rhythmRenderStart(){
 function rhythmRenderBar(){
   const lv = RHYTHM_LEVELS[rhythmLevel], bar = $('rhythmBar'); if(!bar) return;
   bar.innerHTML = '';
-  rhythmBeatLabels = []; rhythmDots = [];
+  rhythmDots = [];
   for(let b = 0; b < RHYTHM_BEATS; b++){
     const d = document.createElement('div'); d.className = 'rhythm-beat';
     d.style.left = (b / RHYTHM_BEATS * 100) + '%';
-    d.innerHTML = '<span>' + (b + 1) + '</span>';
     bar.appendChild(d);
-    rhythmBeatLabels.push(d.firstChild);
   }
   lv.pos.forEach(p => {
     const d = document.createElement('div'); d.className = 'rhythm-dot';
@@ -8129,10 +8150,41 @@ function rhythmRenderBar(){
   });
   const play = document.createElement('div'); play.className = 'rhythm-play'; play.id = 'rhythmPlay';
   bar.appendChild(play);
+  // el conteo grande (1 2 3 4) va alineado con las columnas del compás
+  const cnt = $('rhythmCount');
+  if(cnt){
+    cnt.innerHTML = ''; rhythmBeatLabels = [];
+    for(let b = 0; b < RHYTHM_BEATS; b++){
+      const c = document.createElement('div'); c.className = 'cell'; c.textContent = b + 1;
+      cnt.appendChild(c); rhythmBeatLabels.push(c);
+    }
+    cnt.classList.remove('counting');
+  }
+  rhythmRenderBarChips();
+}
+// Tira de compases: "Cuenta · 1 · 2 · 3 · 4". El actual se marca; los ya tocados quedan
+// en verde (todos a tiempo) o naranja (alguno fuera), para ver CUÁL compás se fue.
+function rhythmRenderBarChips(){
+  const box = $('rhythmBars'); if(!box) return;
+  box.innerHTML = ''; rhythmBarChips = [];
+  const n = rhythm.active ? rhythm.bars : rhythmBars(RHYTHM_LEVELS[rhythmLevel]);
+  const lab = document.createElement('span'); lab.className = 'lab'; lab.textContent = 'Compás:'; box.appendChild(lab);
+  for(let i = 0; i <= n; i++){
+    const c = document.createElement('div'); c.className = 'bc' + (i === 0 ? ' cnt' : '');
+    c.textContent = i === 0 ? 'Cuenta' : i;
+    box.appendChild(c); rhythmBarChips.push(c);
+  }
 }
 // La raya avanza con el clic y los círculos se pintan al tocarlos: así se ve CADA
-// pulsación y no solo el resultado al final.
-function rhythmResetDots(){ rhythmDots.forEach(d => d.classList.remove('ok', 'early', 'late')); }
+// pulsación y no solo el resultado al final. Un color NO se borra en la barra de
+// compás (justo en el 1 se perdían los toques más cercanos a la raya): se limpia
+// cuando la raya vuelve a acercarse a ese círculo en el compás siguiente.
+function rhythmResetDots(){ rhythmDots.forEach(d => d.classList.remove('ok', 'early', 'late')); rhythm.dotBar = []; }
+function rhythmUiIdle(){
+  rhythmBeatLabels.forEach(c => c.classList.remove('now'));
+  const cnt = $('rhythmCount'); if(cnt) cnt.classList.remove('counting');
+  rhythmRenderBarChips();
+}
 function rhythmTickUi(){
   if(!rhythm.active) return;
   const per = 60000 / rhythm.bpm;
@@ -8140,10 +8192,33 @@ function rhythmTickUi(){
   const barIdx = Math.floor(x / RHYTHM_BEATS), pos = x - barIdx * RHYTHM_BEATS;
   const play = $('rhythmPlay');
   if(play){ play.style.display = barIdx <= rhythm.bars ? 'block' : 'none'; play.style.left = (pos / RHYTHM_BEATS * 100) + '%'; }
+  const cnt = $('rhythmCount');
+  if(cnt) cnt.classList.toggle('counting', barIdx === 0);
   rhythmBeatLabels.forEach((s, i) => s.classList.toggle('now', i === Math.floor(pos)));
-  if(barIdx !== rhythm.uiBar){ rhythm.uiBar = barIdx; rhythmResetDots(); }
+  // limpiar el color de un círculo cuando la raya se acerca a su turno siguiente
+  rhythm.lv.pos.forEach((p, i) => {
+    const bb = rhythm.dotBar[i];
+    if(bb !== undefined && bb !== null && x >= RHYTHM_BEATS * (2 + bb) + p - 0.4){
+      rhythmDots[i].classList.remove('ok', 'early', 'late'); rhythm.dotBar[i] = null;
+    }
+  });
+  if(barIdx !== rhythm.uiBar){
+    rhythm.uiBar = barIdx;
+    // destello en el 1 de cada compás
+    const bar = $('rhythmBar');
+    if(bar){ bar.classList.add('flash'); setTimeout(() => bar.classList.remove('flash'), 220); }
+  }
+  // tira de compases: actual y resultado de los ya terminados
+  rhythmBarChips.forEach((c, i) => {
+    c.classList.toggle('cur', i === barIdx && barIdx <= rhythm.bars);
+    if(i >= 1 && i <= rhythm.bars && x > RHYTHM_BEATS * (i + 1) + 0.5){
+      const mine = rhythm.targets.map((g, k) => g.bar === i - 1 ? k : -1).filter(k => k >= 0);
+      const allOk = mine.every(k => rhythm.res[k] === 'ok');
+      c.classList.toggle('ok', allOk); c.classList.toggle('bad', !allOk);
+    }
+  });
 }
-function rhythmShowHit(off, g){
+function rhythmShowHit(off, g, ti){
   const el = $('rhythmHit'); if(!el) return;
   if(off === null){
     el.textContent = '✕ De más: ahí no tocaba'; el.className = 'rhythm-hit miss';
@@ -8154,10 +8229,10 @@ function rhythmShowHit(off, g){
   const ms = Math.round(off), s = (ms > 0 ? '+' : ms < 0 ? '−' : '') + Math.abs(ms) + ' ms';
   el.textContent = cls === 'ok' ? '✓ A tiempo · ' + s : cls === 'early' ? '← Antes · ' + s : '→ Tarde · ' + s;
   el.className = 'rhythm-hit ' + cls;
-  if(g.bar + 1 === rhythm.uiBar){
-    const d = rhythmDots[rhythm.lv.pos.indexOf(g.pos)];
-    if(d){ d.classList.remove('ok', 'early', 'late'); d.classList.add(cls); }
-  }
+  if(ti !== undefined) rhythm.res[ti] = cls;
+  // se pinta SIEMPRE el círculo de ese toque, caiga donde caiga la raya
+  const i = rhythm.lv.pos.indexOf(g.pos), d = rhythmDots[i];
+  if(d){ d.classList.remove('ok', 'early', 'late'); d.classList.add(cls); rhythm.dotBar[i] = g.bar; }
 }
 function rhythmRenderTabs(){
   const cont = $('rhythmLevelTabs'); if(!cont) return;
@@ -8206,7 +8281,7 @@ function rhythmCancel(msg){
   if(!rhythm.active && !rhythm.preparing) return;
   rhythm.token++; rhythm.active = false; rhythm.preparing = false;
   rhythmClearTimers();
-  rhythmResetDots();
+  rhythmResetDots(); rhythmUiIdle();
   const pl = $('rhythmPlay'); if(pl) pl.style.display = 'none';
   if(msg) rhythmSay(msg, 'bad');
   rhythmRenderStart();
@@ -8221,7 +8296,8 @@ function rhythmBegin(T0){
   rhythm.targets = rhythmTargets(lv, T0, rhythm.bpm, rhythm.bars);
   rhythm.win = rhythmWindow(lv, rhythm.bpm);
   rhythm.presses = []; rhythm.lastPress = -1e9;
-  rhythm.used = rhythm.targets.map(() => false); rhythm.uiBar = -1;
+  rhythm.used = rhythm.targets.map(() => false); rhythm.uiBar = -1; rhythm.res = []; rhythm.dotBar = [];
+  rhythmRenderBarChips();
   $('rhythmResult').innerHTML = '';
   $('rhythmHit').textContent = '';
   rhythmSay('Escucha y cuenta: 1 · 2 · 3 · 4', 'count');
@@ -8246,6 +8322,8 @@ function rhythmStart(){
   rhythm.preparing = true;
   $('rhythmResult').innerHTML = ''; $('rhythmHit').textContent = '';
   rhythmRenderStart();
+  // en el teléfono el conteo queda abajo: se baja la pantalla para verlo antes de que suene el clic
+  try { $('rhythmCount').scrollIntoView({ block:'center', behavior:'smooth' }); } catch(e){}
   for(let s = RHYTHM_READY_S; s >= 1; s--){
     rhythm.timers.push(setTimeout(() => { if(tok === rhythm.token) rhythmSay('Prepara las manos en el piano… ' + s, 'count'); }, (RHYTHM_READY_S - s) * 1000));
   }
@@ -8272,7 +8350,7 @@ function rhythmHit(t){
   // veredicto de ESTA pulsación, al instante (el mismo emparejamiento que la nota final)
   let bi = -1, bd = Infinity;
   rhythm.targets.forEach((g, i) => { if(!rhythm.used[i]){ const d = Math.abs(t - g.t); if(d < bd){ bd = d; bi = i; } } });
-  if(bi >= 0 && bd <= rhythm.win){ rhythm.used[bi] = true; rhythmShowHit(t - rhythm.targets[bi].t, rhythm.targets[bi]); }
+  if(bi >= 0 && bd <= rhythm.win){ rhythm.used[bi] = true; rhythmShowHit(t - rhythm.targets[bi].t, rhythm.targets[bi], bi); }
   else rhythmShowHit(null);
 }
 function checkRhythm(){ rhythmHit(performance.now()); }
@@ -8281,7 +8359,7 @@ function rhythmFinish(){
   rhythm.active = false; rhythm.token++;
   rhythmClearTimers();
   const lv = rhythm.lv, res = rhythmGrade(rhythm.targets, rhythm.presses, rhythm.win);
-  rhythmResetDots();
+  rhythmResetDots(); rhythmUiIdle();
   const pl = $('rhythmPlay'); if(pl) pl.style.display = 'none';
   $('rhythmHit').textContent = '';
   rhythm.last = res;

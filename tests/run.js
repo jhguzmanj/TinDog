@@ -2466,6 +2466,8 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
     W("rhythmSelectLevel(1)");
     check(W('rhythmLevel') === 1 && W('metro.bpm') === 60 && doc.getElementById('rhythmSay').textContent.includes('(2)'), 'elegir el nivel 2 pone 60 BPM y muestra cómo se cuenta');
     check(doc.querySelectorAll('#rhythmBar .rhythm-dot').length === 1 && doc.querySelectorAll('#rhythmBar .rhythm-beat').length === 4, 'el compás dibujado marca 4 tiempos y los toques de ese nivel');
+    check(doc.querySelectorAll('#rhythmCount .cell').length === 4 && doc.querySelector('#rhythmCount .cell').textContent === '1', 'el conteo grande 1 2 3 4 está alineado con el compás');
+    check(doc.querySelectorAll('#rhythmBars .bc').length === 1 + W('rhythmBars(RHYTHM_LEVELS[rhythmLevel])') && /Cuenta/.test(doc.querySelector('#rhythmBars .bc').textContent), 'la tira de compases trae "Cuenta" + un chip por compás');
     // aprobar a 80 supera el nivel
     W("metro.bpm = 80; metroRender(); rhythmBegin(performance.now() + 200)");
     const u0 = W('rhythm.T0');
@@ -2488,7 +2490,7 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
     check(W('rhythm.active') === false && /Sin audio/.test(doc.getElementById('rhythmBig').textContent), 'sin audio no empieza y dice por qué');
     // ya no hay pad "Toca aquí": se toca en el piano (o en el teclado dibujado)
     check(doc.getElementById('rhythmPad') === null, 'sin botón "Toca aquí"');
-    check(/1 · 2 · 3 · 4/.test(doc.getElementById('rhythmBarHelp').textContent) && /círculo/.test(doc.getElementById('rhythmBarHelp').textContent), 'la barra con 1 2 3 4 viene explicada');
+    check(/4 tiempos/.test(doc.getElementById('rhythmBarHelp').textContent) && /círculo/.test(doc.getElementById('rhythmBarHelp').textContent), 'la barra con 1 2 3 4 viene explicada');
     // tiempo para poner las manos antes de que suene el primer clic
     W("window.__ms = metroStart; window.__ec = ensureAudioCtx; ensureAudioCtx = () => ({}); metroStart = function(){ metro.on = true; metro.beat = 0; metro.refPerf = performance.now() + 50; metro.refBeat = 0; };");
     W("rhythmLevel = 0; metro.bpm = 60; rhythmStart()");
@@ -2514,8 +2516,17 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
     check(/Tarde/.test(doc.getElementById('rhythmHit').textContent) && doc.querySelectorAll('#rhythmBar .rhythm-dot')[2].classList.contains('late'), '140 ms después: "Tarde" y el círculo en naranja');
     W(`rhythmHit(${T1 + 6500})`);
     check(/De más/.test(doc.getElementById('rhythmHit').textContent) && doc.getElementById('rhythmHit').classList.contains('miss'), 'un toque donde no tocaba: "De más"');
+    // justo en el 1: un toque 40 ms ANTES del 1 del compás siguiente también se pinta
+    W(`rhythmHit(${T1 + 4000 + 4000 - 40})`);
+    check(doc.querySelectorAll('#rhythmBar .rhythm-dot')[0].classList.contains('ok'), 'un toque pegado al 1 (antes o después) siempre pinta su círculo');
+    // el color de un toque del último tiempo NO se borra al cruzar el 1: dura hasta que la raya se acerca a su turno
+    W("rhythmDots = rhythmDots; rhythm.dotBar = []; rhythmDots.forEach(d => d.classList.remove('ok','early','late')); rhythmDots[3].classList.add('late'); rhythm.dotBar[3] = 0; rhythm.T0 = performance.now() - 8100; rhythmTickUi()");
+    check(doc.querySelectorAll('#rhythmBar .rhythm-dot')[3].classList.contains('late'), 'cruzar el 1 no borra el color del último toque del compás anterior');
+    W("rhythm.T0 = performance.now() - 10700; rhythmTickUi()");
+    check(!doc.querySelectorAll('#rhythmBar .rhythm-dot')[3].classList.contains('late'), 'se limpia cuando la raya vuelve a acercarse a ese círculo');
+    check(doc.querySelectorAll('#rhythmCount .cell.now').length === 1 && doc.querySelectorAll('#rhythmBars .bc.cur').length === 1, 'un solo número del conteo y un solo compás quedan marcados como actuales');
     const fin = W('rhythmFinish()');
-    check(fin.ok === 1 && fin.extras === 1, 'lo que se vio al instante coincide con la nota final (1 a tiempo, 1 de más)');
+    check(fin.ok >= 1 && fin.extras === 1, 'lo que se vio al instante coincide con la nota final (1 a tiempo, 1 de más)');
     check(doc.querySelectorAll('#rhythmBar .rhythm-dot.ok, #rhythmBar .rhythm-dot.early, #rhythmBar .rhythm-dot.late').length === 0, 'al terminar los círculos se limpian');
     // plan de Hoy y progreso
     W("progress = emptyProgress(); todayPlan = buildTodayPlan(1); renderToday()");

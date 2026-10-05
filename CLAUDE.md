@@ -1728,6 +1728,25 @@ decía hacia qué lado se equivoca Jorge.
   (`#rhythmBarHelp`), una raya blanca que avanza con el clic (`rhythmTickUi`, cada
   40 ms) y el número del tiempo que suena se ilumina. Los círculos se limpian en
   cada compás nuevo. Un toque de más hace parpadear el borde de la barra.
+- **El paso por el 1 (octubre 2026, 2ª vuelta).** Jorge: "cuando pasa por el 1 es
+  muy confuso, no marca ni verde ni rojo, no se ve cuándo pasa por ese compás, el
+  conteo más grande". Causas reales: (1) `rhythmTickUi` **borraba todos los círculos
+  al cambiar de compás** y `rhythmShowHit` solo pintaba si `g.bar + 1 === uiBar`;
+  un toque 40 ms antes del 1 (pertenece al compás siguiente) o 30 ms después (antes
+  del tick de 40 ms) quedaba sin color, y justo ahí están los toques más difíciles.
+  (2) Los números 1-2-3-4 eran de 16 px bajo la barra y nada decía qué compás iba.
+  Ahora: **el círculo se pinta SIEMPRE** (`rhythm.dotBar[i]` recuerda de qué compás
+  es) y su color **dura hasta 0,4 tiempos antes de que la raya vuelva a su turno**
+  — no hay un corte global en el 1. `rhythm.res[ti]` guarda `ok/early/late` por
+  toque pedido. **Conteo grande** (`#rhythmCount`, 4 celdas alineadas con las
+  columnas de la barra, `clamp(56px,13vw,96px)`; el 1 con borde marfil y, al
+  sonar, relleno dorado; en el compás de cuenta va apagado: `.counting`).
+  **Tira de compases** (`#rhythmBars`: `Cuenta · 1 · 2 · 3 · 4`): marca el actual
+  y deja en verde los compases con todos los toques a tiempo y en naranja los
+  demás. Destello del borde de la barra en el 1 de cada compás. La explicación
+  (`#rhythmBarHelp`) bajó debajo de los botones para que el conteo no quede
+  enterrado; en el teléfono `rhythmStart` baja la pantalla hasta el conteo.
+  Barra 64→84 px, círculos 22→30, raya 3→5, veredicto 28→32 px, titular 30→36.
 - **9 niveles** (`RHYTHM_LEVELS`, posiciones en tiempos dentro de un compás de 4):
   cada pulso → solo el 1 → 1 y 3 → 2 y 4 → corcheas → negra y corcheas →
   contratiempo → 3+3+2 → tresillos. Orden mío (tocar en todos los pulsos es lo
