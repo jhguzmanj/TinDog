@@ -1326,6 +1326,89 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
   check(offSeq === '64,65,48,67,43', 'y se suelta recién cuando la izquierda cambia (48 después del 65, no antes)');
   W(`playNoteSound = window.__playNoteSound; stopNoteSound = window.__stopNoteSound;`);
 
+  section('Escuchar: la derecha puede sostener una nota larga (rhDur)');
+  // Beyer y Köhler: la derecha canta notas largas (blanca, blanca con puntillo)
+  // mientras la izquierda mueve una nota por tiempo. Sin `rhDur` la melodía
+  // sonaría en negras.
+  W(`window.__on = []; window.__off = [];
+     window.__playNoteSound = playNoteSound; window.__stopNoteSound = stopNoteSound;
+     playNoteSound = n => window.__on.push(n);
+     stopNoteSound = n => window.__off.push(n);
+     currentHand = 'both';
+     currentFragment = { id:'__t2', name:'t', tip:'t', tempo:6000, steps:[
+       {lh:[48], lhF:[1], rh:[64], rhF:[1], dur:1, rhDur:2},
+       {lh:[50], lhF:[2], rh:[], dur:1},
+       {lh:[52], lhF:[3], rh:[67], rhF:[3], dur:1},
+     ] };`);
+  await W('playFragment()');
+  check(W('window.__on.join()') === '48,64,50,52,67', 'cada nota suena una sola vez');
+  check(W('window.__off.join()') === '48,64,50,67,52',
+    'el 64 sigue pisado durante dos tiempos y se suelta cuando termina (después del 48, antes del 50), no al acabar su paso');
+  W(`playNoteSound = window.__playNoteSound; stopNoteSound = window.__stopNoteSound;`);
+
+  section('Hanon Junior 1-12, Beyer y Köhler (partituras de dominio público que pasó Jorge)');
+  {
+    const hs = W("SONGS.filter(s => s.cat === 'hanon')");
+    check(hs.length === 12 && hs.every((s, i) => s.id === 'hanon-' + (i + 1) && s.plan === false && s.tempo === 60), '12 ejercicios Hanon, fuera del plan de Hoy, ♩=60');
+    check(W("SONG_CATS.some(c => c.id === 'hanon')"), 'hay una categoría Hanon en Piezas');
+    const BARS = [15, 14, 14, 15, 15, 14, 14, 14, 14, 14, 14, 15];   // contados en el PDF
+    check(hs.every((s, i) => s.steps.length === BARS[i] * 8 + 1 && s.steps.reduce((a, x) => a + x.dur, 0) === BARS[i] * 4 + 4),
+      'cada ejercicio trae sus compases de 8 corcheas + la redonda final (compases contados en el PDF)');
+    check(hs.every(s => s.steps.slice(0, -1).every(x => x.rh.length === 1 && x.lh.length === 1 && x.lh[0] === x.rh[0] - 12 && x.dur === 0.5)),
+      'la izquierda toca lo mismo una octava más grave, corchea a corchea');
+    check(hs.every(s => s.steps.every(x => [0, 2, 4, 5, 7, 9, 11].includes(x.rh[0] % 12))), 'todo en teclas blancas (Do mayor)');
+    const fin = hs.map(s => s.steps[s.steps.length - 1]);
+    check(fin.every(f => f.rh[0] === 60 && f.lh[0] === 48 && f.rhF[0] === 1 && f.lhF[0] === 5 && f.dur === 4), 'todos terminan en Do4/Do3, redonda, dedos 1 y 5');
+    const h1 = hs[0].steps;
+    check(h1.slice(0, 8).map(x => x.rhF[0]).join('') === '12345432' && h1.slice(0, 8).map(x => x.lhF[0]).join('') === '54321234' &&
+          h1.slice(0, 8).map(x => x.rh[0]).join() === '60,64,65,67,69,67,65,64',
+      'Hanon 1, compás 1: Do-Mi-Fa-Sol-La-Sol-Fa-Mi con 1-2-3-4-5-4-3-2 (derecha) y 5-4-3-2-1-2-3-4 (izquierda)');
+    // Dirección de los dedos: en la derecha, más agudo = dedo mayor; en la izquierda, al revés.
+    // (la hoja del ejercicio 12 imprime los números de la derecha también en la izquierda: error de la fuente, corregido a 6 − dedo)
+    const sentidoOk = (s, hand) => s.steps.slice(0, -1).every((x, i, arr) => {
+      if(i === 0) return true;
+      const a = arr[i - 1], dp = x[hand][0] - a[hand][0], df = x[hand + 'F'][0] - a[hand + 'F'][0];
+      if(i % 8 === 0) return true;          // entre compases la mano se recoloca
+      if(dp === 0 || df === 0) return dp === 0;
+      return (dp > 0) === (hand === 'rh' ? df > 0 : df < 0);
+    });
+    check(hs.every(s => sentidoOk(s, 'rh') && sentidoOk(s, 'lh')), 'ningún dedo contradice el sentido de la nota (ni en la izquierda del 12)');
+    check(hs[11].steps.slice(0, -1).every(x => x.lhF[0] === 6 - x.rhF[0]), 'Hanon 12: la izquierda va en espejo (6 − dedo derecho)');
+    check(hs.slice(0, 11).every(s => s.steps.slice(0, -1).filter(x => x.label).length === s.steps.length >> 3), 'un rótulo "c. N" al inicio de cada compás (para el Tramo)');
+    // El plan de Hoy nunca manda un Hanon como "pieza".
+    W("progress = emptyProgress(); todayPlan = buildTodayPlan(1)");
+    check(!W("todayPlan.some(it => /hanon/.test(JSON.stringify(it)))"), 'el plan de Hoy no propone Hanon');
+
+    // Beyer
+    const be = W("SONGS.find(s => s.id === 'beyer-sol')");
+    check(!!be && be.cat === 'facil' && be.steps.reduce((a, x) => a + x.dur, 0) === 64, 'Beyer: 16 compases de 4 tiempos en Fáciles');
+    const rhLen = (steps, meter) => {          // tiempos que dura cada nota de la derecha, por compás
+      const bars = []; let t = 0;
+      steps.forEach(x => { if(x.rh.length){ const b = Math.floor(t / meter + 1e-9); bars[b] = (bars[b] || 0) + (x.rhDur || x.dur); } t += x.dur; });
+      return bars;
+    };
+    check(rhLen(be.steps, 4).every(v => v === 4) && rhLen(be.steps, 4).length === 16, 'Beyer: la derecha suena 4 tiempos en cada compás (con rhDur)');
+    check(be.steps.every(x => x.rh.every(n => n >= 67 && n <= 74) && x.lh.every(n => n >= 55 && n <= 62)), 'Beyer: derecha Sol4-Re5 e izquierda Sol3-Re4, las manos no se mueven');
+    const BF = { 67:1, 69:2, 71:3, 72:4, 74:5 }, BL = { 55:5, 57:4, 59:3, 60:2, 62:1 };
+    check(be.steps.every(x => x.rh.every((n, i) => BF[n] === x.rhF[i])), 'Beyer: la derecha lleva Sol=1 … Re=5');
+    const lhB = be.steps.filter(x => x.lh.length);
+    check(lhB.every(x => BL[x.lh[0]] === x.lhF[0] || (x.lh[0] === 57 && x.lhF[0] === 5)), 'Beyer: la izquierda lleva Sol=5 … Re=1, salvo el La del c. 1 y 9');
+    check(lhB.filter(x => x.lh[0] === 57 && x.lhF[0] === 5).length === 2, 'Beyer: ese La con el 5 aparece justo dos veces (c. 1 y 9), como la partitura');
+    // Köhler
+    const ko = W("SONGS.find(s => s.id === 'kohler-fa')");
+    check(!!ko && ko.meter === 3 && ko.cat === 'clasica' && ko.plan === false && ko.steps.reduce((a, x) => a + x.dur, 0) === 96, 'Köhler: 3/4, 32 compases = 96 tiempos');
+    const rk = rhLen(ko.steps, 3);
+    check(rk.length === 31 && rk.every((v, i) => v === ([8, 16, 24, 32].includes(i + 1) ? undefined : 3)), 'Köhler: la derecha suena 3 tiempos por compás, menos los 4 compases de silencio (8, 16, 24, 32)');
+    check(ko.steps.filter(x => x.lh.length).length === 94 - 0 && ko.steps.filter(x => x.lh.length > 1).length === 0, 'Köhler: la izquierda toca una nota por vez (tres por compás), nunca acordes');
+    const kb = ko.steps.flatMap(x => x.rh);
+    check(kb.includes(71) && kb.includes(70), 'Köhler: Si♮ en el c. 14 y Si♭ en el resto (armadura de Fa)');
+    check(ko.steps.some(x => x.lh[0] === 54) && ko.steps.some(x => x.lh[0] === 51), 'Köhler: Fa♯3 (c. 19) y Mi♭3 (c. 27) de la izquierda');
+    // La cascada dibuja la nota larga de la derecha completa (3 tiempos), no solo su paso
+    W("selectCategory('fragments'); pickFragmentById('kohler-fa')");
+    const sched = W("(() => { const { events, beatMs } = buildCascadeSchedule(); const e = events.find(x => x.hand === 'rh'); return { len: (e.tEnd - e.tStart) / beatMs }; })()");
+    check(Math.abs(sched.len - 3 * 0.85) < 1e-6, 'en la cascada, el primer La de la derecha dura 3 tiempos (×0,85)');
+  }
+
   section('Coordinación: las dos manos no hacen lo mismo');
   const coord = W('AGILITY_DRILLS.filter(d => d.coord)');
   check(coord.length === 8, `${coord.length} ejercicios de coordinación (escalera del 1 al 8)`);

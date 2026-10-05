@@ -3247,6 +3247,382 @@ const CAN_3 = [
   {lh:[64], lhF:[3], rh:[76], rhF:[3], dur:1}, {lh:[69], lhF:[1], rh:[], rhF:[], dur:1}, {lh:[50], lhF:[5], rh:[74,78,81], rhF:[1,3,5], dur:4, label:'c. 49 · Acorde final'},
 ];
 
+// Hanon Junior, Parte 1, ejercicios 1-12 (PDF que pasó Jorge). Notas y dedos
+// SACADOS DEL VECTOR del PDF (posición de cada cabeza y de cada número), no a
+// ojo. Cada compás: [notas de la derecha como grados diatónicos (28 = Do4),
+// dedos de la derecha, dedos de la izquierda]. La izquierda va siempre una
+// octava (7 grados) más grave. Los dedos impresos solo salen en 3 compases por
+// tramo; los demás se copiaron de otro compás con la misma forma.
+const HANON_JR_BARS = [
+  [['28 30 31 32 33 32 31 30','12345432','54321234'],
+   ['29 31 32 33 34 33 32 31','12345432','54321234'],
+   ['30 32 33 34 35 34 33 32','12345432','54321234'],
+   ['31 33 34 35 36 35 34 33','12345432','54321234'],
+   ['32 34 35 36 37 36 35 34','12345432','54321234'],
+   ['33 35 36 37 38 37 36 35','12345432','54321234'],
+   ['34 36 37 38 39 38 37 36','12345432','54321234'],
+   ['39 37 36 35 34 35 36 37','54321234','12345432'],
+   ['38 36 35 34 33 34 35 36','54321234','12345432'],
+   ['37 35 34 33 32 33 34 35','54321234','12345432'],
+   ['36 34 33 32 31 32 33 34','54321234','12345432'],
+   ['35 33 32 31 30 31 32 33','54321234','12345432'],
+   ['34 32 31 30 29 30 31 32','54321234','12345432'],
+   ['33 31 30 29 28 29 30 31','54321234','12345432'],
+   ['32 30 29 28 27 28 29 30','54321234','12345432']],
+  [['28 30 33 32 31 32 31 30','12543432','53123234'],
+   ['29 31 34 33 32 33 32 31','12543432','53123234'],
+   ['30 32 35 34 33 34 33 32','12543432','53123234'],
+   ['31 33 36 35 34 35 34 33','12543432','53123234'],
+   ['32 34 37 36 35 36 35 34','12543432','53123234'],
+   ['33 35 38 37 36 37 36 35','12543432','53123234'],
+   ['34 36 39 38 37 38 37 36','12543432','53123234'],
+   ['39 36 34 35 36 35 36 37','52123234','13543432'],
+   ['38 35 33 34 35 34 35 36','52123234','13543432'],
+   ['37 34 32 33 34 33 34 35','52123234','13543432'],
+   ['36 33 31 32 33 32 33 34','52123234','13543432'],
+   ['35 32 30 31 32 31 32 33','52123234','13543432'],
+   ['34 31 29 30 31 30 31 32','52123234','13543432'],
+   ['33 30 28 29 30 29 30 31','52123234','13543432']],
+  [['28 30 33 32 31 30 31 32','12543234','53123432'],
+   ['29 31 34 33 32 31 32 33','12543234','53123432'],
+   ['30 32 35 34 33 32 33 34','12543234','53123432'],
+   ['31 33 36 35 34 33 34 35','12543234','53123432'],
+   ['32 34 37 36 35 34 35 36','12543234','53123432'],
+   ['33 35 38 37 36 35 36 37','12543234','53123432'],
+   ['34 36 39 38 37 36 37 38','12543234','53123432'],
+   ['39 36 34 35 36 37 36 35','52123432','13543234'],
+   ['38 35 33 34 35 36 35 34','52123432','13543234'],
+   ['37 34 32 33 34 35 34 33','52123432','13543234'],
+   ['36 33 31 32 33 34 33 32','52123432','13543234'],
+   ['35 32 30 31 32 33 32 31','52123432','13543234'],
+   ['34 31 29 30 31 32 31 30','52123432','13543234'],
+   ['33 30 28 29 30 31 30 29','52123432','13543234']],
+  [['28 29 28 30 33 32 31 30','12135432','54531234'],
+   ['29 30 29 31 34 33 32 31','12135432','54531234'],
+   ['30 31 30 32 35 34 33 32','12135432','54531234'],
+   ['31 32 31 33 36 35 34 33','12135432','54531234'],
+   ['32 33 32 34 37 36 35 34','12135432','54531234'],
+   ['33 34 33 35 38 37 36 35','12135432','54531234'],
+   ['34 35 34 36 39 38 37 36','12135432','54531234'],
+   ['39 38 39 36 34 35 36 37','54521234','12135432'],
+   ['38 37 38 35 33 34 35 36','54521234','12135432'],
+   ['37 36 37 34 32 33 34 35','54521234','12135432'],
+   ['36 35 36 33 31 32 33 34','54521234','12135432'],
+   ['35 34 35 32 30 31 32 33','54521234','12135432'],
+   ['34 33 34 31 29 30 31 32','54521234','12135432'],
+   ['33 32 33 30 28 29 30 31','54521234','12135432'],
+   ['32 31 32 29 27 28 29 30','54521234','12135432']],
+  [['28 33 32 33 31 32 30 31','15453423','51213243'],
+   ['29 34 33 34 32 33 31 32','15453423','51213243'],
+   ['30 35 34 35 33 34 32 33','15453423','51213243'],
+   ['31 36 35 36 34 35 33 34','15453423','51213243'],
+   ['32 37 36 37 35 36 34 35','15453423','51213243'],
+   ['33 38 37 38 36 37 35 36','15453423','51213243'],
+   ['34 39 38 39 37 38 36 37','15453423','51213243'],
+   ['35 36 35 37 36 38 37 39','12132435','54534231'],
+   ['34 35 34 36 35 37 36 38','12132435','54534231'],
+   ['33 34 33 35 34 36 35 37','12132435','54534231'],
+   ['32 33 32 34 33 35 34 36','12132435','54534231'],
+   ['31 32 31 33 32 34 33 35','12132435','54534231'],
+   ['30 31 30 32 31 33 32 34','12132435','54534231'],
+   ['29 30 29 31 30 32 31 33','12132435','54534231'],
+   ['28 29 28 30 29 31 30 32','12132435','54534231']],
+  [['28 33 32 33 31 33 30 33','15253545','51213141'],
+   ['29 34 33 34 32 34 31 34','15253545','51213141'],
+   ['30 35 34 35 33 35 32 35','15253545','51213141'],
+   ['31 36 35 36 34 36 33 36','15253545','51213141'],
+   ['32 37 36 37 35 37 34 37','15253545','51213141'],
+   ['33 38 37 38 36 38 35 38','15253545','51213141'],
+   ['34 39 38 39 37 39 36 35','15453521','51213145'],
+   ['39 34 35 34 36 34 37 34','51213141','15453525'],
+   ['38 33 34 33 35 33 36 33','51213141','15453525'],
+   ['37 32 33 32 34 32 35 32','51213141','15453525'],
+   ['36 31 32 31 33 31 34 31','51213141','15453525'],
+   ['35 30 31 30 32 30 33 30','51213141','15453525'],
+   ['34 29 30 29 31 29 32 29','51213141','15453525'],
+   ['33 28 29 28 30 28 31 30','51213143','15453523']],
+  [['28 30 29 31 30 32 31 30','13243543','53423134'],
+   ['29 31 30 32 31 33 32 31','13243543','53423134'],
+   ['30 32 31 33 32 34 33 32','13243543','53423134'],
+   ['31 33 32 34 33 35 34 33','13243543','53423134'],
+   ['32 34 33 35 34 36 35 34','13243543','53423134'],
+   ['33 35 34 36 35 37 36 35','13243543','53423134'],
+   ['34 36 35 37 36 38 37 36','13243543','53423134'],
+   ['39 37 38 36 37 35 36 37','53423134','13243543'],
+   ['38 36 37 35 36 34 35 36','53423134','13243543'],
+   ['37 35 36 34 35 33 34 35','53423134','13243543'],
+   ['36 34 35 33 34 32 33 34','53423134','13243543'],
+   ['35 33 34 32 33 31 32 33','53423134','13243543'],
+   ['34 32 33 31 32 30 31 32','53423134','13243543'],
+   ['33 31 32 30 31 29 30 31','53423134','13243543']],
+  [['28 30 32 33 31 32 30 31','12453434','54213243'],
+   ['29 31 33 34 32 33 31 32','12453434','54213243'],
+   ['30 32 34 35 33 34 32 33','12453434','54213243'],
+   ['31 33 35 36 34 35 33 34','12453434','54213243'],
+   ['32 34 36 37 35 36 34 35','12453434','54213243'],
+   ['33 35 37 38 36 37 35 36','12453434','54213243'],
+   ['34 36 38 39 37 38 36 37','12453434','54213243'],
+   ['39 37 35 34 36 35 37 36','54213243','12453423'],
+   ['38 36 34 33 35 34 36 35','54213243','12453423'],
+   ['37 35 33 32 34 33 35 34','54213243','12453423'],
+   ['36 34 32 31 33 32 34 33','54213243','12453423'],
+   ['35 33 31 30 32 31 33 32','54213243','12453423'],
+   ['34 32 30 29 31 30 32 31','54213243','12453423'],
+   ['33 31 29 28 30 29 31 30','54213243','12453423']],
+  [['28 30 31 30 32 31 33 32','12324354','54342312'],
+   ['29 31 32 31 33 32 34 33','12324354','54342312'],
+   ['30 32 33 32 34 33 35 34','12324354','54342312'],
+   ['31 33 34 33 35 34 36 35','12324354','54342312'],
+   ['32 34 35 34 36 35 37 36','12324354','54342312'],
+   ['33 35 36 35 37 36 38 37','12324354','54342312'],
+   ['34 36 37 36 38 37 39 38','12324354','54342312'],
+   ['39 37 36 37 35 36 34 35','54342312','12324354'],
+   ['38 36 35 36 34 35 33 34','54342312','12324354'],
+   ['37 35 34 35 33 34 32 33','54342312','12324354'],
+   ['36 34 33 34 32 33 31 32','54342312','12324354'],
+   ['35 33 32 33 31 32 30 31','54342312','12324354'],
+   ['34 32 31 32 30 31 29 30','54342312','12324354'],
+   ['33 31 30 31 29 30 28 29','54342312','12324354']],
+  [['28 33 32 31 30 31 30 31','15432323','51234343'],
+   ['29 34 33 32 31 32 31 32','15432323','51234343'],
+   ['30 35 34 33 32 33 32 33','15432323','51234343'],
+   ['31 36 35 34 33 34 33 34','15432323','51234343'],
+   ['32 37 36 35 34 35 34 35','15432323','51234343'],
+   ['33 38 37 36 35 36 35 36','15432323','51234343'],
+   ['34 39 38 37 36 37 36 37','15432323','51234343'],
+   ['39 34 35 36 37 36 37 36','51234343','15432323'],
+   ['38 33 34 35 36 35 36 35','51234343','15432323'],
+   ['37 32 33 34 35 34 35 34','51234343','15432323'],
+   ['36 31 32 33 34 33 34 33','51234343','15432323'],
+   ['35 30 31 32 33 32 33 32','51234343','15432323'],
+   ['34 29 30 31 32 31 32 31','51234343','15432323'],
+   ['33 28 29 30 31 30 31 30','51234343','15432323']],
+  [['28 30 33 32 33 32 31 32','12545434','53121232'],
+   ['29 31 34 33 34 33 32 33','12545434','53121232'],
+   ['30 32 35 34 35 34 33 34','12545434','53121232'],
+   ['31 33 36 35 36 35 34 35','12545434','53121232'],
+   ['32 34 37 36 37 36 35 36','12545434','53121232'],
+   ['33 35 38 37 38 37 36 37','12545434','53121232'],
+   ['34 36 39 38 39 38 37 38','12545434','53121232'],
+   ['39 36 34 35 34 35 36 35','52121232','13545434'],
+   ['38 35 33 34 33 34 35 34','52121232','13545434'],
+   ['37 34 32 33 32 33 34 33','52121232','13545434'],
+   ['36 33 31 32 31 32 33 32','52121232','13545434'],
+   ['35 32 30 31 30 31 32 31','52121232','13545434'],
+   ['34 31 29 30 29 30 31 30','52121232','13545434'],
+   ['33 30 28 29 28 29 31 29','52121242','13545424']],
+  [['32 28 30 29 28 29 30 28','51321231','15345435'],
+   ['34 29 31 30 29 30 31 29','51321231','15345435'],
+   ['35 30 32 31 30 31 32 30','51321231','15345435'],
+   ['36 31 33 32 31 32 33 31','51321231','15345435'],
+   ['37 32 34 33 32 33 34 32','51321231','15345435'],
+   ['38 33 35 34 33 34 35 33','51321231','15345435'],
+   ['39 34 36 35 34 35 36 37','51321234','15345432'],
+   ['34 39 37 38 39 38 37 39','15345435','51321231'],
+   ['33 38 36 37 38 37 36 38','15345435','51321231'],
+   ['32 37 35 36 37 36 35 37','15345435','51321231'],
+   ['31 36 34 35 36 35 34 36','15345435','51321231'],
+   ['30 35 33 34 35 34 33 35','15345435','51321231'],
+   ['29 34 32 33 34 33 32 34','15345435','51321231'],
+   ['28 33 31 32 33 32 31 33','15345435','51321231'],
+   ['28 32 30 31 32 31 30 31','15345434','51321232']]
+];
+const HANON_JR_INFO = [
+  'Las dos manos a la vez, una octava aparte: sube un grado por compás y luego baja. Estira el 5 y el 4.',
+  'Cuando te salga el 2, tócalo seguido del 1 sin parar.',
+  'Cuando te salga, trabaja el 4 y el 5 y luego tócalos seguidos sin parar.',
+  'Ejercicio especial para los dedos 3, 4 y 5.',
+  'Levanta los dedos alto y con precisión.',
+  'El meñique se turna con cada dedo: vuelve al 5 en cada segunda nota.',
+  'De la mayor importancia para los dedos 3, 4 y 5.',
+  'Muy importante para los cinco dedos.',
+  'Extensión de los dedos 4 y 5 y ejercicio general de dedos.',
+  'Preparación del trino con los dedos 3 y 4.',
+  'Preparación del trino con los dedos 5 y 4.',
+  'El pulgar y el meñique se turnan en cada compás: empieza muy despacio.',
+];
+function hanonMidi(i){ return 12 * (Math.floor(i / 7) + 1) + [0, 2, 4, 5, 7, 9, 11][i % 7]; }
+function buildHanonSong(n){
+  const steps = [];
+  HANON_JR_BARS[n - 1].forEach((bar, b) => {
+    const rh = bar[0].split(' ').map(Number), rf = bar[1].split('').map(Number), lf = bar[2].split('').map(Number);
+    rh.forEach((deg, k) => {
+      const st = { lh:[hanonMidi(deg - 7)], lhF:[lf[k]], rh:[hanonMidi(deg)], rhF:[rf[k]], dur:0.5 };
+      if(k === 0) st.label = 'c. ' + (b + 1);
+      steps.push(st);
+    });
+  });
+  steps.push({ lh:[48], lhF:[5], rh:[60], rhF:[1], dur:4, label:'Final' });
+  return { id:'hanon-' + n, cat:'hanon', plan:false, name:'Hanon ' + n, tip:HANON_JR_INFO[n - 1], tempo:60, steps };
+}
+
+// Beyer, Melodía en Sol (4/4, 16 compases = 64 tiempos). Derecha con Sol4=1 … Re5=5; izquierda
+// (también escrita en clave de Sol) con Sol3=5 … Re4=1. `rhDur` = tiempos que la derecha
+// mantiene la nota cuando dura más que el paso.
+const BEYER_STEPS = [
+  {lh:[55], lhF:[5], rh:[71], rhF:[3], dur:1, rhDur:2, label:'c. 1'},
+  {lh:[62], lhF:[1], rh:[], dur:1},
+  {lh:[57], lhF:[5], rh:[72], rhF:[4], dur:1, rhDur:2},
+  {lh:[62], lhF:[1], rh:[], dur:1},
+  {lh:[59], lhF:[3], rh:[74], rhF:[5], dur:1, rhDur:2},
+  {lh:[62], lhF:[1], rh:[], dur:1},
+  {lh:[57], lhF:[4], rh:[72], rhF:[4], dur:1, rhDur:2},
+  {lh:[62], lhF:[1], rh:[], dur:1},
+  {lh:[55], lhF:[5], rh:[71], rhF:[3], dur:1, rhDur:2},
+  {lh:[62], lhF:[1], rh:[], dur:1},
+  {lh:[60], lhF:[2], rh:[69], rhF:[2], dur:1, rhDur:2},
+  {lh:[62], lhF:[1], rh:[], dur:1},
+  {lh:[59], lhF:[3], rh:[67], rhF:[1], dur:1, rhDur:4},
+  {lh:[62], lhF:[1], rh:[], dur:1},
+  {lh:[59], lhF:[3], rh:[], dur:1},
+  {lh:[62], lhF:[1], rh:[], dur:1},
+  {lh:[60], lhF:[2], rh:[69], rhF:[2], dur:1, rhDur:2, label:'c. 5'},
+  {lh:[62], lhF:[1], rh:[], dur:1},
+  {lh:[59], lhF:[3], rh:[67], rhF:[1], dur:1, rhDur:2},
+  {lh:[62], lhF:[1], rh:[], dur:1},
+  {lh:[60], lhF:[2], rh:[69], rhF:[2], dur:1, rhDur:2},
+  {lh:[62], lhF:[1], rh:[], dur:1},
+  {lh:[59], lhF:[3], rh:[67], rhF:[1], dur:1, rhDur:2},
+  {lh:[62], lhF:[1], rh:[], dur:1},
+  {lh:[57], lhF:[4], rh:[72], rhF:[4], dur:1, rhDur:2},
+  {lh:[62], lhF:[1], rh:[], dur:1},
+  {lh:[55], lhF:[5], rh:[71], rhF:[3], dur:1, rhDur:2},
+  {lh:[59], lhF:[3], rh:[], dur:1},
+  {lh:[62], lhF:[1], rh:[69], rhF:[2], dur:1},
+  {lh:[], rh:[74], rhF:[5], dur:1},
+  {lh:[], rh:[72], rhF:[4], dur:1},
+  {lh:[], rh:[69], rhF:[2], dur:1},
+  {lh:[55], lhF:[5], rh:[71], rhF:[3], dur:1, rhDur:2, label:'c. 9'},
+  {lh:[62], lhF:[1], rh:[], dur:1},
+  {lh:[57], lhF:[5], rh:[72], rhF:[4], dur:1, rhDur:2},
+  {lh:[62], lhF:[1], rh:[], dur:1},
+  {lh:[59], lhF:[3], rh:[74], rhF:[5], dur:1, rhDur:2},
+  {lh:[62], lhF:[1], rh:[], dur:1},
+  {lh:[57], lhF:[4], rh:[72], rhF:[4], dur:1, rhDur:2},
+  {lh:[62], lhF:[1], rh:[], dur:1},
+  {lh:[55], lhF:[5], rh:[71], rhF:[3], dur:1, rhDur:2},
+  {lh:[62], lhF:[1], rh:[], dur:1},
+  {lh:[60], lhF:[2], rh:[69], rhF:[2], dur:1, rhDur:2},
+  {lh:[62], lhF:[1], rh:[], dur:1},
+  {lh:[59], lhF:[3], rh:[67], rhF:[1], dur:1, rhDur:4},
+  {lh:[62], lhF:[1], rh:[], dur:1},
+  {lh:[59], lhF:[3], rh:[], dur:1},
+  {lh:[62], lhF:[1], rh:[], dur:1},
+  {lh:[60], lhF:[2], rh:[69], rhF:[2], dur:1, rhDur:2, label:'c. 13'},
+  {lh:[62], lhF:[1], rh:[], dur:1},
+  {lh:[59], lhF:[3], rh:[67], rhF:[1], dur:1, rhDur:2},
+  {lh:[62], lhF:[1], rh:[], dur:1},
+  {lh:[57], lhF:[4], rh:[72], rhF:[4], dur:1, rhDur:2},
+  {lh:[62], lhF:[1], rh:[], dur:1},
+  {lh:[55], lhF:[5], rh:[71], rhF:[3], dur:1, rhDur:2},
+  {lh:[59], lhF:[3], rh:[], dur:1},
+  {lh:[60], lhF:[2], rh:[69], rhF:[2], dur:1},
+  {lh:[57], lhF:[4], rh:[72], rhF:[4], dur:1},
+  {lh:[62], lhF:[1], rh:[71], rhF:[3], dur:1},
+  {lh:[60], lhF:[2], rh:[69], rhF:[2], dur:1},
+  {lh:[59], lhF:[3], rh:[67], rhF:[1], dur:1},
+  {lh:[62], lhF:[1], rh:[71], rhF:[3], dur:1},
+  {lh:[55], lhF:[5], rh:[67], rhF:[1], dur:2, rhDur:2}
+];
+
+// Köhler, Melodía en Fa (3/4, 32 compases = 96 tiempos). Si♭ (A#) por la armadura, salvo el Si♮ del c. 14.
+const KOHLER_STEPS = [
+  {lh:[53], lhF:[5], rh:[69], rhF:[3], dur:1, rhDur:3, label:'c. 1'},
+  {lh:[57], lhF:[3], rh:[], dur:1},
+  {lh:[60], lhF:[1], rh:[], dur:1},
+  {lh:[53], lhF:[5], rh:[69], rhF:[3], dur:1, rhDur:2},
+  {lh:[57], lhF:[3], rh:[], dur:1},
+  {lh:[60], lhF:[1], rh:[69], rhF:[3], dur:1},
+  {lh:[53], lhF:[5], rh:[72], rhF:[5], dur:1, rhDur:3},
+  {lh:[57], lhF:[3], rh:[], dur:1},
+  {lh:[60], lhF:[1], rh:[], dur:1},
+  {lh:[53], lhF:[5], rh:[69], rhF:[3], dur:1, rhDur:3},
+  {lh:[57], lhF:[3], rh:[], dur:1},
+  {lh:[60], lhF:[1], rh:[], dur:1},
+  {lh:[50], lhF:[5], rh:[65], rhF:[1], dur:1, rhDur:3},
+  {lh:[53], lhF:[3], rh:[], dur:1},
+  {lh:[57], lhF:[1], rh:[], dur:1},
+  {lh:[52], lhF:[5], rh:[67], rhF:[2], dur:1, rhDur:3},
+  {lh:[55], lhF:[3], rh:[], dur:1},
+  {lh:[60], lhF:[1], rh:[], dur:1},
+  {lh:[53], lhF:[5], rh:[69], rhF:[3], dur:1, rhDur:3},
+  {lh:[57], lhF:[3], rh:[], dur:1},
+  {lh:[60], lhF:[1], rh:[], dur:1},
+  {lh:[53], lhF:[5], rh:[], dur:1},
+  {lh:[57], lhF:[3], rh:[], dur:1},
+  {lh:[60], lhF:[1], rh:[], dur:1},
+  {lh:[53], lhF:[5], rh:[69], rhF:[1], dur:1, rhDur:3, label:'c. 9'},
+  {lh:[57], lhF:[3], rh:[], dur:1},
+  {lh:[60], lhF:[1], rh:[], dur:1},
+  {lh:[53], lhF:[5], rh:[69], rhF:[1], dur:1, rhDur:2},
+  {lh:[57], lhF:[3], rh:[], dur:1},
+  {lh:[60], lhF:[1], rh:[69], rhF:[1], dur:1},
+  {lh:[53], lhF:[5], rh:[72], rhF:[3], dur:1, rhDur:3},
+  {lh:[57], lhF:[3], rh:[], dur:1},
+  {lh:[60], lhF:[1], rh:[], dur:1},
+  {lh:[53], lhF:[5], rh:[69], rhF:[1], dur:1, rhDur:3},
+  {lh:[57], lhF:[3], rh:[], dur:1},
+  {lh:[60], lhF:[1], rh:[], dur:1},
+  {lh:[53], lhF:[5], rh:[77], rhF:[5], dur:1, rhDur:3},
+  {lh:[57], lhF:[3], rh:[], dur:1},
+  {lh:[62], lhF:[1], rh:[], dur:1},
+  {lh:[55], lhF:[5], rh:[71], rhF:[1], dur:1, rhDur:3},
+  {lh:[62], lhF:[2], rh:[], dur:1},
+  {lh:[65], lhF:[1], rh:[], dur:1},
+  {lh:[64], lhF:[2], rh:[72], rhF:[2], dur:1, rhDur:3},
+  {lh:[62], lhF:[3], rh:[], dur:1},
+  {lh:[60], lhF:[1], rh:[], dur:1},
+  {lh:[58], lhF:[2], rh:[], dur:1},
+  {lh:[57], lhF:[3], rh:[], dur:1},
+  {lh:[55], lhF:[4], rh:[], dur:1},
+  {lh:[53], lhF:[5], rh:[69], rhF:[3], dur:1, rhDur:3, label:'c. 17'},
+  {lh:[57], lhF:[3], rh:[], dur:1},
+  {lh:[60], lhF:[1], rh:[], dur:1},
+  {lh:[53], lhF:[5], rh:[69], rhF:[3], dur:1, rhDur:2},
+  {lh:[57], lhF:[3], rh:[], dur:1},
+  {lh:[60], lhF:[1], rh:[69], rhF:[3], dur:1},
+  {lh:[54], lhF:[5], rh:[72], rhF:[5], dur:1, rhDur:3},
+  {lh:[57], lhF:[3], rh:[], dur:1},
+  {lh:[62], lhF:[1], rh:[], dur:1},
+  {lh:[55], lhF:[4], rh:[70], rhF:[4], dur:1, rhDur:3},
+  {lh:[58], lhF:[2], rh:[], dur:1},
+  {lh:[62], lhF:[1], rh:[], dur:1},
+  {lh:[52], lhF:[5], rh:[70], rhF:[4], dur:1, rhDur:3},
+  {lh:[55], lhF:[3], rh:[], dur:1},
+  {lh:[60], lhF:[1], rh:[], dur:1},
+  {lh:[53], lhF:[5], rh:[69], rhF:[3], dur:1, rhDur:3},
+  {lh:[57], lhF:[3], rh:[], dur:1},
+  {lh:[60], lhF:[1], rh:[], dur:1},
+  {lh:[52], lhF:[5], rh:[67], rhF:[2], dur:1, rhDur:3},
+  {lh:[55], lhF:[3], rh:[], dur:1},
+  {lh:[60], lhF:[1], rh:[], dur:1},
+  {lh:[58], lhF:[2], rh:[], dur:1},
+  {lh:[57], lhF:[3], rh:[], dur:1},
+  {lh:[55], lhF:[4], rh:[], dur:1},
+  {lh:[53], lhF:[5], rh:[69], rhF:[3], dur:1, rhDur:3, label:'c. 25'},
+  {lh:[57], lhF:[3], rh:[], dur:1},
+  {lh:[60], lhF:[1], rh:[], dur:1},
+  {lh:[53], lhF:[5], rh:[69], rhF:[3], dur:1, rhDur:2},
+  {lh:[57], lhF:[3], rh:[], dur:1},
+  {lh:[60], lhF:[1], rh:[69], rhF:[3], dur:1},
+  {lh:[51], lhF:[4], rh:[72], rhF:[5], dur:1, rhDur:3},
+  {lh:[53], lhF:[3], rh:[], dur:1},
+  {lh:[57], lhF:[1], rh:[], dur:1},
+  {lh:[50], lhF:[5], rh:[70], rhF:[4], dur:1, rhDur:3},
+  {lh:[53], lhF:[3], rh:[], dur:1},
+  {lh:[58], lhF:[1], rh:[], dur:1},
+  {lh:[48], lhF:[5], rh:[69], rhF:[3], dur:1, rhDur:2},
+  {lh:[53], lhF:[2], rh:[], dur:1},
+  {lh:[57], lhF:[1], rh:[65], rhF:[1], dur:1},
+  {lh:[48], lhF:[5], rh:[67], rhF:[2], dur:1},
+  {lh:[60], lhF:[1], rh:[69], rhF:[3], dur:1},
+  {lh:[58], lhF:[2], rh:[67], rhF:[2], dur:1},
+  {lh:[57], lhF:[3], rh:[65], rhF:[1], dur:1, rhDur:3},
+  {lh:[60], lhF:[1], rh:[], dur:1},
+  {lh:[57], lhF:[3], rh:[], dur:1},
+  {lh:[53], lhF:[5], rh:[], dur:3, label:'Final'}
+];
+
 const SONGS = [
   {
     id:'cuatro-acordes',
@@ -4209,10 +4585,34 @@ const SONGS = [
       {lh:[], rh:[72], rhF:[1], dur:2, label:'Fin'},
     ]
   },
+  // ── "Melody in G" (Ferdinand Beyer, Vorschule im Klavierspiel op. 101 n.º 39) y
+  // "Melody in F" (Louis Köhler, op. 190 n.º 27): grabados de dominio público
+  // (edición de James F. Brigham, CC0) que pasó Jorge. Notas y dedos sacados del
+  // vector del PDF. Ver CLAUDE.md para lo que la partitura NO imprime.
+  {
+    id:'beyer-sol',
+    cat:'facil',
+    name:'Melodía en Sol (Beyer)',
+    tip:'Las dos manos con el pulgar en Sol y sin moverse de sitio. La derecha canta con notas largas y la izquierda arpegia (Sol-Re-La-Re). Ojo: en el compás 1 el meñique toca Sol y luego La.',
+    tempo:72,
+    steps:BEYER_STEPS,
+  },
+  {
+    id:'kohler-fa',
+    cat:'clasica',
+    plan:false,
+    name:'Melodía en Fa (Köhler)',
+    tip:'3/4 en Fa mayor (Si♭). Melodía de notas largas y bajo de tres notas por compás. La derecha cambia de posición en los c. 9-15 y la izquierda se abre en el c. 14 (Sol a Fa): practícalo aparte con el Tramo.',
+    tempo:84,
+    meter:3,
+    steps:KOHLER_STEPS,
+  },
 ];
 
 // Categorías de Fragmentos. El orden manda en la barra de arriba; `facil` va
 // primero porque es donde entra alguien que recién empieza.
+for(let n = 1; n <= HANON_JR_BARS.length; n++) SONGS.push(buildHanonSong(n));
+
 const SONG_CATS = [
   {id:'clase',     name:'De la clase'},
   {id:'facil',     name:'Fáciles'},
@@ -4220,6 +4620,7 @@ const SONG_CATS = [
   {id:'cristiana', name:'Cristianas'},
   {id:'clasica',   name:'Clásicas'},
   {id:'patrones',  name:'Patrones'},
+  {id:'hanon',     name:'Hanon'},
 ];
 
 const FRAGMENTS = SONGS;
@@ -5694,6 +6095,11 @@ async function playFragment(){
   // la primera semicorchea de la derecha y la pieza se oía sin fondo. Aquí se
   // sostiene hasta que la izquierda vuelva a cambiar (o termine la pasada).
   let heldLh = [];
+  // La derecha, en cambio, suelta cada nota al acabar su paso, SALVO que el paso
+  // diga `rhDur` (tiempos que la nota sigue pisada, p. ej. una blanca con puntillo
+  // mientras la izquierda mueve tres negras: Beyer, Köhler).
+  let heldRh = [];
+  let clock = 0;
   const release = ns => ns.forEach(n => {
     stopNoteSound(n);
     const r = getRect(n);
@@ -5701,6 +6107,11 @@ async function playFragment(){
   });
   for(const step of currentFragment.steps){
     if(token !== playbackToken) break;
+    heldRh = heldRh.filter(h => {
+      if(h.end > clock + 1e-6) return true;
+      release(h.notes.filter(n => heldLh.indexOf(n) < 0));
+      return false;
+    });
     const lh = currentHand === 'rh' ? [] : step.lh;
     const rh = currentHand === 'lh' ? [] : step.rh;
     if(lh.length){ release(heldLh); heldLh = lh; }
@@ -5713,11 +6124,14 @@ async function playFragment(){
     await playbackSleep(beatMs * step.dur * 0.92);
     // Soltar SIEMPRE la derecha, se haya cortado o no: la salida del bucle va
     // después, o el corte dejaría la nota sonando y encendida.
-    release(rh.filter(n => heldLh.indexOf(n) < 0));
+    if(rh.length && step.rhDur && step.rhDur > step.dur + 1e-6) heldRh.push({ notes:rh, end:clock + step.rhDur });
+    else release(rh.filter(n => heldLh.indexOf(n) < 0));
     if(token !== playbackToken) break;
     await playbackSleep(beatMs * step.dur * 0.08);
+    clock += step.dur;
   }
   release(heldLh);
+  heldRh.forEach(h => release(h.notes));
 
   soundEnabled = wasSound;
   allNotesOff();
@@ -7106,7 +7520,9 @@ function buildCascadeSchedule(){
   cascadeSteps().steps.forEach(step => {
     const dur = step.dur * beatMs;
     cascadeHandNotes(step).forEach(x => {
-      events.push({ note: x.n, hand: x.hand, finger: x.f, tStart: t, tEnd: t + dur * 0.85,
+      // `rhDur`: una nota de la derecha que sigue pisada más allá de su paso
+      const len = (x.hand === 'rh' && step.rhDur && step.rhDur > step.dur) ? step.rhDur * beatMs : dur;
+      events.push({ note: x.n, hand: x.hand, finger: x.f, tStart: t, tEnd: t + len * 0.85,
                     hit: false, missed: false, el: null, fingerEl: null });
     });
     t += dur;

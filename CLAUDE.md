@@ -417,6 +417,77 @@ y dentro de "Más ▾": `free | functions`.
   **Dragon Ball GT** (La4 5 → Sol4 5 pasa a Sol4 4). Quedan a propósito: pulgar
   caminando en bajadas (DBGT, Dios está aquí), octavas 1-5 del clímax de DBGT, y
   el meñique Si–Do–Si de Espíritu de Dios (semitono, no se mueve la mano).
+- **Hanon Junior 1-12, "Melodía en Sol" (Beyer) y "Melodía en Fa" (Köhler)
+  (octubre 2026).** Jorge pasó primero un `ALL_SONGS_FOR_PIANO.txt` (7 piezas
+  salidas de otro flujo) y, tras ver el diagnóstico, los tres PDF de verdad.
+  **El .txt NO sirve y no hay que volver a usarlo**: Escala de Do (digitación
+  1-2-3-4-5-2-3-1, imposible), "Canon en Do" atribuido a Bach (es la progresión
+  de Pachelbel; dice 89 compases y trae 16 notas; acordes de 4 notas con el
+  pulgar dos veces), "Ejercicio de dedos 1" (compases de 5 tiempos en 4/4 y la
+  izquierda con los dedos de la derecha), "Hanon 2" (cada patrón colapsado en un
+  acorde de 5 notas) y las dos melodías (suman 79 y 62 tiempos, no 96 y 64; la
+  izquierda de Köhler copia el ritmo de la melodía). Lo único cierto era el
+  Hanon 1. **Las piezas del .txt que ya cubría la app se descartaron** (escala,
+  canon, dedos 1).
+  - **Método (reutilizable, mucho mejor que leer a ojo):** los PDF son vectoriales
+    (MuseScore/Leland). `pdftocairo -svg` da cada cabeza de nota como un `<use>`
+    con `x,y`; las líneas del pentagrama salen de los `<path>` horizontales (con
+    su `transform`); `pdftotext -bbox` da los números de dedo con su posición.
+    Altura = `(línea inferior − y) / (espacio/2)`; cada número se pega a la cabeza
+    más cercana en `x`. Cuando las dos manos tocan a la vez (Hanon, una octava
+    aparte) las cabezas se emparejan por `x` (la de arriba es la derecha); si no,
+    por la mitad entre pentagramas. Cuidado: en Beyer **las dos manos están en
+    clave de Sol** (la izquierda suena como se escribe), así que hay que leer la
+    izquierda con la referencia de Sol, no la de Fa. Verificación: se generó una
+    partitura desde los datos de la app (abcjs) y se comparó con el PDF.
+  - **Hanon Junior** (categoría nueva `hanon`, 12 entradas `hanon-1..12`, todas
+    `plan:false` — son ejercicios, no piezas — a ♩=60, número MÍO: la hoja no trae
+    tempo). El PDF se llama "...exercise 1 to 20 unfinished" y **solo trae los
+    ejercicios 1-12** (uno por página); faltan 13-20. Cada uno: 14-15 compases de 8
+    corcheas (subida de 7 compases, bajada de 7-8) + redonda final Do4/Do3.
+    **No siguen una regla única** (el ancla de la bajada y el compás final varían),
+    por eso los datos van compás por compás (`HANON_JR_BARS`: grados diatónicos,
+    28 = Do4; la izquierda es siempre 7 grados = una octava más grave) y no
+    generados por patrón. Dedos: la hoja los imprime solo en 3 compases de cada
+    tramo; los demás se copiaron de otro compás con la MISMA forma melódica (hay
+    comprobación: ningún tramo traía dedos distintos para una misma forma).
+    **Cuatro cosas que no están en la hoja:** (1) en el **12 la izquierda trae
+    impresos los mismos números que la derecha** (91 de 91 contradicen el sentido de
+    la nota: el meñique sobre la nota más aguda), error de la fuente → va en espejo
+    (6 − dedo), hay prueba; (2) en el **11, c. 14**, la 7ª nota es Fa y no Mi como en
+    el resto del tramo (se dejó como está impreso; dedos inferidos: derecha 4,
+    izquierda 2); (3) en el **12, c. 7 y 15** los dedos tampoco están impresos y se
+    infirieron por la posición (derecha 5-1-3-2-1-2-3-4 y 1-5-3-4-5-4-3-4); (4) en
+    **2 y 3** la izquierda imprime el Mi con 3 la primera vez y con 4 después (válido:
+    la mano se abre), se respetó. Las leyendas del libro ("Estira el 5 y el 4",
+    "Preparación del trino…") van traducidas en el `tip`; el 12 y el 6 no traen
+    leyenda. En la pantalla cada ejercicio muestra 121 o 113 pasos: un rótulo `c. N`
+    por compás sirve de ancla del Tramo.
+  - **Beyer, Melodía en Sol** (op. 101 n.º 39, `beyer-sol`, "Fáciles", entra al
+    plan de Hoy). 16 compases en 4/4. Derecha con el pulgar en Sol4 (Sol 1 … Re5 5)
+    e izquierda con el pulgar en Re4 (Sol3 5 … Re4 1): **ninguna mano se mueve**.
+    La hoja imprime los dedos solo donde cambia la posición; el resto se completó
+    con esa posición y **cuadra con todo lo impreso** salvo una rareza que se
+    respetó: el **La3 del c. 1 lleva el 5** (el meñique toca Sol y luego La) y, por
+    ser el mismo pasaje, también el del c. 9. Sin indicación de tempo en la hoja:
+    ♩=72 es mío.
+  - **Köhler, Melodía en Fa** (op. 190 n.º 27, `kohler-fa`, "Clásicas", `plan:false`).
+    3/4, 32 compases, armadura de Fa (Si♭, que la app escribe `A#`), **Si♮ en el c.
+    14, Fa♯3 en el 19 y Mi♭3 en el 27**. La derecha son notas largas (blanca con
+    puntillo o blanca + negra) y **la izquierda toca una nota por tiempo** (tres
+    por compás, nunca acordes juntos). Los compases 8, 16, 24 y 32 son silencio de
+    la derecha. Dedos: los impresos; **inferidos** (la hoja los omite): derecha c. 6
+    (Sol 2) y c. 10 (La 1, mismo pasaje que el 9), izquierda c. 30 (Do3 5, Do4 1,
+    Si♭3 2). Lo difícil: el c. 14 abre la izquierda de Sol3 a Fa4 (10 semitonos con
+    5-1) y la derecha cambia de posición en los c. 9-15 (pulgar en La4). Sin tempo
+    en la hoja: ♩=84 es mío.
+  - **Motor: `rhDur`** (paso → tiempos que la derecha mantiene la nota cuando dura
+    más que el paso). Beyer y Köhler son las primeras piezas con la derecha larga
+    y la izquierda moviéndose; antes solo existía la izquierda sostenida (`lh:[]`).
+    `playFragment` la sostiene hasta que se cumple (`heldRh`, con reloj en tiempos)
+    y la cascada dibuja el bloque con su duración completa. **`rh:[]` sigue
+    significando SILENCIO**, no sostener (Dragon Ball GT, Agathe): por eso no se
+    generalizó la regla de la izquierda a la derecha.
 - **Tocar libre nombra lo que se pisa** (`#freeBox`, `describeHeld`,
   registrado como handler de note-on y note-off del modo `free`): dos teclas →
   intervalo; tres que formen tríada mayor/menor → acorde y posición; si no, el
