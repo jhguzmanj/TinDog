@@ -387,6 +387,36 @@ y dentro de "Más ▾": `free | functions`.
     Queda sin resolver a propósito: la app no tiene dinámicas (forte/piano) ni
     ritardando, que son la otra mitad de un final; eso lo pone Jorge al tocar.
     56 pasos / 64 tiempos.
+  - **Tercera versión: optimizada "como Amanecer" (octubre 2026).** Jorge: "la
+    siento difícil para mi nivel". Medido: la izquierda cambiaba de posición en
+    CADA compás (cuatro posiciones, todas con 5-1), tenía 7ªs y octava (10-12
+    semitonos, que ya se habían rotulado "estira la mano"), y la derecha traía
+    dos compases de 8 corcheas. Ahora son **12 compases (48 tiempos)** y **ninguna
+    mano se mueve**: derecha pulgar en Do5; izquierda pulgar en Do3 (Si 2, La 3,
+    Sol 4, Fa 5), la MISMA posición de Amanecer, así que cada tecla lleva siempre
+    el mismo dedo (hay prueba). Intervalos que caben ahí: 4ª Sol–Do (4-1, la 5ª
+    dada vuelta; abre la pieza), 3ª m La–Do (3-1), 5ª Fa–Do (5-1), 3ª M Sol–Si
+    (4-2) y Fa–La (5-3), tritono Fa–Si (5-2). **Se quitaron las 7ªs y la octava**
+    a propósito; siguen en Intervalos. Se pierde: la 5ª Do–Sol en el acorde de Do
+    (queda la 4ª) y el tritono ya no resuelve "Fa baja a Mi" sino que Si sube a Do
+    con Fa→Sol; la tensión se sostiene con el tritono, las corcheas (solo c. 10)
+    y las notas largas. Forma de Amanecer: pregunta (c. 1-4, queda en Re) /
+    respuesta (c. 5-8, cierra en Do) / tensión y cadencia IV–V7–I (c. 9-12) con el
+    acorde de Do 1-3-5 en la derecha. Salto máximo de la melodía: una 4ª.
+- **Dedos revisados (octubre 2026)**: auditoría automática de todas las piezas
+  (mismo dedo en dos teclas seguidas, dedo que sube cuando la nota baja, saltos
+  que los dedos no alcanzan). Lo impreso (Mozart, Passacaglia, Für Elise, Clocks)
+  NO se toca. Cambiado, todo lo inventado: **Cumpleaños feliz** (la melodía abarca
+  una octava: los saltos Sol4→Sol5 y La4→Fa5 obligan a mover la mano, pero la
+  versión vieja la movía TRES veces porque Si4–La4 volvían a la posición del
+  principio; ahora Do–Si–La se tocan con el pulgar caminando y son solo dos
+  saltos, `Salto 1/2` en el rótulo); **Estrellita** (meñique en Sol–La–La–Sol
+  → Sol 4, La 5, y baja Fa 3, Mi 2, Re 1; el Do final con el pulgar estirado);
+  **Bella Ciao** (el Re3 grave de la izquierda llevaba 5 en un paso y 2 en otro:
+  ahora siempre 2 con el pulgar en Mi); **Flaca** (Fa#5 5 → Mi5 5 pasa a Mi5 4);
+  **Dragon Ball GT** (La4 5 → Sol4 5 pasa a Sol4 4). Quedan a propósito: pulgar
+  caminando en bajadas (DBGT, Dios está aquí), octavas 1-5 del clímax de DBGT, y
+  el meñique Si–Do–Si de Espíritu de Dios (semitono, no se mueve la mano).
 - **Tocar libre nombra lo que se pisa** (`#freeBox`, `describeHeld`,
   registrado como handler de note-on y note-off del modo `free`): dos teclas →
   intervalo; tres que formen tríada mayor/menor → acorde y posición; si no, el
@@ -1738,15 +1768,16 @@ decía hacia qué lado se equivoca Jorge.
   Ahora: **el círculo se pinta SIEMPRE** (`rhythm.dotBar[i]` recuerda de qué compás
   es) y su color **dura hasta 0,4 tiempos antes de que la raya vuelva a su turno**
   — no hay un corte global en el 1. `rhythm.res[ti]` guarda `ok/early/late` por
-  toque pedido. **Conteo grande** (`#rhythmCount`, 4 celdas alineadas con las
-  columnas de la barra, `clamp(56px,13vw,96px)`; el 1 con borde marfil y, al
-  sonar, relleno dorado; en el compás de cuenta va apagado: `.counting`).
-  **Tira de compases** (`#rhythmBars`: `Cuenta · 1 · 2 · 3 · 4`): marca el actual
-  y deja en verde los compases con todos los toques a tiempo y en naranja los
-  demás. Destello del borde de la barra en el 1 de cada compás. La explicación
-  (`#rhythmBarHelp`) bajó debajo de los botones para que el conteo no quede
-  enterrado; en el teléfono `rhythmStart` baja la pantalla hasta el conteo.
-  Barra 64→84 px, círculos 22→30, raya 3→5, veredicto 28→32 px, titular 30→36.
+  toque pedido. **Tira de compases** (`#rhythmBars`: `Cuenta · 1 · 2 · 3 · 4`): marca
+  el actual y deja en verde los compases con todos los toques a tiempo y en naranja
+  los demás. Destello del borde de la barra en el 1 de cada compás. La explicación
+  (`#rhythmBarHelp`) bajó debajo de los botones; en el teléfono `rhythmStart` baja
+  la pantalla hasta la barra.
+  **Tamaños: se probó un conteo gigante (celdas de hasta 96 px, barra de 84 px,
+  círculos de 30) y Jorge dijo que era DEMASIADO ("fue error mío pedirlo").** Se
+  volvió a los tamaños de antes: números 1-2-3-4 de 16 px bajo la barra, barra 64,
+  círculos 22, raya 3, veredicto 28, titular 30. Es la única vez que se bajan
+  tamaños por pedido expreso; no volver a agrandar sin que lo pida.
 - **9 niveles** (`RHYTHM_LEVELS`, posiciones en tiempos dentro de un compás de 4):
   cada pulso → solo el 1 → 1 y 3 → 2 y 4 → corcheas → negra y corcheas →
   contratiempo → 3+3+2 → tresillos. Orden mío (tocar en todos los pulsos es lo

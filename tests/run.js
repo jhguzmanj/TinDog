@@ -2254,41 +2254,73 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
     check(/ritardando/.test(cn.tip), 'el consejo avisa que el ritardando impreso no se hace');
   }
 
-  section('Camino de intervalos (original): la izquierda toca solo intervalos');
+  section('Dedos revisados (octubre 2026): sin meñique de tecla en tecla en lo inventado');
+  {
+    // Piezas cuya digitación NO viene impresa: el meñique no salta entre notas distintas seguidas.
+    const pinkyHops = id => {
+      const out = [];
+      for(const hand of ['rh', 'lh']){
+        let prev = null;
+        W(`SONGS.find(s => s.id === '${id}')`).steps.forEach(st => {
+          if(st[hand].length !== 1){ if(st[hand].length) prev = null; return; }
+          const n = st[hand][0], f = st[hand + 'F'][0];
+          if(prev && f === 5 && prev.f === 5 && n !== prev.n) out.push(hand + ':' + prev.n + '→' + n);
+          prev = { n, f };
+        });
+      }
+      return out;
+    };
+    for(const id of ['cumple', 'estrellita', 'flaca', 'bella-ciao', 'dbgt', 'dbgt-2', 'camino-intervalos', 'amanecer', 'colegiala', 'jingle-bells'])
+      check(pinkyHops(id).length === 0, id + ': ningún meñique pasa de una tecla a otra seguida (' + pinkyHops(id).join(' ') + ')');
+    // Cumpleaños: 2 saltos de mano (los dos saltos agudos), no 3; Si y La se tocan con el pulgar.
+    const cu = W("SONGS.find(s => s.id === 'cumple')").steps;
+    const moves = cu.filter(s => /^Salto/.test(s.label || ''));
+    check(moves.length === 2, 'Cumpleaños: la mano se mueve solo dos veces (los dos saltos agudos)');
+    check(cu.filter(s => s.rh[0] === 71 && s.dur === 1 && s.rhF[0] === 1).length === 1 && cu.filter(s => s.rh[0] === 69 && s.rhF[0] === 1).length === 1, 'Cumpleaños: Si y La, bajo el Do agudo, van con el pulgar caminando');
+    check(cu.every(s => s.rh.length === s.rhF.length), 'Cumpleaños: cada nota trae su dedo');
+    // Estrellita: la derecha sube un tono una sola vez y no se mueve más
+    const es = W("SONGS.find(s => s.id === 'estrellita')").steps;
+    check(es.map(s => s.rhF[0]).join() === '1,1,4,4,5,5,4,3,3,2,2,1,1,1', 'Estrellita: Do 1, Sol 4, La 5, y baja Fa 3, Mi 2, Re 1');
+    // Bella Ciao: en el tramo grave el Re lleva siempre el 2 (pulgar en Mi), nunca el meñique
+    check(W("SONGS.find(s => s.id === 'bella-ciao')").steps.filter(s => s.lh[0] === 50 && s.lh.length === 1).every(s => s.lhF[0] === 2), 'Bella Ciao: el Re grave de la izquierda siempre con el 2');
+  }
+
+  section('Camino de intervalos (original): la izquierda toca solo intervalos, sin mover la mano');
   {
     const ci = W("SONGS.find(s => s.id === 'camino-intervalos')");
     check(!!ci && ci.cat === 'clase' && ci.tempo === 80 && !ci.meter, 'en "De la clase", ♩=80, compás de 4');
-    check(ci.steps.reduce((a, s) => a + s.dur, 0) === 64, '16 compases de 4 tiempos, sin sobras');
+    check(ci.steps.reduce((a, s) => a + s.dur, 0) === 48, '12 compases de 4 tiempos, sin sobras (como Amanecer, 13)');
     const hits = ci.steps.filter(s => s.lh.length);
     check(hits.every(s => s.lh.length === 2 && s.lhF.length === 2), 'la izquierda nunca toca un acorde: siempre exactamente dos notas con su dedo');
     const ivs = new Set(hits.map(s => s.lh[1] - s.lh[0]));
-    check([7, 4, 3, 10, 6, 11, 12].every(n => ivs.has(n)), 'estrena 5ª, 3ª M, 3ª m, 7ª m, tritono, 7ª M y 8ª');
-    check([...ivs].every(n => [7, 4, 3, 10, 6, 11, 12].includes(n)), 'ningún otro intervalo se cuela');
+    check([3, 4, 5, 6, 7].every(n => ivs.has(n)) && [...ivs].every(n => [3, 4, 5, 6, 7].includes(n)), 'estrena 3ª m, 3ª M, 4ª, tritono y 5ª; sin 7ªs ni octava (abertura incómoda para una mano pequeña)');
+    check(Math.max(...hits.map(s => s.lh[1] - s.lh[0])) <= 7, 'la izquierda nunca abre más que una 5ª');
+    // Izquierda en posición FIJA (la de Amanecer): pulgar en Do3, Si 2, La 3, Sol 4, Fa 5.
+    const LHPOS = { 48: 1, 47: 2, 45: 3, 43: 4, 41: 5 };
+    check(hits.every(s => s.lh.every((n, i) => LHPOS[n] === s.lhF[i])), 'izquierda: pulgar en Do3 (Si 2, La 3, Sol 4, Fa 5), cada tecla siempre con el mismo dedo');
     const rh = ci.steps.flatMap(s => s.rh);
     check(Math.min(...rh) >= 72 && Math.max(...rh) <= 79 && rh.every(n => [72, 74, 76, 77, 79].includes(n)), 'derecha: posición fija de cinco dedos (Do5-Sol5)');
     check(ci.steps.every(s => s.rhF.length === s.rh.length && s.rh.every((n, i) => s.rhF[i] === [72, 74, 76, 77, 79].indexOf(n) + 1)), 'derecha: un dedo por tecla, siempre el mismo');
     check(Math.max(...ci.steps.flatMap(s => s.lh)) < Math.min(...rh), 'las manos no se cruzan');
     check(ci.steps.flatMap(s => s.lh).every(n => [0, 2, 4, 5, 7, 9, 11].includes(n % 12)), 'todo en Do mayor (teclas blancas)');
-    // Cada compás empieza en el golpe 1 con un rótulo (el nombre del intervalo que estrena).
+    // Cada compás empieza en el golpe 1 con un rótulo (el intervalo que suena).
     let t = 0, bars = 0, sinRotulo = 0;
     ci.steps.forEach(s => { if (t % 4 === 0) { bars++; if (!s.label) sinRotulo++; } t += s.dur; });
-    check(bars === 16 && sinRotulo === 0, 'los 16 compases arrancan con rótulo');
-    // Tiempos fuertes (1 y 3): la melodía cae en una nota de la armonía de ese compás.
-    check(ci.steps[0].lh.join() === '48,55', 'abre con la 5ª Do–Sol');
-    // Tensión y resolución: lo que hace que la pieza respire
+    check(bars === 12 && sinRotulo === 0, 'los 12 compases arrancan con rótulo');
+    check(ci.steps[0].lh.join() === '43,48', 'abre con la 4ª Sol–Do');
+    // Tensión y resolución
     const cb = []; { let tt = 0; ci.steps.forEach(s => { const b = Math.floor(tt / 4 + 1e-9); (cb[b] = cb[b] || []).push(s); tt += s.dur; }); }
-    check(cb.length === 16, '16 compases');
+    check(cb.length === 12, '12 compases');
     const corch = cb.map(b => b.some(s => s.dur === 0.5 && s.rh.length));
-    check(corch[8] && corch[9] && corch.filter(Boolean).length === 2, 'las corcheas (más tensión por ritmo) van solo en los c. 9-10, justo antes de resolver');
-    check(cb[9][0].lh.join() === '59,65' && cb[10][0].lh.join() === '60,64', 'c. 10-11: tritono Si–Fa que resuelve en Do–Mi (Si sube, Fa baja)');
+    check(corch[9] && corch.filter(Boolean).length === 1, 'las corcheas (más tensión por ritmo) van solo en el c. 10, el del tritono');
+    check(cb[8][0].lh.join() === '41,48' && cb[9][0].lh.join() === '41,47' && cb[10][0].lh.join() === '43,48', 'final IV – V7 – I: Fa–Do (5ª), Fa–Si (tritono) y Sol–Do');
     check(cb[10].every(s => s.dur >= 2), 'la resolución va en notas largas: el ritmo también descansa');
-    check(cb[11][0].lh.join() === '48,59' && cb[11].some(s => s.lh.join() === '48,60'), 'c. 12: la 7ª mayor se resuelve en la octava (Si sube a Do)');
-    // Final estándar: IV – V7 – I
-    check(cb[13][0].lh.join() === '41,48', 'c. 14: Fa (IV)');
-    check(cb[14][0].lh.join() === '43,53' && cb[14].some(s => s.lh.join() === '47,53'), 'c. 15: Sol7 (V7) con la 7ª y después el tritono');
+    check(cb[10][0].lh.includes(48) && cb[9][0].lh.includes(47), 'el Si del tritono sube medio tono al Do (la sensible resuelve)');
     const fin = ci.steps[ci.steps.length - 1];
-    check(fin.lh.join() === '36,48' && fin.rh.join() === '72,76,79' && fin.rhF.join() === '1,3,5' && fin.dur === 4, 'c. 16: octava grave de Do y el acorde de Do en la derecha, redonda');
-    check(fin.lh.includes(48) && cb[14].some(s => s.lh.includes(47)), 'el Si del tritono sube medio tono al Do del final');
+    check(fin.lh.join() === '43,48' && fin.rh.join() === '72,76,79' && fin.rhF.join() === '1,3,5' && fin.dur === 4, 'c. 12: el acorde de Do en la derecha (1-3-5), redonda');
+    // El mismo criterio que Amanecer: el salto más grande de la melodía es una 3ª o una 4ª
+    const mel = ci.steps.filter(s => s.rh.length === 1).map(s => s.rh[0]);
+    check(mel.every((n, i) => i === 0 || Math.abs(n - mel[i - 1]) <= 5), 'la melodía no salta más que una 4ª');
   }
 
   section('Lectura: antes del pentagrama, las teclas');
@@ -2466,7 +2498,7 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
     W("rhythmSelectLevel(1)");
     check(W('rhythmLevel') === 1 && W('metro.bpm') === 60 && doc.getElementById('rhythmSay').textContent.includes('(2)'), 'elegir el nivel 2 pone 60 BPM y muestra cómo se cuenta');
     check(doc.querySelectorAll('#rhythmBar .rhythm-dot').length === 1 && doc.querySelectorAll('#rhythmBar .rhythm-beat').length === 4, 'el compás dibujado marca 4 tiempos y los toques de ese nivel');
-    check(doc.querySelectorAll('#rhythmCount .cell').length === 4 && doc.querySelector('#rhythmCount .cell').textContent === '1', 'el conteo grande 1 2 3 4 está alineado con el compás');
+    check(doc.querySelectorAll('#rhythmBar .rhythm-beat span').length === 4 && doc.querySelector('#rhythmBar .rhythm-beat span').textContent === '1', 'el conteo 1 2 3 4 va bajo cada tiempo del compás');
     check(doc.querySelectorAll('#rhythmBars .bc').length === 1 + W('rhythmBars(RHYTHM_LEVELS[rhythmLevel])') && /Cuenta/.test(doc.querySelector('#rhythmBars .bc').textContent), 'la tira de compases trae "Cuenta" + un chip por compás');
     // aprobar a 80 supera el nivel
     W("metro.bpm = 80; metroRender(); rhythmBegin(performance.now() + 200)");
@@ -2524,7 +2556,7 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
     check(doc.querySelectorAll('#rhythmBar .rhythm-dot')[3].classList.contains('late'), 'cruzar el 1 no borra el color del último toque del compás anterior');
     W("rhythm.T0 = performance.now() - 10700; rhythmTickUi()");
     check(!doc.querySelectorAll('#rhythmBar .rhythm-dot')[3].classList.contains('late'), 'se limpia cuando la raya vuelve a acercarse a ese círculo');
-    check(doc.querySelectorAll('#rhythmCount .cell.now').length === 1 && doc.querySelectorAll('#rhythmBars .bc.cur').length === 1, 'un solo número del conteo y un solo compás quedan marcados como actuales');
+    check(doc.querySelectorAll('#rhythmBar .rhythm-beat span.now').length === 1 && doc.querySelectorAll('#rhythmBars .bc.cur').length === 1, 'un solo número del conteo y un solo compás quedan marcados como actuales');
     const fin = W('rhythmFinish()');
     check(fin.ok >= 1 && fin.extras === 1, 'lo que se vio al instante coincide con la nota final (1 a tiempo, 1 de más)');
     check(doc.querySelectorAll('#rhythmBar .rhythm-dot.ok, #rhythmBar .rhythm-dot.early, #rhythmBar .rhythm-dot.late').length === 0, 'al terminar los círculos se limpian');
