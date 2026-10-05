@@ -2486,14 +2486,37 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
     // sin audio (jsdom) no se puede empezar y lo dice
     W("rhythmStart()");
     check(W('rhythm.active') === false && /Sin audio/.test(doc.getElementById('rhythmBig').textContent), 'sin audio no empieza y dice por qué');
-    // el pad entra por el mismo camino que una tecla
-    W("rhythmBegin(performance.now() + 200)");
-    const n0 = W('rhythm.presses.length');
-    W("rhythm.T0 = performance.now() - 5000"); // ya en la zona de toque
-    doc.getElementById('rhythmPad').dispatchEvent(new window.Event('pointerdown', { bubbles: true, cancelable: true }));
-    doc.getElementById('rhythmPad').dispatchEvent(new window.Event('pointerup', { bubbles: true }));
-    check(W('rhythm.presses.length') === n0 + 1, 'el pad "Toca aquí" cuenta como una tecla');
-    W("rhythmCancel('')");
+    // ya no hay pad "Toca aquí": se toca en el piano (o en el teclado dibujado)
+    check(doc.getElementById('rhythmPad') === null, 'sin botón "Toca aquí"');
+    check(/1 · 2 · 3 · 4/.test(doc.getElementById('rhythmBarHelp').textContent) && /círculo/.test(doc.getElementById('rhythmBarHelp').textContent), 'la barra con 1 2 3 4 viene explicada');
+    // tiempo para poner las manos antes de que suene el primer clic
+    W("window.__ms = metroStart; window.__ec = ensureAudioCtx; ensureAudioCtx = () => ({}); metroStart = function(){ metro.on = true; metro.beat = 0; metro.refPerf = performance.now() + 50; metro.refBeat = 0; };");
+    W("rhythmLevel = 0; metro.bpm = 60; rhythmStart()");
+    check(W('rhythm.preparing') === true && W('rhythm.active') === false && W('metro.on') === false, 'Empezar no arranca el clic de golpe: primero una cuenta para prepararse');
+    check(/Prepara las manos/.test(doc.getElementById('rhythmBig').textContent) && /Parar/.test(doc.getElementById('rhythmStartBtn').textContent), 'dice que prepares las manos y el botón pasa a Parar');
+    W("rhythmHit(performance.now())");
+    check(W('rhythm.presses.length') === 0, 'lo tocado mientras te preparas no cuenta');
+    W("rhythmStart()");
+    check(W('rhythm.preparing') === false && W('rhythm.active') === false && /Parado/.test(doc.getElementById('rhythmBig').textContent), 'Parar durante la preparación la cancela');
+    W("rhythmStart(); rhythm.preparing = false; rhythmLaunch()");
+    check(W('rhythm.active') === true && W('RHYTHM_READY_S') >= 3, 'tras la preparación arranca el clic y la ronda (preparación de ' + W('RHYTHM_READY_S') + ' s)');
+    W("rhythmCancel(''); metroStop(); metroStart = window.__ms; ensureAudioCtx = window.__ec;");
+    // cada pulsación se juzga al instante
+    W("rhythmLevel = 0; rhythmSelectLevel(0); metro.bpm = 60; metroRender(); rhythmBegin(performance.now() + 200)");
+    const T1 = W('rhythm.T0');
+    W("rhythm.uiBar = 1");   // como si ya estuviera en el primer compás de toque
+    W(`rhythmHit(${T1 + 4000 + 30})`);
+    check(/A tiempo/.test(doc.getElementById('rhythmHit').textContent) && /\+30/.test(doc.getElementById('rhythmHit').textContent) && doc.getElementById('rhythmHit').classList.contains('ok'), 'una pulsación a +30 ms dice "A tiempo" al instante');
+    check(doc.querySelectorAll('#rhythmBar .rhythm-dot')[0].classList.contains('ok'), 'y el círculo del compás se pinta de verde');
+    W(`rhythmHit(${T1 + 5000 - 130})`);
+    check(/Antes/.test(doc.getElementById('rhythmHit').textContent) && /−130/.test(doc.getElementById('rhythmHit').textContent) && doc.querySelectorAll('#rhythmBar .rhythm-dot')[1].classList.contains('early'), '130 ms antes: "Antes" y el círculo en azul');
+    W(`rhythmHit(${T1 + 6000 + 140})`);
+    check(/Tarde/.test(doc.getElementById('rhythmHit').textContent) && doc.querySelectorAll('#rhythmBar .rhythm-dot')[2].classList.contains('late'), '140 ms después: "Tarde" y el círculo en naranja');
+    W(`rhythmHit(${T1 + 6500})`);
+    check(/De más/.test(doc.getElementById('rhythmHit').textContent) && doc.getElementById('rhythmHit').classList.contains('miss'), 'un toque donde no tocaba: "De más"');
+    const fin = W('rhythmFinish()');
+    check(fin.ok === 1 && fin.extras === 1, 'lo que se vio al instante coincide con la nota final (1 a tiempo, 1 de más)');
+    check(doc.querySelectorAll('#rhythmBar .rhythm-dot.ok, #rhythmBar .rhythm-dot.early, #rhythmBar .rhythm-dot.late').length === 0, 'al terminar los círculos se limpian');
     // plan de Hoy y progreso
     W("progress = emptyProgress(); todayPlan = buildTodayPlan(1); renderToday()");
     const ri = W("todayPlan.find(it => it.key === 'rhythm')");

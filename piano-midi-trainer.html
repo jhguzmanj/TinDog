@@ -541,14 +541,17 @@
     background:var(--brass); box-shadow:0 0 10px var(--brass-glow);
   }
   .rhythm-actions{ display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
-  .rhythm-pad{
-    min-height:92px; border-radius:14px; border:1px solid var(--brass-soft); background:rgba(226,185,100,0.08);
-    color:var(--ivory); font-family:'Source Sans 3',sans-serif; font-size:26px; font-weight:700; cursor:pointer;
-    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; touch-action:manipulation;
-    -webkit-user-select:none; user-select:none;
-  }
-  .rhythm-pad small{ font-size:16px; font-weight:400; color:var(--text-dim); }
-  .rhythm-pad:active, .rhythm-pad.hit{ background:rgba(226,185,100,0.28); }
+  .rhythm-dot.ok{ background:var(--correct); box-shadow:0 0 10px var(--correct); }
+  .rhythm-dot.early{ background:#8fb3d9; box-shadow:none; }
+  .rhythm-dot.late{ background:#dba14f; box-shadow:none; }
+  .rhythm-play{ position:absolute; top:-4px; bottom:-4px; width:3px; margin-left:-1px; background:var(--ivory); border-radius:2px; display:none; }
+  .rhythm-beat span.now{ color:var(--ivory); }
+  .rhythm-bar.bad{ border-color:var(--wrong); }
+  .rhythm-hit{ font-size:28px; font-weight:700; min-height:1.4em; color:var(--text-dim); font-variant-numeric:tabular-nums; }
+  .rhythm-hit.ok{ color:var(--correct); }
+  .rhythm-hit.early{ color:#8fb3d9; }
+  .rhythm-hit.late{ color:#dba14f; }
+  .rhythm-hit.miss{ color:var(--wrong); }
   .rhythm-result{ display:flex; flex-direction:column; gap:10px; font-size:19px; color:var(--text-dim); line-height:1.45; }
   .rhythm-result b{ color:var(--brass); }
   .rhythm-chips{ display:flex; flex-wrap:wrap; gap:6px 14px; }
@@ -1383,12 +1386,13 @@
       <div class="rhythm-stage">
         <div class="rhythm-big" id="rhythmBig">Toca con el clic.</div>
         <div class="rhythm-say" id="rhythmSay"></div>
-        <div class="rhythm-bar" id="rhythmBar" aria-label="Dónde caen los toques dentro del compás"></div>
+        <div class="read-sub" id="rhythmBarHelp">Esto es un compás: 4 tiempos, 1 · 2 · 3 · 4 (los clics del metrónomo). Cada círculo dorado es un toque que debes hacer. La raya blanca avanza con el clic; cada círculo se pinta cuando lo tocas: verde = a tiempo, azul = antes, naranja = tarde.</div>
+        <div class="rhythm-bar" id="rhythmBar" aria-label="Un compás de 4 tiempos y dónde caen los toques"></div>
+        <div class="rhythm-hit" id="rhythmHit"></div>
         <div class="rhythm-actions">
           <button id="rhythmStartBtn" class="ghost-btn primary">▶ Empezar</button>
           <span class="reg-label" id="rhythmInfo"></span>
         </div>
-        <button id="rhythmPad" class="rhythm-pad" aria-label="Toca aquí si no usas el piano">🥁 Toca aquí<small>o cualquier tecla del piano</small></button>
         <div class="rhythm-result" id="rhythmResult"></div>
       </div>
       <div class="tip" id="rhythmTip"></div>
@@ -8022,9 +8026,10 @@ const RHYTHM_GOAL_BPM = 80;           // con una ronda aprobada a este tempo, el
 const RHYTHM_EXTRA_MAX = 2;           // toques de más que se toleran en una ronda aprobada
 const RHYTHM_PLAY_TARGETS = 16;       // toques que pide una ronda (más de 8 para que 80% sea justo)
 const RHYTHM_BEATS = 4;               // el ejercicio siempre cuenta de a 4
+const RHYTHM_READY_S = 4;             // segundos para poner las manos en el piano antes de que arranque el clic
 let rhythmLevel = 0;
 try { const v = parseInt(localStorage.getItem('rhythmLevel'), 10); if(!isNaN(v) && v >= 0 && v < RHYTHM_LEVELS.length) rhythmLevel = v; } catch(e){}
-const rhythm = { active:false, starting:false, token:0, timers:[], T0:0, bpm:80, bars:4, win:125,
+const rhythm = { active:false, preparing:false, starting:false, token:0, timers:[], tick:null, used:[], uiBar:-1, T0:0, bpm:80, bars:4, win:125,
                  targets:[], presses:[], lastPress:-1e9, lv:null, last:null };
 
 function rhythmDone(i){ return (((progress.rhythm || {})[RHYTHM_LEVELS[i].id]) || {}).bestBpm >= RHYTHM_GOAL_BPM; }
@@ -8094,26 +8099,65 @@ function rhythmSay(text, cls){
   el.textContent = text;
   el.className = 'rhythm-big' + (cls ? ' ' + cls : '');
 }
-function rhythmClearTimers(){ rhythm.timers.forEach(clearTimeout); rhythm.timers = []; }
+function rhythmClearTimers(){
+  rhythm.timers.forEach(clearTimeout); rhythm.timers = [];
+  if(rhythm.tick){ clearInterval(rhythm.tick); rhythm.tick = null; }
+}
+let rhythmDots = [], rhythmBeatLabels = [];
 function rhythmRenderStart(){
   const b = $('rhythmStartBtn'); if(!b) return;
-  b.textContent = rhythm.active ? '■ Parar' : '▶ Empezar';
-  b.classList.toggle('busy', rhythm.active);
+  const on = rhythm.active || rhythm.preparing;
+  b.textContent = on ? '■ Parar' : '▶ Empezar';
+  b.classList.toggle('busy', on);
 }
 function rhythmRenderBar(){
   const lv = RHYTHM_LEVELS[rhythmLevel], bar = $('rhythmBar'); if(!bar) return;
   bar.innerHTML = '';
+  rhythmBeatLabels = []; rhythmDots = [];
   for(let b = 0; b < RHYTHM_BEATS; b++){
     const d = document.createElement('div'); d.className = 'rhythm-beat';
     d.style.left = (b / RHYTHM_BEATS * 100) + '%';
     d.innerHTML = '<span>' + (b + 1) + '</span>';
     bar.appendChild(d);
+    rhythmBeatLabels.push(d.firstChild);
   }
   lv.pos.forEach(p => {
     const d = document.createElement('div'); d.className = 'rhythm-dot';
     d.style.left = (p / RHYTHM_BEATS * 100) + '%';
     bar.appendChild(d);
+    rhythmDots.push(d);
   });
+  const play = document.createElement('div'); play.className = 'rhythm-play'; play.id = 'rhythmPlay';
+  bar.appendChild(play);
+}
+// La raya avanza con el clic y los círculos se pintan al tocarlos: así se ve CADA
+// pulsación y no solo el resultado al final.
+function rhythmResetDots(){ rhythmDots.forEach(d => d.classList.remove('ok', 'early', 'late')); }
+function rhythmTickUi(){
+  if(!rhythm.active) return;
+  const per = 60000 / rhythm.bpm;
+  const x = Math.max(0, (performance.now() - rhythm.T0) / per);
+  const barIdx = Math.floor(x / RHYTHM_BEATS), pos = x - barIdx * RHYTHM_BEATS;
+  const play = $('rhythmPlay');
+  if(play){ play.style.display = barIdx <= rhythm.bars ? 'block' : 'none'; play.style.left = (pos / RHYTHM_BEATS * 100) + '%'; }
+  rhythmBeatLabels.forEach((s, i) => s.classList.toggle('now', i === Math.floor(pos)));
+  if(barIdx !== rhythm.uiBar){ rhythm.uiBar = barIdx; rhythmResetDots(); }
+}
+function rhythmShowHit(off, g){
+  const el = $('rhythmHit'); if(!el) return;
+  if(off === null){
+    el.textContent = '✕ De más: ahí no tocaba'; el.className = 'rhythm-hit miss';
+    const bar = $('rhythmBar'); if(bar){ bar.classList.add('bad'); setTimeout(() => bar.classList.remove('bad'), 350); }
+    return;
+  }
+  const cls = Math.abs(off) <= TIMING_OK ? 'ok' : (off < 0 ? 'early' : 'late');
+  const ms = Math.round(off), s = (ms > 0 ? '+' : ms < 0 ? '−' : '') + Math.abs(ms) + ' ms';
+  el.textContent = cls === 'ok' ? '✓ A tiempo · ' + s : cls === 'early' ? '← Antes · ' + s : '→ Tarde · ' + s;
+  el.className = 'rhythm-hit ' + cls;
+  if(g.bar + 1 === rhythm.uiBar){
+    const d = rhythmDots[rhythm.lv.pos.indexOf(g.pos)];
+    if(d){ d.classList.remove('ok', 'early', 'late'); d.classList.add(cls); }
+  }
 }
 function rhythmRenderTabs(){
   const cont = $('rhythmLevelTabs'); if(!cont) return;
@@ -8149,6 +8193,7 @@ function rhythmSelectLevel(i){
   try { localStorage.setItem('rhythmLevel', rhythmLevel); } catch(e){}
   metro.bpm = rhythmNextBpm(i); metroRender();
   $('rhythmResult').innerHTML = '';
+  if($('rhythmHit')) $('rhythmHit').textContent = '';
   rhythmSay('Nivel ' + (i + 1) + ': ' + RHYTHM_LEVELS[i].name + ' a ' + metro.bpm + ' BPM. Pulsa Empezar.');
   rhythmShowLevel();
 }
@@ -8158,9 +8203,11 @@ function startRhythmMode(){
   rhythmSelectLevel(rhythmLevel);
 }
 function rhythmCancel(msg){
-  if(!rhythm.active) return;
-  rhythm.token++; rhythm.active = false;
+  if(!rhythm.active && !rhythm.preparing) return;
+  rhythm.token++; rhythm.active = false; rhythm.preparing = false;
   rhythmClearTimers();
+  rhythmResetDots();
+  const pl = $('rhythmPlay'); if(pl) pl.style.display = 'none';
   if(msg) rhythmSay(msg, 'bad');
   rhythmRenderStart();
 }
@@ -8174,8 +8221,11 @@ function rhythmBegin(T0){
   rhythm.targets = rhythmTargets(lv, T0, rhythm.bpm, rhythm.bars);
   rhythm.win = rhythmWindow(lv, rhythm.bpm);
   rhythm.presses = []; rhythm.lastPress = -1e9;
+  rhythm.used = rhythm.targets.map(() => false); rhythm.uiBar = -1;
   $('rhythmResult').innerHTML = '';
+  $('rhythmHit').textContent = '';
   rhythmSay('Escucha y cuenta: 1 · 2 · 3 · 4', 'count');
+  rhythm.tick = setInterval(rhythmTickUi, 40);
   const period = 60000 / rhythm.bpm, now = performance.now();
   for(let b = 0; b < rhythm.bars; b++){
     const at = T0 + RHYTHM_BEATS * (1 + b) * period;
@@ -8186,15 +8236,30 @@ function rhythmBegin(T0){
   rhythmRenderStart();
 }
 function rhythmStart(){
-  if(rhythm.active){ rhythmCancel(''); if(metro.on) metroStop(); rhythmSay('Parado. Pulsa Empezar cuando quieras.'); return; }
+  if(rhythm.active || rhythm.preparing){ rhythmCancel(''); if(metro.on) metroStop(); rhythmSay('Parado. Pulsa Empezar cuando quieras.'); return; }
   if(!ensureAudioCtx()){ rhythmSay('Sin audio no hay metrónomo, y este ejercicio lo necesita.', 'bad'); return; }
+  // Antes de que suene el primer clic hay unos segundos para poner las manos en el
+  // piano (arrancar de golpe no dejaba tiempo ni de mirar).
+  if(metro.on) metroStop();
+  rhythm.token++;
+  const tok = rhythm.token;
+  rhythm.preparing = true;
+  $('rhythmResult').innerHTML = ''; $('rhythmHit').textContent = '';
+  rhythmRenderStart();
+  for(let s = RHYTHM_READY_S; s >= 1; s--){
+    rhythm.timers.push(setTimeout(() => { if(tok === rhythm.token) rhythmSay('Prepara las manos en el piano… ' + s, 'count'); }, (RHYTHM_READY_S - s) * 1000));
+  }
+  rhythm.timers.push(setTimeout(() => { if(tok === rhythm.token){ rhythm.preparing = false; rhythmLaunch(); } }, RHYTHM_READY_S * 1000));
+  rhythmSay('Prepara las manos en el piano… ' + RHYTHM_READY_S, 'count');
+}
+function rhythmLaunch(){
   // Siempre se arranca el clic de cero: el 1 del primer compás cae en un instante
   // conocido (`refPerf`) y de ahí salen los tiempos exactos de todos los toques.
   rhythm.starting = true;
   if(metro.on) metroStop();
   metroStart();
   rhythm.starting = false;
-  if(!metro.on || metro.refPerf === null) return;
+  if(!metro.on || metro.refPerf === null){ rhythmRenderStart(); return; }
   rhythmBegin(metro.refPerf);
 }
 function rhythmHit(t){
@@ -8204,6 +8269,11 @@ function rhythmHit(t){
   const playStart = rhythm.T0 + RHYTHM_BEATS * (60000 / rhythm.bpm);
   if(t < playStart - rhythm.win) return;          // la cuenta atrás no se toca
   rhythm.presses.push(t);
+  // veredicto de ESTA pulsación, al instante (el mismo emparejamiento que la nota final)
+  let bi = -1, bd = Infinity;
+  rhythm.targets.forEach((g, i) => { if(!rhythm.used[i]){ const d = Math.abs(t - g.t); if(d < bd){ bd = d; bi = i; } } });
+  if(bi >= 0 && bd <= rhythm.win){ rhythm.used[bi] = true; rhythmShowHit(t - rhythm.targets[bi].t, rhythm.targets[bi]); }
+  else rhythmShowHit(null);
 }
 function checkRhythm(){ rhythmHit(performance.now()); }
 function rhythmFinish(){
@@ -8211,6 +8281,9 @@ function rhythmFinish(){
   rhythm.active = false; rhythm.token++;
   rhythmClearTimers();
   const lv = rhythm.lv, res = rhythmGrade(rhythm.targets, rhythm.presses, rhythm.win);
+  rhythmResetDots();
+  const pl = $('rhythmPlay'); if(pl) pl.style.display = 'none';
+  $('rhythmHit').textContent = '';
   rhythm.last = res;
   recordRhythm(lv.id, res.pct, rhythm.bpm, res.pass);
   if(metro.on) metroStop();
@@ -8243,14 +8316,6 @@ function rhythmFinish(){
   return res;
 }
 $('rhythmStartBtn').addEventListener('click', rhythmStart);
-// El pad es para quien practica sin piano: entra por el mismo camino que una tecla.
-(function(){
-  const pad = $('rhythmPad');
-  const down = e => { e.preventDefault(); pad.classList.add('hit'); noteOn(60, 'ui'); };
-  const up = () => { pad.classList.remove('hit'); noteOff(60); };
-  pad.addEventListener('pointerdown', down);
-  ['pointerup', 'pointerleave', 'pointercancel'].forEach(ev => pad.addEventListener(ev, up));
-})();
 rhythmReady = true;
 
 // ===== Progreso persistente =====

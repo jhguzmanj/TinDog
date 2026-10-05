@@ -1710,9 +1710,24 @@ importante tomar el tempo" y "ejercicios que me permitan tomar ritmo e ir subien
 el nivel de a poco". **Lo que no existía**: todo lo demás mide cada nota contra el
 pulso más cercano; nada pedía un RITMO (silencios, corcheas, contratiempo) ni
 decía hacia qué lado se equivoca Jorge.
-- Cualquier tecla vale (el ejercicio es el ritmo, no la nota) y hay un pad
-  "Toca aquí" para quien practica sin piano; entra por `noteOn(60,'ui')`, o sea
-  por el mismo camino que una tecla (`registerNoteHandler('rhythm', checkRhythm)`).
+- Cualquier tecla vale (el ejercicio es el ritmo, no la nota): piano por MIDI o
+  el teclado dibujado (`registerNoteHandler('rhythm', checkRhythm)`). **Se quitó el
+  pad "Toca aquí"** (Jorge: estorbaba; el teclado dibujado ya sirve sin piano).
+- **Preparación antes del clic (`RHYTHM_READY_S` = 4).** Jorge: "inicia muy rápido,
+  dame tiempo". `rhythmStart` solo arma una cuenta ("Prepara las manos en el
+  piano… 4/3/2/1") con `rhythm.preparing`; el metrónomo NO suena todavía y lo
+  tocado no cuenta. Pasados los 4 s, `rhythmLaunch` reinicia el clic y llama a
+  `rhythmBegin` (compás de cuenta de 4 clics + la ronda). `rhythmCancel` también
+  cancela la preparación. Parar durante ella también funciona (mismo botón).
+- **Cada pulsación se juzga al instante** (`rhythmShowHit`): el mismo emparejamiento
+  que la nota final (`rhythm.used`, voraz en orden de tiempo → idéntico a
+  `rhythmGrade`), con la línea grande `#rhythmHit` ("✓ A tiempo · +12 ms" / "←
+  Antes · −130 ms" / "→ Tarde · +140 ms" / "✕ De más") y el círculo de la barra
+  pintado (verde/azul/naranja). La barra horizontal "1 2 3 4" es **un compás**:
+  Jorge no entendía qué era, así que ahora trae un texto que lo explica
+  (`#rhythmBarHelp`), una raya blanca que avanza con el clic (`rhythmTickUi`, cada
+  40 ms) y el número del tiempo que suena se ilumina. Los círculos se limpian en
+  cada compás nuevo. Un toque de más hace parpadear el borde de la barra.
 - **9 niveles** (`RHYTHM_LEVELS`, posiciones en tiempos dentro de un compás de 4):
   cada pulso → solo el 1 → 1 y 3 → 2 y 4 → corcheas → negra y corcheas →
   contratiempo → 3+3+2 → tresillos. Orden mío (tocar en todos los pulsos es lo
