@@ -1509,6 +1509,36 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
     W("selectCategory('today')");
   }
 
+  section('Día de lluvia (original, triste y pausada): una nota larga a la izquierda, sin saltos');
+  {
+    const dl = W("SONGS.find(s => s.id === 'dia-de-lluvia')");
+    check(!!dl && dl.cat === 'clase' && dl.tempo === 60 && !dl.meter && dl.plan !== false, 'está en "De la clase", ♩=60 (pausado, mío) y entra al plan de Hoy');
+    check(W("SONGS.filter(s => s.cat === 'clase')[0].id") === 'sound-of-silence', 'The Sound of Silence sigue primera de "De la clase"');
+    check(dl.steps.reduce((a, x) => a + x.dur, 0) === 48, '12 compases de 4 tiempos, sin sobras');
+    const bars = []; { let t = 0; dl.steps.forEach(x => { const b = Math.floor(t / 4 + 1e-9); (bars[b] = bars[b] || []).push(x); t += x.dur; }); }
+    check(bars.length === 12 && bars.every(b => b.reduce((a, x) => a + x.dur, 0) === 4 && b[0].label && b[0].lh.length === 1), 'cada compás suma 4, abre con rótulo y con UNA nota de la izquierda');
+    check(dl.steps.every(x => x.lh.length <= 1 && x.rh.length === 1), 'nunca más de una tecla por mano (ni intervalos ni acordes)');
+    // Izquierda: Lam–Fa–Do–Sol (La2 3, Fa2 5, Do3 1, Sol2 4), mismo dedo para la misma tecla, sin mover la mano
+    const LHF = { 45: 3, 41: 5, 48: 1, 43: 4 };
+    check(dl.steps.filter(x => x.lh.length).every(x => LHF[x.lh[0]] === x.lhF[0]), 'izquierda: pulgar en Do3, La 3, Sol 4, Fa 5 (la posición de Amanecer)');
+    check(bars.map(b => b[0].lh[0]).join() === '45,41,48,43,45,41,43,45,45,41,43,45', 'bajo: Lam Fa Do Sol · Lam Fa Sol Lam · Lam Fa Sol Lam');
+    check(dl.steps.every(x => x.dur >= 1), 'todo en negras o más largas: ninguna corchea');
+    // Derecha: posición fija Do5=1 … Sol5=5, teclas blancas, sin saltos mayores que una 3ª
+    const RHF = { 72: 1, 74: 2, 76: 3, 77: 4, 79: 5 };
+    check(dl.steps.every(x => RHF[x.rh[0]] === x.rhF[0]), 'derecha: Do5=1 … Sol5=5, siempre el mismo dedo');
+    const mel = dl.steps.map(x => x.rh[0]);
+    check(Math.max(...mel.slice(1).map((n, i) => Math.abs(n - mel[i]))) <= 4, 'el salto más grande de la melodía es una 3ª mayor (4 semitonos)');
+    check(Math.max(...dl.steps.flatMap(x => x.lh)) < Math.min(...mel), 'las manos no se cruzan');
+    check(dl.steps.flatMap(x => [...x.lh, ...x.rh]).every(n => [0, 2, 4, 5, 7, 9, 11].includes(n % 12)), 'todo en teclas blancas (La menor)');
+    // Carácter: cada parte cae al final, y termina en Do sobre Lam (tercera menor del acorde: triste y estable)
+    check(mel[mel.length - 1] === 72 && dl.steps[dl.steps.length - 1].dur === 4 && dl.steps[dl.steps.length - 1].lh[0] === 45, 'termina en Do5 sobre La2, redonda');
+    check(['Parte 1', 'Parte 2', 'Parte 3', 'Fin'].every(k => dl.steps.some(x => (x.label || '').includes(k))), 'rótulos de las tres partes y del final');
+    check(dl.steps.filter(x => x.rh[0] === 76 && x.dur === 1).length >= 5, 'las "gotas": notas repetidas en negras (Mi5 sobre todo)');
+    W("selectCategory('fragments'); fragCat = 'popular'; pickFragmentById('dia-de-lluvia')");
+    check(W('currentFragment.id') === 'dia-de-lluvia' && W('fragCat') === 'clase', 'pickFragmentById abre la categoría de la pieza');
+    W("selectCategory('today')");
+  }
+
   section('Coordinación: las dos manos no hacen lo mismo');
   const coord = W('AGILITY_DRILLS.filter(d => d.coord)');
   check(coord.length === 8, `${coord.length} ejercicios de coordinación (escalera del 1 al 8)`);

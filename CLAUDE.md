@@ -605,6 +605,26 @@ y dentro de "Más ▾": `free | functions`.
   - La prueba compara melodía y bajo con la lectura de la imagen (escrita en
     el test como cadenas por compás, con las ligaduras como `~`): si alguien
     "corrige" una nota, tiene que cambiar las dos.
+- **"Día de lluvia (original)" (octubre 2026)** (`dia-de-lluvia`, "De la clase", segunda
+  tras The Sound of Silence, ♩=60). Pedido de Jorge un día gris y lluvioso: "algo como
+  Amanecer o Camino de intervalos pero triste, melancólico, para mi nivel", como
+  **opción para la tarea del sábado**: acompañamiento básico, pausado, sin saltos.
+  Es MÍA (sin fuente que verificar); el tempo 60 y los dedos son míos.
+  - **Receta, derivada de Amanecer**: Do–Sol–Lam–Fa pasa a **Lam–Fa–Do–Sol** (empezar por
+    la menor es lo que la vuelve triste), las mismas posiciones fijas: derecha pulgar en
+    Do5 (Do 1 … Sol 5, nunca sale de ahí), izquierda pulgar en Do3 (La 3, Sol 4, Fa 5).
+    **Izquierda: UNA nota por compás, larga** (12 ataques, todos al tiempo 1, sin ninguna
+    corchea en toda la pieza) y **nunca más de una tecla por mano** (la regla del
+    profe: dos teclas como máximo; aquí ni eso). Salto máximo de la melodía: una 3ª.
+  - **Forma, 12 compases**: Parte 1 "Las primeras gotas" (c. 1-4: Mi5 repetido tres veces
+    = gotas, baja por grados y queda en Re sobre Sol, en el aire), Parte 2 "Llueve más"
+    (c. 5-8: sube hasta Sol5 y vuelve a bajar; las gotas regresan en el c. 7; cierra Mi→Do
+    sobre Lam), Parte 3 "Escampa" (c. 9-12: notas largas, Mi5 de cuatro tiempos para
+    respirar; termina en Do5 sobre La2, redonda).
+  - Lo "triste" sale de tres cosas medibles (hay prueba de las dos últimas): modo menor,
+    líneas que **bajan por grados**, y ritmo casi parado (nada más corto que una negra).
+  - No cabe aquí: el Mi3 (Mim) queda por encima del pulgar de la izquierda; por eso no hay
+    Mim en la progresión.
 - **Tocar libre nombra lo que se pisa** (`#freeBox`, `describeHeld`,
   registrado como handler de note-on y note-off del modo `free`): dos teclas →
   intervalo; tres que formen tríada mayor/menor → acorde y posición; si no, el
