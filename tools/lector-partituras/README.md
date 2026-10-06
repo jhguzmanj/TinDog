@@ -108,7 +108,13 @@ compositor o la fuente, muestra qué falta en vez de un JSON que la app rechazar
     `suggestedMismatches` debe salir vacío; `printedDifferences` son dedos que la propia
     partitura imprime distintos y se respetan.
 - `node scripts/unificar-dedos.js [--write]` iguala los dedos *propuestos* (`?`) en compases
-  idénticos; los impresos nunca se tocan. Correrlo al añadir una pieza.
+  idénticos; los impresos nunca se tocan. Correrlo al añadir una pieza. **Asume UNA línea `rh:` y
+  UNA `lh:` por sección**: reinicia el número de compás en cada línea, así que si una sección se
+  parte en varias líneas sus números (y sus «igualados») salen mal. Escribir las secciones en una
+  sola línea por mano.
+- `spec.bassCheckSkip` (texto, opcional): omite el chequeo del bucle de bajo (`checks.chordsVsBass`)
+  y pone ese texto como razón. Es para ejercicios de escalas, donde la izquierda toca la escala y
+  no un bajo, y el chequeo marcaría `doubt:true` en notas que son la propia escala.
 
 ## Sonido: piano real (muestras)
 La casilla **Piano real** (activa por defecto) reproduce grabaciones de un piano de cola en vez del
@@ -132,6 +138,26 @@ sintetizador. Sirve en los dos caminos: el en vivo y el **clip** del móvil (se 
 Copia `songs/clocks.js`, cambia el texto y añade el `<script>` en `index.html`. Van en
 `.js` y no en `.json` para que funcione abriendo el archivo directamente, sin servidor.
 
+Si la pieza viene de un **MusicXML**, no la escribas a mano ni de memoria: conviértela del XML y
+contrasta con el MIDI. Lo que se hizo con las seis piezas de `.mxl` (Beyer, Köhler, Canon, Hanon 2,
+Escala de Do y Junior Hanon) y que conviene repetir:
+- Leer **todo** del XML: alturas, ritmo, ligaduras, compás, tonalidad, repeticiones y **los dedos
+  impresos** (`<fingering>`), que mandan sobre cualquier propuesta. Los créditos y las notas al pie
+  (`<credit>`, `<words>`) dicen de dónde sale la pieza; no se atribuye nada que no estén ahí.
+- Los dedos que faltan se proponen con `?`, en este orden: (1) compases de la misma *forma*
+  (mismos intervalos y ritmo, 4+ notas) copian los impresos del que sí los trae —así un cuaderno de
+  Hanon queda con la digitación impresa en todos los compases—; (2) el resto, por posición de mano
+  (mover la mano cuesta, el mismo dedo en dos teclas seguidas cuesta más); (3) compases idénticos
+  con el mismo anterior y siguiente llevan los mismos dedos, que es lo que pide el exportador.
+- Contrastar contra el MIDI **nota por nota** (inicio y altura) y guardar el resultado real en
+  `spec.extraChecks.midiCrossCheck`. Las seis dieron 0 diferencias en 4.153 notas. Las duraciones
+  del MIDI no sirven para comparar (MuseScore las acorta al 95%, y a 0 en un unísono de las dos manos).
+- Cuidado con los textos que describen la pieza: medir antes de afirmar (¿la izquierda son acordes o
+  notas sueltas?, ¿qué notas usa?, ¿qué compases se repiten?). La primera versión de estos archivos
+  describía de memoria cosas que no estaban en la partitura.
+- El tempo por defecto de MuseScore (120) no es una indicación del autor: si el XML no imprime
+  `<metronome>`, `tempoSource` es `audio` y `tempoNote` lo dice.
+
 ## Estado
 
 Piezas del lector (`songs/`):
@@ -149,6 +175,24 @@ Piezas del lector (`songs/`):
 - `passacaglia-sample.js` — solo los compases 1-8 de 72, como muestra para escuchar.
   El PDF dice "D'après Handel" y nada más: no se atribuye a ningún arreglista.
 - `mozart-arioso.js` — 32 compases, escritos sin barras de repetición (AABB literal).
+- `melody-in-g-beyer.js` / `melody-in-f-kohler.js` — Beyer (Op. 101) y Köhler (Op. 190), edición
+  de James F. Brigham, dominio público. Del MusicXML + MIDI (0 diferencias). Beyer: 16 compases,
+  sin armadura y sin ningún Fa (Sol mayor); Köhler: 32 compases en 3/4, Fa mayor, con Si natural
+  (c.14), Fa# (c.19) y Mi bemol (c.27) escritos. En las dos la izquierda son **notas sueltas**.
+  Tempo no impreso (el 120 es el del MIDI).
+- `canon-in-c.js` — el Canon de Pachelbel en Do mayor, 89 compases, arreglo de «Iori Yagami» (así
+  viene en el XML). El archivo subido se llamaba «Johann Sebastian Bach…», que no coincide con la
+  música: no se atribuyó a Bach. La izquierda repite 11 veces el mismo arpegio de ocho compases;
+  sin dedos impresos, todos propuestos (arpegio 5-3-2-1).
+- `hanon-e2.js` — Ejercicio 2 de Hanon, ♩=40 **impreso**. Los dedos impresos están en 8 de sus 15 compases (completos en 4) y el
+  resto repite la forma. Es el mismo ejercicio que el nº 2 de `hanon-junior-1.js`.
+- `c-major-scale-fingering.js` — escalas de Do mayor en negras con las dos manos y los 250 dedos
+  impresos. El título del XML (polaco) dice «mano derecha, redondas», pero la partitura no es eso.
+  Usa `spec.bassCheckSkip`.
+- `hanon-junior-1.js` — **12** ejercicios de Hanon (el archivo se llama «1 to 20 unfinished» pero solo
+  trae 12), 184 compases, 24 secciones (subida y bajada de cada ejercicio). El XML no trae autor ni
+  título («Untitled score», «Composer / arranger»): la atribución sale del nombre del archivo.
+  1206 dedos impresos de 2776; los demás se copian por forma.
 - `sound-of-silence.js` — Simon & Garfunkel, arreglo fácil en Re menor, 16 compases con la
   estrofa repetida (`order: A A B`, 31 compases tocados). Sale de dos imágenes GIF sin
   encabezado (ni título, ni créditos, ni tempo): se usó la versión de dos pentagramas; la de

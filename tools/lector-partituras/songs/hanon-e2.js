@@ -1,47 +1,76 @@
-window.SONGS = window.SONGS || [];
-window.SONGS.push({
-  id: 'hanon-e2',
-  spec: {
-    "title": "Hanon Exercise 2",
+// Hanon, Ejercicio 2 — MusicXML (MuseScore 3.5.0) + MIDI. 15 compases, 4/4, Do mayor, ♩ = 40 impreso.
+// Son corcheas sueltas: la derecha sube y baja un patrón de ocho notas y la izquierda lo toca una octava abajo.
+// Dedos: impresos donde la partitura los trae; en los compases de la misma forma que no los traen se copian los impresos.
+
+const HANON_E2 = {
+  "id": "hanon-e2",
+  "cat": "patrones",
+  "name": "Hanon · Ejercicio 2",
+  "artist": "Charles-Louis Hanon",
+  "tip": "Ejercicio de Hanon en corcheas, las dos manos a la vez con las mismas notas (la izquierda una octava abajo): el patrón de ocho notas sube un grado por compás hasta el compás 7 y después baja. La digitación impresa es 1-2-5-4-3-4-3-2 (derecha) y 5-3-1-2-3-2-3-4 (izquierda) en la subida, y se repite en cada compás; la partitura la imprime solo en los primeros. Tempo impreso ♩ = 40.",
+  "tempo": "40 quarter",
+  "spec": {
+    "title": "Hanon · Ejercicio 2",
     "composer": "Charles-Louis Hanon",
-    "credit": "Classic finger technique exercise",
-    "source": "Hanon: The Virtuoso Pianist - Exercise 2",
+    "credit": "EJERCICIO 2 — HANON (tal como está impreso)",
+    "source": "partitura MusicXML (MuseScore 3.5.0, 15 compases) + MIDI; alturas, ritmo, tempo y dedos impresos del MusicXML, contrastados nota por nota con el MIDI",
     "key": {
       "tonic": "C",
       "mode": "major"
     },
-    "tempoSource": "standard",
-    "tempoNote": "eighth note = 120 (quarter = 60)",
+    "tempoSource": "printed",
+    "tempoNote": "Impreso ♩ = 40 en el compás 1 (y el MIDI trae el mismo 40). Es un tempo de estudio lento: 80 corcheas por minuto.",
     "notes_text": [
-      "15 measures, 4/4 time",
-      "Technical exercise for finger independence",
-      "Five-finger position both hands",
-      "All notes as block chords (simultaneous)",
-      "Rapid eighth notes building speed"
+      "la derecha y la izquierda tocan las mismas notas con una octava de diferencia (Do4 y Do3 al empezar); no hay cruce de manos",
+      "la partitura imprime los dedos completos en los compases 1, 2, 8 y 15 y solo las primeras notas en el 3, el 4, el 9 y el 14; el resto es la misma forma desplazada un grado y lleva la misma digitación (marcada con ?)",
+      "es el mismo ejercicio que el nº 2 del archivo Junior Hanon (c.17-31 de hanon-junior-1): mismas notas y mismos dedos"
     ],
-    "fingersDetail": "Standard 5-finger position (C=1 through G=5 in RH; mirrored in LH). Each finger plays its note simultaneously.",
-    "allowedChromatics": []
+    "allowedChromatics": [],
+    "fingersDetail": "70 de 226 dedos impresos en la partitura (siempre mandan); 155 copiados de un compás de la misma forma que sí los imprime; 1 propuestos y marcados con ? en el texto",
+    "extraChecks": {
+      "midiCrossCheck": {
+        "ok": true,
+        "mode": "exact",
+        "scoreOnsets": 226,
+        "matched": 226,
+        "midiNotesInWindow": 226,
+        "onlyInScoreCount": 0,
+        "onlyInScore": [],
+        "onlyInMidiCount": 0,
+        "onlyInMidi": [],
+        "durationRatioMidiOverScore": [
+          0.95,
+          0.95
+        ],
+        "midiTempoEvents": [
+          [
+            0,
+            40.0
+          ]
+        ],
+        "detail": "las 226 notas del MIDI coinciden en tiempo y altura con las 226 que se pulsan en la partitura (las colas de ligadura no cuentan); tempo del MIDI: 40.0"
+      }
+    },
+    "arrangerNote": "Solo aparece «HANON» como autor; el MusicXML (MuseScore 3.5.0) no trae arreglista ni derechos. No se inventó."
   },
-  text: `
-title: Hanon Exercise 2
+  "text": `title: Hanon · Ejercicio 2
 artist: Charles-Louis Hanon
-key: C major
 meter: 4/4
-tempo: 60 quarter (= 120 eighth notes)
-source: The Virtuoso Pianist, Exercise 2
-tip: Build speed gradually. All notes in each measure are played as block chords (five notes at once) in the rhythm shown. Start slow, gradually increase tempo.
+tempo: 40 quarter
+key: Do mayor
+tip: Ejercicio de Hanon en corcheas, las dos manos a la vez con las mismas notas (la izquierda una octava abajo): el patrón de ocho notas sube un grado por compás hasta el compás 7 y después baja. La digitación impresa es 1-2-5-4-3-4-3-2 (derecha) y 5-3-1-2-3-2-3-4 (izquierda) en la subida, y se repite en cada compás; la partitura la imprime solo en los primeros. Tempo impreso ♩ = 40.
 
-[A] Exercise (m.1-15)
-rh: [C4,E4,F4,G4,A4]/8:1,3,4,5,2 | [D4,F4,G4,A4,B4]/8:1,3,4,5,2 | [E4,G4,A4,B4,C5]/8:1,3,4,5,2 | [F4,A4,B4,C5,D5]/8:1,3,4,5,2 |
-rh: [G4,B4,C5,D5,E5]/8:1,3,4,5,2 | [A4,C5,D5,E5,F5]/8:1,3,4,5,2 | [B4,D5,E5,F5,G5]/8:1,3,4,5,2 | [B4,D5,C5,E5,G5]/8:1,3,4,5,2 |
-rh: [A4,C5,B4,D5,F5]/8:1,3,4,5,2 | [G4,B4,A4,C5,E5]/8:1,3,4,5,2 | [F4,A4,G4,B4,D5]/8:1,3,4,5,2 | [E4,G4,F4,A4,C5]/8:1,3,4,5,2 |
-rh: [D4,F4,E4,G4,B4]/8:1,3,4,5,2 | [C4,E4,D4,F4,A4]/8:1,3,4,5,2 | [C4]/1:1
+[A] Subida (c.1-7)
+rh: C4/8:1 E4/8:2 A4/8:5 G4/8:4 F4/8:3 G4/8:4 F4/8:3 E4/8:2 | D4/8:1 F4/8:2 B4/8:5 A4/8:4 G4/8:3 A4/8:4 G4/8:3 F4/8:2 | E4/8:1 G4/8:2 C5/8:5 B4/8:4? A4/8:3? B4/8:4? A4/8:3? G4/8:2? | F4/8:1 A4/8:2 D5/8:5? C5/8:4? B4/8:3? C5/8:4? B4/8:3? A4/8:2? | G4/8:1 B4/8:2 E5/8:5? D5/8:4? C5/8:3? D5/8:4? C5/8:3? B4/8:2? | A4/8:1? C5/8:2? F5/8:5? E5/8:4? D5/8:3? E5/8:4? D5/8:3? C5/8:2? | B4/8:1? D5/8:2? G5/8:5? F5/8:4? E5/8:3? F5/8:4? E5/8:3? D5/8:2?
+lh: C3/8:5 E3/8:3 A3/8:1 G3/8:2 F3/8:3 G3/8:2 F3/8:3 E3/8:4 | D3/8:5 F3/8:3 B3/8:1 A3/8:2 G3/8:3 A3/8:2 G3/8:3 F3/8:4 | E3/8:5 G3/8:3 C4/8:1? B3/8:2? A3/8:3? B3/8:2? A3/8:3? G3/8:4? | F3/8:5 A3/8:3 D4/8:1? C4/8:2? B3/8:3? C4/8:2? B3/8:3? A3/8:4? | G3/8:5? B3/8:3? E4/8:1? D4/8:2? C4/8:3? D4/8:2? C4/8:3? B3/8:4? | A3/8:5? C4/8:3? F4/8:1? E4/8:2? D4/8:3? E4/8:2? D4/8:3? C4/8:4? | B3/8:5? D4/8:3? G4/8:1? F4/8:2? E4/8:3? F4/8:2? E4/8:3? D4/8:4?
 
-lh: [C3,E3,F3,G3,A3]/8:5,3,2,1,4 | [D3,F3,G3,A3,B3]/8:5,3,2,1,4 | [E3,G3,A3,B3,C4]/8:5,3,2,1,4 | [F3,A3,B3,C4,D4]/8:5,3,2,1,4 |
-lh: [G3,B3,C4,D4,E4]/8:5,3,2,1,4 | [A3,C4,D4,E4,F4]/8:5,3,2,1,4 | [B3,D4,E4,F4,G4]/8:5,3,2,1,4 | [B3,D4,C4,E4,G4]/8:5,3,2,1,4 |
-lh: [A3,C4,B3,D4,F4]/8:5,3,2,1,4 | [G3,B3,A3,C4,E4]/8:5,3,2,1,4 | [F3,A3,G3,B3,D4]/8:5,3,2,1,4 | [E3,G3,F3,A3,C4]/8:5,3,2,1,4 |
-lh: [D3,F3,E3,G3,B3]/8:5,3,2,1,4 | [C3,E3,D3,F3,A3]/8:5,3,2,1,4 | [C3]/1:1
+[B] Bajada (c.8-15)
+rh: G5/8:5 D5/8:2 B4/8:1 C5/8:2 D5/8:3 C5/8:2 D5/8:3 E5/8:4 | F5/8:5 C5/8:2 A4/8:1 B4/8:2? C5/8:3? B4/8:2? C5/8:3? D5/8:4? | E5/8:5? B4/8:2? G4/8:1? A4/8:2? B4/8:3? A4/8:2? B4/8:3? C5/8:4? | D5/8:5? A4/8:2? F4/8:1? G4/8:2? A4/8:3? G4/8:2? A4/8:3? B4/8:4? | C5/8:5? G4/8:2? E4/8:1? F4/8:2? G4/8:3? F4/8:2? G4/8:3? A4/8:4? | B4/8:5? F4/8:2? D4/8:1? E4/8:2? F4/8:3? E4/8:2? F4/8:3? G4/8:4? | A4/8:5 E4/8:2 C4/8:1? D4/8:2? E4/8:3? D4/8:2? E4/8:3? F4/8:4? | C4/1:1?
+lh: G4/8:1 D4/8:3 B3/8:5 C4/8:4 D4/8:3 C4/8:4 D4/8:3 E4/8:2 | F4/8:1 C4/8:3 A3/8:5 B3/8:4? C4/8:3? B3/8:4? C4/8:3? D4/8:2? | E4/8:1? B3/8:3? G3/8:5? A3/8:4? B3/8:3? A3/8:4? B3/8:3? C4/8:2? | D4/8:1? A3/8:3? F3/8:5? G3/8:4? A3/8:3? G3/8:4? A3/8:3? B3/8:2? | C4/8:1? G3/8:3? E3/8:5? F3/8:4? G3/8:3? F3/8:4? G3/8:3? A3/8:2? | B3/8:1? F3/8:3? D3/8:5? E3/8:4? F3/8:3? E3/8:4? F3/8:3? G3/8:2? | A3/8:1 E3/8:3 C3/8:5? D3/8:4? E3/8:3? D3/8:4? E3/8:3? F3/8:2? | C3/1:1
 
-order: A
-`.trim(),
-});
+order: A B
+`
+};
+
+window.SONGS = window.SONGS || [];
+window.SONGS.push(HANON_E2);

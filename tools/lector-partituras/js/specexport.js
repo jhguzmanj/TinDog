@@ -224,7 +224,8 @@ const SpecExport = (() => {
     }
     const mcc = spec.extraChecks && spec.extraChecks.midiCrossCheck;
     const midiVerified = !!(mcc && !mcc.skipped && mcc.onlyInScoreCount === 0);
-    const bassLoop = bassLoopCheck(notes, barOffset, midiVerified);
+    // Ejercicios de escalas/patrones: la izquierda no es un bajo y el chequeo de bucle daría falsos "doubt".
+    const bassLoop = spec.bassCheckSkip ? { skipped: true, detail: spec.bassCheckSkip } : bassLoopCheck(notes, barOffset, midiVerified);
     for (const f of bassLoop.flagged || []) {
       const n = notes.find(x => x.hand === 'lh' && x.bar === f.bar && x.midi === f.midi && x.startBeat === f.startBeat);
       if (n) {
