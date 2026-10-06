@@ -418,6 +418,13 @@ y dentro de "Más ▾": `free | functions`.
     todavía cuesta: el siguiente paso sería atacar solo una vez por parte
     (c. 1, 5 y 9). Si sobra, se pueden devolver 3ª M/tritono como variante
     aparte, no mezcladas aquí.
+  - **Final con dos teclas (octubre 2026).** El profe de Jorge pide, por ahora,
+    **dos teclas por mano al mismo tiempo, no tres**. El acorde final de la
+    derecha (Do-Mi-Sol, 1-3-5) pasó a **Do5+Mi5, 1-3** (3ª mayor): con la
+    izquierda sosteniendo Sol–Do suena igual el acorde de Do completo. Regla
+    para piezas nuevas de la clase: nada de tríadas en una mano (hay prueba en
+    Camino). Otras piezas con acordes de tres notas (las melodías `clase-*`,
+    Canon en Re, Clocks…) NO se tocaron: no se pidió.
 - **Dedos revisados (octubre 2026)**: auditoría automática de todas las piezas
   (mismo dedo en dos teclas seguidas, dedo que sube cuando la nota baja, saltos
   que los dedos no alcanzan). Lo impreso (Mozart, Passacaglia, Für Elise, Clocks)

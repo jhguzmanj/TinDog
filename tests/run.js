@@ -2500,8 +2500,9 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
     check(corch[9] && corch.filter(Boolean).length === 1, 'las corcheas (más tensión por ritmo) van solo en el c. 10, el del tritono');
     check(cb[8][0].lh.join() === '41,48' && cb[9].every(s => !s.lh.length) && cb[10][0].lh.join() === '43,48', 'final IV – V – I: Fa–Do (5ª), el compás de las corcheas sin cambio en la izquierda y Sol–Do');
     check(cb[10].every(s => s.dur >= 2), 'la resolución va en notas largas: el ritmo también descansa');
+    check(ci.steps.every(s => s.rh.length <= 2 && s.lh.length <= 2), 'ninguna mano toca más de dos teclas a la vez (pedido del profe)');
     const fin = ci.steps[ci.steps.length - 1];
-    check(fin.lh.length === 0 && fin.rh.join() === '72,76,79' && fin.rhF.join() === '1,3,5' && fin.dur === 4, 'c. 12: el acorde de Do en la derecha (1-3-5), redonda; la izquierda sigue sonando');
+    check(fin.lh.length === 0 && fin.rh.join() === '72,76' && fin.rhF.join() === '1,3' && fin.dur === 4, 'c. 12: la derecha toca solo dos teclas (Do–Mi, 3ª mayor, dedos 1-3), redonda; la izquierda sigue sonando');
     // El mismo criterio que Amanecer: el salto más grande de la melodía es una 3ª o una 4ª
     const mel = ci.steps.filter(s => s.rh.length === 1).map(s => s.rh[0]);
     check(mel.every((n, i) => i === 0 || Math.abs(n - mel[i - 1]) <= 5), 'la melodía no salta más que una 4ª');
