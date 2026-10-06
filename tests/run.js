@@ -1509,19 +1509,22 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
     W("selectCategory('today')");
   }
 
-  section('Día de lluvia (original, triste y pausada): una nota larga a la izquierda, sin saltos');
+  section('Día de lluvia (triste y pausada): izquierda sencilla, sin saltos');
   {
     const dl = W("SONGS.find(s => s.id === 'dia-de-lluvia')");
     check(!!dl && dl.cat === 'clase' && dl.tempo === 60 && !dl.meter && dl.plan !== false, 'está en "De la clase", ♩=60 (pausado, mío) y entra al plan de Hoy');
     check(W("SONGS.filter(s => s.cat === 'clase')[0].id") === 'sound-of-silence', 'The Sound of Silence sigue primera de "De la clase"');
     check(dl.steps.reduce((a, x) => a + x.dur, 0) === 48, '12 compases de 4 tiempos, sin sobras');
     const bars = []; { let t = 0; dl.steps.forEach(x => { const b = Math.floor(t / 4 + 1e-9); (bars[b] = bars[b] || []).push(x); t += x.dur; }); }
-    check(bars.length === 12 && bars.every(b => b.reduce((a, x) => a + x.dur, 0) === 4 && b[0].label && b[0].lh.length === 1), 'cada compás suma 4, abre con rótulo y con UNA nota de la izquierda');
-    check(dl.steps.every(x => x.lh.length <= 1 && x.rh.length === 1), 'nunca más de una tecla por mano (ni intervalos ni acordes)');
+    check(bars.length === 12 && bars.every((b, i) => b.reduce((a, x) => a + x.dur, 0) === 4 && b[0].label && b[0].lh.length === (i >= 8 ? 2 : 1)), 'cada compás suma 4, abre con rótulo y la izquierda ataca UNA nota (c. 1-8) o DOS (c. 9-12)');
+    check(dl.steps.every(x => x.lh.length <= 2 && x.rh.length === 1), 'nunca más de dos teclas por mano (la regla del profe) y la derecha de una en una');
     // Izquierda: Lam–Fa–Do–Sol (La2 3, Fa2 5, Do3 1, Sol2 4), mismo dedo para la misma tecla, sin mover la mano
     const LHF = { 45: 3, 41: 5, 48: 1, 43: 4 };
-    check(dl.steps.filter(x => x.lh.length).every(x => LHF[x.lh[0]] === x.lhF[0]), 'izquierda: pulgar en Do3, La 3, Sol 4, Fa 5 (la posición de Amanecer)');
-    check(bars.map(b => b[0].lh[0]).join() === '45,41,48,43,45,41,43,45,45,41,43,45', 'bajo: Lam Fa Do Sol · Lam Fa Sol Lam · Lam Fa Sol Lam');
+    check(dl.steps.filter(x => x.lh.length).every(x => x.lh.every((n, i) => LHF[n] === x.lhF[i])), 'izquierda: pulgar en Do3, La 3, Sol 4, Fa 5 (la posición de Amanecer), cada tecla con su dedo');
+    const duo = bars.slice(8).map(b => b[0].lh);
+    check(duo.map(l => l[1] - l[0]).join() === '3,7,5,3' && duo.every(l => l[1] === 48), 'c. 9-12: 3ª menor (La–Do), 5ª (Fa–Do), 4ª (Sol–Do) y 3ª menor; el pulgar siempre en Do3');
+    check(bars.slice(0, 8).every(b => b.every(x => x.lh.length <= 1)), 'c. 1-8: la izquierda sigue con una sola nota');
+    check(bars.map(b => b[0].lh[0]).join() === '45,41,48,43,45,41,43,45,45,41,43,45', 'bajo (nota más grave): Lam Fa Do Sol · Lam Fa Sol Lam · Lam Fa Sol Lam');
     check(dl.steps.every(x => x.dur >= 1), 'todo en negras o más largas: ninguna corchea');
     // Derecha: posición fija Do5=1 … Sol5=5, teclas blancas, sin saltos mayores que una 3ª
     const RHF = { 72: 1, 74: 2, 76: 3, 77: 4, 79: 5 };

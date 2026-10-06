@@ -605,7 +605,7 @@ y dentro de "Más ▾": `free | functions`.
   - La prueba compara melodía y bajo con la lectura de la imagen (escrita en
     el test como cadenas por compás, con las ligaduras como `~`): si alguien
     "corrige" una nota, tiene que cambiar las dos.
-- **"Día de lluvia (original)" (octubre 2026)** (`dia-de-lluvia`, "De la clase", segunda
+- **"Día de lluvia" (octubre 2026, original)** (`dia-de-lluvia`, "De la clase", segunda
   tras The Sound of Silence, ♩=60). Pedido de Jorge un día gris y lluvioso: "algo como
   Amanecer o Camino de intervalos pero triste, melancólico, para mi nivel", como
   **opción para la tarea del sábado**: acompañamiento básico, pausado, sin saltos.
@@ -625,6 +625,19 @@ y dentro de "Más ▾": `free | functions`.
     líneas que **bajan por grados**, y ritmo casi parado (nada más corto que una negra).
   - No cabe aquí: el Mi3 (Mim) queda por encima del pulgar de la izquierda; por eso no hay
     Mim en la progresión.
+  - **Intervalos para el profe (Jorge dijo que "me los van a preguntar")**: entre las dos
+    manos, al atacar la izquierda: 5ª justa en 8 de 12 compases, 3ª mayor (c. 3), 8ª (c. 6),
+    **3ª menor en el c. 12 (Do sobre La: lo que la vuelve triste)**. En la melodía: 17 2ªs
+    mayores, 3 menores, 4 3ªs mayores, 1 3ª menor y 6 notas repetidas; salto máximo 3ª.
+    Se cuentan como intervalo SIMPLE (Mi5 sobre La2 = 5ª aunque haya dos octavas).
+  - **Versión actual: c. 9-12 con DOS dedos en la izquierda (pedido de Jorge, título "Día de
+    lluvia" sin "(original)")**. La izquierda sigue con una nota larga en los c. 1-8; en la
+    Parte 3 (la de notas largas en la derecha, donde hay tiempo) toca intervalos con el
+    pulgar siempre en Do3: c. 9 La–Do 3ª menor (3-1), c. 10 Fa–Do 5ª justa (5-1), c. 11
+    Sol–Do 4ª justa (4-1), c. 12 La–Do 3ª menor (3-1). Son las mismas tres formas de mano
+    de Camino de intervalos. Se dejó fuera de la Parte 1 a propósito: ahí la derecha lleva
+    las gotas repetidas y sumar dos dedos a la izquierda es sumar dificultad donde ya
+    hay mucho que hacer. Dos teclas por mano como máximo (regla del profe): se cumple.
 - **Tocar libre nombra lo que se pisa** (`#freeBox`, `describeHeld`,
   registrado como handler de note-on y note-off del modo `free`): dos teclas →
   intervalo; tres que formen tríada mayor/menor → acorde y posición; si no, el
