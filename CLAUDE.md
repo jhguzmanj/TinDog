@@ -403,6 +403,21 @@ y dentro de "Más ▾": `free | functions`.
     y las notas largas. Forma de Amanecer: pregunta (c. 1-4, queda en Re) /
     respuesta (c. 5-8, cierra en Do) / tensión y cadencia IV–V7–I (c. 9-12) con el
     acorde de Do 1-3-5 en la derecha. Salto máximo de la melodía: una 4ª.
+  - **Cuarta versión: izquierda mucho más simple (octubre 2026).** Jorge: "el
+    acompañamiento de la mano izquierda está muy difícil para mi nivel". Medido:
+    seguía habiendo 12 ataques y **seis formas de mano**, tres de ellas sin el
+    pulgar en Do (3ª M Sol–Si 4-2, Fa–La 5-3 y el tritono Fa–Si 5-2: dedos
+    débiles juntos, abiertos 4-6 semitonos). Ahora el **pulgar no sale nunca de
+    Do3** y solo cambia el segundo dedo (4 = Sol, 4ª; 3 = La, 3ª menor; 5 = Fa,
+    5ª); la izquierda ataca **9 veces** (c. 1, 2, 3, 5, 6, 7, 8, 9, 11) y el resto
+    va sostenido: c. 4 sigue Fa–Do, c. 10 (el de las corcheas) no cambia y el c.
+    12 deja sonar Sol–Do mientras la derecha toca el acorde final. ♩=72 (antes
+    80). La derecha NO se tocó. **Lo que se pierde, a propósito**: 3ª mayor y
+    tritono (la tensión ahora la llevan solo las corcheas de la derecha, y ya
+    no hay "la sensible sube a Do"); siguen en Intervalos y Tocar libre. Si
+    todavía cuesta: el siguiente paso sería atacar solo una vez por parte
+    (c. 1, 5 y 9). Si sobra, se pueden devolver 3ª M/tritono como variante
+    aparte, no mezcladas aquí.
 - **Dedos revisados (octubre 2026)**: auditoría automática de todas las piezas
   (mismo dedo en dos teclas seguidas, dedo que sube cuando la nota baja, saltos
   que los dedos no alcanzan). Lo impreso (Mozart, Passacaglia, Für Elise, Clocks)
@@ -467,9 +482,17 @@ y dentro de "Más ▾": `free | functions`.
     plan de Hoy). 16 compases en 4/4. Derecha con el pulgar en Sol4 (Sol 1 … Re5 5)
     e izquierda con el pulgar en Re4 (Sol3 5 … Re4 1): **ninguna mano se mueve**.
     La hoja imprime los dedos solo donde cambia la posición; el resto se completó
-    con esa posición y **cuadra con todo lo impreso** salvo una rareza que se
-    respetó: el **La3 del c. 1 lleva el 5** (el meñique toca Sol y luego La) y, por
-    ser el mismo pasaje, también el del c. 9. Sin indicación de tempo en la hoja:
+    con esa posición y **cuadra con todo lo impreso** salvo una rareza que
+    **ya no se respeta (octubre 2026, a pedido de Jorge: "el 5 estorba mucho")**: la
+    hoja imprime el **La3 de los c. 1 y 9 con el 5** (el meñique toca Sol y luego La
+    con el pulgar en medio). Quedó con el **4**, como el resto de los La: así el
+    meñique solo toca el Sol grave (7 veces) y ya no pasa de una tecla a otra. Es
+    un cambio a lo IMPRESO, hecho por comodidad; la prueba lo fija (Sol 5, La 4,
+    Si 3, Do 2, Re 1, sin excepciones). **El Sol3 con el 5 se queda**: pulgar en
+    Re4 y meñique en Sol3 es una 5ª, la abertura más natural de la mano; con el 4
+    sería un estiramiento mayor, no menor. Si el meñique sigue molestando en ese
+    Sol, la salida real es otra digitación (no hay una sin 5 que mantenga la mano
+    quieta), y habría que pactarla con el profe. Sin indicación de tempo en la hoja:
     ♩=72 es mío.
   - **Köhler, Melodía en Fa** (op. 190 n.º 27, `kohler-fa`, "Clásicas", `plan:false`).
     3/4, 32 compases, armadura de Fa (Si♭, que la app escribe `A#`), **Si♮ en el c.

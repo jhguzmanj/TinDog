@@ -1392,8 +1392,8 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
     const BF = { 67:1, 69:2, 71:3, 72:4, 74:5 }, BL = { 55:5, 57:4, 59:3, 60:2, 62:1 };
     check(be.steps.every(x => x.rh.every((n, i) => BF[n] === x.rhF[i])), 'Beyer: la derecha lleva Sol=1 … Re=5');
     const lhB = be.steps.filter(x => x.lh.length);
-    check(lhB.every(x => BL[x.lh[0]] === x.lhF[0] || (x.lh[0] === 57 && x.lhF[0] === 5)), 'Beyer: la izquierda lleva Sol=5 … Re=1, salvo el La del c. 1 y 9');
-    check(lhB.filter(x => x.lh[0] === 57 && x.lhF[0] === 5).length === 2, 'Beyer: ese La con el 5 aparece justo dos veces (c. 1 y 9), como la partitura');
+    check(lhB.every(x => BL[x.lh[0]] === x.lhF[0]), 'Beyer: la izquierda lleva Sol=5 … Re=1, sin excepciones (el La del c. 1 y 9 va con el 4, no con el 5 impreso)');
+    check(lhB.filter(x => x.lhF[0] === 5).every(x => x.lh[0] === 55), 'Beyer: el meñique solo toca el Sol grave (nunca pasa de Sol a La)');
     // Köhler
     const ko = W("SONGS.find(s => s.id === 'kohler-fa')");
     check(!!ko && ko.meter === 3 && ko.cat === 'clasica' && ko.plan === false && ko.steps.reduce((a, x) => a + x.dur, 0) === 96, 'Köhler: 3/4, 32 compases = 96 tiempos');
@@ -2471,16 +2471,18 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
   section('Camino de intervalos (original): la izquierda toca solo intervalos, sin mover la mano');
   {
     const ci = W("SONGS.find(s => s.id === 'camino-intervalos')");
-    check(!!ci && ci.cat === 'clase' && ci.tempo === 80 && !ci.meter, 'en "De la clase", ♩=80, compás de 4');
+    check(!!ci && ci.cat === 'clase' && ci.tempo === 72 && !ci.meter, 'en "De la clase", ♩=72, compás de 4');
     check(ci.steps.reduce((a, s) => a + s.dur, 0) === 48, '12 compases de 4 tiempos, sin sobras (como Amanecer, 13)');
     const hits = ci.steps.filter(s => s.lh.length);
     check(hits.every(s => s.lh.length === 2 && s.lhF.length === 2), 'la izquierda nunca toca un acorde: siempre exactamente dos notas con su dedo');
     const ivs = new Set(hits.map(s => s.lh[1] - s.lh[0]));
-    check([3, 4, 5, 6, 7].every(n => ivs.has(n)) && [...ivs].every(n => [3, 4, 5, 6, 7].includes(n)), 'estrena 3ª m, 3ª M, 4ª, tritono y 5ª; sin 7ªs ni octava (abertura incómoda para una mano pequeña)');
+    check([3, 5, 7].every(n => ivs.has(n)) && [...ivs].every(n => [3, 5, 7].includes(n)), 'solo 3ª m (La–Do), 4ª (Sol–Do) y 5ª (Fa–Do): sin 3ª M, tritono, 7ªs ni octava (octubre 2026: demasiado para el nivel de Jorge)');
     check(Math.max(...hits.map(s => s.lh[1] - s.lh[0])) <= 7, 'la izquierda nunca abre más que una 5ª');
     // Izquierda en posición FIJA (la de Amanecer): pulgar en Do3, Si 2, La 3, Sol 4, Fa 5.
     const LHPOS = { 48: 1, 47: 2, 45: 3, 43: 4, 41: 5 };
     check(hits.every(s => s.lh.every((n, i) => LHPOS[n] === s.lhF[i])), 'izquierda: pulgar en Do3 (Si 2, La 3, Sol 4, Fa 5), cada tecla siempre con el mismo dedo');
+    check(hits.every(s => s.lh[1] === 48 && s.lhF[1] === 1), 'izquierda: el pulgar nunca sale de Do3; solo cambia el segundo dedo (4, 3 o 5)');
+    check(hits.length === 9, 'la izquierda ataca 9 veces en 12 compases (antes 12): el resto va sostenido');
     const rh = ci.steps.flatMap(s => s.rh);
     check(Math.min(...rh) >= 72 && Math.max(...rh) <= 79 && rh.every(n => [72, 74, 76, 77, 79].includes(n)), 'derecha: posición fija de cinco dedos (Do5-Sol5)');
     check(ci.steps.every(s => s.rhF.length === s.rh.length && s.rh.every((n, i) => s.rhF[i] === [72, 74, 76, 77, 79].indexOf(n) + 1)), 'derecha: un dedo por tecla, siempre el mismo');
@@ -2496,11 +2498,10 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
     check(cb.length === 12, '12 compases');
     const corch = cb.map(b => b.some(s => s.dur === 0.5 && s.rh.length));
     check(corch[9] && corch.filter(Boolean).length === 1, 'las corcheas (más tensión por ritmo) van solo en el c. 10, el del tritono');
-    check(cb[8][0].lh.join() === '41,48' && cb[9][0].lh.join() === '41,47' && cb[10][0].lh.join() === '43,48', 'final IV – V7 – I: Fa–Do (5ª), Fa–Si (tritono) y Sol–Do');
+    check(cb[8][0].lh.join() === '41,48' && cb[9].every(s => !s.lh.length) && cb[10][0].lh.join() === '43,48', 'final IV – V – I: Fa–Do (5ª), el compás de las corcheas sin cambio en la izquierda y Sol–Do');
     check(cb[10].every(s => s.dur >= 2), 'la resolución va en notas largas: el ritmo también descansa');
-    check(cb[10][0].lh.includes(48) && cb[9][0].lh.includes(47), 'el Si del tritono sube medio tono al Do (la sensible resuelve)');
     const fin = ci.steps[ci.steps.length - 1];
-    check(fin.lh.join() === '43,48' && fin.rh.join() === '72,76,79' && fin.rhF.join() === '1,3,5' && fin.dur === 4, 'c. 12: el acorde de Do en la derecha (1-3-5), redonda');
+    check(fin.lh.length === 0 && fin.rh.join() === '72,76,79' && fin.rhF.join() === '1,3,5' && fin.dur === 4, 'c. 12: el acorde de Do en la derecha (1-3-5), redonda; la izquierda sigue sonando');
     // El mismo criterio que Amanecer: el salto más grande de la melodía es una 3ª o una 4ª
     const mel = ci.steps.filter(s => s.rh.length === 1).map(s => s.rh[0]);
     check(mel.every((n, i) => i === 0 || Math.abs(n - mel[i - 1]) <= 5), 'la melodía no salta más que una 4ª');
