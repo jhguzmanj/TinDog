@@ -518,6 +518,37 @@ y dentro de "Más ▾": `free | functions`.
     y la cascada dibuja el bloque con su duración completa. **`rh:[]` sigue
     significando SILENCIO**, no sostener (Dragon Ball GT, Agathe): por eso no se
     generalizó la regla de la izquierda a la derecha.
+- **JSON corregidos del otro flujo (octubre 2026): los cinco archivos que antes salieron
+  defectuosos** (`c-major-scale-fingering`, `hanon-e2`, `canon-in-c`,
+  `melody-in-f-kohler`, `melody-in-g-beyer`). Ahora vienen de MusicXML + MIDI, con
+  `midiCrossCheck` exacto. **Se contrastaron con lo que ya estaba en la app**, nota por
+  nota (tiempo, altura, mano):
+  - **Beyer y Köhler: idénticos** (95 y 129 notas, 0 diferencias de nota o ritmo) a lo
+    sacado del vector del PDF: segunda fuente independiente que confirma la
+    transcripción. Solo difieren dedos: Beyer La3 c. 1 y 9 (JSON 5, app 4: cambio
+    deliberado de Jorge, ver Beyer) y Köhler **c. 10, La4** (JSON "sugerido" 3, app 1: la
+    app mantiene 1 porque el c. 9 imprime pulgar en La4, el c. 11 imprime Do5 con 3 y el
+    c. 12 La4 con 1; el 3 sale de copiar la forma del c. 2, que está en otra posición).
+  - **Hanon e2 = `hanon-2` de la app**: 226 notas idénticas. Dos diferencias: (1) el Do3
+    final de la izquierda, JSON "impreso" **1**, el PDF de Junior Hanon imprime **5** (se
+    queda 5: es la hoja que ya usa la app; son ediciones distintas); (2) el JSON trae
+    **♩=40 impreso**, mientras que la app usa 60 (número mío, la hoja del PDF no trae
+    tempo). No se cambió el tempo de los 12; para ir despacio está la velocidad de la
+    cascada.
+  - **Escala de Do con dedos: NO agregada.** 40 compases en cuatro tiempos de lo mismo
+    que ya hacen Escalas y Agilidad (digitación rh 12312345 / lh 54321321, idéntica). Lo
+    único que no existe en la app es el **movimiento contrario** (c. 17-24, dos manos
+    convergiendo en Do4); si algún día se quiere, va como opción de Escalas (`scaleDir`),
+    no como pieza.
+  - **Canon en Do (Iori Yagami, 89 compases): NO agregado.** 677 notas, **ningún dedo
+    impreso** (los 677 propuestos), 11 vueltas de 8 compases sobre el mismo bajo. Todo en
+    teclas blancas y las vueltas 1-2 son redondas en la derecha, pero **la izquierda es un
+    arpegio de octava (5-3-2-1, Do3-Mi3-Sol3-Do4) que cambia de posición en CADA compás**,
+    y eso es justo lo que Jorge no puede hoy (pidió una nota por tiempo, intervalos de
+    dos teclas). Además ya existe Canon en Re simplificado. Si se retoma: partir del
+    bajo en raíces (Do–Sol–Lam–Mim–Fa–Do–Fa–Sol, una nota por compás) y las vueltas 1-4.
+    El `handSpanPerInstant` del JSON marca `ok:false` por el último compás (acorde con
+    abertura de 16 semitonos en la izquierda: Do2-Sol2-Mi3).
 - **"The Sound of Silence" (octubre 2026)** (`sound-of-silence`, "De la clase", primera
   de su categoría, ♩=80). Jorge la llamó "la canción de este mes"; el título lo dijo
   él después de ver la primera versión (llegó como "Canción del mes"). El arreglo de
