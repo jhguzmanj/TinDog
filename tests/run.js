@@ -1409,11 +1409,11 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
     check(Math.abs(sched.len - 3 * 0.85) < 1e-6, 'en la cascada, el primer La de la derecha dura 3 tiempos (×0,85)');
   }
 
-  section('Canción del mes (Fa mayor): lectura de la imagen, compás por compás');
+  section('The Sound of Silence (Fa mayor): lectura de la imagen, compás por compás');
   {
-    const cm = W("SONGS.find(s => s.id === 'cancion-mes')");
-    check(!!cm && cm.cat === 'clase' && cm.tempo === 80 && cm.plan !== false, 'está en "De la clase", ♩=80 (mío) y entra al plan de Hoy');
-    check(W("SONGS.filter(s => s.cat === 'clase')[0].id") === 'cancion-mes', 'es la primera de "De la clase"');
+    const cm = W("SONGS.find(s => s.id === 'sound-of-silence')");
+    check(!!cm && cm.cat === 'clase' && cm.tempo === 80 && cm.plan !== false, 'está en "De la clase", ♩=80 (de práctica; el real ronda 105-109) y entra al plan de Hoy');
+    check(W("SONGS.filter(s => s.cat === 'clase')[0].id") === 'sound-of-silence', 'es la primera de "De la clase"');
     const nn = { D2:38, E2:40, F2:41, G2:43, A2:45, Bb2:46, C3:48, D3:50, F3:53, C4:60, D4:62, E4:64, F4:65, G4:67, A4:69, C5:72, D5:74, E5:76, F5:77 };
     // Lo que dice la partitura (2 pentagramas), un compás por línea. "r" = silencio, "~" = nota ligada del compás anterior.
     const MEL = [
@@ -1502,8 +1502,8 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
     // Un rótulo "c. N" por compás (ancla del Tramo en la cascada)
     check([...Array(16)].every((_, i) => lab.some(l => l.startsWith('c. ' + (i + 1) + ' ') || l === 'c. ' + (i + 1))), 'hay un rótulo "c. N" en cada uno de los 16 compases');
     // Se puede abrir desde el plan/enlaces aunque el filtro vigente la esconda, y la cascada dibuja las ligaduras largas
-    W("selectCategory('fragments'); fragCat = 'popular'; pickFragmentById('cancion-mes')");
-    check(W('currentFragment.id') === 'cancion-mes' && W('fragCat') === 'clase', 'pickFragmentById abre la categoría de la pieza');
+    W("selectCategory('fragments'); fragCat = 'popular'; pickFragmentById('sound-of-silence')");
+    check(W('currentFragment.id') === 'sound-of-silence' && W('fragCat') === 'clase', 'pickFragmentById abre la categoría de la pieza');
     const bigRh = W("(() => { const { events, beatMs } = buildCascadeSchedule(); const d = events.filter(x => x.hand === 'rh').map(e => Math.round((e.tEnd - e.tStart) / beatMs * 100) / 100); return Math.max(...d); })()");
     check(Math.abs(bigRh - 4 * 0.85) < 1e-6, 'en la cascada la nota más larga de la derecha (Sol, 4 tiempos) se dibuja completa');
     W("selectCategory('today')");

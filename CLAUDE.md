@@ -488,13 +488,16 @@ y dentro de "Más ▾": `free | functions`.
     y la cascada dibuja el bloque con su duración completa. **`rh:[]` sigue
     significando SILENCIO**, no sostener (Dragon Ball GT, Agathe): por eso no se
     generalizó la regla de la izquierda a la derecha.
-- **"Canción del mes (Fa)" (octubre 2026)** (`cancion-mes`, "De la clase", primera de
-  su categoría, ♩=80). Jorge pasó DOS imágenes (GIF, 1200 px, raster: no hay
+- **"The Sound of Silence" (octubre 2026)** (`sound-of-silence`, "De la clase", primera
+  de su categoría, ♩=80). Jorge la llamó "la canción de este mes"; el título lo dijo
+  él después de ver la primera versión (llegó como "Canción del mes"). El arreglo de
+  la imagen no trae autor: no inventar uno. **Tempo**: la grabación ronda ♩≈105-109
+  según varias fuentes (discrepan: 105, 108, 112); 80 es de PRÁCTICA, a propósito
+  más lento (las corcheas a 107 son ~214 notas por minuto). Meta: subir con el
+  metrónomo y la velocidad de la cascada hasta ~105. Jorge pasó DOS imágenes (GIF, 1200 px, raster: no hay
   vector que extraer) de la misma pieza: una de 2 pentagramas (melodía + bajo) y
   otra de 3 (suma un pentagrama medio de arpegios en corcheas). **Título, autor,
-  tempo y dedos no vienen en la imagen**: el nombre es provisional, el tempo (80)
-  y toda la digitación son míos; cambiar el nombre cuando Jorge diga cuál es.
-  Quedó en "De la clase" porque dijo que es "la canción de este mes"; si el
+  tempo y dedos no vienen en la imagen**: la digitación es mía (el título lo dio Jorge). Quedó en "De la clase" porque dijo que es "la canción de este mes"; si el
   profe no la mandó, pasarla a `facil`. Entra al plan de Hoy (sin `plan:false`).
   - **Solo se transcribió la de 2 pentagramas.** El pentagrama medio es una
     tercera voz (arpegio sobre el mismo bajo): con melodía y bajo ya hay dos
