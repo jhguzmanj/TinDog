@@ -149,6 +149,13 @@ Piezas del lector (`songs/`):
 - `passacaglia-sample.js` — solo los compases 1-8 de 72, como muestra para escuchar.
   El PDF dice "D'après Handel" y nada más: no se atribuye a ningún arreglista.
 - `mozart-arioso.js` — 32 compases, escritos sin barras de repetición (AABB literal).
+- `sound-of-silence.js` — Simon & Garfunkel, arreglo fácil en Re menor, 16 compases con la
+  estrofa repetida (`order: A A B`, 31 compases tocados). Sale de dos imágenes GIF sin
+  encabezado (ni título, ni créditos, ni tempo): se usó la versión de dos pentagramas; la de
+  tres trae una voz intermedia que no cabe en dos manos. Leída por píxeles + recortes
+  ampliados con guías de altura. El tempo (108) es el de la grabación, no impreso. Sin
+  MusicXML ni MIDI: como Clocks, no hay contraste externo nota por nota; lo que la sostiene
+  es que el bajo da Rem–Do–Rem–Sib–Fa bajo la melodía y que todo cae en Re menor natural.
 
 ## Exportar a la app del piano: `piezas-json/`
 
