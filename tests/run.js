@@ -1409,6 +1409,106 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
     check(Math.abs(sched.len - 3 * 0.85) < 1e-6, 'en la cascada, el primer La de la derecha dura 3 tiempos (×0,85)');
   }
 
+  section('Canción del mes (Fa mayor): lectura de la imagen, compás por compás');
+  {
+    const cm = W("SONGS.find(s => s.id === 'cancion-mes')");
+    check(!!cm && cm.cat === 'clase' && cm.tempo === 80 && cm.plan !== false, 'está en "De la clase", ♩=80 (mío) y entra al plan de Hoy');
+    check(W("SONGS.filter(s => s.cat === 'clase')[0].id") === 'cancion-mes', 'es la primera de "De la clase"');
+    const nn = { D2:38, E2:40, F2:41, G2:43, A2:45, Bb2:46, C3:48, D3:50, F3:53, C4:60, D4:62, E4:64, F4:65, G4:67, A4:69, C5:72, D5:74, E5:76, F5:77 };
+    // Lo que dice la partitura (2 pentagramas), un compás por línea. "r" = silencio, "~" = nota ligada del compás anterior.
+    const MEL = [
+      'r1 D4/.5 D4/.5 F4/.5 F4/.5 A4/.5 A4/.5', 'G4/4',
+      'r.5 C4/.5 C4/.5 C4/.5 E4/.5 E4/.5 G4/.5 G4/.5', 'F4/4',
+      'r.5 F4/.5 F4/.5 F4/.5 A4/.5 A4/.5 C5/.5 C5/.5', 'D5/2 C5/2',
+      'r1 F4/.5 F4/.5 A4/.5 A4/.5 C5/.5 C5/.5', 'D5/2 C5/2',
+      'r1 F4/.5 F4/.5 D5/.5 D5/1.5', '~1 D5/.5 E5/.5 F5/.5 F5/1.5',
+      'E5/.5 D5/1.5 C5/2', '~1 D5/.5 C5/.5 A4/2',
+      'r2 r.5 F4/.5 F4/.5 F4/.5', 'C5/3 r.5 E4/.5',
+      'F4/.5 D4/1.5 ~2', 'r4'
+    ];
+    const BAS = [
+      'D3+F3/4', 'C3/1 C3/.5 G2/.5 C3/1 C3/.5 G2/.5', 'C3/2 G2/1 C3/1', 'D3/1 D3/.5 A2/.5 D3/1 D3/.5 A2/.5',
+      'D3/2 D3/1 C3/1', 'Bb2/1 Bb2/1 F2/1 F2/.5 C3/.5', 'F2/1 F2/1 C3/1 F2/1', 'Bb2/1 Bb2/1 F2/1 F2/.5 C3/.5',
+      'F2/1 A2/1 Bb2/1 F2/1', 'Bb2/1 F2/1 Bb2/1 F2/1', 'Bb2/1 F2/.5 Bb2/.5 F2/1 F2/1', 'F2/1 F2/1 F2/1 F2/.5 E2/.5',
+      'D2/1 D2/.5 E2/.5 F2/2', 'C3/1 C3/1 C3/1 C3/1', 'D3/1 D3/.5 A2/.5 D3/1 D3/.5 A2/.5', 'D3/2 r2'
+    ];
+    const parse = (bars, bass) => {
+      const ev = []; let t = 0;
+      bars.forEach((b, bi) => {
+        let sum = 0;
+        b.split(' ').forEach(tok => {
+          if(tok[0] === 'r'){ const d = +tok.slice(1); sum += d; t += d; return; }
+          if(tok[0] === '~'){ const d = +tok.slice(1); ev[ev.length - 1].d += d; sum += d; t += d; return; }
+          const [nm, d] = tok.split('/'), notes = nm.split('+').map(x => nn[x]);
+          ev.push({ t, notes, d: +d }); sum += +d; t += +d;
+        });
+        check(sum === 4, `compás ${bi + 1} (${bass ? 'izquierda' : 'melodía'}) suma 4 tiempos`);
+      });
+      return ev;
+    };
+    const eM = parse(MEL, false), eB = parse(BAS, true);
+    // Reconstruir de los pasos
+    const gotM = [], gotB = []; let t = 0;
+    cm.steps.forEach(x => {
+      if(x.rh.length) gotM.push({ t, notes: x.rh, d: x.rhDur || x.dur });
+      if(x.lh.length) gotB.push({ t, notes: x.lh.slice().sort((a, b) => a - b), d: 0 });
+      t += x.dur;
+    });
+    // la izquierda sostiene hasta su siguiente ataque (o, la última, lo que dura el paso)
+    gotB.forEach((e, i) => { e.d = i + 1 < gotB.length ? gotB[i + 1].t - e.t : 2; });
+    const norm = ev => JSON.stringify(ev.map(e => [e.t, e.notes.slice().sort((a, b) => a - b), e.d]));
+    check(norm(gotM) === norm(eM), 'la melodía de los pasos = la de la partitura (notas, tiempo y duración, con las ligaduras)');
+    check(norm(gotB) === norm(eB), 'el bajo de los pasos = el de la partitura');
+    check(cm.steps.reduce((a, x) => a + x.dur, 0) === 62, '15 compases de 4 + el último con solo la blanca = 62 tiempos (como Arpèges à Agathe)');
+    // Tonalidad: Fa mayor, la única tecla negra es el Si♭2 del bajo
+    check(cm.steps.every(x => x.rh.every(n => [0, 2, 4, 5, 7, 9, 11].includes(n % 12))), 'la melodía es toda de teclas blancas');
+    check(cm.steps.flatMap(x => x.lh).filter(n => [1, 3, 6, 8, 10].includes(n % 12)).every(n => n === 46), 'en el bajo solo hay una negra: Si♭2');
+    check(Math.max(...cm.steps.flatMap(x => x.lh)) < Math.min(...cm.steps.flatMap(x => x.rh)), 'las manos no se cruzan');
+    // El bajo da los acordes: nota inicial de cada compás
+    const firstLh = [50, 48, 48, 50, 50, 46, 41, 46, 41, 46, 46, 41, 38, 48, 50, 50];
+    check(eB.filter((e, i) => true).length > 0 && BAS.every((b, i) => nn[b.split(/[ +]/)[0].split('/')[0]] === firstLh[i]), 'el bajo de cada compás arranca en Re-Do-Do-Re-Re-Si♭-Fa-Si♭-Fa-Si♭-Si♭-Fa-Re-Do-Re-Re');
+    // Dedos
+    const seq = (hand) => { const o = []; cm.steps.forEach(x => { if(x[hand].length) o.push({ n: x[hand].slice(), f: x[hand + 'F'].slice() }); }); return o; };
+    const rhS = seq('rh'), lhS = seq('lh');
+    check(cm.steps.every(x => x.rh.length === (x.rhF || []).length && x.lh.length === (x.lhF || []).length), 'cada nota trae su dedo');
+    // Derecha: más agudo = dedo mayor; ninguna contradicción ni mismo dedo en dos teclas distintas
+    const rhBad = []; let rhSlide = 0;
+    for(let i = 1; i < rhS.length; i++){
+      const dp = rhS[i].n[0] - rhS[i - 1].n[0], df = rhS[i].f[0] - rhS[i - 1].f[0];
+      if(dp !== 0 && df === 0) rhSlide++;
+      if(dp !== 0 && df !== 0 && (dp > 0) !== (df > 0)) rhBad.push(rhS[i - 1].n[0] + '→' + rhS[i].n[0]);
+    }
+    // la única contradicción es el cambio de posición avisado del c. 12 (Do con el pulgar → La con el 3, mano que baja)
+    check(rhBad.join() === '72→69' && rhSlide === 0, 'derecha: ningún dedo contradice el sentido de la nota, salvo el cambio de mano avisado del c. 12; nunca el mismo dedo en teclas distintas');
+    // Izquierda: más grave = dedo mayor. El único "mismo dedo en dos teclas" es el pulgar que baja a Do (c. 5, tiempo 4).
+    let lhBad = 0, lhSlide = [];
+    for(let i = 1; i < lhS.length; i++){
+      const a = lhS[i - 1], b = lhS[i];
+      if(a.n.length > 1 || b.n.length > 1) continue;
+      const dp = b.n[0] - a.n[0], df = b.f[0] - a.f[0];
+      if(dp !== 0 && df === 0) lhSlide.push(a.n[0] + '→' + b.n[0]);
+      if(dp !== 0 && df !== 0 && (dp > 0) !== (df < 0)) lhBad++;
+    }
+    check(lhBad === 0 && lhSlide.join() === '50→48', 'izquierda: sentido correcto; solo el pulgar que baja de Re a Do (c. 5) repite dedo');
+    // Posiciones de la izquierda: cada tecla lleva el mismo dedo dentro de su tramo
+    const lhFingerBars = (from, to) => { const m = {}; let ok = true, tt = 0;
+      cm.steps.forEach(x => { const b = Math.floor(tt / 4) + 1; if(b >= from && b <= to) x.lh.forEach((n, i) => { if(m[n] && m[n] !== x.lhF[i]) ok = false; m[n] = x.lhF[i]; }); tt += x.dur; });
+      return ok; };
+    check(lhFingerBars(2, 4) && lhFingerBars(6, 11) && lhFingerBars(12, 13) && lhFingerBars(14, 15), 'izquierda: dentro de cada posición (c. 2-4, 6-11, 12-13, 14-15) cada tecla lleva siempre el mismo dedo');
+    // Cada cambio de posición está avisado en un rótulo
+    const lab = cm.steps.map(x => x.label || '');
+    ['pulgar sobre Re', 'pulgar en Do', 'mano abierta', 'pulgar baja a Do', 'pulgar en Do (Re con el 2)', 'Fa pasa al 3', 'pulgar en Fa', 'meñique en Re', 'Do con el 2', 'pulgar en Re'].forEach(k =>
+      check(lab.some(l => l.includes(k)), `rótulo de cambio de mano: "${k}"`));
+    // Un rótulo "c. N" por compás (ancla del Tramo en la cascada)
+    check([...Array(16)].every((_, i) => lab.some(l => l.startsWith('c. ' + (i + 1) + ' ') || l === 'c. ' + (i + 1))), 'hay un rótulo "c. N" en cada uno de los 16 compases');
+    // Se puede abrir desde el plan/enlaces aunque el filtro vigente la esconda, y la cascada dibuja las ligaduras largas
+    W("selectCategory('fragments'); fragCat = 'popular'; pickFragmentById('cancion-mes')");
+    check(W('currentFragment.id') === 'cancion-mes' && W('fragCat') === 'clase', 'pickFragmentById abre la categoría de la pieza');
+    const bigRh = W("(() => { const { events, beatMs } = buildCascadeSchedule(); const d = events.filter(x => x.hand === 'rh').map(e => Math.round((e.tEnd - e.tStart) / beatMs * 100) / 100); return Math.max(...d); })()");
+    check(Math.abs(bigRh - 4 * 0.85) < 1e-6, 'en la cascada la nota más larga de la derecha (Sol, 4 tiempos) se dibuja completa');
+    W("selectCategory('today')");
+  }
+
   section('Coordinación: las dos manos no hacen lo mismo');
   const coord = W('AGILITY_DRILLS.filter(d => d.coord)');
   check(coord.length === 8, `${coord.length} ejercicios de coordinación (escalera del 1 al 8)`);

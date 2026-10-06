@@ -488,6 +488,59 @@ y dentro de "Más ▾": `free | functions`.
     y la cascada dibuja el bloque con su duración completa. **`rh:[]` sigue
     significando SILENCIO**, no sostener (Dragon Ball GT, Agathe): por eso no se
     generalizó la regla de la izquierda a la derecha.
+- **"Canción del mes (Fa)" (octubre 2026)** (`cancion-mes`, "De la clase", primera de
+  su categoría, ♩=80). Jorge pasó DOS imágenes (GIF, 1200 px, raster: no hay
+  vector que extraer) de la misma pieza: una de 2 pentagramas (melodía + bajo) y
+  otra de 3 (suma un pentagrama medio de arpegios en corcheas). **Título, autor,
+  tempo y dedos no vienen en la imagen**: el nombre es provisional, el tempo (80)
+  y toda la digitación son míos; cambiar el nombre cuando Jorge diga cuál es.
+  Quedó en "De la clase" porque dijo que es "la canción de este mes"; si el
+  profe no la mandó, pasarla a `facil`. Entra al plan de Hoy (sin `plan:false`).
+  - **Solo se transcribió la de 2 pentagramas.** El pentagrama medio es una
+    tercera voz (arpegio sobre el mismo bajo): con melodía y bajo ya hay dos
+    manos ocupadas, así que no es tocable por una persona. No va en la app.
+  - **Método para una imagen raster** (el de píxeles que ya había en este
+    archivo, más barato aquí): líneas del pentagrama = filas con >800 px
+    oscuros (separación 11,75 px; 8 pentagramas = 4 sistemas); recortes ×3 por
+    tramo de ~400 px con **marcas de altura solo al margen** (nunca líneas de
+    guía encima: taparon las del pentagrama y se leía peor) y el nombre de cada
+    línea/espacio; leer cada cabeza contra su marca. **Ojo**: el centro de masa
+    de cabezas erosionadas sesga la altura (daba La2 donde era Sol2): sirve para
+    ubicar, no para decidir; decidir a ojo sobre el recorte. Verificación: cada
+    compás suma 4 en las dos manos, y se renderizó la pieza desde los datos
+    (abcjs, `score/verify2.js` en el scratchpad) y se comparó compás a compás
+    con la imagen original: cuadra. El primer acorde del bajo, que parecía de 3
+    notas, son **dos** (Re3+Fa3).
+  - **Forma**: Fa mayor (un Si♭), 4/4, 16 compases. Compás 1 = silencio de
+    negra y seis corcheas (Re Re Fa Fa La La); el bajo es una nota por tiempo
+    (Do–Sol, Re–La, Si♭–Fa…) salvo el acorde del c. 1 y las cuatro negras del
+    14. Las ligaduras (Re5 del c. 9→10, Do5 del 11→12, Re4 del 15) son una sola
+    nota con `rhDur`. **La repetición (`:|` al final del c. 15) no se
+    representa**: `SONGS` no tiene repeticiones; se toca una vez y el c. 16
+    (blanca de Re en el bajo) cierra. Para girar los c. 1-15, el Tramo de la
+    cascada con `cascadeLoop`. 62 tiempos (como Agathe: la blanca final no
+    lleva el silencio de blanca).
+  - **Dedos: cinco posiciones de derecha y cuatro de izquierda, todas avisadas
+    en el `label`.** Izquierda (pulgar a la derecha): c. 1 acorde 3-1; c. 2-5
+    pulgar en Re (Do 2, Sol 5, La 4); c. 5 tiempo 4 el pulgar baja a Do y c.
+    6-11 queda con el pulgar en Do (Si♭ 2, La 3, Fa 5); c. 12-13 meñique en Re
+    (Fa 3, Mi 4, Re 5); c. 14-16 otra vez pulgar en Re (Do 2). **Derecha**: c.
+    1-2 pulgar en Re (Re 1, Fa 3, La 5, Sol 4); c. 3-4 pulgar en Do; c. 5-9 una
+    **mano abierta 1-2-4-5** (Fa, La, Do, Re): es lo que evita mover la mano en
+    cuatro compases que abarcan Fa4–Re5 (una 6ª) y que el Re5 del c. 9 caiga
+    con el meñique sin cambiar de posición; c. 10-12 pulgar en Do; c. 12 baja
+    a pulgar en Fa (La con el 3); c. 14-15 pulgar en Re. Lo incómodo, por si se
+    cambia: el 1-2 abierto de una 3ª mayor (Fa–La) del c. 5, el salto del Do5
+    (meñique, tres tiempos) al Mi4 en media corchea del c. 14, y el Re5 que
+    pasa de meñique a índice al volver a atacarlo en el c. 10.
+  - **Excepciones a las reglas de dedos, a propósito y con prueba**: la
+    derecha tiene UNA contradicción de sentido (Do5 con 1 → La4 con 3 en el c.
+    12, es el cambio de posición avisado) y la izquierda UN caso de mismo dedo
+    en dos teclas (el pulgar baja de Re a Do en el c. 5; "pulgar caminando",
+    igual que Dragon Ball GT). Ningún meñique va de tecla en tecla.
+  - La prueba compara melodía y bajo con la lectura de la imagen (escrita en
+    el test como cadenas por compás, con las ligaduras como `~`): si alguien
+    "corrige" una nota, tiene que cambiar las dos.
 - **Tocar libre nombra lo que se pisa** (`#freeBox`, `describeHeld`,
   registrado como handler de note-on y note-off del modo `free`): dos teclas →
   intervalo; tres que formen tríada mayor/menor → acorde y posición; si no, el
