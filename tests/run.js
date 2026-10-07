@@ -2001,6 +2001,80 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
      delete window.OfflineAudioContext; delete window.Audio;
      delete window.__playCalls; delete window.__renderCount; delete window.__wav;`);
 
+  section('Piano de muestras reales (Salamander) y respaldo al sintetizador');
+  {
+    // Los datos incrustados: 30 notas, una cada 3 semitonos de La0 a Do8, cada una un MP3 de verdad.
+    const lines = doc.getElementById('pianoSamples').textContent.split('\n').map(l => l.trim()).filter(Boolean);
+    check(lines.length === 30, 'el bloque #pianoSamples trae 30 notas');
+    check(lines.map(l => +l.split(' ')[0]).join() === Array.from({ length: 30 }, (_, i) => 21 + 3 * i).join(),
+      'las notas base van de La0 (21) a Do8 (108), una cada 3 semitonos');
+    const head = l => Buffer.from(l.split(' ')[1].slice(0, 8), 'base64');
+    check(lines.every(l => { const h = head(l); return (h[0] === 0xFF && (h[1] & 0xE0) === 0xE0) || h.toString('latin1', 0, 3) === 'ID3'; }),
+      'cada muestra empieza como un MP3 (cabecera de trama o ID3), no es basura');
+    check(lines.every(l => /^[A-Za-z0-9+/=]+$/.test(l.split(' ')[1])), 'y es base64 limpio, sin saltos ni espacios');
+    check(lines.join('\n').length < 1.0e6, 'pesa menos de 1 MB en total (el archivo sigue siendo liviano de cargar en el teléfono)');
+    check(/Salamander Grand Piano/.test(doc.querySelector('.sound-credit').textContent) && /CC BY 3\.0/.test(doc.querySelector('.sound-credit').textContent),
+      'el crédito de la licencia CC BY 3.0 está visible en la página');
+
+    // Qué muestra toca cada tecla: la más cercana, afinada como mucho 1 semitono.
+    W('pianoBases = Array.from({ length: 30 }, (_, i) => 21 + 3 * i);');
+    const sf = n => W(`JSON.stringify(pianoSampleFor(${n}))`);
+    check(JSON.parse(sf(60)).base === 60 && JSON.parse(sf(60)).rate === 1, 'Do4 usa su propia muestra, sin afinar');
+    check(JSON.parse(sf(61)).base === 60 && Math.abs(JSON.parse(sf(61)).rate - Math.pow(2, 1 / 12)) < 1e-9, 'Do#4 usa la de Do4 un semitono más aguda');
+    check(JSON.parse(sf(62)).base === 63 && Math.abs(JSON.parse(sf(62)).rate - Math.pow(2, -1 / 12)) < 1e-9, 'Re4 usa la de Re#4 un semitono más grave');
+    check(JSON.parse(sf(21)).base === 21 && JSON.parse(sf(108)).base === 108, 'los extremos del piano (La0 y Do8) tienen su muestra');
+    check(Array.from({ length: 88 }, (_, i) => 21 + i).every(n => Math.abs(Math.log2(JSON.parse(sf(n)).rate) * 12) <= 1.0000001),
+      'ninguna de las 88 teclas se afina más de 1 semitono (más suena a ardilla)');
+
+    // Cuál de las dos voces se construye: muestra si ya están listas, sintetizador si no.
+    W(`
+      window.__made = [];
+      function __p(){ return { value:0, setValueAtTime(){}, exponentialRampToValueAtTime(){}, cancelScheduledValues(){} }; }
+      function __n(extra){ return Object.assign({ connect(){}, disconnect(){}, start(){}, stop(){} }, extra || {}); }
+      window.__ctx = {
+        sampleRate: 44100, destination: __n(),
+        createGain(){ return __n({ gain: __p() }); },
+        createBiquadFilter(){ return __n({ type:'', frequency: __p(), Q: __p(), detune: __p() }); },
+        createOscillator(){ window.__made.push('osc'); return __n({ type:'', frequency: __p(), detune: __p() }); },
+        createDynamicsCompressor(){ return __n({ threshold:__p(), knee:__p(), ratio:__p(), attack:__p(), release:__p() }); },
+        createConvolver(){ return __n({ buffer:null }); },
+        createBufferSource(){ const o = __n({ buffer:null, playbackRate: __p() }); window.__made.push('buf'); window.__last = o; return o; },
+        createBuffer(c, l, r){ return { numberOfChannels:c, length:l, sampleRate:r, getChannelData:() => new Float32Array(l) }; },
+      };
+    `);
+    W('pianoBuffers = null;');
+    W('buildVoice(__ctx, {}, null, 60, 80, 0)');
+    check(W('__made.includes("osc")'), 'sin muestras (aún no decodificadas o el navegador no pudo): suena el sintetizador de siempre');
+    W('window.__made = []; pianoBuffers = Object.fromEntries(pianoBases.map(b => [b, { duration: 3 }]));');
+    const v = W('(() => { const r = buildVoice(__ctx, {}, null, 61, 80, 0); return { osc: __made.includes("osc"), rate: __last.playbackRate.value, life: r.life, stops: r.oscs.length }; })()');
+    check(!v.osc && Math.abs(v.rate - Math.pow(2, 1 / 12)) < 1e-9, 'con las muestras listas suena la muestra, afinada con playbackRate, sin osciladores');
+    check(v.stops === 1 && typeof v.life === 'number', 'la voz tiene la misma forma que la del sintetizador (stopNoteSound no distingue cuál es)');
+    // Soltar la tecla funciona igual con una voz de muestra
+    W('window.AudioContext = function(){ return __ctx; }; __ctx.state = "running"; __ctx.currentTime = 0; __ctx.resume = () => {}; audioCtx = null; soundEnabled = true; soundTarget = "pc"; audioFallback = false;');
+    W('playNoteSound(64, 80)');
+    check(W('!!activeVoices[64]'), 'tocar una tecla crea su voz (de muestra)');
+    W('stopNoteSound(64)');
+    check(W('!activeVoices[64]'), 'soltar la tecla la quita igual que con el sintetizador');
+    W('allNotesOff(); audioCtx = null; delete window.AudioContext; pianoBuffers = null; pianoBases = []; pianoLoad = null; delete window.__ctx; delete window.__made; delete window.__last;');
+
+    // La carga: decodifica las 30 y las deja listas; si faltan muchas, se queda con el sintetizador.
+    W(`window.__dec = 0;
+       window.OfflineAudioContext = class { constructor(){ this.sampleRate = 44100; }
+         decodeAudioData(ab){ window.__dec++; return Promise.resolve({ duration: 2, byteLength: ab.byteLength }); } };`);
+    const okLoad = await W('loadPianoSamples()');
+    check(okLoad === true && W('window.__dec') === 30 && W('Object.keys(pianoBuffers).length') === 30, 'loadPianoSamples decodifica las 30 muestras y las deja listas');
+    check(W('pianoBases.length') === 30 && W('pianoBases[0]') === 21 && W('pianoBases[29]') === 108, 'y deja las notas base ordenadas');
+    check(W('loadPianoSamples() === pianoLoad'), 'la carga se hace UNA vez: la segunda llamada reusa la misma promesa');
+    W('pianoBuffers = null; pianoBases = []; pianoLoad = null; window.__dec = 0;');
+    W(`window.OfflineAudioContext = class { constructor(){ this.sampleRate = 44100; }
+         decodeAudioData(ab){ return window.__dec++ < 5 ? Promise.resolve({ duration: 2 }) : Promise.reject(new Error('no se pudo')); } };`);
+    check(await W('loadPianoSamples()') === false && W('pianoBuffers') === null,
+      'si el navegador solo decodifica unas pocas, no queda un piano con huecos: se usa el sintetizador entero');
+    W('pianoBuffers = null; pianoBases = []; pianoLoad = null; delete window.OfflineAudioContext; delete window.__dec;');
+    check(await W('loadPianoSamples()') === false, 'sin Web Audio (jsdom, navegador viejo) no revienta: devuelve false y no cachea el fallo');
+    check(W('pianoLoad') === null, '...así que se puede reintentar más tarde');
+  }
+
   section('Estrellita: una sola versión y la izquierda sencilla');
   // Estaba dos veces (corta con acordes + "Twinkle" larga). Jorge pidió dejar
   // solo la corta, y sin acordes: todavía no los domina.

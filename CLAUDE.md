@@ -2380,14 +2380,71 @@ raro, no algo que necesite casi nadie. Con esto encendido:
   vuelta, ya corregido según lo de arriba); falta su confirmación de que
   esta vuelta sí quedó bien.
 
-### Sintetizador del computador (solo sin piano conectado)
+### Piano de muestras reales (octubre 2026): el sonido del computador y el teléfono
+Pedido de Jorge: "en la otra aplicación de lector de partituras el sonido de
+reproducción en el pc y celular es mejor". **Tenía razón y la causa es de fondo**:
+un sintetizador por suma de senos (ver abajo) no suena a piano grabado por bien
+afinado que esté. Ahora el sonido sale de **30 notas del Salamander Grand Piano**
+(Alexander Holm, **CC BY 3.0**, en la copia de Tone.js, `Tonejs/audio/salamander`),
+una cada 3 semitonos de La0 (MIDI 21) a Do8 (108), incrustadas en el propio
+archivo; el sintetizador queda de **respaldo**.
+- **Dónde están**: bloque `<script type="text/plain" id="pianoSamples">` al final
+  del `<body>`, una línea por nota, `MIDI base64-de-un-MP3`. **Ojo al buscar en el
+  archivo**: esas 30 líneas miden 17-70 KB cada una; usar `cut -c1-200` o
+  `head -n -40` con `grep`, o el resultado se llena de base64. No editar a mano:
+  se regeneran con `tools/build-piano-samples.py RAW_DIR SALIDA.txt` (recorta por
+  registro — 5 s graves, 2,2 s agudos —, mono, fundido final, iguala el volumen
+  por RMS de los primeros 0,5 s y codifica MP3 de 48 kbps). El archivo pasó de
+  505 KB a 1,36 MB; las muestras son 829 KB de base64. Crédito visible en
+  `.sound-credit` al pie de la página (CC BY lo exige: no quitarlo).
+- **Motor** (`pianoBuffers`, `pianoBases`, `pianoLoad`, `loadPianoSamples`,
+  `pianoSampleFor`, `buildSampleVoice`): cada tecla usa la muestra **más cercana**
+  y la afina con `playbackRate` (máximo 1 semitono; hay prueba sobre las 88). Se
+  decodifica **en segundo plano al abrir** (`requestIdleCallback`, con un
+  `OfflineAudioContext` de 1 muestra: decodificar no pide altavoz ni gesto;
+  ~0,8 s en Chromium de escritorio con las 30). **`buildVoice` es ahora un
+  despachador**: muestra si `pianoBuffers` está listo, `buildSynthVoice` (el
+  sintetizador de siempre) si no. Las dos devuelven `{oscs, gain, life}`, así que
+  `stopNoteSound`, `allNotesOff` y el sonido alternativo no saben cuál es.
+- **Cuándo cae al sintetizador**: antes de que termine la decodificación (la
+  primera tecla muy temprana), si el navegador no puede decodificar MP3, o si
+  decodifica menos de 20 de las 30 (**un piano con huecos es peor que el
+  sintetizador entero**). Un fallo por falta de Web Audio NO se cachea
+  (`pianoLoad` queda en `null` para poder reintentar); uno por decodificación
+  incompleta sí.
+- **El sonido alternativo (`<audio>`) también lo usa**: `renderNoteClip` espera
+  `loadPianoSamples()` y renderiza la muestra en el `OfflineAudioContext`
+  (hasta 3 s por nota), así que quien necesite ese rodeo oye lo mismo que el resto.
+- **Con el piano conectado nada cambia**: sigue saliendo por MIDI out y suena el
+  Yamaha. Esto es solo para cuando no hay piano.
+- **Calibración, medida con Chromium (no de oído)**: nivel RMS del primer segundo
+  a ~±2,5 dB del sintetizador anterior (`PIANO_SAMPLE_GAIN` 2,2 y un `tilt` que
+  baja hasta 30% los agudos, que grabados suenan más fuertes); los **picos** son
+  hasta 2× mayores porque el ataque de un piano real es más seco (el compresor
+  del bus los contiene; un acorde de 4 notas pico 0,82). **No pude oírlo**: la
+  sesión no tiene altavoces. Si Jorge lo siente fuerte, flojo o sin graves, se
+  ajusta `PIANO_SAMPLE_GAIN` y el `tilt`; si lo siente "sin aire", subir el
+  `send` de reverberación de `ensureAudioBus` (hoy 0,14).
+- **Lo que no tiene** (y un piano de verdad sí): una sola capa de velocidad (la
+  fuerza solo cambia volumen y brillo con un filtro, no el timbre), sin pedal ni
+  resonancia entre cuerdas, y **las muestras terminan** (2-5 s con fundido): una
+  redonda a ♩=60 son 4 s y las agudas se apagan antes. Cabe en el mismo molde
+  si hace falta: capas de velocidad (×2-3 el tamaño) o notas en bucle.
+- Pruebas: bloque de datos (30 líneas, notas 21..108, cabecera MP3, base64 limpio,
+  <1 MB, crédito), mapa de muestras (≤1 semitono), despachador, carga con
+  decodificador falso (30 de 30, solo 5 de 30, sin Web Audio) y que soltar la
+  tecla funciona con una voz de muestra. La integración real se probó en
+  Chromium (30/30 decodificadas, voz en vivo, soltar, y el respaldo `<audio>`).
+
+### Sintetizador del computador (ahora solo de respaldo)
 Imita las cuatro cosas que hacen que algo suene a piano y no a órgano:
 decae desde el golpe (`noteLife()`: un La0 dura mucho más que un Do8), seis
 armónicos con los agudos apagándose antes que el fundamental, inarmonicidad
 (los armónicos **no** son múltiplos exactos), y golpe de martillo con un filtro
 que se cierra mientras la nota muere. El fundamental son dos osciladores
 desafinados unos cents: ese batido es lo que lo hace sonar vivo. Todo generado
-al vuelo, cero descargas. `ensureAudioBus()` añade reverberación corta y un
+al vuelo, cero descargas. (Desde octubre 2026 suena solo si las muestras de piano
+real no están listas; ver arriba.) `ensureAudioBus()` añade reverberación corta y un
 compresor para que un acorde de cuatro notas no sature.
 **`buildVoice(ctx, dest, send, note, vel, t0)` recibe el contexto por parámetro
 a propósito**: así se puede renderizar en un `OfflineAudioContext` y medir la
