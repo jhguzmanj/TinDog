@@ -649,6 +649,7 @@ y dentro de "Más ▾": `free | functions`.
   - **Receta, derivada de Amanecer**: Do–Sol–Lam–Fa pasa a **Lam–Fa–Do–Sol** (empezar por
     la menor es lo que la vuelve triste), las mismas posiciones fijas: derecha pulgar en
     Do5 (Do 1 … Sol 5, nunca sale de ahí), izquierda pulgar en Do3 (La 3, Sol 4, Fa 5).
+    **(Octubre 2026: la derecha bajó una octava, a Do4–Sol4, pedido de Jorge; ver "Octava de la derecha" más abajo. Donde esta sección dice Do5/Mi5/Sol5, hoy es Do4/Mi4/Sol4.)**
     **Izquierda: UNA nota por compás, larga** (12 ataques, todos al tiempo 1, sin ninguna
     corchea en toda la pieza) y **nunca más de una tecla por mano** (la regla del
     profe: dos teclas como máximo; aquí ni eso). Salto máximo de la melodía: una 3ª.
@@ -674,6 +675,23 @@ y dentro de "Más ▾": `free | functions`.
     de Camino de intervalos. Se dejó fuera de la Parte 1 a propósito: ahí la derecha lleva
     las gotas repetidas y sumar dos dedos a la izquierda es sumar dificultad donde ya
     hay mucho que hacer. Dos teclas por mano como máximo (regla del profe): se cumple.
+  - **Octava de la derecha (octubre 2026).** Jorge preguntó por qué estaba en la 5ª octava
+    ("me lo van a preguntar") y pidió moverla a la 4ª. **La razón original** (para Camino,
+    Amanecer y Día de lluvia, que compartían Do5–Sol5 / Fa2–Do3): misma posición que Amanecer,
+    que ya toca (cada tecla con el mismo dedo), y Do5–Sol5 cabe en la clave de Sol sin líneas
+    adicionales; **no era una razón musical**: Do5 es una zona más brillante y para una pieza
+    triste suena menos oscura. **Ahora**: derecha pulgar en **Do4 (el Do central)**, Do 1 Re 2 Mi 3
+    Fa 4 Sol 5; izquierda sin cambios (Fa2–Do3). Qué se gana: suena más grave y es la posición
+    "del Do central" que ya usa en escalas. **Qué se pierde, dicho a Jorge**: el Do4 se escribe con
+    una **línea adicional** (y el Re4 justo bajo el pentagrama), que él todavía está aprendiendo a
+    leer; **Día de lluvia ya no comparte posición con Amanecer y Camino** (esos dos siguen en Do5).
+    Los 24 semitonos de hueco entre manos bajaron a 12 (Do3 → Do4, una octava justa); sigue sin
+    cruzarse (hay prueba).
+  - **Corrección: intervalo compuesto.** En una respuesta a Jorge se dijo que Mi5 sobre La2
+    (31 semitonos) era "una 12ª". **Era un error**: 12ª = 5ª + UNA octava (19 semitonos); 31 son
+    5ª + DOS octavas = **19ª**. Con la derecha en la 4ª octava, Mi4 sobre La2 (19 semitonos) sí es
+    una 12ª. Como intervalo SIMPLE sigue siendo una 5ª justa en los dos casos. Los PDF y la tabla
+    de intervalos para el profe usan el intervalo simple y no cambian.
 - **Tocar libre nombra lo que se pisa** (`#freeBox`, `describeHeld`,
   registrado como handler de note-on y note-off del modo `free`): dos teclas →
   intervalo; tres que formen tríada mayor/menor → acorde y posición; si no, el

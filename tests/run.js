@@ -1526,17 +1526,19 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
     check(bars.slice(0, 8).every(b => b.every(x => x.lh.length <= 1)), 'c. 1-8: la izquierda sigue con una sola nota');
     check(bars.map(b => b[0].lh[0]).join() === '45,41,48,43,45,41,43,45,45,41,43,45', 'bajo (nota más grave): Lam Fa Do Sol · Lam Fa Sol Lam · Lam Fa Sol Lam');
     check(dl.steps.every(x => x.dur >= 1), 'todo en negras o más largas: ninguna corchea');
-    // Derecha: posición fija Do5=1 … Sol5=5, teclas blancas, sin saltos mayores que una 3ª
-    const RHF = { 72: 1, 74: 2, 76: 3, 77: 4, 79: 5 };
-    check(dl.steps.every(x => RHF[x.rh[0]] === x.rhF[0]), 'derecha: Do5=1 … Sol5=5, siempre el mismo dedo');
+    // Derecha (octubre 2026: bajó una octava, a la 4ª, a pedido de Jorge): posición fija Do4=1 … Sol4=5, teclas blancas, sin saltos mayores que una 3ª
+    const RHF = { 60: 1, 62: 2, 64: 3, 65: 4, 67: 5 };
+    check(dl.steps.every(x => RHF[x.rh[0]] === x.rhF[0]), 'derecha: Do4 (el Do central)=1 … Sol4=5, siempre el mismo dedo');
     const mel = dl.steps.map(x => x.rh[0]);
     check(Math.max(...mel.slice(1).map((n, i) => Math.abs(n - mel[i]))) <= 4, 'el salto más grande de la melodía es una 3ª mayor (4 semitonos)');
     check(Math.max(...dl.steps.flatMap(x => x.lh)) < Math.min(...mel), 'las manos no se cruzan');
     check(dl.steps.flatMap(x => [...x.lh, ...x.rh]).every(n => [0, 2, 4, 5, 7, 9, 11].includes(n % 12)), 'todo en teclas blancas (La menor)');
     // Carácter: cada parte cae al final, y termina en Do sobre Lam (tercera menor del acorde: triste y estable)
-    check(mel[mel.length - 1] === 72 && dl.steps[dl.steps.length - 1].dur === 4 && dl.steps[dl.steps.length - 1].lh[0] === 45, 'termina en Do5 sobre La2, redonda');
+    check(mel[mel.length - 1] === 60 && dl.steps[dl.steps.length - 1].dur === 4 && dl.steps[dl.steps.length - 1].lh[0] === 45, 'termina en Do4 sobre La2, redonda');
     check(['Parte 1', 'Parte 2', 'Parte 3', 'Fin'].every(k => dl.steps.some(x => (x.label || '').includes(k))), 'rótulos de las tres partes y del final');
-    check(dl.steps.filter(x => x.rh[0] === 76 && x.dur === 1).length >= 5, 'las "gotas": notas repetidas en negras (Mi5 sobre todo)');
+    check(dl.steps.filter(x => x.rh[0] === 64 && x.dur === 1).length >= 5, 'las "gotas": notas repetidas en negras (Mi4 sobre todo)');
+    check(Math.min(...mel) === 60 && Math.max(...mel) === 67, 'la derecha va de Do4 a Sol4: la 4ª octava, una octava abajo (antes Do5-Sol5)');
+    check(Math.min(...mel) - Math.max(...dl.steps.flatMap(x => x.lh)) === 12, 'y queda a una octava justa de la izquierda (Do3 → Do4), sin cruzarse');
     W("selectCategory('fragments'); fragCat = 'popular'; pickFragmentById('dia-de-lluvia')");
     check(W('currentFragment.id') === 'dia-de-lluvia' && W('fragCat') === 'clase', 'pickFragmentById abre la categoría de la pieza');
     W("selectCategory('today')");
