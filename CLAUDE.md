@@ -425,6 +425,42 @@ y dentro de "Más ▾": `free | functions`.
     para piezas nuevas de la clase: nada de tríadas en una mano (hay prueba en
     Camino). Otras piezas con acordes de tres notas (las melodías `clase-*`,
     Canon en Re, Clocks…) NO se tocaron: no se pidió.
+- **"Cumpleaños feliz", versión de Janneke Gunther en Fa mayor (octubre 2026)**
+  (`cumple`, Populares, misma `id`, **reemplaza** la versión en Do). Jorge pasó
+  MusicXML + PDF + MIDI (MuseScore 4.4.4) y dijo "esta me gustó, pero el
+  acompañamiento lo siento muy complejo". El archivo trae en la izquierda
+  **acordes de 3-4 notas en cada compás** (Fa-La-Do-Fa, Do-Mi-Sol-Do, Sib-Re-Fa-
+  Sib…), lo que choca con la regla del profe (máximo dos teclas por mano); la
+  derecha es solo melodía.
+  - **Melodía** (idéntica al MusicXML, hay prueba nota por nota y en ritmo):
+    3/4 con anacrusa de dos corcheas (Do Do), 17 compases, Fa mayor (un Sib),
+    la canción dos veces seguidas (c. 2-9 y c. 10-17; el c. 9 es el Fa de
+    "you" + la anacrusa de la 2ª vuelta). Rango Do4–Do5, con Sib4. La **fermata**
+    del Re (c. 7 y 15) no se hace; el rótulo la menciona como opcional.
+  - **Izquierda simplificada: UNA nota por compás**, la fundamental del acorde
+    del archivo (Fa Do Do Fa Fa Sib Fa | Fa… ), atacada al tiempo 1. Cabe en la
+    posición de Fa de la izquierda, **la mano no se mueve**: Fa2 5, Sib2 2, Do3 1
+    (Fa Sol La Sib Do = 5-4-3-2-1). **Qué se pierde, a propósito**: el acorde de
+    Do del tiempo 3 de los c. 8 y 16 (V antes de volver a Fa) — el compás queda
+    todo en Fa; el archivo lo trae como acorde de 4 notas. Es lo primero que se
+    puede devolver si sobra nivel (Do3 con el 1 en el tiempo 3). El tiempo 3 del
+    c. 9 queda con el Fa sonando (la app no tiene silencios en la izquierda).
+  - **Derecha: dos posiciones y tres saltos avisados.** Posición 1 pulgar en Do4
+    (Do 1 Re 2 Mi 3 Fa 4 Sol 5) para c. 2-5 y 10-13; Posición 2 pulgar en Fa4
+    (Fa 1 Sol 2 La 3 Sib 4 Do 5) para c. 6 y 8 (14 y 16). `Salto 1` (c. 6, sube
+    una octava de Do4 a Do5 en un tiempo: **lo más difícil**), `Salto 2` (c. 9,
+    baja al Fa con el 4) y `Salto 3` (c. 14, igual al 1). **El c. 7 (Mi Re Sib Sib)
+    es el único incómodo**: el pulgar camina Fa→Mi→Re (mismo dedo en teclas
+    distintas, avisado como en DBGT) y el Sib va con el 5 estirado (Re–Sib =
+    8 semitonos). Dedos **inventados**, el archivo no trae digitación; con otra
+    del profe se cambia aquí.
+  - **Tempo**: el MIDI trae ♩=114; la app usa 96 (número mío, de práctica). Para
+    tocarla con una grabación, subir.
+  - Se cambió el `ref` de la 2ª mayor de Intervalos: ya no son "las dos primeras
+    notas" (ahora son Do Do, unísono) sino las dos primeras **distintas**.
+  - La versión vieja (Do mayor, dos saltos, una sola nota de la izquierda) está
+    en el historial de git. El progreso guardado bajo `songs.cumple` se
+    mantiene (misma `id`), aunque ahora cuenta otra versión.
 - **Dedos revisados (octubre 2026)**: auditoría automática de todas las piezas
   (mismo dedo en dos teclas seguidas, dedo que sube cuando la nota baja, saltos
   que los dedos no alcanzan). Lo impreso (Mozart, Passacaglia, Für Elise, Clocks)
@@ -799,9 +835,8 @@ y dentro de "Más ▾": `free | functions`.
     **Los saltos siguen siendo el problema real**: Mi4→Mi5 (octava, c. 5) y
     Sol4→Fa5 / Fa4→Mi5 / Mi4→Re5 (7ªs, c. 10-12) en corcheas a ♩=120.
   - **Primera pieza en 3/4 que la cascada dibuja bien**: `meter:3` y
-    `pickup:1` (ver la sección Cascada). Cumpleaños feliz es de 3 en el
-    original y **no se tocó**: sus duraciones no se revisaron contra un 3/4,
-    así que ponerle `meter:3` a ciegas podría descuadrar las barras.
+    `pickup:1` (ver la sección Cascada). Cumpleaños feliz (la versión vieja en Do)
+    era de 3 y no se tocó; la nueva (octubre 2026) ya lleva `meter:3` y `pickup:1`.
 - **"Clocks" (Coldplay), arreglo fácil de 22 compases** (`clocks`, Populares,
   `plan:false`). Primera de tres piezas que una persona que sabe de piano le
   pasó a Jorge **"para más adelante"**; llega por el flujo de JSON. Fuente
@@ -1205,6 +1240,7 @@ y dentro de "Más ▾": `free | functions`.
     grave lleva siempre el mismo dedo — si cambiara, la mano tendría que
     reacomodarse). El progreso viejo bajo `songs.twinkle` queda huérfano en
     localStorage; es inofensivo (nada lo lee) y no vale la pena migrarlo.
+    **(Reemplazada en octubre 2026 por la versión de Janneke Gunther: ver la sección de "Cumpleaños feliz" nueva, arriba. Lo que sigue es el historial de la versión en Do.)**
     **"Cumpleaños feliz" sí sale de la posición fija de 5 dedos, a propósito**:
     es la primera pieza de Fragmentos con cambio de posición completo de mano
     (no solo cruce de pulgar). Va en dos posiciones — pulgar en Sol4 (Sol4-Re5)

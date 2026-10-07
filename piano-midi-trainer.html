@@ -3725,6 +3725,27 @@ const SOUND_OF_SILENCE_STEPS = [
   {lh:[50], lhF:[1], rh:[], dur:2, label:'c. 16 · Final'}
 ];
 
+// Cumpleaños feliz: cada vuelta (c. 2-9 y c. 10-16) es la misma; los rótulos llevan
+// el número de compás porque se repiten (útil en el Tramo de la cascada). La
+// izquierda: Fa2 (5), Sib2 (2) y Do3 (1), la posición de Fa de siempre.
+function cumpleVerso(v){
+  const c0 = v === 1 ? 2 : 10, n = k => 'c. ' + (c0 + k) + ' · ';
+  const o = (lh, rh, f, d, label) => { const x = {lh: lh ? [lh[0]] : [], rh:[rh], rhF:[f], dur:d};
+    if(lh) x.lhF = [lh[1]]; if(label) x.label = label; return x; };
+  const F2 = [41, 5], C3 = [48, 1], BB2 = [46, 2];
+  const st = [
+    o(F2, 62, 2, 1, n(0) + (v === 1 ? 'Frase 1' : 'Segunda vuelta')), o(0, 60, 1, 1), o(0, 65, 4, 1),
+    o(C3, 64, 3, 2, n(1)), o(0, 60, 1, 0.5), o(0, 60, 1, 0.5),
+    o(C3, 62, 2, 1, n(2)), o(0, 60, 1, 1), o(0, 67, 5, 1),
+    o(F2, 65, 4, 2, n(3)), o(0, 60, 1, 0.5), o(0, 60, 1, 0.5),
+    o(F2, 72, 5, 1, n(4) + (v === 1 ? 'Salto 1' : 'Salto 3') + ': la mano sube. Posición 2: pulgar en Fa4 (Fa 1, Sol 2, La 3, Sib 4, Do 5)'), o(0, 69, 3, 1), o(0, 65, 1, 1),
+    o(BB2, 64, 1, 1, n(5) + 'El pulgar camina hacia abajo: Fa, Mi, Re. Estira el meñique para el Sib'), o(0, 62, 1, 1, 'Pausa (fermata) opcional: alarga el Re'), o(0, 70, 5, 0.5), o(0, 70, 5, 0.5),
+    o(F2, 69, 3, 1, n(6) + 'La mano vuelve a la Posición 2'), o(0, 65, 1, 1), o(0, 67, 2, 1),
+  ];
+  if(v === 1) st.push(o(F2, 65, 4, 2, 'c. 9 · Salto 2: la mano baja a la Posición 1'), o(0, 60, 1, 0.5), o(0, 60, 1, 0.5));
+  return st;
+}
+
 const SONGS = [
   {
     id:'cuatro-acordes',
@@ -3791,23 +3812,15 @@ const SONGS = [
     id:'cumple',
     cat:'popular',
     name:'Cumpleaños feliz',
-    tip:'La melodía abarca una octava, así que la mano se mueve solo DOS veces (los dos saltos agudos). Posición 1: pulgar en Sol4. Posición 2: pulgar en Do5. Si y La, bajo el Do agudo, se tocan con el pulgar caminando.',
-    tempo:104,
+    meter:3,
+    pickup:1,
+    tip:'Versión en Fa mayor (Janneke Gunther) con la izquierda simplificada: una sola nota larga por compás (Fa, Sib o Do). La derecha cambia de posición tres veces, avisado en pantalla; empieza antes de la barra.',
+    tempo:96,
     steps:[
-      {lh:[48], lhF:[5], rh:[67], rhF:[1], dur:0.5, label:'Posición 1: pulgar en Sol4 (Sol 1, La 2, Si 3, Do 4, Re 5)'}, {lh:[], rh:[67], rhF:[1], dur:0.5},
-      {lh:[], rh:[69], rhF:[2], dur:1},  {lh:[], rh:[67], rhF:[1], dur:1},
-      {lh:[], rh:[72], rhF:[4], dur:1},  {lh:[], rh:[71], rhF:[3], dur:2, label:'Frase 1'},
-      {lh:[48], lhF:[5], rh:[67], rhF:[1], dur:0.5}, {lh:[], rh:[67], rhF:[1], dur:0.5},
-      {lh:[], rh:[69], rhF:[2], dur:1},  {lh:[], rh:[67], rhF:[1], dur:1},
-      {lh:[], rh:[74], rhF:[5], dur:1},  {lh:[], rh:[72], rhF:[4], dur:2, label:'Frase 2'},
-      {lh:[48], lhF:[5], rh:[67], rhF:[1], dur:0.5}, {lh:[], rh:[67], rhF:[1], dur:0.5},
-      {lh:[], rh:[79], rhF:[5], dur:1, label:'Salto 1: la mano sube. Posición 2: pulgar en Do5 (Do 1, Re 2, Mi 3, Fa 4, Sol 5)'},
-      {lh:[], rh:[76], rhF:[3], dur:1},  {lh:[], rh:[72], rhF:[1], dur:1},
-      {lh:[], rh:[71], rhF:[1], dur:1, label:'El pulgar camina hacia abajo: Do, Si, La'},
-      {lh:[], rh:[69], rhF:[1], dur:2, label:'Frase 3'},
-      {lh:[48], lhF:[5], rh:[77], rhF:[4], dur:0.5, label:'Salto 2: la mano vuelve a la Posición 2 (Fa con el 4)'}, {lh:[], rh:[77], rhF:[4], dur:0.5},
-      {lh:[], rh:[76], rhF:[3], dur:1},  {lh:[], rh:[72], rhF:[1], dur:1},
-      {lh:[], rh:[74], rhF:[2], dur:1},  {lh:[], rh:[72], rhF:[1], dur:2, label:'Fin'},
+      {lh:[], rh:[60], rhF:[1], dur:0.5, label:'Anacrusa · Posición 1: pulgar en Do4 (Do 1, Re 2, Mi 3, Fa 4, Sol 5)'}, {lh:[], rh:[60], rhF:[1], dur:0.5},
+      ...cumpleVerso(1),
+      ...cumpleVerso(2),
+      {lh:[41], lhF:[5], rh:[65], rhF:[1], dur:3, label:'c. 17 · Fin'},
     ]
   },
   {
@@ -4782,7 +4795,7 @@ const INTERVALS = [
    tip:'No es una distancia, es el punto de partida: la misma tecla dos veces. Úsalo para igualar el toque — que las dos suenen exactamente igual de fuerte.'},
   {name:'2ª menor',           semitones:1,  ref:'Suena tenso. Es el motivo de "Tiburón".',
    tip:'La tecla vecina inmediata, contando las negras. Es la distancia más chica del piano. Entre dos blancas solo pasa en Mi–Fa y Si–Do: por eso ahí no hay negra.'},
-  {name:'2ª mayor',           semitones:2,  ref:'Las dos primeras notas de "Cumpleaños feliz".',
+  {name:'2ª mayor',           semitones:2,  ref:'Las dos primeras notas distintas de "Cumpleaños feliz" (de "ple" a "a" en Cum-ple-a-ños).',
    tip:'Un tono: dos teclas con una en medio (casi siempre una negra). Es el paso normal de cualquier escala; si te sale cómodo con dedos vecinos, ya tienes la base.'},
   {name:'3ª menor',           semitones:3,  ref:'El color triste. Base de todos los acordes menores.',
    tip:'Tres semitonos. Comparada con la 3ª mayor es un semitono más corta y suena "triste": es exactamente lo que diferencia La menor de La mayor. Toca las dos seguidas para oírlo.'},

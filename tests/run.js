@@ -2488,12 +2488,38 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
     };
     for(const id of ['cumple', 'estrellita', 'flaca', 'bella-ciao', 'dbgt', 'dbgt-2', 'camino-intervalos', 'amanecer', 'colegiala', 'jingle-bells'])
       check(pinkyHops(id).length === 0, id + ': ningún meñique pasa de una tecla a otra seguida (' + pinkyHops(id).join(' ') + ')');
-    // Cumpleaños: 2 saltos de mano (los dos saltos agudos), no 3; Si y La se tocan con el pulgar.
-    const cu = W("SONGS.find(s => s.id === 'cumple')").steps;
-    const moves = cu.filter(s => /^Salto/.test(s.label || ''));
-    check(moves.length === 2, 'Cumpleaños: la mano se mueve solo dos veces (los dos saltos agudos)');
-    check(cu.filter(s => s.rh[0] === 71 && s.dur === 1 && s.rhF[0] === 1).length === 1 && cu.filter(s => s.rh[0] === 69 && s.rhF[0] === 1).length === 1, 'Cumpleaños: Si y La, bajo el Do agudo, van con el pulgar caminando');
-    check(cu.every(s => s.rh.length === s.rhF.length), 'Cumpleaños: cada nota trae su dedo');
+    // Cumpleaños feliz (octubre 2026): versión de Janneke Gunther en Fa mayor, izquierda simplificada.
+    const cu = W("SONGS.find(s => s.id === 'cumple')");
+    const cs = cu.steps;
+    check(cu.meter === 3 && cu.pickup === 1 && cu.tempo === 96, 'Cumpleaños: compás de 3 con anacrusa de 1 tiempo, ♩=96 (práctica; el MIDI trae 114)');
+    check(cs.reduce((a, s) => a + s.dur, 0) === 49, 'Cumpleaños: 49 tiempos = anacrusa de 1 + 16 compases de 3');
+    check(cs.every(s => s.rh.length === 1 && s.rhF.length === 1), 'Cumpleaños: una sola tecla a la vez en la derecha, con su dedo');
+    // Melodía contra el MusicXML (Do Re Mi Fa Sol La Sib Do; duraciones en tiempos)
+    const VERSO = '62:1 60:1 65:1 | 64:2 60:.5 60:.5 | 62:1 60:1 67:1 | 65:2 60:.5 60:.5 | 72:1 69:1 65:1 | 64:1 62:1 70:.5 70:.5 | 69:1 65:1 67:1';
+    const mel = cs.map(s => s.rh[0] + ':' + (s.dur === 0.5 ? '.5' : s.dur));
+    const melEsperada = ['60:.5 60:.5', VERSO.replace(/ \| /g, ' '), '65:2 60:.5 60:.5', VERSO.replace(/ \| /g, ' '), '65:3'].join(' ').split(' ');
+    check(mel.join(' ') === melEsperada.join(' '), 'Cumpleaños: la melodía coincide nota por nota y en ritmo con el MusicXML (dos vueltas)');
+    // Izquierda: UNA nota por compás, nunca acordes, en la posición de Fa (Fa2 5, Sib2 2, Do3 1)
+    const lhHits = cs.filter(s => s.lh.length);
+    check(lhHits.length === 16 && lhHits.every(s => s.lh.length === 1 && s.lhF.length === 1), 'Cumpleaños: la izquierda ataca 16 veces, siempre una sola nota (el archivo traía acordes de 3-4 notas)');
+    const LHF = { 41: 5, 46: 2, 48: 1 };
+    check(lhHits.every(s => LHF[s.lh[0]] === s.lhF[0]), 'Cumpleaños: izquierda en posición fija de Fa (Fa 5, Sib 2, Do 1): la mano no se mueve');
+    check(lhHits.map(s => s.lh[0]).join() === '41,48,48,41,41,46,41,41,41,48,48,41,41,46,41,41', 'Cumpleaños: la raíz de cada compás es la del acorde del archivo (Fa Do Do Fa Fa Sib Fa)');
+    check(cs[0].lh.length === 0 && cs[1].lh.length === 0, 'Cumpleaños: la anacrusa va sin izquierda');
+    // Derecha: dos posiciones (pulgar en Do4 y en Fa4); tres cambios de mano avisados con Salto
+    const moves = cs.filter(s => /Salto/.test(s.label || ''));
+    check(moves.length === 3 && moves.map(s => s.label.match(/Salto \d/)[0]).join() === 'Salto 1,Salto 2,Salto 3', 'Cumpleaños: la mano se mueve tres veces y las tres están avisadas (Salto 1, 2, 3)');
+    const P1 = { 60: 1, 62: 2, 64: 3, 65: 4, 67: 5 }, P2 = { 65: 1, 67: 2, 69: 3, 70: 4, 72: 5 };
+    // c. 2-5 (y 10-13) en posición 1; c. 6 y 8 (y 14, 16) en posición 2
+    const verso1 = cs.slice(2, 27), verso2 = cs.slice(27, 49);
+    check([verso1, verso2].every(v => v.slice(0, 12).every(s => P1[s.rh[0]] === s.rhF[0])), 'Cumpleaños: c. 2-5 y 10-13 con el pulgar en Do4 (Do 1 … Sol 5)');
+    check([verso1, verso2].every(v => v.slice(12, 15).every(s => P2[s.rh[0]] === s.rhF[0]) && v.slice(19, 22).every(s => P2[s.rh[0]] === s.rhF[0])), 'Cumpleaños: c. 6 y 8 (14 y 16) con el pulgar en Fa4 (Fa 1 … Do 5)');
+    check(cs.filter(s => s.rhF[0] === 5 && s.rh[0] === 70).length === 4 && cs.filter(s => /Estira el meñique/.test(s.label || '')).length === 2, 'Cumpleaños: el Sib del compás 7 va con el 5 estirado y está avisado');
+    // El pulgar camina en el c. 7 (Fa, Mi, Re): único caso de mismo dedo en teclas distintas, y está explicado
+    check(cs.filter(s => /pulgar camina/.test(s.label || '')).length === 2, 'Cumpleaños: el pulgar caminando (Fa, Mi, Re) está explicado en el rótulo, c. 7 y c. 15');
+    check(cs.filter(s => /fermata/.test(s.label || '')).length === 2, 'Cumpleaños: la pausa (fermata) del Re se menciona (la app no la hace, es opcional)');
+    check(cs.slice(-1)[0].dur === 3 && cs.slice(-1)[0].lh[0] === 41 && /Fin/.test(cs.slice(-1)[0].label), 'Cumpleaños: cierra con Fa de 3 tiempos sobre Fa2');
+    check(cs.every(s => !s.lh.length || s.lh[0] < Math.min(...cs.map(x => x.rh[0]))), 'Cumpleaños: la izquierda siempre queda por debajo de la derecha');
     // Estrellita: la derecha sube un tono una sola vez y no se mueve más
     const es = W("SONGS.find(s => s.id === 'estrellita')").steps;
     check(es.map(s => s.rhF[0]).join() === '1,1,4,4,5,5,4,3,3,2,2,1,1,1', 'Estrellita: Do 1, Sol 4, La 5, y baja Fa 3, Mi 2, Re 1');
