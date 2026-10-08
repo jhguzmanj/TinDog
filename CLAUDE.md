@@ -1928,9 +1928,17 @@ y dentro de "Más ▾": `free | functions`.
   mientras baja) y `.fall-key-finger` sobre la tecla del mini-teclado al
   encenderse (que es donde ya lo lee en el teclado grande, y no depende del
   alto del bloque). El del bloque se esconde si el bloque mide menos de 13 px
-  —notas muy rápidas— y se **fija a `FALL_H - 7`** en vez de centrarse cuando
-  el bloque ya cruzó la línea: si no, en una nota larga el número se iba por
-  debajo del teclado. Los `<text>` del bloque se crean en `startCascade` y hay
+  —notas muy rápidas—. **Va pegado al borde de ABAJO del bloque** (donde
+  empieza la nota), no centrado: antes iba al centro y en una nota más larga
+  que la cascada (las redondas de Día de lluvia a ♩=60) el centro quedaba
+  fuera de pantalla y el número aparecía cuando la nota ya estaba llegando
+  (Jorge: "tarda en aparecer, me pierdo y se pierde el ritmo"). Al cruzar la
+  línea se queda en `FALL_H - 8` mientras el bloque lo cubra. Hay prueba.
+- **Más alto para ver lo que viene (octubre 2026):** `FALL_H` 210 → 320 y
+  `LOOKAHEAD_MS` 2600 → 3960, juntos, así la velocidad de caída (px por ms) no
+  cambia: los bloques miden lo mismo y se ve ~50% más música por delante. El
+  tope de alto pasó de 460 px fijos a `max(460, 72% del alto de la ventana)`.
+  Medido en Chromium: el SVG pasa de 411 a 572 px de alto. Los `<text>` del bloque se crean en `startCascade` y hay
   que **borrarlos junto con su `rect`** (mismo `if` de limpieza) o quedan
   flotando; `startCascade` también los barre con `.fall-finger` al reiniciar.
   `setCascadeKeyLit(note, on, hand, finger)` pone y quita el de la tecla, y

@@ -7497,8 +7497,10 @@ try { const m = localStorage.getItem('cascadeMode'); if(m === 'wait' || m === 't
 // el número caía en la franja que tapan las teclas negras (que llegan hasta
 // FALL_FBKH=30) y quedaba espachurrado entre dos negras. Con 64 hay sitio para
 // el dedo debajo de las negras y el nombre de la nota debajo del dedo.
-const FALL_FWK = 30, FALL_FBKW = 18, FALL_FBKH = 30, FALL_KBH = 64, FALL_H = 210, FALL_PAD = 6;
-const LOOKAHEAD_MS = 2600;
+// FALL_H y LOOKAHEAD_MS suben juntos (misma velocidad de caída, ~0,08 px/ms):
+// se ve más música por delante sin que los bloques cambien de tamaño.
+const FALL_FWK = 30, FALL_FBKW = 18, FALL_FBKH = 30, FALL_KBH = 64, FALL_H = 320, FALL_PAD = 6;
+const LOOKAHEAD_MS = 3960;
 const LIGHT_LEAD_MS = 450;
 const HIT_TOLERANCE_MS = 320;
 const COUNT_IN_BEATS = 4;
@@ -7673,8 +7675,8 @@ function setupCascadeKeyboard(){
   cascadeSvg.setAttribute('viewBox', `0 0 ${svgW} ${svgH}`);
   cascadeSvg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
   // Sin el teclado grande abajo hay más alto disponible: teclas cómodas (~44px)
-  // pero nunca más de MAX_CASCADE_PX de alto.
-  const MAX_CASCADE_PX = 460;
+  // pero nunca más de MAX_CASCADE_PX de alto (y deja ver el encabezado).
+  const MAX_CASCADE_PX = Math.max(460, Math.round((window.innerHeight || 0) * 0.72));
   const DESIRED_KEY_PX = 44;
   let scale = DESIRED_KEY_PX / FALL_FWK;
   scale = Math.min(scale, MAX_CASCADE_PX / svgH);
@@ -7930,14 +7932,14 @@ function cascadeTick(now){
     ev.el.setAttribute('height', h);
 
     if(ev.fingerEl){
-      // Centrado en el bloque, pero sin salirse por abajo de la línea: en una
-      // nota larga el bloque cruza la línea y el número tiene que quedarse en
-      // la parte que todavía se ve. Se esconde si el bloque es más bajo que el
-      // número (ahí queda el de la tecla) o si ya pasó de largo.
-      const mid = Math.min(y + h / 2, FALL_H - 7);
-      const visible = h >= 13 && mid > 6 && bottomY > 0;
+      // Pegado al borde de ABAJO del bloque (donde empieza la nota), no al
+      // centro: en una nota larga el centro queda fuera de pantalla y el número
+      // aparecía cuando la nota ya estaba llegando. Al cruzar la línea se queda
+      // justo encima de ella mientras el bloque lo cubra.
+      const cy = Math.min(bottomY - 9, FALL_H - 8);
+      const visible = h >= 13 && cy > 8 && y < cy - 6;
       ev.fingerEl.setAttribute('opacity', visible ? 1 : 0);
-      if(visible) ev.fingerEl.setAttribute('y', mid + 4);
+      if(visible) ev.fingerEl.setAttribute('y', cy + 4);
     }
 
     if(cascade.mode === 'timed' && !ev.hit && !ev.missed && t > ev.tStart + HIT_TOLERANCE_MS){

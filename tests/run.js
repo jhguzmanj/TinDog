@@ -486,6 +486,16 @@ check(W('cascade.hits') === 4, 'las cuatro notas del primer paso aciertan');
 check(litFingers() === '[]', 'al acertar, la tecla se apaga y su número de dedo desaparece');
 tick(6400);
 check(W('cascade.t') > 0, 'con el paso completo el reloj vuelve a andar');
+// Nota larga (más alta que la cascada): el número va al borde de abajo del
+// bloque, así se ve apenas entra la nota y no cuando ya está llegando.
+W(`(() => { const ev = cascade.events[cascade.events.length - 1];
+  ev.tEnd = ev.tStart + LOOKAHEAD_MS * 2;
+  cascade.t = ev.tStart - 60 / (FALL_H / LOOKAHEAD_MS); cascade.lastNow = 7000; })()`);
+tick(7000);
+const longF = W(`(() => { const e = cascade.events[cascade.events.length - 1].fingerEl;
+  return e.getAttribute('opacity') + ':' + Math.round(parseFloat(e.getAttribute('y'))); })()`);
+check(longF === '1:' + (W('FALL_H') - 60 - 5),
+  'nota larga: el número del dedo se ve junto al borde de abajo aunque el centro del bloque esté fuera de pantalla');
 W("cascade.t = cascade.totalMs + 2000; cascade.lastNow = 9000"); tick(9001);
 check(W('cascade.finished') === true && doc.getElementById('cascadeScore').textContent.includes('equivocadas: 1'), 'termina y reporta equivocadas');
 check(W("progress.cascade['cuatro-acordes'].bestWait") > 0 && W("progress.cascade['cuatro-acordes'].runs") === 1, 'resultado en modo espera registrado aparte');
