@@ -945,6 +945,40 @@
   .count-in{ font-family:'Fraunces',serif; font-size:70px; font-weight:600; fill:var(--ivory); opacity:0.9; text-anchor:middle; pointer-events:none; }
   .cascade-wrap{ padding:10px 0; }
 
+  /* --- Cascada moderna: degradados, zona de golpe con brillo, destello al acertar.
+     Regla: nada de esto puede tapar el número del dedo ni el instante del golpe. --- */
+  .cascade-wrap{
+    border-radius:16px; border-color:#2c2738;
+    background:radial-gradient(120% 90% at 50% 100%, #221d2c 0%, #0c0b10 70%);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,0.04), 0 14px 34px rgba(0,0,0,0.45);
+  }
+  .fall-lane-white{ fill:rgba(255,255,255,0.022); }
+  .fall-lane-black{ fill:rgba(0,0,0,0.28); }
+  .fall-band{ pointer-events:none; }
+  .hit-line{ stroke:var(--brass); stroke-width:2.2; stroke-dasharray:none; opacity:0.95; filter:url(#fallGlow); }
+  .fall-note{ rx:6; ry:6; stroke-width:1; }
+  .fall-note.pending.rh{ fill:url(#fallGradRh); stroke:rgba(255,232,170,0.55); opacity:1; }
+  .fall-note.pending.lh{ fill:url(#fallGradLh); stroke:rgba(190,224,255,0.55); opacity:1; }
+  .fall-note.pending.near.rh{ filter:drop-shadow(0 0 7px rgba(226,185,100,0.85)); }
+  .fall-note.pending.near.lh{ filter:drop-shadow(0 0 7px rgba(116,176,232,0.85)); }
+  .fall-note.hit{ fill:url(#fallGradHit); stroke:rgba(200,255,220,0.5); opacity:0.9; }
+  .fall-note.missed{ fill:var(--wrong); stroke:none; opacity:0.45; }
+  .fall-key.lit, .fall-key.lit-lh{ filter:drop-shadow(0 -2px 6px rgba(255,255,255,0.25)); }
+  .fall-fx{ pointer-events:none; transform-box:fill-box; transform-origin:center; }
+  .count-in{ transform-box:fill-box; transform-origin:center; fill:url(#fallGradRh); stroke:rgba(255,232,170,0.4); stroke-width:1; }
+  .fall-fx.ring{ fill:none; stroke-width:2.5; animation:fallRing .55s ease-out forwards; }
+  .fall-fx.spark{ animation:fallSpark .6s ease-out forwards; }
+  .fall-fx.rh{ stroke:#ffe2a0; fill:#ffe2a0; }
+  .fall-fx.lh{ stroke:#bfe0ff; fill:#bfe0ff; }
+  .fall-fx.ring.rh, .fall-fx.ring.lh{ fill:none; }
+  @keyframes fallRing{ from{ transform:scale(0.3); opacity:1; } to{ transform:scale(2.6); opacity:0; } }
+  @keyframes fallSpark{ from{ transform:translate(0,0) scale(1); opacity:1; } to{ transform:translate(var(--dx),var(--dy)) scale(0.2); opacity:0; } }
+  @keyframes hitPulse{ 0%,100%{ opacity:0.55; } 50%{ opacity:0.9; } }
+  .fall-band.pulse{ animation:hitPulse 2.4s ease-in-out infinite; }
+  @media (prefers-reduced-motion: reduce){
+    .fall-fx, .fall-band.pulse{ animation:none !important; display:none; }
+  }
+
   /* =====================================================================
      Encabezado fijo + escenario compacto.
      El metrónomo y el tiempo de hoy viven en el encabezado; si la práctica
@@ -7708,7 +7742,30 @@ function setupCascadeKeyboard(){
   hl.setAttribute('x1', 0); hl.setAttribute('x2', svgW);
   hl.setAttribute('y1', FALL_H); hl.setAttribute('y2', FALL_H);
   hl.setAttribute('class', 'hit-line');
+
+  // Degradados de los bloques, brillo de la línea y zona de golpe. Los bloques
+  // son más intensos abajo, que es donde va el número del dedo.
+  const defs = mk('defs');
+  defs.innerHTML =
+    '<linearGradient id="fallGradRh" x1="0" y1="0" x2="0" y2="1">' +
+      '<stop offset="0" stop-color="#f6dc97" stop-opacity="0.35"/><stop offset="0.55" stop-color="#e9c574"/><stop offset="1" stop-color="#d9a94a"/></linearGradient>' +
+    '<linearGradient id="fallGradLh" x1="0" y1="0" x2="0" y2="1">' +
+      '<stop offset="0" stop-color="#a9d3fa" stop-opacity="0.35"/><stop offset="0.55" stop-color="#7db7ec"/><stop offset="1" stop-color="#4f8fd0"/></linearGradient>' +
+    '<linearGradient id="fallGradHit" x1="0" y1="0" x2="0" y2="1">' +
+      '<stop offset="0" stop-color="#a6ecc1" stop-opacity="0.4"/><stop offset="1" stop-color="#4fb47a"/></linearGradient>' +
+    '<linearGradient id="fallBandGrad" x1="0" y1="0" x2="0" y2="1">' +
+      '<stop offset="0" stop-color="#e2b964" stop-opacity="0"/><stop offset="1" stop-color="#e2b964" stop-opacity="0.22"/></linearGradient>' +
+    '<filter id="fallGlow" filterUnits="userSpaceOnUse" x="0" y="' + (FALL_H - 12) + '" width="' + svgW + '" height="24">' +
+      '<feGaussianBlur stdDeviation="2.4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>';
+  cascadeSvg.insertBefore(defs, cascadeSvg.firstChild);
+  const band = mk('rect');
+  band.setAttribute('x', 0); band.setAttribute('y', FALL_H - 46);
+  band.setAttribute('width', svgW); band.setAttribute('height', 46);
+  band.setAttribute('fill', 'url(#fallBandGrad)');
+  band.setAttribute('class', 'fall-band pulse');
+  cascadeSvg.insertBefore(band, beatLayer);
   cascadeSvg.appendChild(hl);
+  const fxLayer = mk('g'); fxLayer.setAttribute('id', 'cascadeFx'); cascadeSvg.appendChild(fxLayer);
 
   for(let n = lo; n <= hi; n++){
     if(BLACK_SET.has(n % 12)) continue;
@@ -7812,7 +7869,7 @@ function startCascade(){
     if(cascade.loopTimer) clearTimeout(cascade.loopTimer);
   }
   clearAllCascadeLights();
-  cascadeSvg.querySelectorAll('.fall-note, .fall-finger, .beat-line, .count-in').forEach(e => e.remove());
+  cascadeSvg.querySelectorAll('.fall-note, .fall-finger, .beat-line, .count-in, .fall-fx').forEach(e => e.remove());
   const { events, beats, totalMs, beatMs } = buildCascadeSchedule();
   const mk = (tag) => document.createElementNS('http://www.w3.org/2000/svg', tag);
   const beatLayer = cascadeSvg.querySelector('#cascadeBeats') || cascadeSvg;
@@ -7832,6 +7889,7 @@ function startCascade(){
     rect.setAttribute('x', pos.x);
     rect.setAttribute('width', pos.w);
     rect.setAttribute('class', 'fall-note pending ' + ev.hand);
+    rect.setAttribute('rx', 6);
     noteLayer.appendChild(rect);
     ev.el = rect;
     if(ev.finger){
@@ -7906,7 +7964,13 @@ function cascadeTick(now){
   if(cascade.countEl){
     if(t < 0){
       const left = Math.ceil(-t / cascade.beatMs);
-      cascade.countEl.textContent = left <= COUNT_IN_BEATS ? String(left) : '…';
+      const txt = left <= COUNT_IN_BEATS ? String(left) : '…';
+      if(txt !== cascade.countEl.textContent){
+        cascade.countEl.textContent = txt;
+        if(cascade.countEl.animate && !reducedMotion()) cascade.countEl.animate(
+          [{ transform:'scale(1.45)', opacity:0.15 }, { transform:'scale(1)', opacity:0.9 }],
+          { duration:320, easing:'cubic-bezier(.2,.8,.2,1)' });
+      }
     } else if(cascade.countEl.textContent !== ''){
       cascade.countEl.textContent = '';
     }
@@ -7921,6 +7985,7 @@ function cascadeTick(now){
     if(shouldLight !== !!ev.lit){
       ev.lit = shouldLight;
       setCascadeKeyLit(ev.note, shouldLight, ev.hand, ev.finger);
+      if(ev.el && !ev.hit && !ev.missed) ev.el.classList.toggle('near', shouldLight);
     }
 
     if(!ev.el) return;
@@ -7986,6 +8051,36 @@ function finishCascade(){
   }
 }
 
+function reducedMotion(){
+  return !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+}
+// Destello al acertar: un anillo y unas chispas que suben desde la línea, del
+// color de la mano. Dura medio segundo y se borra solo.
+function cascadeBurst(ev){
+  const layer = cascadeSvg.querySelector('#cascadeFx');
+  const pos = cascadeXFor[ev.note];
+  if(!layer || !pos || reducedMotion()) return;
+  cascadeSvg.appendChild(layer); // encima de las teclas, para que el anillo se vea entero
+  const mk = (tag) => document.createElementNS('http://www.w3.org/2000/svg', tag);
+  const cx = pos.x + pos.w / 2, cy = FALL_H;
+  const made = [];
+  const ring = mk('circle');
+  ring.setAttribute('cx', cx); ring.setAttribute('cy', cy); ring.setAttribute('r', pos.w * 0.45);
+  ring.setAttribute('class', 'fall-fx ring ' + ev.hand);
+  layer.appendChild(ring); made.push(ring);
+  for(let i = 0; i < 6; i++){
+    const a = -Math.PI * (0.15 + 0.7 * i / 5) + (Math.random() - 0.5) * 0.25;
+    const d = 22 + Math.random() * 16;
+    const sp = mk('circle');
+    sp.setAttribute('cx', cx); sp.setAttribute('cy', cy); sp.setAttribute('r', 2.2);
+    sp.setAttribute('class', 'fall-fx spark ' + ev.hand);
+    sp.style.setProperty('--dx', (Math.cos(a) * d).toFixed(1) + 'px');
+    sp.style.setProperty('--dy', (Math.sin(a) * d).toFixed(1) + 'px');
+    layer.appendChild(sp); made.push(sp);
+  }
+  setTimeout(() => made.forEach(e => e.remove()), 700);
+}
+
 function checkCascadeHit(note){
   if(!cascade || cascade.finished) return;
   const t = cascade.t;
@@ -8003,6 +8098,7 @@ function checkCascadeHit(note){
     best.hit = true;
     if(best.lit){ best.lit = false; setCascadeKeyLit(best.note, false, best.hand); }
     if(best.el){ best.el.setAttribute('class', 'fall-note hit ' + best.hand); }
+    cascadeBurst(best);
     cascade.hits++;
     updateCascadeScore();
     if(kr){ kr.classList.add('pressed'); setTimeout(() => kr.classList.remove('pressed'), 150); }

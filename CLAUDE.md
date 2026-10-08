@@ -1934,6 +1934,19 @@ y dentro de "Más ▾": `free | functions`.
   fuera de pantalla y el número aparecía cuando la nota ya estaba llegando
   (Jorge: "tarda en aparecer, me pierdo y se pierde el ritmo"). Al cruzar la
   línea se queda en `FALL_H - 8` mientras el bloque lo cubra. Hay prueba.
+- **Diseño y animación (octubre 2026, pedido de Jorge: "moderno, una animación
+  chula").** Bloques con degradado (`#fallGradRh/Lh/Hit` en un `<defs>` que crea
+  la función del tablero), más intensos abajo, donde va el número; esquinas
+  `rx 6`; franja de brillo sobre la línea (`.fall-band`, pulso lento); línea de
+  golpe con brillo (`#fallGlow`); la nota que está por llegar brilla (`.near`,
+  se pone donde se enciende la tecla); al acertar, `cascadeBurst` dibuja un
+  anillo y 6 chispas del color de la mano (0,6 s, se borran solas, capa
+  `#cascadeFx` movida encima de las teclas); la cuenta de entrada "salta".
+  **Regla: nada de esto tapa el número del dedo ni el instante del golpe.**
+  Dos trampas ya resueltas: un filtro con unidades del objeto sobre una
+  `<line>` horizontal la deja INVISIBLE (alto 0 → región 0), por eso
+  `#fallGlow` va en `userSpaceOnUse`; y con `prefers-reduced-motion` no hay
+  chispas, pulso ni salto (`reducedMotion()`).
 - **Más alto para ver lo que viene (octubre 2026):** `FALL_H` 210 → 320 y
   `LOOKAHEAD_MS` 2600 → 3960, juntos, así la velocidad de caída (px por ms) no
   cambia: los bloques miden lo mismo y se ve ~50% más música por delante. El
