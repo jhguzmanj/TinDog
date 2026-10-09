@@ -3068,7 +3068,7 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
   {
     section('Waymaker (lead sheet de Jorge): lectura de la partitura compás por compás');
     const wm = W("SONGS.find(s => s.id === 'waymaker')");
-    check(!!wm && wm.cat === 'cristiana' && wm.pickup === 2 && wm.tempo === 66 && wm.plan !== false, 'está en Cristianas, anacrusa de 2 tiempos y ♩=66');
+    check(!!wm && wm.cat === 'cristiana' && wm.pickup === 2 && wm.tempo === 76 && wm.plan !== false, 'está en Cristianas, anacrusa de 2 tiempos y ♩=76');
     // Lo que dice la hoja (numeración de la hoja: el c. 64 es la 2.ª casilla, igual a la 1.ª, y no se repite)
     const V = P => ({ [P]: 'E4 G4', [P+1]: 'A4', [P+2]: 'A4 A4 A4 G4', [P+3]: 'E4', [P+4]: 'C4 G4 E4', [P+5]: 'D4', [P+6]: 'C4 E4 C4', [P+7]: 'A3' });
     const CHO = P => ({ [P]: 'A3 C4', ...CHO3(P+1) });

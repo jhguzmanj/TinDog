@@ -654,8 +654,11 @@ y dentro de "Más ▾": `free | functions`.
   entra al plan de Hoy). Jorge pasó 5 imágenes de una hoja de melodía con cifrados
   ("[lead sheet]", Do mayor, 4/4): **la melodía es solo C D E G A (y G3 A3 abajo)**,
   todo teclas blancas, rango G3–A4. Los arreglos publicados dan la tonalidad original
-  en B o E (varía) y ♩≈66-69; **esta hoja está transpuesta a Do y el tempo 66 es de
-  práctica, no de la grabación** (no hay grabación aquí).
+  en B o E (varía) y ♩≈66-69; **esta hoja está transpuesta a Do**. Salió con ♩=66 y Jorge
+  dijo "se escucha muy lenta" (Escuchar suena a ese tempo; la cascada, al 80% de él), así que
+  **subió a ♩=76, a propósito por encima de los arreglos publicados**; el número es mío, no de
+  la grabación (no hay grabación aquí). Si todavía se siente lenta, subir `tempo` o la
+  velocidad de la cascada.
   - **Estructura** (numeración DE LA HOJA, 76 compases): anacrusa de 2 tiempos
     (`pickup:2`) + Verso 1 (c. 1-15, dos pasadas de la misma frase de 8) + Coro (16-23)
     + Versos 2 y 3 (24-39, una sola pasada de 16) + Coro (40-47) + Puente 1 (48-55) +
