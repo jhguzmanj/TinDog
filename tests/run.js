@@ -3159,12 +3159,15 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
     const agBad = Object.keys(agExp).filter(k => agGot.o[k] !== agExp[k]);
     check(agBad.length === 0 && Object.keys(agGot.o).length === 16, 'las notas de cada compás coinciden con el MusicXML y el MIDI' + (agBad.length ? ' · difieren: ' + agBad.map(k => `c.${k} «${agGot.o[k]}» ≠ «${agExp[k]}»`).join(' | ') : ''));
     check(Math.abs(agGot.total - 47) < 1e-6, '47 tiempos: anacrusa de 1 + 15 compases de 3 + el Sol final (ligado al c. 16)');
-    // Izquierda: la fundamental del acorde, una nota por compás, siempre en el tiempo 1
+    // Izquierda: tríada en bloque (5-3-1), una por compás, siempre en el tiempo 1
     const agLh = agGot.att.map(a => a[1]).join(' ');
-    check(agLh === [43, 43, 48, 43, 43, 43, 43, 50, 43, 43, 48, 43, 43, 50, 43].join(' '), 'la izquierda: Sol Sol Do Sol Sol Sol Sol Re Sol Sol Do Sol Sol Re Sol (una nota por compás)');
+    check(agLh === [43, 43, 48, 43, 43, 43, 43, 50, 43, 43, 48, 43, 43, 50, 43].join(' '), 'la izquierda: Sol Sol Do Sol Sol Sol Sol Re Sol Sol Do Sol Sol Re Sol (la fundamental de la tríada, una por compás)');
     check(agGot.att.every(a => a[2]), 'cada ataque de la izquierda cae en el tiempo 1 de su compás');
-    const agFing = JSON.parse(W("JSON.stringify(SONGS.find(s => s.id === 'sublime-gracia').steps.filter(s => s.lh.length).map(s => [s.lh[0], s.lhF[0]]))"));
-    check(agFing.every(([n, f]) => (n === 43 && f === 5) || (n === 48 && f === 2) || (n === 50 && f === 1)), 'izquierda en posición fija con el pulgar en Re3: Sol2 5, Do3 2, Re3 1');
+    const agFing = JSON.parse(W("JSON.stringify(SONGS.find(s => s.id === 'sublime-gracia').steps.filter(s => s.lh.length).map(s => [s.lh[0], s.lhF.join(',')]))"));
+    check(agFing.every(([n, f]) => f === '5,3,1' && ((n === 43) || (n === 48) || (n === 50))), 'izquierda: tríadas mayores en posición fundamental con 5-3-1 (Sol, Do, Re)');
+    const agTri3 = JSON.parse(W("JSON.stringify([...new Set(SONGS.find(s => s.id === 'sublime-gracia').steps.filter(s => s.lh.length).map(s => s.lh.join(',')))])"));
+    check(JSON.stringify(agTri3.sort()) === JSON.stringify(['43,47,50', '48,52,55', '50,54,57']), 'los tres acordes: Sol (Sol2 Si2 Re3), Do (Do3 Mi3 Sol3) y Re (Re3 Fa#3 La3)');
+    check(W("Math.max(...SONGS.find(s => s.id === 'sublime-gracia').steps.flatMap(s => s.lh)) < Math.min(...SONGS.find(s => s.id === 'sublime-gracia').steps.flatMap(s => s.rh))"), 'la izquierda queda siempre por debajo de la derecha (no se cruzan)');
     // Derecha: los dedos IMPRESOS en el archivo se respetan; una nota larga ligada del c. 7 al 8
     const agRh = JSON.parse(W("JSON.stringify(SONGS.find(s => s.id === 'sublime-gracia').steps.map(s => s.rh.length ? [s.rh[0], s.rhF[0]] : null))"));
     const fingOf = (m, label) => agRh.filter(x => x && x[0] === m).map(x => x[1]);
@@ -3174,7 +3177,7 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
     check(rhDurStep.rh[0] === 74 && rhDurStep.dur === 3 && rhDurStep.rhDur === 5, 'el Re agudo del c. 7 se sostiene 5 tiempos (ligadura al c. 8)');
     const agTri = W("SONGS.find(s => s.id === 'sublime-gracia').steps.filter(s => Math.abs(s.dur - 1/3) < 1e-9).length");
     check(agTri === 12, 'cuatro tresillos de tres notas (c. 1, 5, 9 y 13)');
-    check(W("SONGS.find(s => s.id === 'sublime-gracia').steps.every(s => s.rh.length <= 1 && s.lh.length <= 1)"), 'ninguna mano toca más de una tecla a la vez');
+    check(W("SONGS.find(s => s.id === 'sublime-gracia').steps.every(s => s.rh.length <= 1 && s.lh.length <= 3)"), 'la derecha toca una tecla a la vez; la izquierda, el acorde de tres');
     W("selectCategory('fragments'); fragCat = 'popular'; pickFragmentById('sublime-gracia')");
     check(W('currentFragment.id') === 'sublime-gracia' && W('fragCat') === 'cristiana', 'pickFragmentById abre Cristianas');
     W("selectCategory('today')");

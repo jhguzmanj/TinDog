@@ -696,12 +696,13 @@ y dentro de "Más ▾": `free | functions`.
     mismas notas y duraciones; hay prueba compás por compás. Tresillos de corchea (`dur:1/3`) en
     c. 1, 5, 9 y 13; ligaduras: Re5 c. 7→8 (`rhDur:5`) y Sol4 c. 15→16 (un solo Sol de 4 tiempos; el
     silencio de blanca final se absorbe).
-  - **Izquierda simplificada**: el archivo trae tríadas rotas en cada compás (bajo + acorde); aquí va
-    **una nota por compás en el tiempo 1**, la fundamental: Sol Sol Do Sol Sol Sol Sol Re Sol Sol Do
-    Sol Sol Re Sol. Se pierde el acorde y que el c. 2 sea G7 (el archivo escribe Fa-Si-Re, sin
-    fundamental) y que los c. 4/7/13 sean Sol/Re. Una posición fija con el pulgar en Re3: Sol2 5, Do3 2,
-    Re3 1; no cruza la derecha (mín Re4). El Re del c. 8 ataca a mitad del Re5 sostenido (paso con
-    `rh:[]` + `rhDur` en el paso anterior).
+  - **Izquierda: tríada en bloque (pedido de Jorge: "deja los 3 dedos en los acordes, ya debo comenzar a
+    usarlos")**. **Excepción deliberada a la regla de dos teclas por mano**, solo en esta pieza y a pedido
+    suyo. El archivo trae tríadas rotas con bajo; aquí va la tríada mayor en posición fundamental al
+    tiempo 1 de cada compás, sostenida: Sol (Sol2 Si2 Re3), Do (Do3 Mi3 Sol3) y Re (Re3 Fa#3 La3), todas
+    con 5-3-1 como en Acordes. Mismo orden de acordes que antes: Sol Sol Do Sol Sol Sol Sol Re Sol Sol Do Sol
+    Sol Re Sol. Se pierde la inversión del archivo (bajo Fa/Mi/Re) y el G7 del c. 2. Máx. izquierda
+    La3 < mín. derecha Re4: no se cruzan. Antes fue una nota por compás (historial de git).
   - **Derecha: dedos IMPRESOS cuando el archivo los trae** (Re 1 Sol 3 en la anacrusa, Si 5 en el
     c. 1, Mi 2, Si 3 en el c. 5, Si 5 en el c. 10); el resto se completó con las dos posiciones:
     pulgar en Re4 (Re 1 Mi 2 Sol 3 La 4 Si 5) y pulgar en Sol4 (Sol 1 La 2 Si 3 Re5 5), cambios
