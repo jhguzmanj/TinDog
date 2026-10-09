@@ -646,8 +646,8 @@ y dentro de "Más ▾": `free | functions`.
     clase" es Día de lluvia. Pidió además **dos canciones cristianas fáciles**: las
     melodías no se podían verificar sin una hoja (el proxy bloquea `ccel.org` y
     `hymnary.org`, y el buscador solo da letras sueltas sin octava ni ritmo), así que
-    se las pidió. **Waymaker llegó primero (ver abajo); falta la segunda.** Candidatas
-    de dominio público: Sublime gracia y Cristo me ama. Con una sola fuente, el truco
+    se las pidió. **Waymaker llegó primero y Sublime gracia segunda (ver abajo): las dos pedidas
+    están.** Queda como candidata Cristo me ama (no pedida). Con una sola fuente, el truco
     de verificación es que las notas encajen con la armonía (Cristo me ama:
     F–C–G7–C).
 - **"Waymaker" (Sinach), lead sheet de Jorge (octubre 2026)** (`waymaker`, Cristianas,
@@ -687,6 +687,28 @@ y dentro de "Más ▾": `free | functions`.
     sigue el coro: c. 15 y 39), al subir a los versos 2 y 3 (c. 24) y en el Do final.
     Izquierda en posición fija de siempre (Fa 5, Do 1, Sol 4, La 3), **una nota por
     acorde** (cambia cada 2 compases) y nunca más de una tecla.
+- **"Sublime gracia / Amazing Grace" (octubre 2026)** (`sublime-gracia`, Cristianas, entra al
+  plan de Hoy; segunda cristiana fácil que pidió Jorge). **Es la primera con fuente de verdad
+  completa**: Jorge pasó MusicXML + MIDI + PDF de MuseScore 4.1.1 ("Amazing grâce", Gospel
+  traditionnel). Esto cierra lo que antes no se podía: no se adivinó nada. Sol mayor (un Fa#),
+  3/4 (`meter:3`), anacrusa de una corchea doble (`pickup:1`), **♩=80 impreso**, 47 tiempos.
+  - **Verificación**: la melodía del MusicXML (16 compases) y la pista del MIDI dan exactamente las
+    mismas notas y duraciones; hay prueba compás por compás. Tresillos de corchea (`dur:1/3`) en
+    c. 1, 5, 9 y 13; ligaduras: Re5 c. 7→8 (`rhDur:5`) y Sol4 c. 15→16 (un solo Sol de 4 tiempos; el
+    silencio de blanca final se absorbe).
+  - **Izquierda simplificada**: el archivo trae tríadas rotas en cada compás (bajo + acorde); aquí va
+    **una nota por compás en el tiempo 1**, la fundamental: Sol Sol Do Sol Sol Sol Sol Re Sol Sol Do
+    Sol Sol Re Sol. Se pierde el acorde y que el c. 2 sea G7 (el archivo escribe Fa-Si-Re, sin
+    fundamental) y que los c. 4/7/13 sean Sol/Re. Una posición fija con el pulgar en Re3: Sol2 5, Do3 2,
+    Re3 1; no cruza la derecha (mín Re4). El Re del c. 8 ataca a mitad del Re5 sostenido (paso con
+    `rh:[]` + `rhDur` en el paso anterior).
+  - **Derecha: dedos IMPRESOS cuando el archivo los trae** (Re 1 Sol 3 en la anacrusa, Si 5 en el
+    c. 1, Mi 2, Si 3 en el c. 5, Si 5 en el c. 10); el resto se completó con las dos posiciones:
+    pulgar en Re4 (Re 1 Mi 2 Sol 3 La 4 Si 5) y pulgar en Sol4 (Sol 1 La 2 Si 3 Re5 5), cambios
+    avisados en el `label` (c. 5, 9-10, 13). **Lo más difícil, y viene así del archivo**: en el c. 10 la
+    mano pasa de pulgar-en-Sol a pulgar-en-Re justo después del tresillo (Sol 1 → Si 5). Si cuesta,
+    alternativa a pactar con el profe: Si 3 y La 2 en el c. 10 y cambiar sobre el Sol largo del c. 11.
+  - Tempo 80 es el impreso (no es mío, a diferencia de otras piezas). Meta honesta: los tresillos a ♩=80.
 - **"Día de lluvia" (octubre 2026, original)** (`dia-de-lluvia`, "De la clase", segunda
   tras The Sound of Silence, ♩=60). Pedido de Jorge un día gris y lluvioso: "algo como
   Amanecer o Camino de intervalos pero triste, melancólico, para mi nivel", como

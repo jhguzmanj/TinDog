@@ -3855,6 +3855,54 @@ const SOUND_OF_SILENCE_STEPS = [
   {lh:[50], lhF:[1], rh:[], dur:2, label:'c. 16 · Final'}
 ];
 
+// "Amazing Grace / Sublime gracia" (gospel tradicional), archivo MuseScore que pasó Jorge (MusicXML + MIDI + PDF, octubre 2026):
+// Sol mayor (un Fa#), 3/4, anacrusa de una corchea doble, ♩=80 IMPRESO. Melodía idéntica al MusicXML y al MIDI. La izquierda del archivo
+// son tríadas rotas; aquí va UNA nota por compás (la fundamental). Los dedos impresos se respetan; el resto es mío. Ver CLAUDE.md.
+const AMAZING_GRACE_STEPS = [
+  {lh:[], rh:[62], rhF:[1], dur:.5, label:'Anacrusa · posición: pulgar en Re (Re 1 Mi 2 Sol 3 La 4 Si 5)'},
+  {lh:[], rh:[67], rhF:[3], dur:.5},
+  {lh:[43], lhF:[5], rh:[67], rhF:[3], dur:2, label:'c. 1 · Sol'},
+  {lh:[], rh:[71], rhF:[5], dur:1/3},
+  {lh:[], rh:[69], rhF:[4], dur:1/3},
+  {lh:[], rh:[67], rhF:[3], dur:1/3},
+  {lh:[43], lhF:[5], rh:[71], rhF:[5], dur:2, label:'c. 2'},
+  {lh:[], rh:[69], rhF:[4], dur:1},
+  {lh:[48], lhF:[2], rh:[67], rhF:[3], dur:2, label:'c. 3 · Do'},
+  {lh:[], rh:[64], rhF:[2], dur:1},
+  {lh:[43], lhF:[5], rh:[62], rhF:[1], dur:2, label:'c. 4 · Sol'},
+  {lh:[], rh:[62], rhF:[1], dur:.5},
+  {lh:[], rh:[67], rhF:[3], dur:.5},
+  {lh:[43], lhF:[5], rh:[67], rhF:[1], dur:2, label:'c. 5 · Cambia de posición: pulgar en Sol (Sol 1 La 2 Si 3 Re 5)'},
+  {lh:[], rh:[71], rhF:[3], dur:1/3},
+  {lh:[], rh:[69], rhF:[2], dur:1/3},
+  {lh:[], rh:[67], rhF:[1], dur:1/3},
+  {lh:[43], lhF:[5], rh:[71], rhF:[3], dur:1, label:'c. 6'},
+  {lh:[], rh:[69], rhF:[2], dur:1},
+  {lh:[], rh:[71], rhF:[3], dur:1},
+  {lh:[43], lhF:[5], rh:[74], rhF:[5], dur:3, rhDur:5, label:'c. 7 · Re agudo con el 5: se sostiene hasta la mitad del c. 8'},
+  {lh:[50], lhF:[1], rh:[], dur:2, label:'c. 8 · Re'},
+  {lh:[], rh:[71], rhF:[3], dur:.5},
+  {lh:[], rh:[74], rhF:[5], dur:.5},
+  {lh:[43], lhF:[5], rh:[74], rhF:[5], dur:2, label:'c. 9 · Sol'},
+  {lh:[], rh:[71], rhF:[3], dur:1/3},
+  {lh:[], rh:[69], rhF:[2], dur:1/3},
+  {lh:[], rh:[67], rhF:[1], dur:1/3},
+  {lh:[43], lhF:[5], rh:[71], rhF:[5], dur:2, label:'c. 10 · Vuelve la mano: pulgar en Re (Si con el 5, lo más difícil)'},
+  {lh:[], rh:[69], rhF:[4], dur:1},
+  {lh:[48], lhF:[2], rh:[67], rhF:[3], dur:2, label:'c. 11 · Do'},
+  {lh:[], rh:[64], rhF:[2], dur:1},
+  {lh:[43], lhF:[5], rh:[62], rhF:[1], dur:2, label:'c. 12 · Sol'},
+  {lh:[], rh:[62], rhF:[1], dur:.5},
+  {lh:[], rh:[67], rhF:[3], dur:.5},
+  {lh:[43], lhF:[5], rh:[67], rhF:[1], dur:2, label:'c. 13 · Cambia de posición: pulgar en Sol'},
+  {lh:[], rh:[71], rhF:[3], dur:1/3},
+  {lh:[], rh:[69], rhF:[2], dur:1/3},
+  {lh:[], rh:[67], rhF:[1], dur:1/3},
+  {lh:[50], lhF:[1], rh:[71], rhF:[3], dur:2, label:'c. 14 · Re'},
+  {lh:[], rh:[69], rhF:[2], dur:1},
+  {lh:[43], lhF:[5], rh:[67], rhF:[1], dur:4, label:'c. 15 · Sol, se sostiene hasta el final'}
+];
+
 // "Waymaker" (Sinach), lead sheet que pasó Jorge (octubre 2026): Do mayor, 4/4, anacrusa de 2 tiempos y 75 compases
 // = 302 tiempos. Cada sección va UNA vez (la hoja repite coros y puentes: el Tramo de la cascada los gira). Los
 // silencios se absorben en la nota anterior, salvo los que caen en un cambio de acorde (ahí van con rh:[] y la
@@ -4702,6 +4750,16 @@ const SONGS = [
     tip:'Fa mayor (un Si♭). La izquierda toca una nota por tiempo y cambia de posición tres veces; la derecha usa la mano abierta (1-2-4-5) en los c. 5-9. Practícala por tramos: c. 1-4, 5-8, 9-12 y 13-16.',
     tempo:80,
     steps:SOUND_OF_SILENCE_STEPS,
+  },
+  {
+    id:'sublime-gracia',
+    cat:'cristiana',
+    name:'Sublime gracia (Amazing Grace)',
+    meter:3,
+    pickup:1,
+    tip:'Sol mayor, en 3/4 (cuenta 1-2-3). Casi toda la melodía cabe con el pulgar en Re (Re 1 Mi 2 Sol 3 La 4 Si 5); del c. 5 al 9 la mano sube con el pulgar en Sol. Izquierda: una nota por compás (Sol, Do, Re) con el pulgar en Re. Lo difícil son los tresillos y el cambio de mano del c. 10.',
+    tempo:80,
+    steps:AMAZING_GRACE_STEPS,
   },
   {
     id:'waymaker',

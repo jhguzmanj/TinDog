@@ -3134,6 +3134,50 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
     W("selectCategory('fragments'); fragCat = 'popular'; pickFragmentById('waymaker')");
     check(W('currentFragment.id') === 'waymaker' && W('fragCat') === 'cristiana', 'pickFragmentById abre Cristianas');
     W("selectCategory('today')");
+
+    section('Sublime gracia (Amazing Grace): melodía del MusicXML, compás por compás');
+    const ag = W("SONGS.find(s => s.id === 'sublime-gracia')");
+    check(!!ag && ag.cat === 'cristiana' && ag.meter === 3 && ag.pickup === 1 && ag.tempo === 80 && ag.plan !== false, 'está en Cristianas, 3/4, anacrusa de 1 tiempo y ♩=80 (el impreso)');
+    // Lo que dice el archivo (compás 0 = anacrusa). Tresillos de corchea: tres notas en un tiempo
+    const agExp = {
+      0: 'D4 G4', 1: 'G4 B4 A4 G4', 2: 'B4 A4', 3: 'G4 E4', 4: 'D4 D4 G4', 5: 'G4 B4 A4 G4', 6: 'B4 A4 B4', 7: 'D5',
+      8: 'B4 D5', 9: 'D5 B4 A4 G4', 10: 'B4 A4', 11: 'G4 E4', 12: 'D4 D4 G4', 13: 'G4 B4 A4 G4', 14: 'B4 A4', 15: 'G4',
+    };
+    const agGot = JSON.parse(W(`(() => {
+      const NM = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+      const name = n => NM[n % 12] + (Math.floor(n / 12) - 1);
+      const out = {}, att = [], fin = {}; let t = 0;
+      SONGS.find(s => s.id === 'sublime-gracia').steps.forEach(st => {
+        const bar = t < 1 - 1e-6 ? 0 : Math.floor((t - 1 + 1e-6) / 3) + 1;
+        if(st.rh.length) (out[bar] = out[bar] || []).push(name(st.rh[0]));
+        if(st.lh.length) { const r = ((t - 1) % 3 + 3) % 3; att.push([bar, st.lh[0], r < 1e-6 || 3 - r < 1e-6, st.lhF[0]]); }
+        t += st.dur;
+      });
+      const o = {}; Object.keys(out).forEach(k => o[k] = out[k].join(' '));
+      return JSON.stringify({ o, att, total: t });
+    })()`));
+    const agBad = Object.keys(agExp).filter(k => agGot.o[k] !== agExp[k]);
+    check(agBad.length === 0 && Object.keys(agGot.o).length === 16, 'las notas de cada compás coinciden con el MusicXML y el MIDI' + (agBad.length ? ' · difieren: ' + agBad.map(k => `c.${k} «${agGot.o[k]}» ≠ «${agExp[k]}»`).join(' | ') : ''));
+    check(Math.abs(agGot.total - 47) < 1e-6, '47 tiempos: anacrusa de 1 + 15 compases de 3 + el Sol final (ligado al c. 16)');
+    // Izquierda: la fundamental del acorde, una nota por compás, siempre en el tiempo 1
+    const agLh = agGot.att.map(a => a[1]).join(' ');
+    check(agLh === [43, 43, 48, 43, 43, 43, 43, 50, 43, 43, 48, 43, 43, 50, 43].join(' '), 'la izquierda: Sol Sol Do Sol Sol Sol Sol Re Sol Sol Do Sol Sol Re Sol (una nota por compás)');
+    check(agGot.att.every(a => a[2]), 'cada ataque de la izquierda cae en el tiempo 1 de su compás');
+    const agFing = JSON.parse(W("JSON.stringify(SONGS.find(s => s.id === 'sublime-gracia').steps.filter(s => s.lh.length).map(s => [s.lh[0], s.lhF[0]]))"));
+    check(agFing.every(([n, f]) => (n === 43 && f === 5) || (n === 48 && f === 2) || (n === 50 && f === 1)), 'izquierda en posición fija con el pulgar en Re3: Sol2 5, Do3 2, Re3 1');
+    // Derecha: los dedos IMPRESOS en el archivo se respetan; una nota larga ligada del c. 7 al 8
+    const agRh = JSON.parse(W("JSON.stringify(SONGS.find(s => s.id === 'sublime-gracia').steps.map(s => s.rh.length ? [s.rh[0], s.rhF[0]] : null))"));
+    const fingOf = (m, label) => agRh.filter(x => x && x[0] === m).map(x => x[1]);
+    check(agRh[0][1] === 1 && agRh[1][1] === 3, 'anacrusa: Re 1, Sol 3 (impresos)');
+    check(JSON.stringify([...new Set(fingOf(64))]) === '[2]', 'el Mi lleva siempre el 2 (impreso en los c. 3 y 11)');
+    const rhDurStep = W("SONGS.find(s => s.id === 'sublime-gracia').steps.find(s => s.rhDur)");
+    check(rhDurStep.rh[0] === 74 && rhDurStep.dur === 3 && rhDurStep.rhDur === 5, 'el Re agudo del c. 7 se sostiene 5 tiempos (ligadura al c. 8)');
+    const agTri = W("SONGS.find(s => s.id === 'sublime-gracia').steps.filter(s => Math.abs(s.dur - 1/3) < 1e-9).length");
+    check(agTri === 12, 'cuatro tresillos de tres notas (c. 1, 5, 9 y 13)');
+    check(W("SONGS.find(s => s.id === 'sublime-gracia').steps.every(s => s.rh.length <= 1 && s.lh.length <= 1)"), 'ninguna mano toca más de una tecla a la vez');
+    W("selectCategory('fragments'); fragCat = 'popular'; pickFragmentById('sublime-gracia')");
+    check(W('currentFragment.id') === 'sublime-gracia' && W('fragCat') === 'cristiana', 'pickFragmentById abre Cristianas');
+    W("selectCategory('today')");
   }
 
   console.log(`\n${passes} pruebas OK, ${failures} fallos`);
