@@ -1422,8 +1422,8 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
   section('The Sound of Silence (Fa mayor): lectura de la imagen, compás por compás');
   {
     const cm = W("SONGS.find(s => s.id === 'sound-of-silence')");
-    check(!!cm && cm.cat === 'clase' && cm.tempo === 80 && cm.plan !== false, 'está en "De la clase", ♩=80 (de práctica; el real ronda 105-109) y entra al plan de Hoy');
-    check(W("SONGS.filter(s => s.cat === 'clase')[0].id") === 'sound-of-silence', 'es la primera de "De la clase"');
+    check(!!cm && cm.cat === 'cristiana' && cm.tempo === 80 && cm.plan !== false, 'está en "Cristianas" (se movió de "De la clase", octubre 2026), ♩=80 (de práctica; el real ronda 105-109) y entra al plan de Hoy');
+    check(W("SONGS.filter(s => s.cat === 'clase').every(s => s.id !== 'sound-of-silence')"), 'ya no está en "De la clase"');
     const nn = { D2:38, E2:40, F2:41, G2:43, A2:45, Bb2:46, C3:48, D3:50, F3:53, C4:60, D4:62, E4:64, F4:65, G4:67, A4:69, C5:72, D5:74, E5:76, F5:77 };
     // Lo que dice la partitura (2 pentagramas), un compás por línea. "r" = silencio, "~" = nota ligada del compás anterior.
     const MEL = [
@@ -1513,7 +1513,7 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
     check([...Array(16)].every((_, i) => lab.some(l => l.startsWith('c. ' + (i + 1) + ' ') || l === 'c. ' + (i + 1))), 'hay un rótulo "c. N" en cada uno de los 16 compases');
     // Se puede abrir desde el plan/enlaces aunque el filtro vigente la esconda, y la cascada dibuja las ligaduras largas
     W("selectCategory('fragments'); fragCat = 'popular'; pickFragmentById('sound-of-silence')");
-    check(W('currentFragment.id') === 'sound-of-silence' && W('fragCat') === 'clase', 'pickFragmentById abre la categoría de la pieza');
+    check(W('currentFragment.id') === 'sound-of-silence' && W('fragCat') === 'cristiana', 'pickFragmentById abre la categoría de la pieza');
     const bigRh = W("(() => { const { events, beatMs } = buildCascadeSchedule(); const d = events.filter(x => x.hand === 'rh').map(e => Math.round((e.tEnd - e.tStart) / beatMs * 100) / 100); return Math.max(...d); })()");
     check(Math.abs(bigRh - 4 * 0.85) < 1e-6, 'en la cascada la nota más larga de la derecha (Sol, 4 tiempos) se dibuja completa');
     W("selectCategory('today')");
@@ -1523,7 +1523,7 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
   {
     const dl = W("SONGS.find(s => s.id === 'dia-de-lluvia')");
     check(!!dl && dl.cat === 'clase' && dl.tempo === 60 && !dl.meter && dl.plan !== false, 'está en "De la clase", ♩=60 (pausado, mío) y entra al plan de Hoy');
-    check(W("SONGS.filter(s => s.cat === 'clase')[0].id") === 'sound-of-silence', 'The Sound of Silence sigue primera de "De la clase"');
+    check(W("SONGS.filter(s => s.cat === 'clase')[0].id") === 'dia-de-lluvia', 'Día de lluvia es ahora la primera de "De la clase"');
     check(dl.steps.reduce((a, x) => a + x.dur, 0) === 48, '12 compases de 4 tiempos, sin sobras');
     const bars = []; { let t = 0; dl.steps.forEach(x => { const b = Math.floor(t / 4 + 1e-9); (bars[b] = bars[b] || []).push(x); t += x.dur; }); }
     check(bars.length === 12 && bars.every((b, i) => b.reduce((a, x) => a + x.dur, 0) === 4 && b[0].label && b[0].lh.length === (i >= 8 ? 2 : 1)), 'cada compás suma 4, abre con rótulo y la izquierda ataca UNA nota (c. 1-8) o DOS (c. 9-12)');

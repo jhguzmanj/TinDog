@@ -641,6 +641,15 @@ y dentro de "Más ▾": `free | functions`.
   - La prueba compara melodía y bajo con la lectura de la imagen (escrita en
     el test como cadenas por compás, con las ligaduras como `~`): si alguien
     "corrige" una nota, tiene que cambiar las dos.
+  - **Movida a Cristianas (octubre 2026, pedido de Jorge).** `sound-of-silence` pasó de
+    `cat:'clase'` a `cat:'cristiana'`; el resto no cambió. Ahora la primera de "De la
+    clase" es Día de lluvia. **Las dos canciones cristianas fáciles que pidió a
+    continuación NO se agregaron**: las melodías no se pudieron verificar (el proxy
+    bloquea `ccel.org` y `hymnary.org`, y el buscador solo da letras sueltas sin
+    octava ni ritmo). Candidatas: Sublime gracia y Cristo me ama (ambas de dominio
+    público). Se le pidió a Jorge una hoja o un tutorial de letras de notas; con
+    una sola fuente, el truco de verificación es que las notas encajen con la
+    armonía (Cristo me ama: F–C–G7–C).
 - **"Día de lluvia" (octubre 2026, original)** (`dia-de-lluvia`, "De la clase", segunda
   tras The Sound of Silence, ♩=60). Pedido de Jorge un día gris y lluvioso: "algo como
   Amanecer o Camino de intervalos pero triste, melancólico, para mi nivel", como
