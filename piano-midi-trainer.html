@@ -3903,6 +3903,61 @@ const AMAZING_GRACE_STEPS = [
   {lh:[43,47,50], lhF:[5,3,1], rh:[67], rhF:[1], dur:4, label:'c. 15 · Sol, se sostiene hasta el final'}
 ];
 
+// "Cristo me ama / Jesus Loves Me" (arreglo fácil en Do, PDF dice "Arranged: Hannah Acheson"), MusicXML + MIDI + PDF que pasó Jorge
+// (octubre 2026): Do mayor, 4/4, 16 compases = 64 tiempos, sin anacrusa. Melodía idéntica al MusicXML y al MIDI. La izquierda es la del
+// archivo: tríadas en bloque (los c. 1-2 y 5-6 ligados). Dedos y tempo son míos: el archivo no trae ninguno. Ver CLAUDE.md.
+const JESUS_LOVES_ME_STEPS = [
+  {lh:[48,52,55], lhF:[5,3,1], rh:[67], rhF:[4], dur:1, label:'c. 1 · Do · posición: pulgar en Do (Do 1 Re 2 Mi 3 Sol 4 La 5)'},
+  {lh:[], rh:[64], rhF:[3], dur:1},
+  {lh:[], rh:[64], rhF:[3], dur:1},
+  {lh:[], rh:[62], rhF:[2], dur:1},
+  {lh:[], rh:[64], rhF:[3], dur:1, label:'c. 2'},
+  {lh:[], rh:[67], rhF:[4], dur:1},
+  {lh:[], rh:[67], rhF:[4], dur:2},
+  {lh:[48,53,57], lhF:[5,2,1], rh:[69], rhF:[2], dur:1, label:'c. 3 · Fa · cambia: pulgar en Sol (Sol 1 La 2 Do5 4)'},
+  {lh:[], rh:[69], rhF:[2], dur:1},
+  {lh:[], rh:[72], rhF:[4], dur:1},
+  {lh:[], rh:[69], rhF:[2], dur:1},
+  {lh:[48,52,55], lhF:[5,3,1], rh:[69], rhF:[2], dur:1, label:'c. 4'},
+  {lh:[], rh:[67], rhF:[1], dur:1},
+  {lh:[], rh:[67], rhF:[1], dur:2},
+  {lh:[48,52,55], lhF:[5,3,1], rh:[67], rhF:[4], dur:1, label:'c. 5 · vuelve: pulgar en Do'},
+  {lh:[], rh:[64], rhF:[3], dur:1},
+  {lh:[], rh:[64], rhF:[3], dur:1},
+  {lh:[], rh:[62], rhF:[2], dur:1},
+  {lh:[], rh:[64], rhF:[3], dur:1, label:'c. 6'},
+  {lh:[], rh:[67], rhF:[4], dur:1},
+  {lh:[], rh:[67], rhF:[4], dur:2},
+  {lh:[48,53,57], lhF:[5,2,1], rh:[69], rhF:[5], dur:1, label:'c. 7 · Fa'},
+  {lh:[], rh:[69], rhF:[5], dur:1},
+  {lh:[48,52,55], lhF:[5,3,1], rh:[67], rhF:[4], dur:1},
+  {lh:[], rh:[60], rhF:[1], dur:1},
+  {lh:[47,53,55], lhF:[5,2,1], rh:[64], rhF:[3], dur:1, label:'c. 8 · Sol'},
+  {lh:[], rh:[62], rhF:[2], dur:1},
+  {lh:[48,52,55], lhF:[5,3,1], rh:[60], rhF:[1], dur:2},
+  {lh:[48,52,55], lhF:[5,3,1], rh:[67], rhF:[4], dur:2, label:'c. 9'},
+  {lh:[], rh:[64], rhF:[3], dur:1},
+  {lh:[], rh:[67], rhF:[4], dur:1},
+  {lh:[48,53,57], lhF:[5,2,1], rh:[69], rhF:[2], dur:1, label:'c. 10 · Fa · cambia: pulgar en Sol'},
+  {lh:[], rh:[72], rhF:[4], dur:3},
+  {lh:[48,52,55], lhF:[5,3,1], rh:[67], rhF:[4], dur:2, label:'c. 11 · Do · vuelve: pulgar en Do'},
+  {lh:[], rh:[64], rhF:[3], dur:1},
+  {lh:[], rh:[60], rhF:[1], dur:1},
+  {lh:[47,53,55], lhF:[5,2,1], rh:[64], rhF:[3], dur:1, label:'c. 12 · Sol'},
+  {lh:[], rh:[62], rhF:[2], dur:3},
+  {lh:[48,52,55], lhF:[5,3,1], rh:[67], rhF:[4], dur:2, label:'c. 13'},
+  {lh:[], rh:[64], rhF:[3], dur:1},
+  {lh:[], rh:[67], rhF:[4], dur:1},
+  {lh:[48,53,57], lhF:[5,2,1], rh:[69], rhF:[2], dur:1, label:'c. 14 · Fa · cambia: pulgar en Sol'},
+  {lh:[], rh:[72], rhF:[4], dur:2},
+  {lh:[], rh:[69], rhF:[2], dur:1},
+  {lh:[48,52,55], lhF:[5,3,1], rh:[67], rhF:[1], dur:1, label:'c. 15 · el pulgar baja a Do (Sol 1 → Do 1)'},
+  {lh:[], rh:[60], rhF:[1], dur:1},
+  {lh:[47,53,55], lhF:[5,2,1], rh:[64], rhF:[3], dur:1},
+  {lh:[], rh:[62], rhF:[2], dur:1},
+  {lh:[48,52,55], lhF:[5,3,1], rh:[60], rhF:[1], dur:4, label:'c. 16 · Final'}
+];
+
 // "Waymaker" (Sinach), lead sheet que pasó Jorge (octubre 2026): Do mayor, 4/4, anacrusa de 2 tiempos y 75 compases
 // = 302 tiempos. Cada sección va UNA vez (la hoja repite coros y puentes: el Tramo de la cascada los gira). Los
 // silencios se absorben en la nota anterior, salvo los que caen en un cambio de acorde (ahí van con rh:[] y la
@@ -4760,6 +4815,14 @@ const SONGS = [
     tip:'Sol mayor, en 3/4 (cuenta 1-2-3). Casi toda la melodía cabe con el pulgar en Re (Re 1 Mi 2 Sol 3 La 4 Si 5); del c. 5 al 9 la mano sube con el pulgar en Sol. Izquierda: un acorde de tres notas por compás (Sol, Do, Re) con 5-3-1, sostenido todo el compás. Lo difícil son los tresillos y el cambio de mano del c. 10.',
     tempo:80,
     steps:AMAZING_GRACE_STEPS,
+  },
+  {
+    id:'cristo-me-ama',
+    cat:'cristiana',
+    name:'Cristo me ama (Jesus Loves Me)',
+    tip:'Do mayor, solo teclas blancas. Derecha: pulgar en Do (Do 1 Re 2 Mi 3 Sol 4 La 5); para el Do agudo la mano sube con el pulgar en Sol (c. 3, 10 y 14) y vuelve. Izquierda: acordes de tres notas (Do, Fa, Sol) con 5-3-1 y 5-2-1. Practica por tramos de 4 compases.',
+    tempo:80,
+    steps:JESUS_LOVES_ME_STEPS,
   },
   {
     id:'waymaker',

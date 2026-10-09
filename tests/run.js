@@ -3181,6 +3181,42 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
     W("selectCategory('fragments'); fragCat = 'popular'; pickFragmentById('sublime-gracia')");
     check(W('currentFragment.id') === 'sublime-gracia' && W('fragCat') === 'cristiana', 'pickFragmentById abre Cristianas');
     W("selectCategory('today')");
+
+    section('Cristo me ama (Jesus Loves Me): melodía y acordes del MusicXML');
+    const jl = W("SONGS.find(s => s.id === 'cristo-me-ama')");
+    check(!!jl && jl.cat === 'cristiana' && jl.tempo === 80 && jl.plan !== false && !jl.pickup, 'está en Cristianas, sin anacrusa, ♩=80 (de práctica)');
+    const jlExp = { 1: 'G4 E4 E4 D4', 2: 'E4 G4 G4', 3: 'A4 A4 C5 A4', 4: 'A4 G4 G4', 5: 'G4 E4 E4 D4', 6: 'E4 G4 G4', 7: 'A4 A4 G4 C4', 8: 'E4 D4 C4',
+      9: 'G4 E4 G4', 10: 'A4 C5', 11: 'G4 E4 C4', 12: 'E4 D4', 13: 'G4 E4 G4', 14: 'A4 C5 A4', 15: 'G4 C4 E4 D4', 16: 'C4' };
+    const jlGot = JSON.parse(W(`(() => {
+      const NM = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+      const name = n => NM[n % 12] + (Math.floor(n / 12) - 1);
+      const out = {}, att = []; let t = 0;
+      SONGS.find(s => s.id === 'cristo-me-ama').steps.forEach(st => {
+        const bar = Math.floor((t + 1e-6) / 4) + 1;
+        if(st.rh.length) (out[bar] = out[bar] || []).push(name(st.rh[0]));
+        if(st.lh.length) att.push([bar, t - (bar - 1) * 4, st.lh.join(',')]);
+        t += st.dur;
+      });
+      const o = {}; Object.keys(out).forEach(k => o[k] = out[k].join(' '));
+      return JSON.stringify({ o, att, total: t });
+    })()`));
+    const jlBad = Object.keys(jlExp).filter(k => jlGot.o[k] !== jlExp[k]);
+    check(jlBad.length === 0, 'las notas de cada compás coinciden con el MusicXML y el MIDI' + (jlBad.length ? ' · difieren: ' + jlBad.map(k => `c.${k} «${jlGot.o[k]}» ≠ «${jlExp[k]}»`).join(' | ') : ''));
+    check(Math.abs(jlGot.total - 64) < 1e-6, '64 tiempos: 16 compases de 4');
+    // Izquierda del archivo: C = Do3 Mi3 Sol3, F sobre Do = Do3 Fa3 La3, G7/Si = Si2 Fa3 Sol3; los c. 2 y 6 siguen sonando el Do de antes
+    const C_ = '48,52,55', F_ = '48,53,57', G_ = '47,53,55';
+    const jlAtt = jlGot.att.map(a => a[0] + ':' + a[1] + ':' + a[2]).join(' ');
+    const jlWant = [`1:0:${C_}`, `3:0:${F_}`, `4:0:${C_}`, `5:0:${C_}`, `7:0:${F_}`, `7:2:${C_}`, `8:0:${G_}`, `8:2:${C_}`, `9:0:${C_}`, `10:0:${F_}`, `11:0:${C_}`, `12:0:${G_}`,
+      `13:0:${C_}`, `14:0:${F_}`, `15:0:${C_}`, `15:2:${G_}`, `16:0:${C_}`].join(' ');
+    check(jlAtt === jlWant, 'acordes de la izquierda como en el archivo (17 ataques; los c. 2 y 6 sostienen el Do)');
+    check(W("Math.max(...SONGS.find(s => s.id === 'cristo-me-ama').steps.flatMap(s => s.lh)) < Math.min(...SONGS.find(s => s.id === 'cristo-me-ama').steps.flatMap(s => s.rh))"), 'la izquierda queda por debajo de la derecha');
+    check(W("SONGS.find(s => s.id === 'cristo-me-ama').steps.every(s => s.rh.length <= 1 && s.lh.length <= 3 && [...s.rh, ...s.lh].every(n => [0,2,4,5,7,9,11].includes(n % 12)))"), 'todo en teclas blancas; derecha de a una tecla, izquierda de a tres');
+    const jlF = JSON.parse(W("JSON.stringify(SONGS.find(s => s.id === 'cristo-me-ama').steps.map(s => [s.rh[0], s.rhF[0]]))"));
+    const jlFin = (m, f) => jlF.filter(x => x[0] === m).every(x => f.includes(x[1]));
+    check(jlFin(64, [3]) && jlFin(62, [2]) && jlFin(60, [1]) && jlFin(72, [4]), 'Mi 3, Re 2, Do4 1 y Do5 4 en todas partes');
+    W("selectCategory('fragments'); fragCat = 'popular'; pickFragmentById('cristo-me-ama')");
+    check(W('currentFragment.id') === 'cristo-me-ama' && W('fragCat') === 'cristiana', 'pickFragmentById abre Cristianas');
+    W("selectCategory('today')");
   }
 
   console.log(`\n${passes} pruebas OK, ${failures} fallos`);

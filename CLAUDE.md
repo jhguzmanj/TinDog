@@ -710,6 +710,21 @@ y dentro de "Más ▾": `free | functions`.
     mano pasa de pulgar-en-Sol a pulgar-en-Re justo después del tresillo (Sol 1 → Si 5). Si cuesta,
     alternativa a pactar con el profe: Si 3 y La 2 en el c. 10 y cambiar sobre el Sol largo del c. 11.
   - Tempo 80 es el impreso (no es mío, a diferencia de otras piezas). Meta honesta: los tresillos a ♩=80.
+- **"Cristo me ama / Jesus Loves Me" (octubre 2026)** (`cristo-me-ama`, Cristianas, entra al plan
+  de Hoy). Jorge pasó MusicXML + MIDI + PDF ("easy piano, key of C"; el PDF dice "Composed: Anna Warner,
+  Arranged: Hannah Acheson" — ojo: Warner escribió la LETRA, la melodía suele atribuirse a Bradbury;
+  no repetir la atribución del PDF como cierta). Do mayor, solo teclas blancas, 4/4, 16 compases = 64
+  tiempos, sin anacrusa. **Melodía idéntica en MusicXML y MIDI** (prueba compás por compás).
+  - **Tempo: el MIDI trae 120 (valor por defecto de MuseScore) y el PDF no imprime ninguno; 80 es de
+    práctica y MÍO.** Subirlo si se siente lenta.
+  - **Izquierda como en el archivo**, tríadas en bloque (Jorge ya quiere usar tres dedos, ver Sublime
+    gracia): Do = Do3 Mi3 Sol3 (5-3-1), Fa sobre Do = Do3 Fa3 La3 (5-2-1) y Sol7/Si = Si2 Fa3 Sol3 (5-2-1).
+    Los c. 1-2 y 5-6 son un solo Do ligado (los c. 2 y 6 sostienen); en los c. 7, 8 y 15 el acorde cambia
+    al tiempo 3. Máx. izquierda La3 < mín. derecha Do4.
+  - **Dedos de la derecha: míos** (el archivo no trae ninguno). Dos posiciones: pulgar en Do (Do 1 Re 2 Mi 3
+    Sol 4 La 5, la mano abierta de Waymaker) y pulgar en Sol (Sol 1 La 2 Do5 4) solo para los tres Do
+    agudos (c. 3, 10, 14), con el cambio avisado en el `label`. **Lo difícil**: seis cambios de mano; todos
+    caen sobre una nota larga salvo el c. 14→15, donde el pulgar baja de Sol a Do en un tiempo.
 - **"Día de lluvia" (octubre 2026, original)** (`dia-de-lluvia`, "De la clase", segunda
   tras The Sound of Silence, ♩=60). Pedido de Jorge un día gris y lluvioso: "algo como
   Amanecer o Camino de intervalos pero triste, melancólico, para mi nivel", como
