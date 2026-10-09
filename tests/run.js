@@ -3065,6 +3065,77 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
     check(JSON.stringify(ep.map(x => x.lh[0] % 12)) === '[0,8,10,0]', 'épico: el bajo hace Do – La♭ – Si♭ – Do');
   }
 
+  {
+    section('Waymaker (lead sheet de Jorge): lectura de la partitura compás por compás');
+    const wm = W("SONGS.find(s => s.id === 'waymaker')");
+    check(!!wm && wm.cat === 'cristiana' && wm.pickup === 2 && wm.tempo === 66 && wm.plan !== false, 'está en Cristianas, anacrusa de 2 tiempos y ♩=66');
+    // Lo que dice la hoja (numeración de la hoja: el c. 64 es la 2.ª casilla, igual a la 1.ª, y no se repite)
+    const V = P => ({ [P]: 'E4 G4', [P+1]: 'A4', [P+2]: 'A4 A4 A4 G4', [P+3]: 'E4', [P+4]: 'C4 G4 E4', [P+5]: 'D4', [P+6]: 'C4 E4 C4', [P+7]: 'A3' });
+    const CHO = P => ({ [P]: 'A3 C4', ...CHO3(P+1) });
+    const CHO3 = b => ({ [b]: 'C4 C4 G3', [b+1]: 'C4 C4 C4 C4 G3', [b+2]: 'C4 C4 C4 G3', [b+3]: 'C4 C4 D4 E4 D4', [b+4]: 'E4 D4', [b+5]: 'C4 D4 E4 C4', [b+6]: 'A3' });
+    const CDEC = 'C4 D4 E4 C4';
+    const expected = {
+      ...V(0), ...V(8), ...CHO(16), ...V(24), ...V(32), ...CHO(40),
+      48: CDEC, 49: 'A3', 50: CDEC, 51: 'G3', 52: CDEC, 53: 'D4', 54: CDEC, 55: 'A3',
+      56: 'C4 C4 C4 C4 C4', 57: 'C4 C4 C4 C4 G3', 58: 'C4 C4 C4 C4 C4', 59: 'C4 C4 D4 E4 D4',
+      60: 'G3 C4 D4 E4 G3', 61: 'C4 D4 E4 D4 C4', 62: 'A3 C4 D4 E4 A3', 63: 'C4 D4 E4 D4 C4',
+      ...CHO3(65), 72: CDEC, 73: 'A3', 74: CDEC, 75: 'C4', 76: 'C4+E4',
+    };
+    const got = W(`(() => {
+      const NM = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+      const name = n => NM[n % 12] + (Math.floor(n / 12) - 1);
+      const out = {}, att = []; let t = 0;
+      SONGS.find(s => s.id === 'waymaker').steps.forEach(st => {
+        let bar = Math.floor((t - 2 + 1e-6) / 4) + 1; if(bar >= 64) bar += 1; if(t < 2 - 1e-6) bar = 0;
+        if(st.rh.length) (out[bar] = out[bar] || []).push(st.rh.map(name).join('+'));
+        if(st.lh.length) { const r = ((t - 2) % 4 + 4) % 4; att.push([bar, st.lh[0], r < 1e-6 || 4 - r < 1e-6]); }
+        t += st.dur;
+      });
+      const o = {}; Object.keys(out).forEach(k => o[k] = out[k].join(' '));
+      return JSON.stringify({ o, att, total: t });
+    })()`);
+    const g = JSON.parse(got);
+    const bad = Object.keys(expected).filter(k => g.o[k] !== expected[k]);
+    check(bad.length === 0 && Object.keys(g.o).length === Object.keys(expected).length,
+      'las notas de cada compás coinciden con la hoja (76 compases, c. 64 no se repite)' + (bad.length ? ' · difieren: ' + bad.map(k => `c.${k} «${g.o[k]}» ≠ «${expected[k]}»`).join(' | ') : ''));
+    check(Math.abs(g.total - 302) < 1e-6, '302 tiempos: anacrusa de 2 + 75 compases de 4');
+    // Izquierda: una nota por acorde, siempre al inicio de un compás
+    const exp = [];
+    [0, 8, 24, 32].forEach(P => exp.push([P+1, 41], [P+3, 48], [P+5, 43], [P+7, 45]));
+    [16, 40].forEach(P => exp.push([P+1, 41], [P+3, 48], [P+5, 43], [P+7, 45]));
+    exp.push([49, 41], [51, 48], [53, 43], [55, 45], [56, 41], [58, 48], [60, 43], [62, 45], [65, 41], [67, 48], [69, 43], [71, 45], [73, 41], [75, 48]);
+    const attacks = g.att.map(a => [a[0], a[1]]).sort((x, y) => x[0] - y[0]);
+    check(JSON.stringify(attacks) === JSON.stringify(exp.sort((x, y) => x[0] - y[0])), 'la izquierda ataca Fa–Do–Sol–La en los compases donde la hoja cambia de acorde');
+    check(g.att.every(a => a[2]), 'cada ataque de la izquierda cae justo al inicio de un compás');
+    // Reglas de la clase y de dedos
+    const info = W(`(() => {
+      const w = SONGS.find(s => s.id === 'waymaker'); const ok = [];
+      const A = {60:1,62:2,64:3,67:4,69:5}, B = {55:1,57:2,60:3,62:4,64:5};
+      const L = {41:5,48:1,43:4,45:3};
+      ok.push(w.steps.every(s => s.lh.length <= 1 && s.rh.length <= 2));
+      ok.push(w.steps.filter(s => s.rh.length).every(s => s.rh.every((n, i) => A[n] === s.rhF[i] || B[n] === s.rhF[i] || (n === 57 && s.rhF[i] === 1))));
+      ok.push(w.steps.filter(s => s.lh.length).every(s => L[s.lh[0]] === s.lhF[0]));
+      ok.push(w.steps.every(s => [...s.lh, ...s.rh].every(n => ![1,3,6,8,10].includes(n % 12))));
+      ok.push(Math.max(...w.steps.flatMap(s => s.lh)) < Math.min(...w.steps.flatMap(s => s.rh)));
+      ok.push(w.steps.filter(s => s.rh.length === 2).length === 1);
+      const lab = w.steps.map(s => s.label || '');
+      ok.push([...Array(76).keys()].map(b => b + 1).filter(b => b !== 64).every(b => lab.some(l => l === 'c. ' + b || l.startsWith('c. ' + b + ' ') || l.startsWith('c. ' + b + '-'))));
+      return JSON.stringify(ok);
+    })()`);
+    const ok = JSON.parse(info);
+    check(ok[0] && ok[5], 'máximo una tecla en la izquierda y dos en la derecha (solo el acorde final lleva dos)');
+    check(ok[1], 'cada tecla de la derecha lleva el dedo de su posición (mano abierta Do-Re-Mi-Sol-La, o la de abajo Sol-La-Do-Re-Mi)');
+    check(ok[2], 'izquierda en posición fija: Fa 5, Do 1, Sol 4, La 3');
+    check(ok[3], 'todo en teclas blancas');
+    check(ok[4], 'las manos no se cruzan (izquierda ≤ Do3, derecha ≥ Sol3)');
+    check(ok[6], 'hay un rótulo "c. N" en cada compás de la hoja (c. 63-64 va junto)');
+    const tri = W("SONGS.find(s => s.id === 'waymaker').steps.filter(s => Math.abs(s.dur - 2/3) < 1e-9).length");
+    check(tri === 3 * 3 + 2 * 6, 'tresillos: 3 notas en el compás 2 de cada uno de los 3 coros + 6 por cada uno de los 2 compases del puente 2 (' + tri + ')');
+    W("selectCategory('fragments'); fragCat = 'popular'; pickFragmentById('waymaker')");
+    check(W('currentFragment.id') === 'waymaker' && W('fragCat') === 'cristiana', 'pickFragmentById abre Cristianas');
+    W("selectCategory('today')");
+  }
+
   console.log(`\n${passes} pruebas OK, ${failures} fallos`);
   if(errors.length) console.log('Errores de consola:', errors);
   process.exit(failures || errors.length ? 1 : 0);

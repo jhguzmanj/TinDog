@@ -643,13 +643,47 @@ y dentro de "Más ▾": `free | functions`.
     "corrige" una nota, tiene que cambiar las dos.
   - **Movida a Cristianas (octubre 2026, pedido de Jorge).** `sound-of-silence` pasó de
     `cat:'clase'` a `cat:'cristiana'`; el resto no cambió. Ahora la primera de "De la
-    clase" es Día de lluvia. **Las dos canciones cristianas fáciles que pidió a
-    continuación NO se agregaron**: las melodías no se pudieron verificar (el proxy
-    bloquea `ccel.org` y `hymnary.org`, y el buscador solo da letras sueltas sin
-    octava ni ritmo). Candidatas: Sublime gracia y Cristo me ama (ambas de dominio
-    público). Se le pidió a Jorge una hoja o un tutorial de letras de notas; con
-    una sola fuente, el truco de verificación es que las notas encajen con la
-    armonía (Cristo me ama: F–C–G7–C).
+    clase" es Día de lluvia. Pidió además **dos canciones cristianas fáciles**: las
+    melodías no se podían verificar sin una hoja (el proxy bloquea `ccel.org` y
+    `hymnary.org`, y el buscador solo da letras sueltas sin octava ni ritmo), así que
+    se las pidió. **Waymaker llegó primero (ver abajo); falta la segunda.** Candidatas
+    de dominio público: Sublime gracia y Cristo me ama. Con una sola fuente, el truco
+    de verificación es que las notas encajen con la armonía (Cristo me ama:
+    F–C–G7–C).
+- **"Waymaker" (Sinach), lead sheet de Jorge (octubre 2026)** (`waymaker`, Cristianas,
+  entra al plan de Hoy). Jorge pasó 5 imágenes de una hoja de melodía con cifrados
+  ("[lead sheet]", Do mayor, 4/4): **la melodía es solo C D E G A (y G3 A3 abajo)**,
+  todo teclas blancas, rango G3–A4. Los arreglos publicados dan la tonalidad original
+  en B o E (varía) y ♩≈66-69; **esta hoja está transpuesta a Do y el tempo 66 es de
+  práctica, no de la grabación** (no hay grabación aquí).
+  - **Estructura** (numeración DE LA HOJA, 76 compases): anacrusa de 2 tiempos
+    (`pickup:2`) + Verso 1 (c. 1-15, dos pasadas de la misma frase de 8) + Coro (16-23)
+    + Versos 2 y 3 (24-39, una sola pasada de 16) + Coro (40-47) + Puente 1 (48-55) +
+    Puente 2 (56-63, el c. 64 es la 2.ª casilla y es **igual** a la 1.ª: no se repite)
+    + Coro (65-71, sin anacrusa) + Final (72-76). **La app no tiene repeticiones**:
+    cada sección va una vez; los coros, los puentes y los versos (los dos de la hoja
+    llevan `|: :|`) se giran con el Tramo de la cascada. 221 pasos, 302 tiempos
+    (2 + 75 compases de 4).
+  - **Verificación**: lectura de la imagen compás por compás, escrita aparte en la
+    prueba (no sale del generador) + cada compás suma 4 + las notas encajan con los
+    cifrados F–C–G–Am. **Una sola fuente (la imagen)**, sin partitura vectorial ni
+    audio que la contraste. Lo que no pude leer con certeza: la altura exacta del
+    acorde final de la hoja (tres notas apiladas): se tocó como Do + Mi, 1-3, por la
+    regla de dos teclas.
+  - **Tresillos**: el coro tiene 3 negras en el tiempo de 2 (c. 18, 42, 66: `dur 2/3`) y
+    el puente 2 tiene dos compases de 6 negras de tresillo (c. 56 y 58: silencio + 5
+    Do). **Es lo único rítmicamente difícil** y está avisado en el rótulo.
+  - **Silencios**: los que caen en un cambio de acorde van como paso con `rh:[]` y el
+    ataque de la izquierda (c. 17, 21, 41, 45, 56, 58, 60, 62, 65, 69); los demás se
+    absorben en la nota anterior (`dur` 5 o 6): hay que dejar la tecla pisada.
+  - **Dedos: dos posiciones pentatónicas, ambas inventadas.** Verso: mano abierta
+    **Do 1 Re 2 Mi 3 Sol 4 La 5** (no toca Fa; Do–La son 9 semitonos, abre un poco la
+    mano). Coro, puentes y final: una más abajo, **Sol3 1 La3 2 Do4 3 Re4 4 Mi4 5**.
+    Cambios de posición avisados en el rótulo: al final de cada pasada del verso (La3
+    con el pulgar estirado donde sigue otra pasada: c. 7 y 31; la mano baja donde
+    sigue el coro: c. 15 y 39), al subir a los versos 2 y 3 (c. 24) y en el Do final.
+    Izquierda en posición fija de siempre (Fa 5, Do 1, Sol 4, La 3), **una nota por
+    acorde** (cambia cada 2 compases) y nunca más de una tecla.
 - **"Día de lluvia" (octubre 2026, original)** (`dia-de-lluvia`, "De la clase", segunda
   tras The Sound of Silence, ♩=60). Pedido de Jorge un día gris y lluvioso: "algo como
   Amanecer o Camino de intervalos pero triste, melancólico, para mi nivel", como
