@@ -692,6 +692,23 @@ y dentro de "Más ▾": `free | functions`.
     5ª + DOS octavas = **19ª**. Con la derecha en la 4ª octava, Mi4 sobre La2 (19 semitonos) sí es
     una 12ª. Como intervalo SIMPLE sigue siendo una 5ª justa en los dos casos. Los PDF y la tabla
     de intervalos para el profe usan el intervalo simple y no cambian.
+- **Finales (octubre 2026, categoría `finales`, los cinco con `plan:false`).**
+  Jorge: "una de las cosas que siempre me han gustado del piano son los endings;
+  lo he intentado solo y no se escucha bien". Pidió 5, mezclando clásicos y
+  modernos. **Son MÍOS** (recetas estándar de armonía, no transcripciones):
+  `final-perfecta` (I–IV–V7–I, Si→Do y Fa→Mi), `final-amen` (plagal IV–I, el
+  Fa baja a Mi), `final-picardia` (La menor que cierra en La MAYOR: i–VI–V7–I con
+  Do# solo en el último acorde y el tritono Re–Sol# en el V7), `final-epico`
+  (♭VI–♭VII–I, La♭–Si♭–Do, el del "nivel completado" de Mario) y `final-balada`
+  (Fa con 9ª, Do sus4→3 y arpegio de Do subiendo con pedal). Reglas que cumplen
+  (hay prueba de cada una): máximo dos teclas por mano, bajo final = tónica,
+  compases completos y la última nota la más larga. **El ritardando va escrito
+  en el ritmo** (negras → blancas → redonda) porque `SONGS` tiene un solo tempo;
+  el de verdad, el pedal y la dinámica los pone Jorge, y el `tip` lo dice. En
+  cuatro de los cinco el meñique izquierdo baja una octava en el acorde final
+  (Do2 o La1) para "abrir el registro": es a propósito y va en el `label`.
+  Se agregó con la app congelada porque Jorge lo pidió explícitamente después de
+  preguntarle; no entra al plan de Hoy.
 - **Tocar libre nombra lo que se pisa** (`#freeBox`, `describeHeld`,
   registrado como handler de note-on y note-off del modo `free`): dos teclas →
   intervalo; tres que formen tríada mayor/menor → acorde y posición; si no, el

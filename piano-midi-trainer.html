@@ -4901,6 +4901,92 @@ const SONGS = [
     meter:3,
     steps:KOHLER_STEPS,
   },
+  // Finales (octubre 2026): cinco formas de terminar una pieza, mitad clásicas y
+  // mitad modernas. Cortos, máximo dos teclas por mano, y el "frenar" va escrito
+  // en el ritmo (las notas se alargan), porque la app no tiene ritardando.
+  {
+    id:'final-perfecta',
+    cat:'finales',
+    plan:false,
+    name:'Final 1 · Cadencia perfecta (clásico)',
+    tip:'El final de Mozart y Haydn: Do – Fa – Sol7 – Do. En el c. 3 el Si de la izquierda y el Fa de la derecha tiran hacia Do y Mi. Frena: negras, blancas, redonda. Deja sonar el último acorde.',
+    tempo:72,
+    steps:[
+      {lh:[48], lhF:[1], rh:[64], rhF:[3], dur:1, label:'c. 1 · Do (I): en casa'},
+      {lh:[], rh:[62], rhF:[2], dur:1},
+      {lh:[], rh:[64], rhF:[3], dur:1},
+      {lh:[], rh:[67], rhF:[5], dur:1},
+      {lh:[41,48], lhF:[5,1], rh:[65], rhF:[4], dur:2, label:'c. 2 · Fa (IV): sales de casa, ya en blancas'},
+      {lh:[], rh:[62], rhF:[2], dur:2},
+      {lh:[43,47], lhF:[4,2], rh:[62,65], rhF:[2,4], dur:4, label:'c. 3 · Sol7 (V7): tensión. Si y Fa quieren moverse'},
+      {lh:[36,48], lhF:[5,1], rh:[60,64], rhF:[1,3], dur:4, label:'c. 4 · Do (I): llegada. Meñique izquierdo baja a Do2. Déjalo sonar'},
+    ]
+  },
+  {
+    id:'final-amen',
+    cat:'finales',
+    plan:false,
+    name:'Final 2 · Amén (clásico)',
+    tip:'La cadencia plagal: Fa → Do, el "a-mén" de los himnos y el final del Aleluya de Händel. Más suave que la perfecta: el Fa de la derecha baja a Mi. Tócalo piano, sin prisa.',
+    tempo:66,
+    steps:[
+      {lh:[48], lhF:[1], rh:[64], rhF:[3], dur:2, label:'c. 1 · Do (I)'},
+      {lh:[], rh:[67], rhF:[5], dur:2},
+      {lh:[41,48], lhF:[5,1], rh:[60,65], rhF:[1,4], dur:4, label:'c. 2 · Fa (IV): "A–"'},
+      {lh:[36,48], lhF:[5,1], rh:[60,64], rhF:[1,3], dur:4, label:'c. 3 · Do (I): "–mén". Solo el Fa baja a Mi; lo demás no se mueve'},
+    ]
+  },
+  {
+    id:'final-picardia',
+    cat:'finales',
+    plan:false,
+    name:'Final 3 · Tercera de Picardía (clásico)',
+    tip:'Una pieza en La menor que termina en La MAYOR: el Do se vuelve Do#. Lo usaba Bach para cerrar con luz. Pruébalo al final de Día de lluvia. Izquierda: meñique en Mi2, pulgar en La2.',
+    tempo:60,
+    steps:[
+      {lh:[45], lhF:[1], rh:[64], rhF:[3], dur:1, label:'c. 1 · Lam (i): triste'},
+      {lh:[], rh:[62], rhF:[2], dur:1},
+      {lh:[], rh:[60], rhF:[1], dur:2},
+      {lh:[41], lhF:[4], rh:[65], rhF:[4], dur:2, label:'c. 2 · Fa (VI)'},
+      {lh:[], rh:[62], rhF:[2], dur:2},
+      {lh:[40], lhF:[5], rh:[62,68], rhF:[2,5], dur:4, label:'c. 3 · Mi7 (V7): Re y Sol# forman un tritono, máxima tensión'},
+      {lh:[33,45], lhF:[5,1], rh:[61,64], rhF:[1,3], dur:4, label:'c. 4 · La MAYOR: Do# en vez de Do (pulgar en la negra). Meñique izquierdo baja a La1'},
+    ]
+  },
+  {
+    id:'final-epico',
+    cat:'finales',
+    plan:false,
+    name:'Final 4 · Épico ♭VI–♭VII–I (moderno)',
+    tip:'El final de videojuegos y rock: La♭ – Si♭ – Do, el mismo del "nivel completado" de Mario. Fuerte y decidido, sin frenar tanto. Izquierda con el pulgar en Do3: Si♭ con el 2, La♭ con el 3.',
+    tempo:96,
+    steps:[
+      {lh:[48], lhF:[1], rh:[64,67], rhF:[3,5], dur:4, label:'c. 1 · Do (I)'},
+      {lh:[44], lhF:[3], rh:[60,63], rhF:[1,3], dur:2, label:'c. 2 · La♭ (♭VI): Do + Mi♭'},
+      {lh:[46], lhF:[2], rh:[62,65], rhF:[2,4], dur:2, label:'Si♭ (♭VII): Re + Fa, sube'},
+      {lh:[36,48], lhF:[5,1], rh:[64,67], rhF:[3,5], dur:4, label:'c. 3 · Do (I): llegada fuerte. Meñique izquierdo baja a Do2'},
+    ]
+  },
+  {
+    id:'final-balada',
+    cat:'finales',
+    plan:false,
+    name:'Final 5 · Balada con arpegio (moderno)',
+    tip:'El final de las baladas de piano: Fa con 9ª, Do suspendido que se resuelve (Fa → Mi), y un arpegio de Do que sube despacio. Con pedal pisado desde el arpegio hasta el final.',
+    tempo:66,
+    steps:[
+      {lh:[41,48], lhF:[5,1], rh:[60,65], rhF:[1,4], dur:2, label:'c. 1 · Fa (IV), abierto: Do + Fa'},
+      {lh:[], rh:[60,67], rhF:[1,5], dur:2, label:'Fa con 9ª: Do + Sol, el sonido "moderno"'},
+      {lh:[48], lhF:[1], rh:[65,67], rhF:[4,5], dur:2, label:'c. 2 · Do suspendido: Fa + Sol'},
+      {lh:[], rh:[64,67], rhF:[3,5], dur:2, label:'Se resuelve: el Fa baja a Mi'},
+      {lh:[36], lhF:[5], rh:[], dur:1, label:'c. 3 · Arpegio de Do, pisa el pedal: Do2'},
+      {lh:[43], lhF:[2], rh:[], dur:1},
+      {lh:[48], lhF:[1], rh:[], dur:1},
+      {lh:[], rh:[60], rhF:[1], dur:1},
+      {lh:[], rh:[64], rhF:[3], dur:1, label:'c. 4 · Sigue subiendo, más lento por dentro'},
+      {lh:[], rh:[67], rhF:[5], dur:3, label:'Sol4 y deja sonar todo hasta que se apague'},
+    ]
+  },
 ];
 
 // Categorías de Fragmentos. El orden manda en la barra de arriba; `facil` va
@@ -4913,6 +4999,7 @@ const SONG_CATS = [
   {id:'popular',   name:'Populares'},
   {id:'cristiana', name:'Cristianas'},
   {id:'clasica',   name:'Clásicas'},
+  {id:'finales',   name:'Finales'},
   {id:'patrones',  name:'Patrones'},
   {id:'hanon',     name:'Hanon'},
 ];

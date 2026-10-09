@@ -3032,6 +3032,39 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
     W("if(nameMode) setNameMode(false); selectCategory('today');");
   }
 
+  {
+    console.log('\nFinales: cinco formas de terminar una pieza');
+    const ids = ['final-perfecta', 'final-amen', 'final-picardia', 'final-epico', 'final-balada'];
+    check(JSON.stringify(W("SONGS.filter(s => s.cat === 'finales').map(s => s.id)")) === JSON.stringify(ids),
+      'categoría Finales con los cinco, en orden');
+    check(W("SONG_CATS.some(c => c.id === 'finales')"), 'Finales aparece en la barra de categorías');
+    const fin = id => W(`SONGS.find(s => s.id === '${id}')`);
+    for(const id of ids){
+      const s = fin(id);
+      const total = s.steps.reduce((a, x) => a + x.dur, 0);
+      check(total % 4 === 0, `${id}: ${total} tiempos, compases completos de 4`);
+      check(s.steps.every(x => x.lh.length <= 2 && x.rh.length <= 2), `${id}: máximo dos teclas por mano (regla del profe)`);
+      check(s.steps.every(x => (x.lhF || []).length === x.lh.length && (x.rhF || []).length === x.rh.length), `${id}: cada tecla trae su dedo`);
+      check(s.plan === false, `${id}: fuera del plan de Hoy`);
+      const last = s.steps[s.steps.length - 1];
+      const lastLh = [...s.steps].reverse().find(x => x.lh.length).lh;
+      const tonic = id === 'final-picardia' ? 9 : 0;
+      check(Math.min(...lastLh) % 12 === tonic, `${id}: el bajo final es la tónica`);
+      const durs = s.steps.map(x => x.dur);
+      check(durs[durs.length - 1] >= Math.max(...durs.slice(0, -1)) || id === 'final-balada' && last.dur === 3,
+        `${id}: la última nota es la más larga (el freno va escrito)`);
+    }
+    const pf = fin('final-perfecta').steps;
+    check(pf[6].lh.includes(47) && pf[7].lh.includes(48) && pf[6].rh.includes(65) && pf[7].rh.includes(64),
+      'cadencia perfecta: el Si sube a Do y el Fa baja a Mi');
+    const pc = fin('final-picardia').steps;
+    check(pc.slice(0, -1).every(x => !x.rh.includes(61)) && pc[pc.length - 1].rh.includes(61),
+      'Picardía: el Do# aparece solo en el acorde final (La mayor)');
+    check(pc[5].rh[1] - pc[5].rh[0] === 6, 'Picardía: el V7 lleva el tritono Re–Sol#');
+    const ep = fin('final-epico').steps;
+    check(JSON.stringify(ep.map(x => x.lh[0] % 12)) === '[0,8,10,0]', 'épico: el bajo hace Do – La♭ – Si♭ – Do');
+  }
+
   console.log(`\n${passes} pruebas OK, ${failures} fallos`);
   if(errors.length) console.log('Errores de consola:', errors);
   process.exit(failures || errors.length ? 1 : 0);
