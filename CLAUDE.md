@@ -776,6 +776,41 @@ y dentro de "Más ▾": `free | functions`.
     5ª + DOS octavas = **19ª**. Con la derecha en la 4ª octava, Mi4 sobre La2 (19 semitonos) sí es
     una 12ª. Como intervalo SIMPLE sigue siendo una 5ª justa en los dos casos. Los PDF y la tabla
     de intervalos para el profe usan el intervalo simple y no cambian.
+- **Clase del 10 de octubre de 2026** (Jorge: "una clase potente"). Al profe le gustó Día de lluvia;
+  la crítica fue que "faltó un cierre un poco más melodioso". Tareas: intervalos fuerte; escala cromática
+  de ida y vuelta "por todo el piano"; inversiones de intervalos; escalas por quintas (C G D A E B F# C#
+  G# D# A# F, **así las nombró el profe como teoría**: G#, D# y A# mayor son teóricas, suenan como La♭,
+  Mi♭ y Si♭; Jorge pidió dejarlas así); pentatónica de Do; **sin acordes esta semana**; y de cada tema
+  **una melodía corta con acompañamiento breve**, practicada con cada mano sola y con las dos. "Por todo
+  el piano" = explorar cómo suena cada registro, no aprender octavas exactas (Jorge, aclarado).
+  - **Cierre de Día de lluvia (c. 13-14, 56 tiempos)**: la opción que eligió Jorge: la derecha baja
+    Mi-Re-Do-Si-La y termina en La3 (la tónica), redonda. La izquierda hace Fa (Fa–Do) → Sol (sola, tiempo 3)
+    → La–Do: VI–VII–i. Para llegar al Si y al La la derecha se corre **mientras suena el Do redondo del
+    c. 12**: pulgar en La3 (La 1 Si 2 Do 3 Re 4 Mi 5); va avisado en el `label`. Antes terminaba en Do
+    sobre La (correcto pero seco). Hay prueba del cierre y de las dos posiciones.
+  - **Cinco melodías MÍAS** (`tarea:true`, `cat:'clase'`, después de Día de lluvia; generador en el scratchpad de la sesión): `tarea-intervalos` "Pasos y saltos" (2ª-5ª desde Do y
+    desde Sol, rótulo con el nombre de cada intervalo; pulgar en Do4 fijo; c. 5-7 la izquierda también en
+    intervalos), `tarea-cromatica` "Paseo cromático" (ida con ♯ y vuelta con ♭; digitación estándar 3 en
+    negras, 1-2 en Mi-Fa/Si-Do; la Parte 2 repite una octava arriba con la izquierda una octava abajo para
+    oír los registros; izquierda Do–Sol 5-1), `tarea-inversiones` "Espejos" (la derecha toca 3ªM/5ª/4ª/6ªM
+    y la izquierda responde con la inversión 6ªm/4ª/5ª/3ªm, cada par suma una octava; después las dos
+    notas juntas, **alternando manos: nunca 4 teclas a la vez**; termina en unísono↔8ª; izquierda con el
+    pulgar en Do3 y el meñique estirado hasta Mi2), `tarea-quintas` "Viaje por las quintas" (un compás por
+    tonalidad en el orden del profe: 1 2 3 4 5 4 3 2 de la escala mayor en corcheas, la izquierda la nota y
+    su 5ª; el pulgar cae en negras en las tonalidades con sostenidos, es inevitable) y
+    `tarea-pentatonica` (Do Re Mi Sol La con la mano abierta de Waymaker). Ninguna pasa de dos teclas por
+    mano. Tempos míos (60-76).
+  - **Plan de Hoy sin acordes hasta la clase siguiente**: `CHORDS_PAUSED_UNTIL = '2026-10-17'`; mientras
+    tanto el punto `chords` se cambia por `tarea` (la melodía de la tarea menos practicada). Desde el 17
+    vuelve solo (hay prueba con la fecha cambiada).
+  - **No se hizo, a propósito** (app congelada; las melodías cubren la práctica): la cromática como escala
+    en Escalas (la identificación de notas ♯/♭ ya está en Lectura, niveles `s1/s2`), un modo de
+    inversiones en Intervalos y reordenar las mayores por quintas (`MAJOR_ORDER` decide qué escala se
+    desbloquea: tocarlo cambia el progreso).
+  - **PDF para la clase** (`out/`): Día de lluvia mano derecha (cada nota con la anterior, americana y
+    latina, tonos), mano izquierda aparte (más grave de cada ataque + intervalo de las dos teclas) y
+    partitura con dedos de las dos manos, dibujada con reportlab (`tools/pdf/`, leen `dl.json`
+    exportado de `SONGS`). Jorge pidió solo la derecha "para el profe"; la izquierda va aparte.
 - **Finales (octubre 2026, categoría `finales`, los cinco con `plan:false`).**
   Jorge: "una de las cosas que siempre me han gustado del piano son los endings;
   lo he intentado solo y no se escucha bien". Pidió 5, mezclando clásicos y

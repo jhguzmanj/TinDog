@@ -954,8 +954,13 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
   const coreMin = W('todayPlan.filter(it => it.block === "core").reduce((a,it) => a + it.min, 0)');
   const keepMin = W('todayPlan.filter(it => it.block === "keep").reduce((a,it) => a + it.min, 0)');
   check(coreMin > keepMin, 'y se lleva más minutos que el mantenimiento (' + coreMin + ' vs ' + keepMin + ')');
-  check(W('todayPlan.filter(it => it.block === "keep").map(it => it.key)').join(',') === 'reading,chords,song',
-    'lectura, acordes y pieza siguen en el plan: foco no es abandono');
+  const chordsPaused = W('dateKey() < CHORDS_PAUSED_UNTIL');
+  check(W('todayPlan.filter(it => it.block === "keep").map(it => it.key)').join(',') === (chordsPaused ? 'reading,tarea,song' : 'reading,chords,song'),
+    'lectura, ' + (chordsPaused ? 'la tarea de la clase (esta semana sin acordes)' : 'acordes') + ' y pieza siguen en el plan: foco no es abandono');
+  // Clase del 10 de octubre: sin acordes hasta la clase siguiente; después vuelven solos
+  const keepOn = d => W(`(() => { const dk = dateKey; dateKey = () => '${d}'; try { return buildTodayPlan(7).filter(it => it.block === 'keep').map(it => it.key).join(','); } finally { dateKey = dk; } })()`);
+  check(keepOn('2026-10-12') === 'reading,tarea,song', 'la semana del 10 de octubre el plan cambia Acordes por una melodía de la tarea');
+  check(keepOn('2026-10-17') === 'reading,chords,song', 'desde la clase del 17 de octubre vuelven los acordes');
   check(doc.querySelectorAll('#todayList .today-block').length === 2, 'los dos bloques se rotulan en pantalla');
   check(W("todayPlan.find(it => it.key === 'intervals').title").includes('Anclas') && W("todayPlan.find(it => it.key === 'ear').title").includes('Anclas'),
     'intervalos y oído arrancan en el nivel 1');
@@ -1519,38 +1524,88 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
     W("selectCategory('today')");
   }
 
-  section('Día de lluvia (triste y pausada): izquierda sencilla, sin saltos');
+  section('Día de lluvia (triste y pausada): izquierda sencilla, sin saltos, cierre en La');
   {
     const dl = W("SONGS.find(s => s.id === 'dia-de-lluvia')");
     check(!!dl && dl.cat === 'clase' && dl.tempo === 60 && !dl.meter && dl.plan !== false, 'está en "De la clase", ♩=60 (pausado, mío) y entra al plan de Hoy');
     check(W("SONGS.filter(s => s.cat === 'clase')[0].id") === 'dia-de-lluvia', 'Día de lluvia es ahora la primera de "De la clase"');
-    check(dl.steps.reduce((a, x) => a + x.dur, 0) === 48, '12 compases de 4 tiempos, sin sobras');
+    check(dl.steps.reduce((a, x) => a + x.dur, 0) === 56, '14 compases de 4 tiempos (12 + el cierre de 2), sin sobras');
     const bars = []; { let t = 0; dl.steps.forEach(x => { const b = Math.floor(t / 4 + 1e-9); (bars[b] = bars[b] || []).push(x); t += x.dur; }); }
-    check(bars.length === 12 && bars.every((b, i) => b.reduce((a, x) => a + x.dur, 0) === 4 && b[0].label && b[0].lh.length === (i >= 8 ? 2 : 1)), 'cada compás suma 4, abre con rótulo y la izquierda ataca UNA nota (c. 1-8) o DOS (c. 9-12)');
+    check(bars.length === 14 && bars.every((b, i) => b.reduce((a, x) => a + x.dur, 0) === 4 && b[0].label && b[0].lh.length === (i >= 8 ? 2 : 1)), 'cada compás suma 4, abre con rótulo y la izquierda ataca UNA nota (c. 1-8) o DOS (c. 9-14)');
     check(dl.steps.every(x => x.lh.length <= 2 && x.rh.length === 1), 'nunca más de dos teclas por mano (la regla del profe) y la derecha de una en una');
     // Izquierda: Lam–Fa–Do–Sol (La2 3, Fa2 5, Do3 1, Sol2 4), mismo dedo para la misma tecla, sin mover la mano
     const LHF = { 45: 3, 41: 5, 48: 1, 43: 4 };
     check(dl.steps.filter(x => x.lh.length).every(x => x.lh.every((n, i) => LHF[n] === x.lhF[i])), 'izquierda: pulgar en Do3, La 3, Sol 4, Fa 5 (la posición de Amanecer), cada tecla con su dedo');
-    const duo = bars.slice(8).map(b => b[0].lh);
+    const duo = bars.slice(8, 12).map(b => b[0].lh);
     check(duo.map(l => l[1] - l[0]).join() === '3,7,5,3' && duo.every(l => l[1] === 48), 'c. 9-12: 3ª menor (La–Do), 5ª (Fa–Do), 4ª (Sol–Do) y 3ª menor; el pulgar siempre en Do3');
     check(bars.slice(0, 8).every(b => b.every(x => x.lh.length <= 1)), 'c. 1-8: la izquierda sigue con una sola nota');
-    check(bars.map(b => b[0].lh[0]).join() === '45,41,48,43,45,41,43,45,45,41,43,45', 'bajo (nota más grave): Lam Fa Do Sol · Lam Fa Sol Lam · Lam Fa Sol Lam');
+    check(bars.map(b => b[0].lh[0]).join() === '45,41,48,43,45,41,43,45,45,41,43,45,41,45', 'bajo (nota más grave) al abrir cada compás: Lam Fa Do Sol · Lam Fa Sol Lam · Lam Fa Sol Lam · Fa(→Sol) · Lam');
+    check(JSON.stringify(bars[12].filter(x => x.lh.length).map(x => x.lh)) === '[[41,48],[43]]', 'c. 13: Fa (Fa–Do) en el tiempo 1 y Sol en el tiempo 3 · Fa → Sol → Lam');
     check(dl.steps.every(x => x.dur >= 1), 'todo en negras o más largas: ninguna corchea');
-    // Derecha (octubre 2026: bajó una octava, a la 4ª, a pedido de Jorge): posición fija Do4=1 … Sol4=5, teclas blancas, sin saltos mayores que una 3ª
-    const RHF = { 60: 1, 62: 2, 64: 3, 65: 4, 67: 5 };
-    check(dl.steps.every(x => RHF[x.rh[0]] === x.rhF[0]), 'derecha: Do4 (el Do central)=1 … Sol4=5, siempre el mismo dedo');
+    // Derecha: c. 1-12 pulgar en Do4 (Do 1 … Sol 5); c. 13-14 la mano se corre: pulgar en La3 (La 1 Si 2 Do 3 Re 4 Mi 5)
+    const RHF = { 60: 1, 62: 2, 64: 3, 65: 4, 67: 5 }, RHF2 = { 57: 1, 59: 2, 60: 3, 62: 4, 64: 5 };
+    check(bars.slice(0, 12).flat().every(x => RHF[x.rh[0]] === x.rhF[0]), 'derecha c. 1-12: Do4 (el Do central)=1 … Sol4=5, siempre el mismo dedo');
+    check(bars.slice(12).flat().every(x => RHF2[x.rh[0]] === x.rhF[0]), 'derecha c. 13-14: pulgar en La3, La 1 Si 2 Do 3 Re 4 Mi 5');
+    check(/pulgar en La3/.test(bars[11][0].label), 'el c. 12 avisa que la mano se corre mientras suena el Do largo');
     const mel = dl.steps.map(x => x.rh[0]);
+    check(mel.slice(-5).join() === '64,62,60,59,57', 'el cierre baja por grados: Mi Re Do Si La');
     check(Math.max(...mel.slice(1).map((n, i) => Math.abs(n - mel[i]))) <= 4, 'el salto más grande de la melodía es una 3ª mayor (4 semitonos)');
     check(Math.max(...dl.steps.flatMap(x => x.lh)) < Math.min(...mel), 'las manos no se cruzan');
     check(dl.steps.flatMap(x => [...x.lh, ...x.rh]).every(n => [0, 2, 4, 5, 7, 9, 11].includes(n % 12)), 'todo en teclas blancas (La menor)');
-    // Carácter: cada parte cae al final, y termina en Do sobre Lam (tercera menor del acorde: triste y estable)
-    check(mel[mel.length - 1] === 60 && dl.steps[dl.steps.length - 1].dur === 4 && dl.steps[dl.steps.length - 1].lh[0] === 45, 'termina en Do4 sobre La2, redonda');
-    check(['Parte 1', 'Parte 2', 'Parte 3', 'Fin'].every(k => dl.steps.some(x => (x.label || '').includes(k))), 'rótulos de las tres partes y del final');
+    check(mel[mel.length - 1] === 57 && dl.steps[dl.steps.length - 1].dur === 4 && dl.steps[dl.steps.length - 1].lh[0] === 45, 'termina en La3 (la tónica) sobre La2, redonda');
+    check(['Parte 1', 'Parte 2', 'Parte 3', 'Cierre', 'Fin'].every(k => dl.steps.some(x => (x.label || '').includes(k))), 'rótulos de las tres partes, del cierre y del final');
     check(dl.steps.filter(x => x.rh[0] === 64 && x.dur === 1).length >= 5, 'las "gotas": notas repetidas en negras (Mi4 sobre todo)');
-    check(Math.min(...mel) === 60 && Math.max(...mel) === 67, 'la derecha va de Do4 a Sol4: la 4ª octava, una octava abajo (antes Do5-Sol5)');
-    check(Math.min(...mel) - Math.max(...dl.steps.flatMap(x => x.lh)) === 12, 'y queda a una octava justa de la izquierda (Do3 → Do4), sin cruzarse');
+    check(Math.min(...mel) === 57 && Math.max(...mel) === 67, 'la derecha va de La3 a Sol4 (antes del cierre, Do4-Sol4: la 4ª octava)');
     W("selectCategory('fragments'); fragCat = 'popular'; pickFragmentById('dia-de-lluvia')");
     check(W('currentFragment.id') === 'dia-de-lluvia' && W('fragCat') === 'clase', 'pickFragmentById abre la categoría de la pieza');
+    W("selectCategory('today')");
+  }
+
+  section('Tarea de la clase del 10 de octubre: cinco melodías (intervalos, cromática, inversiones, quintas, pentatónica)');
+  {
+    const T = W("SONGS.filter(s => s.tarea)");
+    check(T.map(s => s.id).join() === 'tarea-intervalos,tarea-cromatica,tarea-inversiones,tarea-quintas,tarea-pentatonica', 'las cinco están, en el orden de la clase');
+    check(T.every(s => s.cat === 'clase' && s.plan !== false && s.tip.length < 260), 'van en "De la clase", entran al plan y el tip es corto');
+    const barsOf = s => { const bars = []; let t = 0; s.steps.forEach(x => { const b = Math.floor(t / 4 + 1e-9); (bars[b] = bars[b] || []).push(x); t += x.dur; }); return { bars, total: t }; };
+    T.forEach(s => {
+      const { bars, total } = barsOf(s);
+      check(Math.abs(total % 4) < 1e-9 && bars.every(b => Math.abs(b.reduce((a, x) => a + x.dur, 0) - 4) < 1e-9) && bars.every(b => b[0].label && b[0].label.startsWith('c. ')),
+        `${s.name}: ${bars.length} compases de 4 tiempos, cada uno con su rótulo`);
+      check(s.steps.every(x => x.lh.length <= 2 && x.rh.length <= 2 && x.lh.length === (x.lhF || []).length && x.rh.length === (x.rhF || []).length), `${s.name}: máximo dos teclas por mano (sin acordes esta semana) y cada tecla con su dedo`);
+      check(Math.max(...s.steps.flatMap(x => x.lh)) < Math.min(...s.steps.flatMap(x => x.rh)), `${s.name}: las manos no se cruzan`);
+    });
+    const byId = id => T.find(s => s.id === id);
+    // Intervalos: los primeros dos compases suben desde Do: 2ª, 3ª, 4ª, 5ª
+    const iv = byId('tarea-intervalos').steps.map(x => x.rh[0]);
+    check(iv.slice(0, 8).join() === '60,62,60,64,60,65,60,67', 'Pasos y saltos: Do–Re, Do–Mi, Do–Fa, Do–Sol (2ª, 3ª, 4ª, 5ª)');
+    check(byId('tarea-intervalos').steps.every(x => ({60:1,62:2,64:3,65:4,67:5})[x.rh[0]] === x.rhF[0]), 'Pasos y saltos: la derecha no se mueve (pulgar en Do4)');
+    // Cromática: la octava completa de ida y de vuelta, con la digitación estándar
+    const cr = byId('tarea-cromatica').steps;
+    const crm = cr.map(x => x.rh[0]);
+    const up = crm.indexOf(60, 20);
+    check(crm.slice(up, up + 13).join() === Array.from({length: 13}, (_, i) => 60 + i).join(), 'Paseo cromático: sube Do4 → Do5 por semitonos');
+    check(crm.slice(up + 13).join() === Array.from({length: 13}, (_, i) => 72 - i).join(), 'y baja Do5 → Do4 por semitonos');
+    check(cr.every(x => [1,3,6,8,10].includes(x.rh[0] % 12) ? x.rhF[0] === 3 : x.rhF[0] <= 2), 'Paseo cromático: 3 en todas las negras, pulgar (o 2 en Fa y en el Do de arriba) en las blancas');
+    check(Math.max(...crm.slice(20, 40).map((n, i, a) => i ? Math.abs(n - a[i - 1]) : 0)) === 1, 'en la Parte 3 cada paso es un semitono');
+    // Inversiones: cada intervalo de la derecha y su respuesta en la izquierda suman 12 semitonos (3ª + 6ª = 9 en grados)
+    const inv = byId('tarea-inversiones').steps;
+    const pairs = [];
+    for (let i = 0; i + 3 < 16; i += 4) pairs.push([inv[i + 1].rh[0] - inv[i].rh[0], inv[i + 3].lh[0] - inv[i + 2].lh[0]]);
+    check(pairs.map(p => p.join('+')).join(' ') === '4+8 7+5 5+7 9+3' && pairs.every(([a, b]) => a + b === 12), 'Espejos: 3ªM↔6ªm, 5ª↔4ª, 4ª↔5ª, 6ªM↔3ªm (cada par suma una octava)');
+    check(inv.slice(16, 24).every((x, i) => i % 2 === 0 ? x.rh.length === 2 && !x.lh.length : x.lh.length === 2 && !x.rh.length), 'Espejos, Parte 2: las dos notas a la vez, primero la derecha y luego la izquierda (nunca acordes)');
+    // Quintas: una tonalidad por compás en el orden del profe, 1 2 3 4 5 4 3 2
+    const q = barsOf(byId('tarea-quintas')).bars;
+    const roots = q.slice(0, 12).map(b => b[0].rh[0] % 12);
+    check(roots.join() === [0,7,2,9,4,11,6,1,8,3,10,5].join(), 'Viaje por las quintas: C G D A E B F# C# G# D# A# F');
+    check(q.slice(0, 12).every(b => b.map(x => x.rh[0] - b[0].rh[0]).join() === '0,2,4,5,7,5,4,2' && b.map(x => x.rhF[0]).join() === '1,2,3,4,5,4,3,2'), 'cada compás: las cinco primeras notas de la escala mayor, ida y vuelta, dedos 1-5');
+    check(q.slice(0, 12).every(b => b[0].lh[1] - b[0].lh[0] === 7 && b[0].lh[0] % 12 === b[0].rh[0] % 12), 'la izquierda toca la nota y su 5ª justa');
+    check(q[12][0].rh[0] === 60 && q[12][0].dur === 4, 'y vuelve a Do: el círculo se cierra');
+    // Pentatónica: solo Do Re Mi Sol La, mano abierta fija
+    const pe = byId('tarea-pentatonica').steps;
+    check(pe.every(x => [0, 2, 4, 7, 9].includes(x.rh[0] % 12) && ({60:1,62:2,64:3,67:4,69:5})[x.rh[0]] === x.rhF[0]), 'Pentatónica de Do: solo Do Re Mi Sol La, mano abierta (Do 1 Re 2 Mi 3 Sol 4 La 5)');
+    check(pe.filter(x => x.lh.length).every(x => x.lh.every((n, i) => ({48:1,45:3,43:4})[n] === x.lhF[i])), 'izquierda fija con el pulgar en Do3');
+    W("selectCategory('fragments'); fragCat = 'popular'; pickFragmentById('tarea-quintas')");
+    check(W('currentFragment.id') === 'tarea-quintas' && W('fragCat') === 'clase', 'pickFragmentById abre "De la clase"');
     W("selectCategory('today')");
   }
 
