@@ -811,6 +811,28 @@ y dentro de "Más ▾": `free | functions`.
     latina, tonos), mano izquierda aparte (más grave de cada ataque + intervalo de las dos teclas) y
     partitura con dedos de las dos manos, dibujada con reportlab (`tools/pdf/`, leen `dl.json`
     exportado de `SONGS`). Jorge pidió solo la derecha "para el profe"; la izquierda va aparte.
+- **"Minueto en Sol" (Christian Petzold, BWV Anh. 114, Cuaderno de Ana Magdalena Bach), octubre 2026**
+  (`minueto-sol`, Clásicas, primera de la categoría, entra al plan). La clase pidió "canciones clásicas de
+  compositores famosos, de a poco" y que Jorge eligiera una; le recomendé el Himno (o Mozart si ya lo tenía)
+  y mencioné este Minueto si traía partitura: la trajo (piadoor.com, PDF de 2 páginas **raster**, 216 dpi).
+  **Autoría**: la hoja dice "Christian Petzold" y BWV Anh. 114; se atribuyó a Bach por siglos — el nombre en
+  pantalla dice "Petzold / Bach" a propósito.
+  - **Lectura**: la página 1 (parte A, c. 1-16) trae el nombre de cada nota impreso (letras americanas) y los
+    dedos de las dos manos; la página 2 (parte B, c. 17-32) solo dedos sueltos, así que las alturas se sacaron
+    con el detector de cabezas rellenas (corridas verticales de 13-26 px a 300 dpi, `k=(línea inferior−y)/(L/2)`,
+    L=20,6) y las huecas (blancas) a ojo sobre recortes. Todo cuadra con la melodía conocida y suma 3 por compás.
+    La prueba trae la lectura compás por compás de las dos manos, escrita aparte.
+  - **Simplificado, a propósito (regla del profe: dos teclas por mano; esta semana sin acordes)**: el acorde
+    Sol-Si-Re de la izquierda del c. 1 queda en **Sol–Re (5-1)**; el acorde final de la derecha (Sol4 sobre
+    Re4-Si3) queda en **Si3+Sol4 (1-5)**. **No se tocan los adornos** (mordentes de los c. 3, 5, 11, 13 y 30, y la
+    notita de adorno Si del c. 8): el `tip` y los rótulos dicen que son opcionales. Las **dos voces de la
+    izquierda** (c. 25-26 y 29: una nota larga y otra que entra encima) van como ataques sucesivos.
+  - **Sin repeticiones**: la hoja repite A y B (`|: :|`); en la app cada parte va una vez (96 tiempos). Para
+    repetir, el Tramo de la cascada.
+  - **Dedos: los impresos**; donde no hay número se completó con la posición. Ojo, impresos y raros pero se
+    respetan: el **2 cruza sobre el pulgar** al Fa♯ (c. 15, 25, 26, 28) y el **4** en el c. 31; la izquierda
+    hace octavas 1→5 (c. 20 La, c. 24 Re) y salto Re3(5)→Do4(1) en el c. 8.
+  - **Tempo 84 es mío** (la hoja no trae): para aprender. Un minueto suele ir bastante más rápido.
 - **Finales (octubre 2026, categoría `finales`, los cinco con `plan:false`).**
   Jorge: "una de las cosas que siempre me han gustado del piano son los endings;
   lo he intentado solo y no se escucha bien". Pidió 5, mezclando clásicos y

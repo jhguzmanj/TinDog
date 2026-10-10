@@ -1609,6 +1609,39 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
     W("selectCategory('today')");
   }
 
+  section('Minueto en Sol (Petzold / Bach): lectura de la partitura de piadoor.com, compás por compás');
+  {
+    const mi = W("SONGS.find(s => s.id === 'minueto-sol')");
+    check(!!mi && mi.cat === 'clasica' && mi.meter === 3 && !mi.pickup && mi.plan !== false, 'en Clásicas, 3/4 sin anacrusa y entra al plan de Hoy');
+    const NM = ['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
+    const nm = n => NM[n % 12] + (Math.floor(n / 12) - 1);
+    const rhB = {}, lhB = {}; let t = 0;
+    mi.steps.forEach(x => { const b = Math.floor(t / 3 + 1e-9) + 1; if(x.rh.length) (rhB[b] = rhB[b] || []).push(x.rh.map(nm).join('+')); if(x.lh.length) (lhB[b] = lhB[b] || []).push(x.lh.map(nm).join('+')); t += x.dur; });
+    check(Math.abs(t - 96) < 1e-9, '32 compases de 3 tiempos (96)');
+    // Lo que dice la partitura (escrito aparte, no sale del generador)
+    const A1 = ['D5 G4 A4 B4 C5', 'D5 G4 G4', 'E5 C5 D5 E5 F#5', 'G5 G4 G4'];
+    const RHX = [...A1, 'C5 D5 C5 B4 A4', 'B4 C5 B4 A4 G4', 'F#4 G4 A4 B4 G4', 'A4', ...A1, 'C5 D5 C5 B4 A4', 'B4 C5 B4 A4 G4', 'A4 B4 A4 G4 F#4', 'G4',
+      'B5 G5 A5 B5 G5', 'A5 D5 E5 F#5 D5', 'G5 E5 F#5 G5 D5', 'C#5 B4 C#5 A4', 'A4 B4 C#5 D5 E5 F#5', 'G5 F#5 E5', 'F#5 A4 C#5', 'D5',
+      'D5 G4 F#4 G4', 'E5 G4 F#4 G4', 'D5 C5 B4', 'A4 G4 F#4 G4 A4', 'D4 E4 F#4 G4 A4 B4', 'C5 B4 A4', 'B4 D5 G4 F#4', 'B3+G4'];
+    const bad = RHX.map((x, i) => [i + 1, x]).filter(([b, x]) => (rhB[b] || []).join(' ') !== x);
+    check(bad.length === 0, 'derecha: las 32 compases coinciden con la partitura' + (bad.length ? ' · difieren: ' + bad.map(([b, x]) => `c.${b} «${(rhB[b]||[]).join(' ')}» ≠ «${x}»`).join(' | ') : ''));
+    const LHX = ['G3+D4 A3', 'B3', 'C4', 'B3', 'A3', 'G3', 'D4 B3 G3', 'D4 D3 C4 B3 A3', 'B3 A3', 'G3 B3 G3', 'C4', 'B3 C4 B3 A3 G3', 'A3 F#3', 'G3 B3', 'C4 D4 D3', 'G3 G2',
+      'G3', 'F#3', 'E3 G3 E3', 'A3 A2', 'A3', 'B3 D4 C#4', 'D4 F#3 A3', 'D4 D3 C4', 'B3 D4 B3', 'C4 E4 C4', 'B3 A3 G3', 'D4', 'D3 F#3', 'E3 G3 F#3', 'G3 B2 D3', 'G3 D3 G2'];
+    const badL = LHX.map((x, i) => [i + 1, x]).filter(([b, x]) => (lhB[b] || []).join(' ') !== x);
+    check(badL.length === 0, 'izquierda: los 32 compases coinciden con la partitura (c. 1 sin el Si del acorde)' + (badL.length ? ' · difieren: ' + badL.map(([b, x]) => `c.${b} «${(lhB[b]||[]).join(' ')}» ≠ «${x}»`).join(' | ') : ''));
+    check(mi.steps.every(x => x.rh.length <= 2 && x.lh.length <= 2), 'máximo dos teclas por mano (el acorde Sol-Si-Re del c. 1 queda en Sol-Re)');
+    // Dedos impresos que importan: los cruces del 2 sobre el pulgar (c. 15, 25, 26, 28) y del 4 (c. 31)
+    const fl = b => { const out = []; let t = 0; mi.steps.forEach(x => { if(Math.floor(t / 3 + 1e-9) + 1 === b && x.rh.length) out.push(x.rhF.join('+')); t += x.dur; }); return out.join(' '); };
+    check(fl(1) === '5 1 2 3 4' && fl(15) === '2 3 2 1 2' && fl(25) === '5 1 2 1' && fl(28) === '2 1 2 1 2' && fl(31) === '3 5 1 4', 'dedos de la partitura: c. 1 5-1-2-3-4, cruces del 2 (c. 15, 25, 28) y del 4 (c. 31)');
+    // Las manos no se cruzan en ningún instante
+    let cross = 0, held = { lh: [], rh: [] };
+    mi.steps.forEach(x => { if(x.lh.length) held.lh = x.lh; if(x.rh.length) held.rh = x.rh; if(Math.max(...held.lh) >= Math.min(...held.rh)) cross++; });
+    check(cross === 0, 'las manos no se cruzan en ningún momento');
+    W("selectCategory('fragments'); fragCat = 'clase'; pickFragmentById('minueto-sol')");
+    check(W('currentFragment.id') === 'minueto-sol' && W('fragCat') === 'clasica', 'pickFragmentById abre Clásicas');
+    W("selectCategory('today')");
+  }
+
   section('Coordinación: las dos manos no hacen lo mismo');
   const coord = W('AGILITY_DRILLS.filter(d => d.coord)');
   check(coord.length === 8, `${coord.length} ejercicios de coordinación (escalera del 1 al 8)`);
