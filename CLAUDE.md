@@ -811,6 +811,28 @@ y dentro de "Más ▾": `free | functions`.
     latina, tonos), mano izquierda aparte (más grave de cada ataque + intervalo de las dos teclas) y
     partitura con dedos de las dos manos, dibujada con reportlab (`tools/pdf/`, leen `dl.json`
     exportado de `SONGS`). Jorge pidió solo la derecha "para el profe"; la izquierda va aparte.
+- **Nombres de intervalos del profe y pedal (11 de octubre de 2026).**
+  - **Nombres**: la app escribe los intervalos como los dice el profe: Unísono, 2da menor, 2da mayor,
+    3ra menor, 3ra mayor, 4ta justa, Tritono, 5ta justa, 6ta menor, 6ta mayor, 7ma menor, 7ma mayor,
+    8va justa. Se cambió **todo** `Nª` del HTML (también "1ra inversión", rótulos de piezas, botones
+    cortos de Nombrar "3ra m"/"5ta J"); `INTERVALS` NO se reordenó (su índice es la llave del progreso).
+    Este archivo conserva la notación vieja en el historial: no es un error. Hay prueba de que no queda
+    ningún "Nª" en pantalla. Los PDF de `out/` se generaron antes y siguen con "ª".
+  - **Pedal** (`ped` en un paso de `SONGS`: `'on'` pisa, `'change'` levanta y vuelve a pisar, `'off'`
+    suelta). Lo pidió el profe para las quintas ("suena muy bien"). `playFragment`: con el piano
+    conectado manda CC64 al P-45 (`midiPedal`) y los note-off normales; con el sintetizador guarda las
+    notas soltadas y las apaga al cambiar el pedal. El cambio es **sincopado**: se levanta al entrar la
+    nota nueva y se pisa justo después de tocarla, como se hace con el pie. Al final deja sonar 1,5
+    tiempos y levanta. `allNotesOff` también manda pedal arriba (un pedal colgado deja todo sonando).
+    Paso a paso: chip `.ped-tag` con lo que pide el pie (`PEDAL_TXT`). Cascada: marcas `.ped-mark`
+    ("▼ Pedal" / "▲▼ Pedal") que viajan en `beats[]` con `ped` y `clicked:true` (no suenan como clic).
+  - **Solo `tarea-quintas` lleva pedal**: pisa en el c. 1 y cambia en cada compás (cada tonalidad).
+    Ojo, decisión honesta: bajo un pedal se mezclan las 5 notas de la escala del compás (segundas
+    incluidas); suena "lleno" porque todas son de la misma tonalidad, y cambiar en cada compás evita
+    mezclar dos. **Regla para agregar pedal a otra pieza**: cambiar donde cambia el acorde; una melodía
+    por grados con notas largas se emborrona. Candidatas si Jorge lo pide: Día de lluvia (un acorde por
+    compás) y los finales (`final-balada` ya lo menciona en el `tip`). **No se lee el pedal de Jorge**
+    por MIDI (CC64 de entrada se ignora): la app no comprueba si lo pisó.
 - **"Minueto en Sol" (Christian Petzold, BWV Anh. 114, Cuaderno de Ana Magdalena Bach), octubre 2026**
   (`minueto-sol`, Clásicas, primera de la categoría, entra al plan). La clase pidió "canciones clásicas de
   compositores famosos, de a poco" y que Jorge eligiera una; le recomendé el Himno (o Mozart si ya lo tenía)

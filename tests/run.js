@@ -250,8 +250,8 @@ check(W("dayRec().scales") === 1, 'contador del día sube');
 
 section('Acordes: inversiones y notas exactas');
 check(W("chordVoicing(CHORDS[0], 0, 4).join(',')") === '60,64,67', 'C fundamental = 60,64,67');
-check(W("chordVoicing(CHORDS[0], 1, 4).join(',')") === '64,67,72', 'C 1ª inversión = 64,67,72');
-check(W("chordVoicing(CHORDS[0], 2, 4).join(',')") === '67,72,76', 'C 2ª inversión = 67,72,76');
+check(W("chordVoicing(CHORDS[0], 1, 4).join(',')") === '64,67,72', 'C 1ra inversión = 64,67,72');
+check(W("chordVoicing(CHORDS[0], 2, 4).join(',')") === '67,72,76', 'C 2da inversión = 67,72,76');
 check(W("chordVoicing(CHORDS[3], 0, 4).join(',')") === '69,72,76', 'Am = 69,72,76');
 ev('#mainTabs [data-cat="chords"]');
 check(W('currentMode') === 'chords', 'entra a acordes');
@@ -259,33 +259,33 @@ ev('#chordInvPicker [data-inv="1"]');
 check(W('chordStrict') === true, 'elegir inversión activa notas exactas');
 W('activeNotes.clear()');
 W('noteOn(60); noteOn(64); noteOn(67)');
-check(W('practiceIndex') === 0, 'fundamental no aprueba cuando se pide 1ª inversión');
+check(W('practiceIndex') === 0, 'fundamental no aprueba cuando se pide 1ra inversión');
 W('noteOff(60); noteOff(64); noteOff(67)');
 W('noteOn(64); noteOn(67); noteOn(72)');
-check(W('practiceIndex') === 1, '1ª inversión exacta aprueba');
+check(W('practiceIndex') === 1, '1ra inversión exacta aprueba');
 W('noteOff(64); noteOff(67); noteOff(72)');
 check(W("progress.chords['C'].runs") === 1, 'acorde registrado');
 
 section('Intervalos: nota exacta (no solo la letra)');
 ev('#mainTabs [data-cat="intervals"]');
-W('activeNotes.clear(); practiceIndex = 4; startIntervalStep()'); // 3ª mayor desde Do4
+W('activeNotes.clear(); practiceIndex = 4; startIntervalStep()'); // 3ra mayor desde Do4
 W('noteOn(60); noteOn(76)'); // Do4 + Mi5 = décima
-check(W('practiceIndex') === 4, 'Do4 + Mi5 NO aprueba como 3ª mayor');
+check(W('practiceIndex') === 4, 'Do4 + Mi5 NO aprueba como 3ra mayor');
 W('noteOff(76)');
 W('noteOn(64)');
-check(W('practiceIndex') === 3, 'Do4 + Mi4 aprueba y pasa a la 3ª menor (orden pedagógico, no cromático)');
+check(W('practiceIndex') === 3, 'Do4 + Mi4 aprueba y pasa a la 3ra menor (orden pedagógico, no cromático)');
 W('noteOff(60); noteOff(64)');
 
 section('Oído');
 ev('#earModeBtn');
 check(W('earMode') === true && doc.getElementById('earBar').style.display !== 'none', 'modo de oído activo');
-W('practiceIndex = 7; startIntervalStep()'); // 5ª justa
+W('practiceIndex = 7; startIntervalStep()'); // 5ta justa
 check(doc.querySelectorAll('#pianoSvg .target').length === 1, 'solo la nota de partida marcada');
 W('activeNotes.clear(); noteOn(65); noteOff(65)');
 check(doc.getElementById('feedbackText').textContent.includes('arriba'), 'pista: más arriba');
 check(W('earStats.asked') === 1 && W('earStats.right') === 0, 'fallo contado una sola vez');
 W('noteOn(67); noteOff(67)');
-check(doc.getElementById('feedbackText').textContent.includes('Ese es'), 'acierta la 5ª');
+check(doc.getElementById('feedbackText').textContent.includes('Ese es'), 'acierta la 5ta');
 check(W('progress.ear[7].asked') === 1 && W('progress.ear[7].right') === 0, 'pregunta con fallo registrada como fallada');
 ev('#earModeBtn');
 
@@ -524,7 +524,7 @@ W("scaleHand='rh'; refreshScaleHand(); startScaleRun()");
 check(doc.getElementById('miniStaff2').style.display === 'none', 'una mano: un solo pentagrama');
 ev('#mainTabs [data-cat="intervals"]');
 W('practiceIndex = 7; startIntervalStep()');
-check(doc.getElementById('intervalTip').textContent.includes('5ª justa') && doc.getElementById('intervalTip').textContent.includes('ancho de mano'), 'consejo específico de la 5ª justa');
+check(doc.getElementById('intervalTip').textContent.includes('5ta justa') && doc.getElementById('intervalTip').textContent.includes('ancho de mano'), 'consejo específico de la 5ta justa');
 
 section('Mapa de calor verde / rojo');
 ev('#mainTabs [data-cat="progress"]');
@@ -631,11 +631,11 @@ check(doc.getElementById('feedbackText').classList.contains('correct'), 'lo dice
 check(W('earAwaiting') === false, 'la pregunta queda cerrada y la práctica avanza');
 
 // en los demás intervalos la nota de partida sigue sin contar como error
-W('activeNotes.clear(); practiceIndex = 7; startIntervalStep()');   // 5ª justa
+W('activeNotes.clear(); practiceIndex = 7; startIntervalStep()');   // 5ta justa
 const wrongBefore = W('earStats.asked');
 const pRoot = W('currentIntervalRoot()');
 W(`noteOn(${pRoot}); noteOff(${pRoot})`);
-check(W('earStats.asked') === wrongBefore && W('earAwaiting') === true, 'tocar la de partida en una 5ª no cuenta como fallo');
+check(W('earStats.asked') === wrongBefore && W('earAwaiting') === true, 'tocar la de partida en una 5ta no cuenta como fallo');
 W(`noteOn(${pRoot + 7}); noteOff(${pRoot + 7})`);
 check(W('earAwaiting') === false, 'y la respuesta real sigue funcionando');
 ev('#earModeBtn');
@@ -687,10 +687,10 @@ const distBox = doc.getElementById('distanceBox');
 
 // El consejo del intervalo anterior no puede quedar a la vista: delataba la respuesta.
 ev('#earModeBtn');                                  // a modo normal: se escribe el consejo
-W('activeNotes.clear(); practiceIndex = 4; startIntervalStep()');   // 3ª mayor
+W('activeNotes.clear(); practiceIndex = 4; startIntervalStep()');   // 3ra mayor
 check(ivTip.style.display === 'block' && ivTip.textContent.length > 0, 'en modo normal el consejo del intervalo se ve');
 ev('#earModeBtn');                                  // y de vuelta a oído
-W('activeNotes.clear(); practiceIndex = 5; startIntervalStep()');   // 4ª justa
+W('activeNotes.clear(); practiceIndex = 5; startIntervalStep()');   // 4ta justa
 check(ivTip.style.display === 'none' && ivTip.textContent === '', 'al preguntar de oído el consejo anterior desaparece');
 check(distBox.style.display === 'none', 'y la distancia tampoco se regala');
 check(hintBtn.disabled === false && hintBtn.textContent.indexOf('Pista') >= 0, 'el botón de pista vuelve a estar disponible');
@@ -923,11 +923,11 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
   check(W('INTERVALS').every((iv, i) => iv.semitones === i),
     'INTERVALS sigue en orden de semitonos (su índice es la llave del progreso)');
   check(W('INTERVAL_ORDER')[1] !== 1,
-    'el segundo intervalo ya no es la 2ª menor (era lo que daba el orden cromático)');
+    'el segundo intervalo ya no es la 2da menor (era lo que daba el orden cromático)');
   check(W("INTERVAL_ORDER.slice(0,3).map(i => INTERVALS[i].semitones).join(',')") === '0,12,7',
-    'empieza por las anclas: unísono, octava y 5ª justa');
+    'empieza por las anclas: unísono, octava y 5ta justa');
   check(W("INTERVAL_ORDER.indexOf(6)") >= 10 && W("INTERVAL_ORDER.indexOf(11)") >= 10,
-    'el tritono y la 7ª mayor quedan para el final');
+    'el tritono y la 7ma mayor quedan para el final');
   check(W('nextIntervalIdx(0)') === 12 && W('nextIntervalIdx(4)') === 3 && W('nextIntervalIdx(6)') === 0,
     'el avance sigue el orden pedagógico y da la vuelta al terminar');
   // De oído se pregunta dentro del nivel, no entre los 13 desde el primer día.
@@ -1537,7 +1537,7 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
     const LHF = { 45: 3, 41: 5, 48: 1, 43: 4 };
     check(dl.steps.filter(x => x.lh.length).every(x => x.lh.every((n, i) => LHF[n] === x.lhF[i])), 'izquierda: pulgar en Do3, La 3, Sol 4, Fa 5 (la posición de Amanecer), cada tecla con su dedo');
     const duo = bars.slice(8, 12).map(b => b[0].lh);
-    check(duo.map(l => l[1] - l[0]).join() === '3,7,5,3' && duo.every(l => l[1] === 48), 'c. 9-12: 3ª menor (La–Do), 5ª (Fa–Do), 4ª (Sol–Do) y 3ª menor; el pulgar siempre en Do3');
+    check(duo.map(l => l[1] - l[0]).join() === '3,7,5,3' && duo.every(l => l[1] === 48), 'c. 9-12: 3ra menor (La–Do), 5ta (Fa–Do), 4ta (Sol–Do) y 3ra menor; el pulgar siempre en Do3');
     check(bars.slice(0, 8).every(b => b.every(x => x.lh.length <= 1)), 'c. 1-8: la izquierda sigue con una sola nota');
     check(bars.map(b => b[0].lh[0]).join() === '45,41,48,43,45,41,43,45,45,41,43,45,41,45', 'bajo (nota más grave) al abrir cada compás: Lam Fa Do Sol · Lam Fa Sol Lam · Lam Fa Sol Lam · Fa(→Sol) · Lam');
     check(JSON.stringify(bars[12].filter(x => x.lh.length).map(x => x.lh)) === '[[41,48],[43]]', 'c. 13: Fa (Fa–Do) en el tiempo 1 y Sol en el tiempo 3 · Fa → Sol → Lam');
@@ -1549,13 +1549,13 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
     check(/pulgar en La3/.test(bars[11][0].label), 'el c. 12 avisa que la mano se corre mientras suena el Do largo');
     const mel = dl.steps.map(x => x.rh[0]);
     check(mel.slice(-5).join() === '64,62,60,59,57', 'el cierre baja por grados: Mi Re Do Si La');
-    check(Math.max(...mel.slice(1).map((n, i) => Math.abs(n - mel[i]))) <= 4, 'el salto más grande de la melodía es una 3ª mayor (4 semitonos)');
+    check(Math.max(...mel.slice(1).map((n, i) => Math.abs(n - mel[i]))) <= 4, 'el salto más grande de la melodía es una 3ra mayor (4 semitonos)');
     check(Math.max(...dl.steps.flatMap(x => x.lh)) < Math.min(...mel), 'las manos no se cruzan');
     check(dl.steps.flatMap(x => [...x.lh, ...x.rh]).every(n => [0, 2, 4, 5, 7, 9, 11].includes(n % 12)), 'todo en teclas blancas (La menor)');
     check(mel[mel.length - 1] === 57 && dl.steps[dl.steps.length - 1].dur === 4 && dl.steps[dl.steps.length - 1].lh[0] === 45, 'termina en La3 (la tónica) sobre La2, redonda');
     check(['Parte 1', 'Parte 2', 'Parte 3', 'Cierre', 'Fin'].every(k => dl.steps.some(x => (x.label || '').includes(k))), 'rótulos de las tres partes, del cierre y del final');
     check(dl.steps.filter(x => x.rh[0] === 64 && x.dur === 1).length >= 5, 'las "gotas": notas repetidas en negras (Mi4 sobre todo)');
-    check(Math.min(...mel) === 57 && Math.max(...mel) === 67, 'la derecha va de La3 a Sol4 (antes del cierre, Do4-Sol4: la 4ª octava)');
+    check(Math.min(...mel) === 57 && Math.max(...mel) === 67, 'la derecha va de La3 a Sol4 (antes del cierre, Do4-Sol4: la 4ta octava)');
     W("selectCategory('fragments'); fragCat = 'popular'; pickFragmentById('dia-de-lluvia')");
     check(W('currentFragment.id') === 'dia-de-lluvia' && W('fragCat') === 'clase', 'pickFragmentById abre la categoría de la pieza');
     W("selectCategory('today')");
@@ -1575,9 +1575,9 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
       check(Math.max(...s.steps.flatMap(x => x.lh)) < Math.min(...s.steps.flatMap(x => x.rh)), `${s.name}: las manos no se cruzan`);
     });
     const byId = id => T.find(s => s.id === id);
-    // Intervalos: los primeros dos compases suben desde Do: 2ª, 3ª, 4ª, 5ª
+    // Intervalos: los primeros dos compases suben desde Do: 2da, 3ra, 4ta, 5ta
     const iv = byId('tarea-intervalos').steps.map(x => x.rh[0]);
-    check(iv.slice(0, 8).join() === '60,62,60,64,60,65,60,67', 'Pasos y saltos: Do–Re, Do–Mi, Do–Fa, Do–Sol (2ª, 3ª, 4ª, 5ª)');
+    check(iv.slice(0, 8).join() === '60,62,60,64,60,65,60,67', 'Pasos y saltos: Do–Re, Do–Mi, Do–Fa, Do–Sol (2da, 3ra, 4ta, 5ta)');
     check(byId('tarea-intervalos').steps.every(x => ({60:1,62:2,64:3,65:4,67:5})[x.rh[0]] === x.rhF[0]), 'Pasos y saltos: la derecha no se mueve (pulgar en Do4)');
     // Cromática: la octava completa de ida y de vuelta, con la digitación estándar
     const cr = byId('tarea-cromatica').steps;
@@ -1587,18 +1587,18 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
     check(crm.slice(up + 13).join() === Array.from({length: 13}, (_, i) => 72 - i).join(), 'y baja Do5 → Do4 por semitonos');
     check(cr.every(x => [1,3,6,8,10].includes(x.rh[0] % 12) ? x.rhF[0] === 3 : x.rhF[0] <= 2), 'Paseo cromático: 3 en todas las negras, pulgar (o 2 en Fa y en el Do de arriba) en las blancas');
     check(Math.max(...crm.slice(20, 40).map((n, i, a) => i ? Math.abs(n - a[i - 1]) : 0)) === 1, 'en la Parte 3 cada paso es un semitono');
-    // Inversiones: cada intervalo de la derecha y su respuesta en la izquierda suman 12 semitonos (3ª + 6ª = 9 en grados)
+    // Inversiones: cada intervalo de la derecha y su respuesta en la izquierda suman 12 semitonos (3ra + 6ta = 9 en grados)
     const inv = byId('tarea-inversiones').steps;
     const pairs = [];
     for (let i = 0; i + 3 < 16; i += 4) pairs.push([inv[i + 1].rh[0] - inv[i].rh[0], inv[i + 3].lh[0] - inv[i + 2].lh[0]]);
-    check(pairs.map(p => p.join('+')).join(' ') === '4+8 7+5 5+7 9+3' && pairs.every(([a, b]) => a + b === 12), 'Espejos: 3ªM↔6ªm, 5ª↔4ª, 4ª↔5ª, 6ªM↔3ªm (cada par suma una octava)');
+    check(pairs.map(p => p.join('+')).join(' ') === '4+8 7+5 5+7 9+3' && pairs.every(([a, b]) => a + b === 12), 'Espejos: 3raM↔6tam, 5ta↔4ta, 4ta↔5ta, 6taM↔3ram (cada par suma una octava)');
     check(inv.slice(16, 24).every((x, i) => i % 2 === 0 ? x.rh.length === 2 && !x.lh.length : x.lh.length === 2 && !x.rh.length), 'Espejos, Parte 2: las dos notas a la vez, primero la derecha y luego la izquierda (nunca acordes)');
     // Quintas: una tonalidad por compás en el orden del profe, 1 2 3 4 5 4 3 2
     const q = barsOf(byId('tarea-quintas')).bars;
     const roots = q.slice(0, 12).map(b => b[0].rh[0] % 12);
     check(roots.join() === [0,7,2,9,4,11,6,1,8,3,10,5].join(), 'Viaje por las quintas: C G D A E B F# C# G# D# A# F');
     check(q.slice(0, 12).every(b => b.map(x => x.rh[0] - b[0].rh[0]).join() === '0,2,4,5,7,5,4,2' && b.map(x => x.rhF[0]).join() === '1,2,3,4,5,4,3,2'), 'cada compás: las cinco primeras notas de la escala mayor, ida y vuelta, dedos 1-5');
-    check(q.slice(0, 12).every(b => b[0].lh[1] - b[0].lh[0] === 7 && b[0].lh[0] % 12 === b[0].rh[0] % 12), 'la izquierda toca la nota y su 5ª justa');
+    check(q.slice(0, 12).every(b => b[0].lh[1] - b[0].lh[0] === 7 && b[0].lh[0] % 12 === b[0].rh[0] % 12), 'la izquierda toca la nota y su 5ta justa');
     check(q[12][0].rh[0] === 60 && q[12][0].dur === 4, 'y vuelve a Do: el círculo se cierra');
     // Pentatónica: solo Do Re Mi Sol La, mano abierta fija
     const pe = byId('tarea-pentatonica').steps;
@@ -2198,7 +2198,7 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
   const estrLh = JSON.parse(W(
     "JSON.stringify([...new Set(SONGS.find(s => s.id === 'estrellita').steps.flatMap(st => st.lh))])"));
   check(Math.max(...estrLh) - Math.min(...estrLh) <= 7,
-    'todas las notas graves caben en una 5ª: la mano izquierda no se mueve en toda la pieza');
+    'todas las notas graves caben en una 5ta: la mano izquierda no se mueve en toda la pieza');
   // Si una misma nota llevara dedos distintos, la mano tendría que reacomodarse.
   check(W(`(() => {
     const map = {}; let ok = true;
@@ -2248,26 +2248,26 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
 
   // ------------------------------------------------------------------
   section('Nombre de intervalos (Sin pista y Tocar libre)');
-  check(W('intervalName(60, 64)') === '3ª mayor', 'Do-Mi es 3ª mayor');
-  check(W('intervalName(64, 60)') === '3ª mayor', 'el orden de las teclas no importa');
-  check(W('intervalName(60, 76)') === '3ª mayor + una octava', 'una décima se dice como 3ª mayor + una octava');
-  check(W('intervalName(60, 72)') === '8ª (octava)' && W('intervalName(60, 84)') === '2 octavas', 'octava y dos octavas');
+  check(W('intervalName(60, 64)') === '3ra mayor', 'Do-Mi es 3ra mayor');
+  check(W('intervalName(64, 60)') === '3ra mayor', 'el orden de las teclas no importa');
+  check(W('intervalName(60, 76)') === '3ra mayor + una octava', 'una décima se dice como 3ra mayor + una octava');
+  check(W('intervalName(60, 72)') === '8va justa' && W('intervalName(60, 84)') === '2 octavas', 'octava y dos octavas');
   check(W('intervalName(60, 60)') === 'unísono' && W("withArticle('unísono')") === 'un unísono', 'unísono, con su artículo');
-  check(W("withArticle('2 octavas')") === '2 octavas' && W("withArticle('5ª justa')") === 'una 5ª justa', 'artículo correcto');
+  check(W("withArticle('2 octavas')") === '2 octavas' && W("withArticle('5ta justa')") === 'una 5ta justa', 'artículo correcto');
 
   section('Tocar libre nombra lo que se pisa');
   W("soundEnabled = false; activeNotes.clear(); selectCategory('free');");
   check(doc.getElementById('freeBox').style.display !== 'none', 'el recuadro se ve en Tocar libre');
   W('noteOn(60); noteOn(64);');
   const fr = doc.getElementById('freeRead');
-  check(fr.textContent.includes('3ª mayor') && fr.textContent.includes(W('noteLabel(60)')) && !fr.classList.contains('stale'),
+  check(fr.textContent.includes('3ra mayor') && fr.textContent.includes(W('noteLabel(60)')) && !fr.classList.contains('stale'),
     'dos teclas: dice las notas y el intervalo');
   W('noteOff(60); noteOff(64);');
-  check(fr.textContent.includes('3ª mayor') && fr.classList.contains('stale'), 'al soltar queda la última lectura, apagada');
+  check(fr.textContent.includes('3ra mayor') && fr.classList.contains('stale'), 'al soltar queda la última lectura, apagada');
   W('noteOn(64); noteOn(67); noteOn(72);');
-  check(fr.textContent.includes('Do mayor') && fr.textContent.includes('1ª inversión'), 'Mi-Sol-Do: Do mayor en 1ª inversión');
+  check(fr.textContent.includes('Do mayor') && fr.textContent.includes('1ra inversión'), 'Mi-Sol-Do: Do mayor en 1ra inversión');
   W('noteOff(64); noteOff(67); noteOff(72); noteOn(60); noteOn(62); noteOn(67);');
-  check(fr.textContent.includes('2ª mayor + 4ª justa'), 'si no es tríada, el intervalo entre cada par vecino');
+  check(fr.textContent.includes('2da mayor + 4ta justa'), 'si no es tríada, el intervalo entre cada par vecino');
   W('noteOff(60); noteOff(62); noteOff(67);');
   W("selectCategory('intervals');");
   check(doc.getElementById('freeBox').style.display === 'none', 'fuera de Tocar libre no aparece');
@@ -2279,14 +2279,14 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
   W('Math.random = __rnd;');
   check(W('ivMode') === 'hide' && doc.getElementById('ivHideBtn').classList.contains('active'), 'se enciende Sin pista');
   check(W('intervalRootPC') === 6, 'la nota de partida se sortea al encenderlo');
-  W('practiceIndex = 4; startIntervalStep();');     // 3ª mayor
+  W('practiceIndex = 4; startIntervalStep();');     // 3ra mayor
   const hRoot = W('currentIntervalRoot()'), hTop = hRoot + 4;
   check(doc.querySelectorAll('#pianoSvg .target').length === 1 && W(`getRect(${hRoot}).classList.contains('target')`),
     'solo se marca la nota de partida');
   check(doc.getElementById('distanceBox').style.display === 'none', 'la distancia no se muestra (diría dónde está)');
   check(!doc.getElementById('targetSubLabel').textContent.includes(W(`noteLabel(${hTop})`)), 'el texto no nombra la segunda nota');
   W(`noteOn(${hRoot}); noteOn(${hRoot + 5});`);
-  check(W('feedbackText.textContent').includes('4ª justa') && W('feedbackText.textContent').includes('3ª mayor'),
+  check(W('feedbackText.textContent').includes('4ta justa') && W('feedbackText.textContent').includes('3ra mayor'),
     'una nota equivocada dice qué intervalo formó y cuál se busca');
   W(`noteOff(${hRoot + 5});`);
   const runsBefore = W('(progress.intervals[4] || {}).runs || 0');
@@ -2462,7 +2462,7 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
     lhSteps.forEach(s => { byNote[s.lh[0]] = s.lhF[0]; });
     check(JSON.stringify(byNote) === JSON.stringify({48:1, 45:3, 41:5}), 'pulgar en Do(48), 3 en La(45), 5 en Fa(41) — siempre el mismo dedo por nota');
     check(Math.max(...lhSteps.map(s => s.lh[0])) - Math.min(...lhSteps.map(s => s.lh[0])) === 7,
-      'las tres notas caben en una sola posición de mano (una 5ª de span)');
+      'las tres notas caben en una sola posición de mano (una 5ta de span)');
   }
 
   section('Amanecer: la izquierda queda en una sola posición');
@@ -2645,7 +2645,7 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
     const pasos = []; { let b = 0; cn.steps.forEach(s => { pasos.push([b, s]); b += s.dur; }); }
     const primerRh = c => pasos.find(([b, s]) => b === 4 * (c - 1) && s.rh.length)[1].rh[0];
     check([24, 25, 26, 27, 28, 29].map(primerRh).join() === '64,62,69,66,69,62', 'c. 24-29: el primer tiempo de la derecha usa la octava que continúa la línea');
-    // c. 12 y 44: arpegio de la izquierda en una octava (Fa#3 La3 Do#4 Fa#4), no en una 10ª
+    // c. 12 y 44: arpegio de la izquierda en una octava (Fa#3 La3 Do#4 Fa#4), no en una 10ma
     const arp = c => pasos.filter(([b, s]) => b >= 4 * (c - 1) && b < 4 * c && s.lh.length).map(([, s]) => s.lh[0]).join();
     check(arp(12) === '54,57,61,66' && arp(44) === '54,57,61,66', 'c. 12 y 44: el arpegio de la izquierda abarca una octava');
     // Final: acorde de Re en la derecha (1-3-5) y bajo Re3
@@ -2722,8 +2722,8 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
     const hits = ci.steps.filter(s => s.lh.length);
     check(hits.every(s => s.lh.length === 2 && s.lhF.length === 2), 'la izquierda nunca toca un acorde: siempre exactamente dos notas con su dedo');
     const ivs = new Set(hits.map(s => s.lh[1] - s.lh[0]));
-    check([3, 5, 7].every(n => ivs.has(n)) && [...ivs].every(n => [3, 5, 7].includes(n)), 'solo 3ª m (La–Do), 4ª (Sol–Do) y 5ª (Fa–Do): sin 3ª M, tritono, 7ªs ni octava (octubre 2026: demasiado para el nivel de Jorge)');
-    check(Math.max(...hits.map(s => s.lh[1] - s.lh[0])) <= 7, 'la izquierda nunca abre más que una 5ª');
+    check([3, 5, 7].every(n => ivs.has(n)) && [...ivs].every(n => [3, 5, 7].includes(n)), 'solo 3ra m (La–Do), 4ta (Sol–Do) y 5ta (Fa–Do): sin 3ra M, tritono, 7mas ni octava (octubre 2026: demasiado para el nivel de Jorge)');
+    check(Math.max(...hits.map(s => s.lh[1] - s.lh[0])) <= 7, 'la izquierda nunca abre más que una 5ta');
     // Izquierda en posición FIJA (la de Amanecer): pulgar en Do3, Si 2, La 3, Sol 4, Fa 5.
     const LHPOS = { 48: 1, 47: 2, 45: 3, 43: 4, 41: 5 };
     check(hits.every(s => s.lh.every((n, i) => LHPOS[n] === s.lhF[i])), 'izquierda: pulgar en Do3 (Si 2, La 3, Sol 4, Fa 5), cada tecla siempre con el mismo dedo');
@@ -2738,20 +2738,20 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
     let t = 0, bars = 0, sinRotulo = 0;
     ci.steps.forEach(s => { if (t % 4 === 0) { bars++; if (!s.label) sinRotulo++; } t += s.dur; });
     check(bars === 12 && sinRotulo === 0, 'los 12 compases arrancan con rótulo');
-    check(ci.steps[0].lh.join() === '43,48', 'abre con la 4ª Sol–Do');
+    check(ci.steps[0].lh.join() === '43,48', 'abre con la 4ta Sol–Do');
     // Tensión y resolución
     const cb = []; { let tt = 0; ci.steps.forEach(s => { const b = Math.floor(tt / 4 + 1e-9); (cb[b] = cb[b] || []).push(s); tt += s.dur; }); }
     check(cb.length === 12, '12 compases');
     const corch = cb.map(b => b.some(s => s.dur === 0.5 && s.rh.length));
     check(corch[9] && corch.filter(Boolean).length === 1, 'las corcheas (más tensión por ritmo) van solo en el c. 10, el del tritono');
-    check(cb[8][0].lh.join() === '41,48' && cb[9].every(s => !s.lh.length) && cb[10][0].lh.join() === '43,48', 'final IV – V – I: Fa–Do (5ª), el compás de las corcheas sin cambio en la izquierda y Sol–Do');
+    check(cb[8][0].lh.join() === '41,48' && cb[9].every(s => !s.lh.length) && cb[10][0].lh.join() === '43,48', 'final IV – V – I: Fa–Do (5ta), el compás de las corcheas sin cambio en la izquierda y Sol–Do');
     check(cb[10].every(s => s.dur >= 2), 'la resolución va en notas largas: el ritmo también descansa');
     check(ci.steps.every(s => s.rh.length <= 2 && s.lh.length <= 2), 'ninguna mano toca más de dos teclas a la vez (pedido del profe)');
     const fin = ci.steps[ci.steps.length - 1];
-    check(fin.lh.length === 0 && fin.rh.join() === '72,76' && fin.rhF.join() === '1,3' && fin.dur === 4, 'c. 12: la derecha toca solo dos teclas (Do–Mi, 3ª mayor, dedos 1-3), redonda; la izquierda sigue sonando');
-    // El mismo criterio que Amanecer: el salto más grande de la melodía es una 3ª o una 4ª
+    check(fin.lh.length === 0 && fin.rh.join() === '72,76' && fin.rhF.join() === '1,3' && fin.dur === 4, 'c. 12: la derecha toca solo dos teclas (Do–Mi, 3ra mayor, dedos 1-3), redonda; la izquierda sigue sonando');
+    // El mismo criterio que Amanecer: el salto más grande de la melodía es una 3ra o una 4ta
     const mel = ci.steps.filter(s => s.rh.length === 1).map(s => s.rh[0]);
-    check(mel.every((n, i) => i === 0 || Math.abs(n - mel[i - 1]) <= 5), 'la melodía no salta más que una 4ª');
+    check(mel.every((n, i) => i === 0 || Math.abs(n - mel[i - 1]) <= 5), 'la melodía no salta más que una 4ta');
   }
 
   section('Lectura: antes del pentagrama, las teclas');
@@ -3012,7 +3012,7 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
     check(todos.join(',') === '0,1,2,3,4,5,6,7,8,9,10,11,12', 'las categorías cubren los 13 intervalos exactamente una vez');
     check(cats.map(c => c.id + ':' + c.ids.length).join(',') === 'fund:6,anclas:2,otros:5', 'seis fundamentales, dos anclas, cinco otros');
     const fund = cats.find(c => c.id === 'fund').ids, otros = cats.find(c => c.id === 'otros').ids;
-    check([3, 4, 6, 7, 10, 11].every(i => fund.includes(i)), 'fundamentales: 3ª m, 3ª M, tritono, 5ª J, 7ª m, 7ª M (todo lo que nombró el profe)');
+    check([3, 4, 6, 7, 10, 11].every(i => fund.includes(i)), 'fundamentales: 3ra m, 3ra M, tritono, 5ta J, 7ma m, 7ma M (todo lo que nombró el profe)');
     check(otros.every(i => fund.includes(12 - i)), 'cada "otro" es un fundamental dado vuelta (12 − semitonos)');
     check(W('intervalCatOf(7)') === 'fund' && W('intervalCatOf(5)') === 'otros' && W('intervalCatOf(12)') === 'anclas', 'intervalCatOf clasifica');
     W("selectCategory('intervals')");
@@ -3034,9 +3034,9 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
     check(W('nameMode') === true && W('earMode') === false && W('ivMode') === 'show', 'al encenderlo apaga De oído y deja el modo normal');
     check(doc.getElementById('nameBar').style.display !== 'none', 'aparece la barra de Nombrar');
     const labels = () => [...doc.querySelectorAll('#nameAnswers .name-btn')].map(b => b.textContent);
-    check(labels().join(',') === 'Unísono,5ª J,8ª', 'con el nivel 1 solo hay tres botones, ordenados por tamaño: ' + labels().join(','));
+    check(labels().join(',') === 'Unísono,5ta J,8va', 'con el nivel 1 solo hay tres botones, ordenados por tamaño: ' + labels().join(','));
     check(W('nameQ !== null') && W('namePoolIds()').includes(W('nameQ.idx')) && W('nameQ.top - nameQ.root') === W('INTERVALS[nameQ.idx].semitones'),
-      'la pregunta sale del nivel y la 2ª nota está a la distancia del intervalo');
+      'la pregunta sale del nivel y la 2da nota está a la distancia del intervalo');
     // la respuesta no se delata mientras la pregunta está abierta
     check(doc.querySelectorAll('#intervalPicker .current').length === 0, 'con la pregunta abierta el selector no marca cuál es');
     check(doc.getElementById('distanceBox').style.display === 'none' && doc.getElementById('intervalTip').style.display === 'none', 'ni la distancia ni el consejo se ven antes de contestar');
@@ -3091,9 +3091,9 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
     check(!repetida, 'nunca repite el intervalo recién preguntado (si hay otros)');
     // las otras fuentes de preguntas
     doc.querySelector('#namePoolPicker [data-npool="fund"]').click();
-    check([...doc.querySelectorAll('#nameAnswers .name-btn')].map(b => b.textContent).join(',') === '3ª m,3ª M,Tritono,5ª J,7ª m,7ª M', 'Fundamentales: 3ª m, 3ª M, tritono, 5ª, 7ª m y 7ª M');
+    check([...doc.querySelectorAll('#nameAnswers .name-btn')].map(b => b.textContent).join(',') === '3ra m,3ra M,Tritono,5ta J,7ma m,7ma M', 'Fundamentales: 3ra m, 3ra M, tritono, 5ta, 7ma m y 7ma M');
     doc.querySelector('#namePoolPicker [data-npool="otros"]').click();
-    check([...doc.querySelectorAll('#nameAnswers .name-btn')].map(b => b.textContent).join(',') === '2ª m,2ª M,4ª J,6ª m,6ª M', 'Otros: 2ª m, 2ª M, 4ª J, 6ª m y 6ª M');
+    check([...doc.querySelectorAll('#nameAnswers .name-btn')].map(b => b.textContent).join(',') === '2da m,2da M,4ta J,6ta m,6ta M', 'Otros: 2da m, 2da M, 4ta J, 6ta m y 6ta M');
     for(let i = 0; i < 200; i++){ W('startNameQuestion()'); if(!W('INTERVAL_CATS.find(c => c.id === "otros").ids').includes(W('nameQ.idx'))){ check(false, 'en Otros solo preguntan los otros'); break; } }
     doc.querySelector('#namePoolPicker [data-npool="all"]').click();
     check(doc.querySelectorAll('#nameAnswers .name-btn').length === 13, 'Los 13: un botón por intervalo');
@@ -3317,6 +3317,60 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
     check(jlFin(64, [3]) && jlFin(62, [2]) && jlFin(60, [1]) && jlFin(72, [4]), 'Mi 3, Re 2, Do4 1 y Do5 4 en todas partes');
     W("selectCategory('fragments'); fragCat = 'popular'; pickFragmentById('cristo-me-ama')");
     check(W('currentFragment.id') === 'cristo-me-ama' && W('fragCat') === 'cristiana', 'pickFragmentById abre Cristianas');
+    W("selectCategory('today')");
+  }
+
+  section('Nombres de los intervalos como los dice el profe');
+  {
+    const nm = JSON.parse(W('JSON.stringify(INTERVALS.map(i => i.name))'));
+    check(nm.join('|') === 'Unísono|2da menor|2da mayor|3ra menor|3ra mayor|4ta justa|Tritono|5ta justa|6ta menor|6ta mayor|7ma menor|7ma mayor|8va justa',
+      'los 13 nombres, en el orden de siempre (el índice es la llave del progreso): ' + nm.join(', '));
+    check(W('intervalName(60, 72)') === '8va justa' && W('intervalName(60, 66)') === 'Tritono', '8va justa y Tritono también en Tocar libre');
+    check(!/\dª/.test(W('document.documentElement.outerHTML')), 'ya no queda "3ª" ni "5ª" escrito en la pantalla');
+  }
+
+  section('Pedal: Escuchar lo usa, la práctica lo dice y la cascada lo dibuja');
+  {
+    // Sintetizador: con el pedal abajo, soltar la tecla NO apaga el sonido hasta el cambio
+    W(`window.__on = []; window.__off = [];
+       window.__playNoteSound = playNoteSound; window.__stopNoteSound = stopNoteSound;
+       playNoteSound = n => window.__on.push(n);
+       stopNoteSound = n => window.__off.push(n);
+       currentHand = 'both';
+       currentFragment = { id:'__ped', name:'t', tip:'t', tempo:6000, steps:[
+         {lh:[48], lhF:[1], rh:[60], rhF:[1], dur:1, ped:'on'},
+         {lh:[],             rh:[62], rhF:[2], dur:1},
+         {lh:[43], lhF:[5], rh:[67], rhF:[1], dur:1, ped:'change'},
+         {lh:[],             rh:[69], rhF:[2], dur:1},
+       ] };`);
+    await W('playFragment()');
+    const off = W('window.__off.join()');
+    check(off.split(',').slice(0, 3).sort().join() === '48,60,62', 'al cambiar el pedal se apagan juntas las del compás anterior (Do3, Do4, Re4): ' + off);
+    check(off.split(',').slice(3).sort().join() === '43,67,69' && W('window.__off.length') === 6, 'y las del último compás al levantar el pedal al final');
+    W(`playNoteSound = window.__playNoteSound; stopNoteSound = window.__stopNoteSound;`);
+
+    // Por el piano: se manda el pedal real (CC64) y queda arriba al terminar
+    W(`window.__midi = []; window.__mo = midiOut; window.__st = soundTarget;
+       midiOut = { send: b => window.__midi.push(b.join(':')) }; soundTarget = 'piano';
+       window.__playNoteSound2 = playNoteSound; window.__stopNoteSound2 = stopNoteSound;
+       playNoteSound = n => midiNoteOn(n); stopNoteSound = n => midiNoteOff(n);`);
+    await W('playFragment()');
+    const ped = W("window.__midi.filter(m => m.startsWith('176:64:')).join(' ')");
+    check(ped.startsWith('176:64:127 176:64:0 176:64:127 176:64:0'), 'al P-45: pisa, cambia (levanta y pisa) y levanta: ' + ped);
+    check(W("window.__midi[window.__midi.length - 1]") === '176:64:0', 'lo último que recibe el piano es pedal arriba (allNotesOff también lo levanta)');
+    W(`midiOut = window.__mo; soundTarget = window.__st; playNoteSound = window.__playNoteSound2; stopNoteSound = window.__stopNoteSound2;`);
+
+    // Viaje por las quintas: pedal en el c. 1 y cambio en cada compás (cada tonalidad)
+    const qp = JSON.parse(W("JSON.stringify(SONGS.find(s => s.id === 'tarea-quintas').steps.map(s => s.ped || '').filter(Boolean))"));
+    check(qp.length === 13 && qp[0] === 'on' && qp.slice(1).every(p => p === 'change'), 'quintas: pisa en el c. 1 y cambia en los 12 compases siguientes');
+    check(W("SONGS.find(s => s.id === 'tarea-quintas').steps.every(s => !s.ped || (s.label && s.lh.length === 2))"), 'cada cambio cae justo en el primer tiempo, con la nota nueva de la izquierda');
+    check(W("SONGS.filter(s => s.id !== 'tarea-quintas').every(s => s.steps.every(st => !st.ped))"), 'por ahora solo las quintas llevan pedal');
+
+    W("selectCategory('fragments'); pickFragmentById('tarea-quintas')");
+    check(W('targetSubLabel.innerHTML').includes('ped-tag') && W('targetSubLabel.textContent').includes('pisa el pedal'), 'paso a paso: el primer paso dice "pisa el pedal"');
+    const marks = W("buildCascadeSchedule().beats.filter(b => b.ped).length");
+    check(marks === 13, 'la cascada trae 13 marcas de pedal');
+    check(W("buildCascadeSchedule().beats.filter(b => b.ped).every(b => b.clicked && !b.bar)"), 'las marcas de pedal no suenan como clic ni cuentan como barra');
     W("selectCategory('today')");
   }
 
