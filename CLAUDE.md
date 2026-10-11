@@ -831,8 +831,24 @@ y dentro de "Más ▾": `free | functions`.
     incluidas); suena "lleno" porque todas son de la misma tonalidad, y cambiar en cada compás evita
     mezclar dos. **Regla para agregar pedal a otra pieza**: cambiar donde cambia el acorde; una melodía
     por grados con notas largas se emborrona. Candidatas si Jorge lo pide: Día de lluvia (un acorde por
-    compás) y los finales (`final-balada` ya lo menciona en el `tip`). **No se lee el pedal de Jorge**
-    por MIDI (CC64 de entrada se ignora): la app no comprueba si lo pisó.
+    compás) y los finales (`final-balada` ya lo menciona en el `tip`).
+  - **Día de lluvia con pedal** (pedido en clase): pisa con el primer La y cambia en **cada ataque de la
+    izquierda** (15 marcas: c. 1-14 y el Sol del tiempo 3 del c. 13). Ayuda justo en el c. 12: el Do
+    sigue sonando mientras la derecha se corre al La3. Lo que se pierde: dentro del compás las notas
+    vecinas de la melodía se mezclan un poco (Mi-Re sobre Fa en el c. 13); a ♩=60 y en menor suena a lluvia,
+    no a error. Si molesta, cambiar también a mitad de compás.
+  - **La app lee el pedal de Jorge y lo juzga (11 oct 2026, "solo tengo uno": el pedal de resonancia del
+    P-45).** `handleMIDIMessage` pasa el CC64 a `pedalInput` (≥64 = pisado). Cada marca `ped` se juzga
+    al tocar el paso SIGUIENTE (`pedalStep`, en `checkFragment` y en el acierto de la cascada; la llave
+    evita contar dos veces un paso de varias notas) o 1,5 s después del final (`pedalWrapUp`, deja el
+    resumen "Pedal: X de Y bien"). Reglas de `pedalJudge` para 'change': pisado 150 ms antes de la nota
+    (`PEDAL_EARLY_MS`), levantar entre ahí y el paso siguiente, y volver a pisar antes del paso siguiente;
+    los fallos dicen qué pasó (hueco por levantar antes, no cambió, cambió entre notas, no volvió a pisar).
+    Las tolerancias son MÍAS. Sin piano conectado y sin ningún mensaje de pedal no se califica nada
+    (`pedalJudging`): pide conectar el piano. Caja `#pedalBox` (paso a paso) y `#cascadePedal` (cascada),
+    solo en piezas con pedal. En la cascada en bucle se pierde el juicio de la última marca de cada vuelta
+    (el reinicio a los 900 ms corta la espera de 1,5 s). **En el artifact no funciona** (no hay MIDI en el
+    iframe): solo en el archivo suelto.
 - **"Minueto en Sol" (Christian Petzold, BWV Anh. 114, Cuaderno de Ana Magdalena Bach), octubre 2026**
   (`minueto-sol`, Clásicas, primera de la categoría, entra al plan). La clase pidió "canciones clásicas de
   compositores famosos, de a poco" y que Jorge eligiera una; le recomendé el Himno (o Mozart si ya lo tenía)

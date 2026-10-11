@@ -3364,7 +3364,11 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
     const qp = JSON.parse(W("JSON.stringify(SONGS.find(s => s.id === 'tarea-quintas').steps.map(s => s.ped || '').filter(Boolean))"));
     check(qp.length === 13 && qp[0] === 'on' && qp.slice(1).every(p => p === 'change'), 'quintas: pisa en el c. 1 y cambia en los 12 compases siguientes');
     check(W("SONGS.find(s => s.id === 'tarea-quintas').steps.every(s => !s.ped || (s.label && s.lh.length === 2))"), 'cada cambio cae justo en el primer tiempo, con la nota nueva de la izquierda');
-    check(W("SONGS.filter(s => s.id !== 'tarea-quintas').every(s => s.steps.every(st => !st.ped))"), 'por ahora solo las quintas llevan pedal');
+    check(W("SONGS.filter(s => s.steps.some(st => st.ped)).map(s => s.id).sort().join()") === 'dia-de-lluvia,tarea-quintas', 'llevan pedal las quintas y Día de lluvia');
+    // Día de lluvia: pisa con el primer La y cambia en cada ataque de la izquierda (cada acorde)
+    const dl = JSON.parse(W("JSON.stringify(SONGS.find(s => s.id === 'dia-de-lluvia').steps.map(s => [s.lh.length, s.ped || '']))"));
+    check(dl.every(([l, p]) => (l > 0) === (p !== '')) && dl[0][1] === 'on' && dl.filter(x => x[1] === 'change').length === 14,
+      'Día de lluvia: el pedal cambia justo donde entra la izquierda (15 marcas: pisa + 14 cambios)');
 
     W("selectCategory('fragments'); pickFragmentById('tarea-quintas')");
     check(W('targetSubLabel.innerHTML').includes('ped-tag') && W('targetSubLabel.textContent').includes('pisa el pedal'), 'paso a paso: el primer paso dice "pisa el pedal"');
@@ -3372,6 +3376,53 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
     check(marks === 13, 'la cascada trae 13 marcas de pedal');
     check(W("buildCascadeSchedule().beats.filter(b => b.ped).every(b => b.clicked && !b.bar)"), 'las marcas de pedal no suenan como clic ni cuentan como barra');
     W("selectCategory('today')");
+  }
+
+  section('Pedal de Jorge: la app lo lee y juzga cada cambio');
+  {
+    W("pedalEvents.length = 0; pedalIsDown = false; pedalReset();");
+    const J = (kind, evs, tNote, tEnd, prevT) => {
+      W('pedalEvents.length = 0; pedalIsDown = false;');
+      evs.forEach(([t, d]) => W(`pedalInput(${d}, ${t})`));
+      return W(`pedalJudge({kind:'${kind}', t:${tNote}, prevT:${prevT === undefined ? 'null' : prevT}}, ${tEnd})`);
+    };
+    // Cambio bien hecho: pisado antes, levanta con la nota (+50) y vuelve a pisar (+250)
+    check(J('change', [[0, true], [1050, false], [1250, true]], 1000, 2000).ok, 'levanta con la nota y vuelve a pisar: bien');
+    check(J('change', [[0, true], [920, false], [1100, true]], 1000, 2000).ok, 'levantar hasta 150 ms antes de la nota también vale');
+    const gap = J('change', [[0, true], [500, false], [1100, true]], 1000, 2000);
+    check(!gap.ok && gap.msg.includes('hueco'), 'levantar mucho antes de tocar: "queda un hueco"');
+    const none = J('change', [[0, true]], 1000, 2000);
+    check(!none.ok && none.msg.includes('No cambiaste'), 'no levantar: "no cambiaste el pedal"');
+    const stuck = J('change', [[0, true], [1050, false]], 1000, 2000);
+    check(!stuck.ok && stuck.msg.includes('no volviste a pisar'), 'levantar sin volver a pisar');
+    const early = J('change', [[0, true], [600, false], [700, true]], 1000, 2000, 400);
+    check(!early.ok && early.msg.includes('antes de la nota'), 'cambiar entre las notas (antes de tocar) se avisa');
+    check(J('on', [[1100, true]], 1000, 2000).ok && !J('on', [], 1000, 2000).ok, 'pisar: bien si lo pisa, mal si no');
+
+    // Recorrido paso a paso en Día de lluvia con el pedal simulado
+    W("pedalEvents.length = 0; pedalIsDown = false; soundEnabled = false; selectCategory('fragments'); pickFragmentById('dia-de-lluvia'); practiceIndex = 0; startFragmentStep();");
+    check(W("document.getElementById('pedalBox').style.display") !== 'none' && W("document.getElementById('pedalBox').textContent").includes('Tu pedal'), 'la caja del pedal aparece en una pieza con pedal');
+    W("pedalReset();");
+    // c. 1 pisa (t=1000), c. 1 paso 2 (2000) → juzga "pisa": bien
+    W("pedalInput(true, 900); pedalStep('f0', 'on', 1000); pedalStep('f1', undefined, 2000);");
+    check(W('pedalTally.ok') === 1 && W('pedalTally.total') === 1, 'el "pisa" del c. 1 se juzga al tocar la nota siguiente');
+    // c. 2 cambia mal (no levanta), se juzga al tocar el paso siguiente
+    W("pedalStep('f4', 'change', 5000); pedalStep('f5', undefined, 6000);");
+    check(W('pedalTally.total') === 2 && W('pedalTally.ok') === 1 && W("document.getElementById('pedalBox').textContent").includes('No cambiaste'), 'un cambio olvidado se marca y se ve en pantalla');
+    W("pedalStep('f5', undefined, 6100);");
+    check(W('pedalTally.total') === 2, 'el mismo paso no se cuenta dos veces (la cascada avisa por cada nota)');
+    // MIDI: el CC64 del piano llega a pedalInput
+    W("pedalEvents.length = 0; pedalIsDown = false; handleMIDIMessage({data:[0xB0, 64, 127]});");
+    check(W('pedalIsDown') === true, 'CC64 = 127 del P-45: pedal pisado');
+    W("handleMIDIMessage({data:[0xB0, 64, 0]});");
+    check(W('pedalIsDown') === false, 'CC64 = 0: pedal arriba');
+    // Sin piano y sin pedal no se califica nada
+    W("pedalSeen = false; pedalReset(); pedalStep('g0', 'on', 1000); pedalStep('g1', undefined, 2000); renderPedalBox();");
+    check(W('pedalTally.total') === 0 && W("document.getElementById('pedalBox').textContent").includes('Conecta el piano'), 'sin piano no inventa notas del pedal: pide conectarlo');
+    // Cascada: los eventos traen el paso y la marca de pedal
+    check(W("buildCascadeSchedule().events.filter(e => e.ped).length") === W("SONGS.find(s => s.id === 'dia-de-lluvia').steps.filter(s => s.ped).reduce((a, s) => a + s.lh.length + s.rh.length, 0)"), 'cascada: cada nota de un paso con pedal lleva la marca');
+    W("selectCategory('today')");
+    check(W("document.getElementById('pedalBox').style.display") === 'none' || !W("pieceHasPedal()"), 'fuera de Piezas la caja del pedal no se muestra');
   }
 
   console.log(`\n${passes} pruebas OK, ${failures} fallos`);
