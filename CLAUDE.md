@@ -725,6 +725,31 @@ y dentro de "Más ▾": `free | functions`.
     Sol 4 La 5, la mano abierta de Waymaker) y pulgar en Sol (Sol 1 La 2 Do5 4) solo para los tres Do
     agudos (c. 3, 10, 14), con el cambio avisado en el `label`. **Lo difícil**: seis cambios de mano; todos
     caen sobre una nota larga salvo el c. 14→15, donde el pulgar baja de Sol a Do en un tiempo.
+- **"Ave María" (Bach / Gounod), octubre 2026** (`ave-maria`, Cristianas, `plan:false`). Jorge la pasó
+  "porque tiene pedal". Fuente: PDF de piadoor.com, **6 páginas raster** (sin texto), 73 compases, Andante
+  (sin metrónomo: **♩=66 es mío**). La página 1 trae el nombre de cada nota impreso (c. 1-12); el resto se
+  leyó a ojo sobre recortes de 220 dpi por sistema (líneas del pentagrama detectadas por filas, L = 15 px).
+  Generador `ave/gen.py` en el scratchpad de la sesión; los pasos van en `AVE_MARIA_STEPS` (585 pasos).
+  - **Verificación**: (1) los 73 compases suman 4; (2) **el bajo de cada compás es el del Preludio en Do de
+    Bach** (BWV 846), sobre el que Gounod escribió la melodía, incluido el compás de Schwencke (c. 27,
+    Sol-Si-Do-Mib, que no está en Bach): la prueba lo compara con una lista escrita aparte; (3) la melodía
+    de la parte A coincide con las letras impresas; (4) A' (c. 38-45) repite A en octavas y los c. 49-60
+    son nota por nota los 16-27, como en la hoja. Lo que NO se pudo contrastar con una segunda fuente:
+    las alturas de la derecha de las páginas 2-6 (una sola lectura) y los dedos no impresos.
+  - **Forma** (la de la hoja): Intro c. 1-4 (arpegios de Do en la derecha, Bach c. 1-4), A c. 5-12, B-C
+    c. 13-37, A' c. 38-45 (melodía en octavas), B-C' c. 46-69 (octavas en el clímax), Final c. 70-73.
+  - **Pedal: el impreso.** Cambio al empezar cada compás (73) y a mitad de compás donde la hoja pone otro
+    "Ped." (33). Los ✽ (soltar) de los c. 9, 11 y 15 no se representan: el compás siguiente lleva `'on'`
+    (pisar) en vez de `'change'`, así el juez no marca "hueco" a quien suelta donde dice la hoja.
+  - **Simplificado, a propósito**: los acordes de tres notas de la izquierda del c. 69 (Fa-Sol-Si) quedan
+    en dos (Fa-Si, el tritono del Sol7), por la regla de dos teclas; la fermata final y las dinámicas no se
+    representan; el Do2 ligado de los c. 70-71 se ataca una vez (lo sostiene el pedal).
+  - **Dedos**: los impresos donde los hay (izquierda 5-x-2 de cada arpegio, casi todos); el resto, míos
+    (arpegio 5-4-2-1 si sube un tono, 5-3-2-1 si sube más; en las octavas de la derecha, 1-5).
+  - **Dificultad real**: la izquierda abre más de una octava en varios arpegios (c. 14, 22, 24, 36: Re3 a
+    Fa#4, Sol2 a Si3, Do3 a Mi4 = 16 semitonos con 5-3-2-1): la mano tiene que moverse con el pedal
+    pisado, que es justo lo que enseña. Octavas en la derecha desde el c. 38, semicorcheas en los c. 24-27.
+    Por eso `plan:false`; empezar por la Intro y la parte A (c. 1-12).
 - **"Día de lluvia" (octubre 2026, original)** (`dia-de-lluvia`, "De la clase", segunda
   tras The Sound of Silence, ♩=60). Pedido de Jorge un día gris y lluvioso: "algo como
   Amanecer o Camino de intervalos pero triste, melancólico, para mi nivel", como

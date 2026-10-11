@@ -3364,7 +3364,7 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
     const qp = JSON.parse(W("JSON.stringify(SONGS.find(s => s.id === 'tarea-quintas').steps.map(s => s.ped || '').filter(Boolean))"));
     check(qp.length === 13 && qp[0] === 'on' && qp.slice(1).every(p => p === 'change'), 'quintas: pisa en el c. 1 y cambia en los 12 compases siguientes');
     check(W("SONGS.find(s => s.id === 'tarea-quintas').steps.every(s => !s.ped || (s.label && s.lh.length === 2))"), 'cada cambio cae justo en el primer tiempo, con la nota nueva de la izquierda');
-    check(W("SONGS.filter(s => s.steps.some(st => st.ped) && s.cat !== 'pedal').map(s => s.id).sort().join()") === 'dia-de-lluvia,tarea-quintas', 'fuera de los ejercicios de pedal, llevan pedal las quintas y Día de lluvia');
+    check(W("SONGS.filter(s => s.steps.some(st => st.ped) && s.cat !== 'pedal').map(s => s.id).sort().join()") === 'ave-maria,dia-de-lluvia,tarea-quintas', 'fuera de los ejercicios de pedal, llevan pedal las quintas, Día de lluvia y Ave María');
     // Día de lluvia: pisa con el primer La y cambia en cada ataque de la izquierda (cada acorde)
     const dl = JSON.parse(W("JSON.stringify(SONGS.find(s => s.id === 'dia-de-lluvia').steps.map(s => [s.lh.length, s.ped || '']))"));
     check(dl.every(([l, p]) => (l > 0) === (p !== '')) && dl[0][1] === 'on' && dl.filter(x => x[1] === 'change').length === 14,
@@ -3444,6 +3444,36 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
     const fixed = P.every(s => { const d = {}; return s.steps.every(x => x.lh.every((n, i) => (d[n] = d[n] || x.lhF[i]) === x.lhF[i])); });
     check(fixed, 'la izquierda no se mueve: cada nota grave siempre con el mismo dedo');
     check(P.every(s => Math.max(...s.steps.flatMap(x => x.lh).concat([0])) < Math.min(...s.steps.flatMap(x => x.rh))), 'las manos no se cruzan');
+  }
+
+  section('Ave María (Bach / Gounod): lectura del PDF compás por compás');
+  {
+    const S = JSON.parse(W("JSON.stringify(SONGS.find(s => s.id === 'ave-maria'))"));
+    check(S.cat === 'cristiana' && S.plan === false, 'en Cristianas, fuera del plan de Hoy (es difícil)');
+    // Compases por las anclas "c. N"
+    const bars = []; let cur = null;
+    S.steps.forEach(st => { if(st.label && /^c\. \d+/.test(st.label)){ cur = []; bars.push(cur); } cur.push(st); });
+    check(bars.length === 73 && bars.every(b => Math.abs(b.reduce((a, x) => a + x.dur, 0) - 4) < 1e-9), '73 compases de 4 tiempos (292): ' + bars.length);
+    // El bajo de cada compás (nota más grave de la izquierda) es el bajo del Preludio en Do de Bach,
+    // con el compás de Schwencke (c. 27) que agregó Gounod. Escrito aparte de la lectura.
+    const NM = n => ['C','C#','D','Eb','E','F','F#','G','Ab','A','Bb','B'][n % 12] + (Math.floor(n / 12) - 1);
+    const bass = bars.map(b => NM(Math.min(...b.flatMap(x => x.lh))));
+    const want = ('C4 C4 B3 C4 C4 C4 B3 C4 C4 C4 B3 B3 A3 D3 G3 G3 F3 F3 E3 E3 D3 G2 C3 C3 F3 F#3 G3 Ab3 G3 G3 G3 G3 G3 G3 G3 G2 C3 ' +
+                  'C3 C3 B2 C3 C3 C3 B2 B2 A2 D3 G3 G3 F3 F3 E3 E3 D3 G2 C3 C3 F3 F#3 G3 Ab3 G3 G3 G3 G3 G3 G3 G3 G2 C2 C3 C3 C3').split(' ');
+    check(bass.join(' ') === want.join(' '), 'bajo de los 73 compases = el del Preludio de Bach: ' + bass.map((b, i) => b === want[i] ? '' : (i + 1) + ':' + b).filter(Boolean).join(' '));
+    // Melodía de la parte A (c. 5-12), con los nombres de nota impresos en la página 1
+    const mel = bars.slice(4, 12).flatMap(b => b.flatMap(x => x.rh)).map(NM).join(' ');
+    check(mel === 'E5 F5 F5 G5 D5 E5 A5 A4 B4 C5 D5 E5 D5 G5 G4 A4 B4 C5 D5 C5', 'melodía de la parte A como está impresa: ' + mel);
+    // A' (c. 38-45) es la misma melodía con la octava de abajo
+    const top = b => b.flatMap(x => x.rh.length ? [Math.max(...x.rh)] : []);
+    check(JSON.stringify(bars.slice(4, 12).map(top)) === JSON.stringify(bars.slice(37, 45).map(top)), 'A\' (c. 38-45) repite la melodía de A, ahora con la octava de abajo');
+    check(bars.slice(15, 27).every((b, i) => JSON.stringify(b.map(x => [x.rh, x.lh, x.dur])) === JSON.stringify(bars[48 + i].map(x => [x.rh, x.lh, x.dur]))),
+      'los c. 49-60 son nota por nota los 16-27 (así viene en la hoja)');
+    check(S.steps.every(x => x.rh.length <= 2 && x.lh.length <= 2), 'nunca más de dos teclas por mano (los acordes de tres del c. 69 quedan en dos)');
+    // Pedal: en cada compás, al empezar; 'on' después de los ✽ de los c. 9, 11 y 15
+    check(bars.every(b => b[0].ped), 'pedal al empezar cada compás');
+    check([10, 12, 16].every(n => bars[n - 1][0].ped === 'on') && bars[0][0].ped === 'on', 'después de soltarlo (✽) se vuelve a pisar, no se "cambia"');
+    check(S.steps.filter(x => x.ped).length === 106, 'los 73 del inicio de compás y 33 a mitad de compás, como en la hoja');
   }
 
   console.log(`\n${passes} pruebas OK, ${failures} fallos`);
