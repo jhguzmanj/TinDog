@@ -1642,6 +1642,19 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
     W("selectCategory('today')");
   }
 
+  section('Plan de Hoy: el calentamiento se marca también si se practica en la cascada');
+  {
+    const drillId = W("todayPlan.find(it => it.key === 'drill').title") && W("(() => { const t = todayPlan.find(it => it.key === 'drill').title.replace('Calentar: ', ''); return AGILITY_DRILLS.find(d => d.name === t).id; })()");
+    W(`(() => { delete progress.drills['${drillId}']; delete progress.cascade['${drillId}']; })()`);
+    check(!W("todayPlan.find(it => it.key === 'drill').done()"), 'antes de practicar, el calentamiento no está marcado');
+    W(`selectCategory('agility'); pickFragmentById('${drillId}'); recordCascadeResult(90, 'wait')`);
+    check(W("practiceFamily") === 'agility' && W(`(progress.drills['${drillId}'] || {}).lastDay === dateKey()`), 'terminar el ejercicio en la cascada lo registra como ejercicio hecho');
+    check(W("todayPlan.find(it => it.key === 'drill').done()"), 'y el calentamiento queda marcado con el check');
+    check(W(`!AGILITY_DRILLS.filter(d => d.grupo === 'manos' && !progress.drills[d.id]).some(d => d.id === '${drillId}')`), 'y ese peldaño de coordinación cuenta como estrenado (el plan pasa al siguiente)');
+    check(W("todayPlan.find(it => it.key === 'rhythm').sub").includes('2 rondas'), 'el punto de Ritmo dice que pide 2 rondas');
+    W("selectCategory('today')");
+  }
+
   section('Coordinación: las dos manos no hacen lo mismo');
   const coord = W('AGILITY_DRILLS.filter(d => d.coord)');
   check(coord.length === 8, `${coord.length} ejercicios de coordinación (escalera del 1 al 8)`);

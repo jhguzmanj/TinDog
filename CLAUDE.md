@@ -2298,6 +2298,14 @@ decía hacia qué lado se equivoca Jorge.
   meta de BPM), intervalos exactos y oído **por nivel** de `INTERVAL_STAGES`,
   nivel de lectura vigente, 3 acordes menos practicados (grupo C G F Am Em Dm
   hasta dominarlo), pieza menos hecha.
+  **Bug arreglado (octubre 2026): el calentamiento no se marcaba si se practicaba en la cascada.**
+  Jorge: "cumplo el tiempo y la práctica pero no la marca". El check del punto `drill` mira
+  `progress.drills`, y eso solo lo escribía `recordPracticeDone` (paso a paso); la cascada guardaba en
+  `progress.cascade` y nada más. Peor: `coordPend` (qué peldaño de coordinación toca) también mira
+  `progress.drills`, así que un ejercicio hecho solo en la cascada nunca contaba como estrenado y el plan
+  lo proponía para siempre — y la cascada es justo donde esos ejercicios sirven. Ahora
+  `recordCascadeResult` también llama a `recordPracticeDone()`. El punto de Ritmo pide **2 rondas**
+  (`dayRec().rhythm >= 2`, aprobadas o no) y ahora el subtítulo lo dice. Hay prueba.
   **El `go` del paso 2 deja el metrónomo listo** en el BPM de la meta y enciende
   `⏱ Con metrónomo`: si hay que ir a buscarlo a mano, no se usa.
 - Exportar/importar JSON desde la pestaña Progreso. **Importar FUSIONA, no pisa**

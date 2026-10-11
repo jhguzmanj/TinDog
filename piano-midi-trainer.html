@@ -10174,6 +10174,11 @@ function recordCascadeResult(pct, mode){
   else r.best = Math.max(r.best, pct);
   r.lastDay = dateKey();
   progress.cascade[currentFragment.id] = r; bump('cascade');
+  // Terminar la pieza o el ejercicio en la cascada TAMBIÉN es hacerlo: sin esto
+  // el calentamiento de Hoy (que mira progress.drills) nunca se marcaba si se
+  // practicaba en la cascada, y el peldaño de coordinación nunca contaba como
+  // estrenado, así que el plan proponía el mismo ejercicio para siempre.
+  if(typeof recordPracticeDone === 'function') recordPracticeDone();
 }
 
 // ===== Respaldo automático (solo cuando la página corre en claude.ai) =====
@@ -10347,7 +10352,7 @@ function buildTodayPlan(seed){
   const rhIdx = rhythmCurrentLevel();
   const rhLv = RHYTHM_LEVELS[rhIdx];
   items.push({ key:'rhythm', min:3, block:'warm', title:'Ritmo: nivel ' + (rhIdx + 1) + ' de ' + RHYTHM_LEVELS.length + ' · ' + rhLv.name,
-    sub:'Con metrónomo, a ' + rhythmNextBpm(rhIdx) + ' BPM. La app te dice si tocas antes o después del clic.',
+    sub:'2 rondas completas con metrónomo, a ' + rhythmNextBpm(rhIdx) + ' BPM (aprobadas o no). La app te dice si tocas antes o después del clic.',
     done: () => (dayRec().rhythm || 0) >= 2,
     go: () => { rhythmLevel = rhIdx; selectCategory('rhythm'); } });
 
