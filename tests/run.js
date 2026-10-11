@@ -3364,7 +3364,7 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
     const qp = JSON.parse(W("JSON.stringify(SONGS.find(s => s.id === 'tarea-quintas').steps.map(s => s.ped || '').filter(Boolean))"));
     check(qp.length === 13 && qp[0] === 'on' && qp.slice(1).every(p => p === 'change'), 'quintas: pisa en el c. 1 y cambia en los 12 compases siguientes');
     check(W("SONGS.find(s => s.id === 'tarea-quintas').steps.every(s => !s.ped || (s.label && s.lh.length === 2))"), 'cada cambio cae justo en el primer tiempo, con la nota nueva de la izquierda');
-    check(W("SONGS.filter(s => s.steps.some(st => st.ped)).map(s => s.id).sort().join()") === 'dia-de-lluvia,tarea-quintas', 'llevan pedal las quintas y Día de lluvia');
+    check(W("SONGS.filter(s => s.steps.some(st => st.ped) && s.cat !== 'pedal').map(s => s.id).sort().join()") === 'dia-de-lluvia,tarea-quintas', 'fuera de los ejercicios de pedal, llevan pedal las quintas y Día de lluvia');
     // Día de lluvia: pisa con el primer La y cambia en cada ataque de la izquierda (cada acorde)
     const dl = JSON.parse(W("JSON.stringify(SONGS.find(s => s.id === 'dia-de-lluvia').steps.map(s => [s.lh.length, s.ped || '']))"));
     check(dl.every(([l, p]) => (l > 0) === (p !== '')) && dl[0][1] === 'on' && dl.filter(x => x[1] === 'change').length === 14,
@@ -3423,6 +3423,27 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
     check(W("buildCascadeSchedule().events.filter(e => e.ped).length") === W("SONGS.find(s => s.id === 'dia-de-lluvia').steps.filter(s => s.ped).reduce((a, s) => a + s.lh.length + s.rh.length, 0)"), 'cascada: cada nota de un paso con pedal lleva la marca');
     W("selectCategory('today')");
     check(W("document.getElementById('pedalBox').style.display") === 'none' || !W("pieceHasPedal()"), 'fuera de Piezas la caja del pedal no se muestra');
+  }
+
+  section('Escalera del pedal: seis ejercicios que suben de nivel');
+  {
+    const P = JSON.parse(W("JSON.stringify(SONGS.filter(s => s.cat === 'pedal'))"));
+    check(P.map(s => s.id).join() === 'pedal-1,pedal-2,pedal-3,pedal-4,pedal-5,pedal-6' && P.every((s, i) => s.name.startsWith('Pedal ' + (i + 1) + ' ·')),
+      'seis ejercicios, numerados en el nombre en el orden de la escalera');
+    check(W("SONG_CATS.some(c => c.id === 'pedal')") && P.every(s => s.plan === false), 'categoría Pedal en Piezas; no entran solos al plan de Hoy');
+    check(P.every(s => Math.abs(s.steps.reduce((a, x) => a + x.dur, 0) % 4) < 1e-9), 'todos cuadran en compases de 4');
+    check(P.every(s => s.steps[0].ped === 'on' && s.steps.slice(1).every(x => !x.ped || x.ped === 'change')), 'pisa al empezar y después solo cambia');
+    check(P.every(s => s.steps.every(x => !x.ped || x.lh.length + x.rh.length > 0)), 'cada marca de pedal cae sobre una nota (así se puede juzgar)');
+    // Lo que sube: cada cuántos tiempos hay que cambiar (4 → 2 → 1) y después las dos manos
+    const every = s => { const t = []; let c = 0; s.steps.forEach(x => { if(x.ped) t.push(c); c += x.dur; }); return t.slice(1).map((v, i) => v - t[i]); };
+    check(every(P[0]).every(d => d === 4) && every(P[1]).every(d => d === 2) && every(P[2]).every(d => d === 1), '1-3: cambio cada 4, cada 2 y cada tiempo, solo la derecha');
+    check(P.slice(0, 3).every(s => s.steps.every(x => !x.lh.length)) && P.slice(3).every(s => s.steps.some(x => x.lh.length)), '4-6 suman la izquierda');
+    check(P.slice(3).every(s => s.steps.every(x => !!x.ped === (x.lh.length > 0))), '4-6: el pedal cambia exactamente cuando entra el bajo');
+    check(every(P[4]).filter(d => d === 2).length > every(P[3]).filter(d => d === 2).length, 'el 5 cambia más seguido que el 4 (dos acordes por compás)');
+    check(P.every(s => s.steps.every(x => x.lh.length <= 2 && x.rh.length <= 2)), 'nunca más de dos teclas por mano (regla del profe)');
+    const fixed = P.every(s => { const d = {}; return s.steps.every(x => x.lh.every((n, i) => (d[n] = d[n] || x.lhF[i]) === x.lhF[i])); });
+    check(fixed, 'la izquierda no se mueve: cada nota grave siempre con el mismo dedo');
+    check(P.every(s => Math.max(...s.steps.flatMap(x => x.lh).concat([0])) < Math.min(...s.steps.flatMap(x => x.rh))), 'las manos no se cruzan');
   }
 
   console.log(`\n${passes} pruebas OK, ${failures} fallos`);

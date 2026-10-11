@@ -849,6 +849,17 @@ y dentro de "Más ▾": `free | functions`.
     solo en piezas con pedal. En la cascada en bucle se pierde el juicio de la última marca de cada vuelta
     (el reinicio a los 900 ms corta la espera de 1,5 s). **En el artifact no funciona** (no hay MIDI en el
     iframe): solo en el archivo suelto.
+- **Escalera del pedal (octubre 2026, pedido de Jorge: "ejercicios para practicar con el pedal subiendo de
+  nivel")**. Categoría `pedal` en Piezas (`SONG_CATS`, antes de Hanon), seis entradas `pedal-1..6`, todas
+  `plan:false`, **MÍAS** (generador `pedal_gen.py` en el scratchpad de la sesión). Lo que sube, en orden:
+  1 redondas (cambio cada 4 tiempos, solo derecha), 2 blancas (cada 2), 3 negras (en cada nota: el
+  ejercicio clásico del pedal sincopado), 4 bajo + arpegio de la derecha con un pedal por compás
+  (Do Fa Sol Do Lam Fa Sol Do), 5 dos acordes por compás (cambio en el 1 y el 3), 6 acompañamiento de
+  balada (bajo en el 1, dos teclas de la derecha en 2-3-4, Do Lam Fa Sol). En 4-6 el pedal cambia
+  **exactamente** donde entra el bajo (hay prueba). Acordes de la derecha en la posición del Do: Do 1-3-5,
+  Fa/Do (Do Fa La) 1-3-5, Sol/Si (Si Re Sol) 1-2-5, Lam/Do (Do Mi La) 1-2-5: el pulgar baja a Si en Sol y
+  el meñique se estira a La en Fa/Lam. Izquierda fija con el pulgar en Do3. Máximo dos teclas por mano.
+  Tempos 60/60/60/66/66/72, míos. La app juzga el pie en los seis (ver arriba).
 - **"Minueto en Sol" (Christian Petzold, BWV Anh. 114, Cuaderno de Ana Magdalena Bach), octubre 2026**
   (`minueto-sol`, Clásicas, primera de la categoría, entra al plan). La clase pidió "canciones clásicas de
   compositores famosos, de a poco" y que Jorge eligiera una; le recomendé el Himno (o Mozart si ya lo tenía)
