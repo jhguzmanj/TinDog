@@ -6400,6 +6400,16 @@ const SONGS = [
   },
   // Escalera del pedal (octubre 2026, pedido de Jorge). Ejercicios MÍOS, ver CLAUDE.md.
   {
+    id:'pedal-0',
+    cat:'pedal',
+    plan:false,
+    guide:'pedal0',
+    name:'Pedal 0 · Aprende el pedal (guiado)',
+    tip:'Sin tempo: la app te pide una cosa a la vez y espera. La regla que aprendes: el pie se mueve DESPUÉS de la mano. Toca → pie arriba → pie abajo → suelta.',
+    tempo:60,
+    steps:[{lh:[], rh:[60], rhF:[1], dur:4}]
+  },
+  {
     id:'pedal-1',
     cat:'pedal',
     plan:false,
@@ -7919,6 +7929,14 @@ function startFragmentStep(){
   // `playFragment` llega aquí con `isPlayingBack` ya en false, así que no
   // se muerde la cola.
   stopFragmentPlayback();
+  // Pedal 0 es un guía, no una pieza: sin Escuchar ni cascada.
+  const isGuide = !!(currentFragment && currentFragment.guide);
+  ['listenBtn', 'cascadeBtn'].forEach(id => { const b = document.getElementById(id); if(b) b.style.display = isGuide ? 'none' : ''; });
+  if(isGuide){
+    try { if(cascadeOn){ closeCascade(); practiceInfo.style.display = 'flex'; } } catch(e){}
+    renderP0();
+    return;
+  }
   // Vuelta nueva: el contador de errores arranca de cero. Se mira antes de
   // advanceToPlayableStep(), que puede mover el índice si el paso 0 está vacío
   // para la mano elegida.
@@ -7989,6 +8007,7 @@ function pedalInput(down, t){
   pedalEvents.push({ t, down });
   if(pedalEvents.length > 400) pedalEvents.splice(0, 200);
   renderPedalBox();
+  if(currentFragment && currentFragment.guide && (currentMode === 'fragments')) p0Event(down ? 'down' : 'up');
 }
 function pedalStateAt(t){
   let s = null;
@@ -8063,7 +8082,7 @@ function pedalWrapUp(after){
   }, 1500);
 }
 function pieceHasPedal(){
-  return !!(currentFragment && currentFragment.steps && currentFragment.steps.some(s => s.ped)) &&
+  return !!(currentFragment && (currentFragment.guide || (currentFragment.steps && currentFragment.steps.some(s => s.ped)))) &&
          (currentMode === 'fragments' || currentMode === 'agility');
 }
 function renderPedalBox(){
@@ -8072,6 +8091,7 @@ function renderPedalBox(){
     let h = '';
     if(!pedalJudging()) h += '<span class="ped-state">Conecta el piano (archivo suelto) para que la app vea tu pedal</span>';
     else h += '<span class="ped-state ' + (pedalIsDown ? 'down' : 'up') + '">Tu pedal: ' + (pedalIsDown ? '▼ pisado' : '▲ arriba') + '</span>';
+    if(currentFragment.guide) return h;
     if(pedalLast) h += ' <span class="ped-verdict ' + (pedalLast.ok ? 'ok' : 'bad') + '">' + pedalLast.msg + '</span>';
     if(pedalSummary) h += ' <span class="ped-count">' + pedalSummary + '</span>';
     else if(pedalTally.total) h += ' <span class="ped-count">' + pedalTally.ok + ' de ' + pedalTally.total + '</span>';
@@ -8096,6 +8116,7 @@ function scheduleFragmentStep(ms){
 
 function checkFragment(note){
   if((currentMode !== 'fragments' && currentMode !== 'agility') || isPlayingBack) return;
+  if(currentFragment && currentFragment.guide){ p0Event('on', note); return; }
   const step = currentFragment.steps[practiceIndex];
   if(!step) return;
   const notes = stepNotes(step, currentHand);
@@ -8145,6 +8166,126 @@ function checkFragment(note){
 }
 registerNoteHandler('fragments', checkFragment);
 registerNoteHandler('agility', checkFragment);
+registerNoteOffHandler('fragments', note => { if(currentFragment && currentFragment.guide) p0Event('off', note); });
+
+// ---- Pedal 0: guía interactiva del pedal (pedido de Jorge: "el paso a paso,
+// pero en un ejercicio"). No es una pieza con tempo: la app pide UNA cosa a la
+// vez (TOCA / SUELTA / PISA / ARRIBA / ABAJO), espera a que se haga y, si el
+// orden sale mal, dice qué pasó y vuelve al paso que corresponde. Ver CLAUDE.md.
+const P0_NAMES = {60:'Do', 62:'Re', 64:'Mi', 65:'Fa', 67:'Sol'};
+const P0_FING = {60:1, 62:2, 64:3, 65:4, 67:5};
+function p0Build(){
+  const S = [];
+  const nm = n => P0_NAMES[n];
+  const pedalUp = () => pedalIsDown ? 'Para esta parte saca el pie del pedal.' : null;
+  const pedalDown = () => !pedalIsDown ? 'El pie tiene que estar ABAJO (pedal pisado).' : null;
+  // Parte 1: qué hace el pedal
+  S.push({ part:1, big:'TOCA Do', text:'Parte 1 · Sin pedal. Pie fuera del pedal. Toca el Do marcado.', exp:'on', note:60, cond:pedalUp });
+  S.push({ part:1, big:'SUELTA', text:'Suelta el dedo y escucha: el sonido se apaga.', exp:'off', note:60 });
+  S.push({ part:1, big:'PISA ▼', text:'Ahora pisa el pedal y déjalo abajo.', exp:'down' });
+  S.push({ part:1, big:'TOCA Do', text:'Con el pedal abajo, toca el Do…', exp:'on', note:60, cond:pedalDown });
+  S.push({ part:1, big:'SUELTA', text:'…y suelta el dedo. Escucha: ¡sigue sonando! El pie lo guarda.', exp:'off', note:60, cond:pedalDown });
+  S.push({ part:1, big:'ARRIBA ▲', text:'Levanta el pie y escucha: se apaga. Levantar el pie = apagar todo.', exp:'up' });
+  // Parte 2: la mancha
+  S.push({ part:2, big:'PISA ▼', text:'Parte 2 · La mancha. Pisa el pedal y déjalo abajo.', exp:'down' });
+  [60, 62, 64].forEach((n, i) => S.push({ part:2, big:'TOCA ' + nm(n), text:(i ? 'Sigue sin levantar el pie: toca ' : 'Sin levantar el pie, toca ') + nm(n) + '.', exp:'on', note:n, cond:pedalDown }));
+  S.push({ part:2, big:'ARRIBA ▲', text:'¿Oíste todo mezclado? Por eso el pedal se CAMBIA en cada nota nueva. Levanta el pie.', exp:'up' });
+  // Partes 3 y 4: el cambio (toca → arriba → abajo → suelta)
+  const cycle = (part, n, first, help) => {
+    const tag = part === 3 ? '' : ' (solo)';
+    S.push({ part, cycle:true, big:help ? 'TOCA ' + nm(n) : nm(n), note:n, exp:'on',
+      text: help ? (first ? 'Toca ' + nm(n) + ' con el pie abajo. El pie todavía NO se mueve.' : 'Toca ' + nm(n) + '. Escucha: se mezcla con la anterior… eso se arregla ahora.') : 'Toca ' + nm(n) + ' y haz el cambio tú solo: arriba, abajo, suelta.' + tag,
+      cond:() => !pedalIsDown ? 'Primero pisa el pedal ▼ y después toca ' + nm(n) + '.' : null });
+    S.push({ part, cycle:true, big:help ? 'ARRIBA ▲' : nm(n) + ' · ▲', note:n, exp:'up', text: help ? 'Con el dedo en la tecla, levanta el pie: se apaga lo anterior.' : '' });
+    S.push({ part, cycle:true, big:help ? 'ABAJO ▼' : nm(n) + ' · ▼', note:n, exp:'down', text: help ? 'Vuelve a pisar: el pie atrapa ' + nm(n) + '.' : '' });
+    S.push({ part, cycle:true, big:help ? 'SUELTA' : nm(n) + ' · suelta', note:n, exp:'off', text: help ? 'Suelta el dedo: ' + nm(n) + ' sigue sonando, sin hueco y sin mezcla.' : '',
+      cond:() => !pedalIsDown ? 'Levantaste el pie antes de soltar: se cortó. Déjalo abajo.' : null });
+  };
+  S.push({ part:3, big:'PISA ▼', text:'Parte 3 · El cambio, en cámara lenta. Pisa el pedal para empezar.', exp:'down' });
+  [60, 62, 64, 65].forEach((n, i) => cycle(3, n, i === 0, true));
+  S.push({ part:4, big:'ARRIBA ▲', text:'¡Bien! Parte 4: lo mismo sin ayuda. Levanta el pie para empezar de cero.', exp:'up' });
+  S.push({ part:4, big:'PISA ▼', text:'Pisa el pedal.', exp:'down' });
+  [60, 62, 64, 65, 67, 65, 64, 62].forEach((n, i) => cycle(4, n, i === 0, false));
+  return S;
+}
+const p0 = { steps:null, i:0, errors:0, part4errors:0, done:false, frag:null };
+function p0Reset(){
+  p0.steps = p0Build(); p0.i = 0; p0.errors = 0; p0.part4errors = 0; p0.done = false;
+}
+// Si algo sale fuera de orden en un ciclo, se vuelve al TOCA de ese ciclo.
+function p0BackToCycleStart(){
+  while(p0.i > 0 && p0.steps[p0.i].exp !== 'on') p0.i--;
+}
+function p0Fail(msg){
+  p0.errors++;
+  if(p0.steps[p0.i] && p0.steps[p0.i].part === 4) p0.part4errors++;
+  renderP0(msg);
+}
+function p0Event(type, note){
+  if(!currentFragment || !currentFragment.guide) return;
+  if(!p0.steps || p0.frag !== currentFragment){ p0.frag = currentFragment; p0Reset(); }
+  if(p0.done){ if(type === 'on'){ p0Reset(); renderP0(); } return; }
+  const st = p0.steps[p0.i];
+  const nm = n => P0_NAMES[n] || noteLabel(n);
+  // Lo que se espera
+  if(type === st.exp && (st.note === undefined || st.exp === 'up' || st.exp === 'down' || note === st.note)){
+    const err = st.cond ? st.cond() : null;
+    if(err){ p0Fail(err); return; }
+    p0.i++;
+    if(p0.i >= p0.steps.length){
+      p0.done = true;
+      if(typeof recordPracticeDone === 'function') recordPracticeDone();
+    }
+    renderP0('ok');
+    return;
+  }
+  // Errores típicos dentro del ciclo del cambio
+  if(st.cycle){
+    if(st.exp === 'on' && type === 'up'){ renderP0('Levantaste el pie ANTES de tocar: eso deja un hueco. Vuelve a pisar ▼; el pie sube DESPUÉS de tocar.'); p0.errors++; return; }
+    if(st.exp === 'on' && type === 'on' && note !== st.note){ renderP0('Esa no: toca ' + nm(st.note) + '.'); return; }
+    if((st.exp === 'up' || st.exp === 'down') && type === 'off' && note === st.note){
+      p0BackToCycleStart();
+      p0Fail(st.exp === 'up'
+        ? 'Soltaste el dedo antes de cambiar el pie. Mantén la tecla abajo hasta volver a pisar. Otra vez: toca ' + nm(st.note) + '.'
+        : 'Soltaste el dedo antes de volver a pisar: el sonido se cortó. Otra vez: toca ' + nm(st.note) + '.');
+      return;
+    }
+    if(st.exp === 'up' && type === 'on' && note !== st.note){ renderP0('Todavía no cambies de nota: primero ▲ el pie.'); return; }
+    if(st.exp === 'down' && type === 'on'){ renderP0('Primero vuelve a pisar ▼, después la nota siguiente.'); return; }
+    if(st.exp === 'off' && type === 'up'){ p0BackToCycleStart(); p0Fail('Levantaste el pie antes de soltar el dedo. Vuelve a pisar ▼ y toca ' + nm(st.note) + ' otra vez.'); return; }
+    return;
+  }
+  if(type === 'on' && st.note !== undefined && note !== st.note){ renderP0('Esa no: toca ' + nm(st.note) + '.'); return; }
+  if(type === 'on' && st.exp !== 'on'){ renderP0('Todavía no toques: ' + (st.exp === 'down' ? 'primero pisa el pedal ▼.' : st.exp === 'up' ? 'primero levanta el pie ▲.' : 'primero suelta el dedo.')); return; }
+}
+function renderP0(msg){
+  if(!currentFragment || !currentFragment.guide) return;
+  if(!p0.steps || p0.frag !== currentFragment){ p0.frag = currentFragment; p0Reset(); }
+  clearAllHighlights();
+  const total = p0.steps.length;
+  if(p0.done){
+    progressText.textContent = `Paso ${total} / ${total}`;
+    targetNoteLabel.textContent = '¡Listo!';
+    const clean = p0.part4errors === 0;
+    targetSubLabel.innerHTML = clean
+      ? 'La parte 4 te salió sin errores: ya entiendes el cambio. Sigue con <b>Pedal 1</b>.'
+      : 'Terminaste. En la parte 4 hubo ' + p0.part4errors + (p0.part4errors === 1 ? ' corrección' : ' correcciones') + ': repítelo (toca cualquier tecla) hasta que salga limpio, y después pasa a <b>Pedal 1</b>.';
+    feedbackText.textContent = '';
+    feedbackText.className = 'feedback';
+    renderPedalBox();
+    return;
+  }
+  const st = p0.steps[p0.i];
+  progressText.textContent = `Paso ${p0.i + 1} / ${total}`;
+  targetNoteLabel.textContent = st.big;
+  targetSubLabel.innerHTML = '<b>Parte ' + st.part + ' de 4</b>' + (st.text ? ' · ' + st.text : '') +
+    (st.part === 4 ? ' &nbsp;<span class="ped-tag">toca → ▲ → ▼ → suelta</span>' : '');
+  if(st.note !== undefined){ markTarget(st.note, 'rh'); drawFingerNum(st.note, P0_FING[st.note], 'rh'); }
+  if(msg === 'ok'){ feedbackText.textContent = '✓'; feedbackText.className = 'feedback correct'; }
+  else if(msg){ feedbackText.textContent = msg; feedbackText.className = 'feedback wrong'; }
+  else { feedbackText.textContent = ''; feedbackText.className = 'feedback'; }
+  renderPedalBox();
+}
 
 listenBtn.addEventListener('click', () => {
   if(isPlayingBack){ stopFragmentPlayback(); return; }

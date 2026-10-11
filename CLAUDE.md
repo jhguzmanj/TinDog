@@ -885,6 +885,17 @@ y dentro de "Más ▾": `free | functions`.
   Fa/Do (Do Fa La) 1-3-5, Sol/Si (Si Re Sol) 1-2-5, Lam/Do (Do Mi La) 1-2-5: el pulgar baja a Si en Sol y
   el meñique se estira a La en Fa/Lam. Izquierda fija con el pulgar en Do3. Máximo dos teclas por mano.
   Tempos 60/60/60/66/66/72, míos. La app juzga el pie en los seis (ver arriba).
+- **Pedal 0 · guía interactiva (octubre 2026).** Jorge no logró los ejercicios de pedal: "no entendía" (el
+  pedal funcionaba bien). Le faltaba un paso previo que la escalera no tenía: entender qué hace el pie y la
+  coordinación al revés (el pie se mueve DESPUÉS de la mano). `pedal-0` (`guide:'pedal0'`, primero en la
+  categoría `pedal`, `plan:false`) **no es una pieza**: `startFragmentStep` lo desvía a `renderP0` (sin
+  Escuchar ni cascada) y las notas/pedal van a `p0Event` (desde `checkFragment`, un note-off de `fragments`
+  y `pedalInput`). `p0Build` arma 62 pasos en 4 partes: (1) sin pedal se apaga / con pedal sigue sonando /
+  levantar = apagar; (2) la mancha (Do Re Mi con el pie abajo); (3) el ciclo TOCA → ARRIBA ▲ → ABAJO ▼ →
+  SUELTA con 4 notas y textos de ayuda; (4) el mismo ciclo con 8 notas solo con el nombre. Errores con
+  explicación: levantar antes de tocar (hueco), soltar el dedo antes de cambiar o de volver a pisar (vuelve
+  al TOCA del ciclo), levantar antes de soltar, tocar con el pie arriba. `p0.part4errors` decide el mensaje
+  final (limpio → "sigue con Pedal 1"; si no, repetir). Hay prueba con un recorrido completo y los errores.
 - **"Minueto en Sol" (Christian Petzold, BWV Anh. 114, Cuaderno de Ana Magdalena Bach), octubre 2026**
   (`minueto-sol`, Clásicas, primera de la categoría, entra al plan). La clase pidió "canciones clásicas de
   compositores famosos, de a poco" y que Jorge eligiera una; le recomendé el Himno (o Mozart si ya lo tenía)

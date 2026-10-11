@@ -3427,7 +3427,7 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
 
   section('Escalera del pedal: seis ejercicios que suben de nivel');
   {
-    const P = JSON.parse(W("JSON.stringify(SONGS.filter(s => s.cat === 'pedal'))"));
+    const P = JSON.parse(W("JSON.stringify(SONGS.filter(s => s.cat === 'pedal' && !s.guide))"));
     check(P.map(s => s.id).join() === 'pedal-1,pedal-2,pedal-3,pedal-4,pedal-5,pedal-6' && P.every((s, i) => s.name.startsWith('Pedal ' + (i + 1) + ' ·')),
       'seis ejercicios, numerados en el nombre en el orden de la escalera');
     check(W("SONG_CATS.some(c => c.id === 'pedal')") && P.every(s => s.plan === false), 'categoría Pedal en Piezas; no entran solos al plan de Hoy');
@@ -3474,6 +3474,49 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
     check(bars.every(b => b[0].ped), 'pedal al empezar cada compás');
     check([10, 12, 16].every(n => bars[n - 1][0].ped === 'on') && bars[0][0].ped === 'on', 'después de soltarlo (✽) se vuelve a pisar, no se "cambia"');
     check(S.steps.filter(x => x.ped).length === 106, 'los 73 del inicio de compás y 33 a mitad de compás, como en la hoja');
+  }
+
+  section('Pedal 0: guía interactiva (toca → arriba → abajo → suelta)');
+  {
+    W("soundEnabled = false; pedalEvents.length = 0; pedalIsDown = false; selectCategory('fragments'); pickFragmentById('pedal-0')");
+    check(W("SONGS.filter(s => s.cat === 'pedal')[0].id") === 'pedal-0', 'Pedal 0 va primero en la categoría Pedal');
+    check(W("document.getElementById('listenBtn').style.display") === 'none' && W("document.getElementById('cascadeBtn').style.display") === 'none', 'es un guía: sin Escuchar ni cascada');
+    check(W('targetNoteLabel.textContent') === 'TOCA Do' && W('targetSubLabel.textContent').includes('Parte 1'), 'empieza pidiendo tocar Do, sin pedal');
+    const on = n => W(`noteOn(${n})`), off = n => W(`noteOff(${n})`), dn = () => W('pedalInput(true)'), up = () => W('pedalInput(false)');
+    // Parte 1
+    dn(); on(60);
+    check(W('p0.i') === 0 && W('feedbackText.textContent').includes('saca el pie'), 'parte 1: con el pedal pisado pide sacar el pie');
+    off(60); up(); on(60); off(60);
+    check(W('targetNoteLabel.textContent') === 'PISA ▼', 'toca y suelta sin pedal → ahora pide pisar');
+    dn(); on(60); off(60); up();
+    // Parte 2
+    dn(); on(60); on(62); on(64); off(60); off(62); off(64); up();
+    check(W('p0.steps[p0.i].part') === 3 && W('targetNoteLabel.textContent') === 'PISA ▼', 'parte 2 (la mancha) hecha: empieza el cambio');
+    // Parte 3 con dos errores típicos
+    dn();
+    on(60);
+    off(60);   // soltó antes de cambiar el pie
+    check(W('targetNoteLabel.textContent') === 'TOCA Do' && W('feedbackText.textContent').includes('Soltaste el dedo antes de cambiar'), 'soltar el dedo antes de levantar el pie: vuelve a TOCA y lo explica');
+    up();      // levanta antes de tocar
+    check(W('feedbackText.textContent').includes('ANTES de tocar') && W('targetNoteLabel.textContent') === 'TOCA Do', 'levantar el pie antes de tocar: avisa del hueco');
+    on(60);
+    check(W('feedbackText.textContent').includes('Primero pisa'), 'tocar con el pie arriba: pide pisar primero');
+    off(60); dn();
+    const cyc = n => { on(n); up(); dn(); off(n); };
+    cyc(60);
+    check(W('targetNoteLabel.textContent') === 'TOCA Re', 'un ciclo bien hecho pasa a la nota siguiente');
+    [62, 64, 65].forEach(cyc);
+    // Parte 4, limpia
+    up(); dn();
+    check(W('p0.steps[p0.i].part') === 4 && W('targetNoteLabel.textContent') === 'Do', 'parte 4: solo el nombre de la nota, sin palabras de ayuda');
+    [60, 62, 64, 65, 67, 65, 64, 62].forEach(cyc);
+    check(W('p0.done') === true && W('targetNoteLabel.textContent') === '¡Listo!' && W('targetSubLabel.textContent').includes('Pedal 1'), 'parte 4 limpia: listo, sigue con Pedal 1');
+    check(W('p0.part4errors') === 0 && W('p0.errors') >= 2, 'los errores de la parte 3 no cuentan contra la 4');
+    check(W("progress.songs['pedal-0'] && progress.songs['pedal-0'].runs") >= 1, 'al terminar queda registrado');
+    // Volver a una pieza normal devuelve los botones
+    W("pickFragmentById('pedal-1')");
+    check(W("document.getElementById('listenBtn').style.display") === '' && W("document.getElementById('cascadeBtn').style.display") === '', 'en Pedal 1 vuelven Escuchar y la cascada');
+    W("pedalIsDown = false; selectCategory('today')");
   }
 
   console.log(`\n${passes} pruebas OK, ${failures} fallos`);
