@@ -11972,12 +11972,18 @@ function buildTodayPlan(seed){
   // de la escalera, no el "menos practicado": el 6 no tiene sentido antes del 1.
   // Cuando ya pasó por los seis, vuelve la rotación normal entre todos.
   const coordPend = AGILITY_DRILLS.filter(d => d.grupo === 'manos' && !progress.drills[d.id]);
+  // Último peldaño: los Hanon, en orden, cuando ya estrenó toda la coordinación.
+  const hanonAll = SONGS.filter(s => s.grupo === 'hanon');
+  const hanonPend = hanonAll.filter(d => !progress.drills[d.id]);
   let drill, drillSub;
   if(coordPend.length){
     drill = coordPend[0];
     drillSub = 'Manos juntas, en orden. Si se traba, primero cada mano sola.';
+  } else if(hanonPend.length){
+    drill = hanonPend[0];
+    drillSub = 'Hanon ' + (hanonAll.length - hanonPend.length + 1) + ' de ' + hanonAll.length + ', en orden. Muy lento y parejo; levanta bien los dedos.';
   } else {
-    const drills = leastPracticed(AGILITY_DRILLS, progress.drills, 'id');
+    const drills = leastPracticed(AGILITY_DRILLS.concat(hanonAll), progress.drills, 'id');
     drill = drills[Math.min(rnd(2), drills.length - 1)];
     drillSub = drill.grupo === 'manos'
       ? 'Manos juntas. Lento y parejo, que no se descuadren.'

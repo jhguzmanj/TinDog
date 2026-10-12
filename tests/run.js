@@ -1401,7 +1401,16 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
     check(hs.slice(0, 11).every(s => s.steps.slice(0, -1).filter(x => x.label).length === s.steps.length >> 3), 'un rótulo "c. N" al inicio de cada compás (para el Tramo)');
     // El plan de Hoy nunca manda un Hanon como "pieza".
     W("progress = emptyProgress(); todayPlan = buildTodayPlan(1)");
-    check(!W("todayPlan.some(it => /hanon/.test(JSON.stringify(it)))"), 'el plan de Hoy no propone Hanon');
+    // Último peldaño del calentamiento: sin coordinación pendiente, sube Hanon 1, 2, 3…
+    const warm = () => W("progress = progress; todayPlan = buildTodayPlan(1); todayPlan.find(it => it.key === 'drill').title");
+    check(!/Hanon/.test(warm()), 'con coordinación pendiente el calentamiento no es Hanon');
+    W("AGILITY_DRILLS.filter(d => d.grupo === 'manos').forEach(d => { progress.drills[d.id] = {runs:1, lastDay:'2026-01-01'}; })");
+    check(warm() === 'Calentar: Hanon 1', 'estrenada la coordinación, el calentamiento es Hanon 1');
+    W("progress.drills['hanon-1'] = {runs:1, lastDay:'2026-01-01'}");
+    check(warm() === 'Calentar: Hanon 2' && /Hanon 2 de 12/.test(W("todayPlan.find(it => it.key === 'drill').sub")), 'hecho el 1, sigue el 2 ("Hanon 2 de 12")');
+    for(let i = 2; i <= 12; i++) W(`progress.drills['hanon-${i}'] = {runs:1, lastDay:'2026-01-01'}`);
+    check(W("todayPlan = buildTodayPlan(1); todayPlan.find(it => it.key === 'drill').title").startsWith('Calentar: '), 'con los 12 hechos vuelve la rotación normal');
+    W("progress = emptyProgress()");
 
     // Beyer
     const be = W("SONGS.find(s => s.id === 'beyer-sol')");

@@ -964,7 +964,12 @@ y dentro de "Más ▾": `free | functions`.
     no existe). `pickFragmentById` también los encuentra.
   - **Efecto en el progreso**: en Agilidad `recordPracticeDone` escribe en `progress.drills` (antes, como
     Piezas, en `progress.songs`). Lo ya guardado bajo `songs.hanon-N` queda huérfano e inofensivo. Como no están
-    en `AGILITY_DRILLS`, `coordPend` y el calentamiento del plan de Hoy **no** los proponen (siguen `plan:false`).
+    en `AGILITY_DRILLS`, `coordPend` no los cuenta (siguen `plan:false`).
+  - **Último peldaño del calentamiento (mismo día, pedido de Jorge: "sí, último peldaño para irlos completando").**
+    `buildTodayPlan`: primero la coordinación pendiente, **después** `hanonPend` (los Hanon sin `progress.drills`,
+    en orden 1→12, subtítulo "Hanon N de 12"), y con los 12 estrenados vuelve la rotación por el menos
+    practicado (que ahora incluye los Hanon). "Estrenado" = una vuelta hecha, no limpia ni a tempo, igual que la
+    coordinación. Hay prueba de la secuencia 1, 2 y del regreso a la rotación.
 - **"Sorrow" (Motoi Sakuraba), octubre 2026** (`sorrow-1..4`, Populares). Jorge: "me gusta mucho para
   practicar porque los días están de lluvia y grises… dime cómo está para mi nivel e ir subiendo nivel". Pasó
   MusicXML + MIDI + PDF (MuseScore 4.3.2, transcripción firmada "AIYO v2", subtítulo "What's Up?"; **no sé de qué
