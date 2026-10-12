@@ -1564,10 +1564,10 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
   section('Tarea de la clase del 10 de octubre: cinco melodías (intervalos, cromática, inversiones, quintas, pentatónica)');
   {
     const T = W("SONGS.filter(s => s.tarea)");
-    check(T.map(s => s.id).join() === 'tarea-intervalos,tarea-cromatica,tarea-inversiones,tarea-quintas,tarea-pentatonica', 'las cinco están, en el orden de la clase');
+    check(T.map(s => s.id).join() === 'tarea-intervalos,tarea-cromatica,tarea-inversiones,tarea-quintas,tarea-pentatonica,ej-inversiones,ej-quintas-1,ej-quintas-2', 'las cinco melodías y los tres ejercicios guiados, en orden');
     check(T.every(s => s.cat === 'clase' && s.plan !== false && s.tip.length < 260), 'van en "De la clase", entran al plan y el tip es corto');
     const barsOf = s => { const bars = []; let t = 0; s.steps.forEach(x => { const b = Math.floor(t / 4 + 1e-9); (bars[b] = bars[b] || []).push(x); t += x.dur; }); return { bars, total: t }; };
-    T.forEach(s => {
+    T.filter(s => !s.guide).forEach(s => {
       const { bars, total } = barsOf(s);
       check(Math.abs(total % 4) < 1e-9 && bars.every(b => Math.abs(b.reduce((a, x) => a + x.dur, 0) - 4) < 1e-9) && bars.every(b => b[0].label && b[0].label.startsWith('c. ')),
         `${s.name}: ${bars.length} compases de 4 tiempos, cada uno con su rótulo`);
@@ -3511,12 +3511,68 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
     check(W('p0.steps[p0.i].part') === 4 && W('targetNoteLabel.textContent') === 'Do', 'parte 4: solo el nombre de la nota, sin palabras de ayuda');
     [60, 62, 64, 65, 67, 65, 64, 62].forEach(cyc);
     check(W('p0.done') === true && W('targetNoteLabel.textContent') === '¡Listo!' && W('targetSubLabel.textContent').includes('Pedal 1'), 'parte 4 limpia: listo, sigue con Pedal 1');
-    check(W('p0.part4errors') === 0 && W('p0.errors') >= 2, 'los errores de la parte 3 no cuentan contra la 4');
+    check(W('p0.finalErrors') === 0 && W('p0.errors') >= 2, 'los errores de la parte 3 no cuentan contra la 4');
     check(W("progress.songs['pedal-0'] && progress.songs['pedal-0'].runs") >= 1, 'al terminar queda registrado');
     // Volver a una pieza normal devuelve los botones
     W("pickFragmentById('pedal-1')");
     check(W("document.getElementById('listenBtn').style.display") === '' && W("document.getElementById('cascadeBtn').style.display") === '', 'en Pedal 1 vuelven Escuchar y la cascada');
     W("pedalIsDown = false; selectCategory('today')");
+  }
+
+  section('Ejercicios guiados: inversiones y quintas');
+  {
+    const IVN = JSON.parse(W('JSON.stringify(INTERVALS.map(i => i.name))'));
+    W("soundEnabled = false; selectCategory('fragments'); pickFragmentById('ej-inversiones')");
+    check(W('p0.steps.length') === 48 && W("p0.steps.filter(s => s.exp === 'answer').length") === 16, 'inversiones: 16 intervalos (8 marcados + 8 adivinando), cada uno con su pregunta');
+    // Todas las preguntas tienen como respuesta correcta la inversión (12 - semitonos)
+    const okAns = W(`p0.steps.every((s, i) => {
+      if(s.exp !== 'answer') return true;
+      const ch = p0.steps.slice(0, i).reverse().find(x => x.exp === 'chord' && x.notes[1] > x.notes[0] && x.notes[1] - x.notes[0] < 12 && x.text.indexOf('dalo vuelta') < 0 && x.text.indexOf('Deja el') < 0);
+      const sm = ch.notes[1] - ch.notes[0];
+      return s.options[s.correct] === INTERVALS[12 - sm].name && s.options.length >= 3 && new Set(s.options).size === s.options.length;
+    })`);
+    check(okAns, 'cada pregunta: la respuesta correcta es la inversión, sin opciones repetidas');
+    check(W('invExplain(4)') === '3ra mayor ↔ 6ta menor: 3 + 6 = 9, y mayor se vuelve menor.' && W('invExplain(7)').includes('justa sigue justa') && W('invExplain(6)').includes('tritono'),
+      'la explicación da la regla: suman 9, mayor ↔ menor, justa y tritono no cambian');
+    // Recorrido: el primer intervalo marcado
+    check(W('targetNoteLabel.textContent') === W('noteLabel(60) + " + " + noteLabel(64)') && W('targetSubLabel.textContent').includes('3ra mayor'), 'empieza con Do–Mi, 3ra mayor, las dos teclas marcadas');
+    W('noteOn(60); noteOn(64); noteOff(60)');
+    check(W('p0.i') === 1, 'tocar las dos teclas pasa al paso de darlo vuelta');
+    W('noteOn(60)');
+    check(W('feedbackText.textContent').includes('súbelo una octava') && W('p0.i') === 1, 'tocar el Do de abajo: dice que lo suba una octava');
+    W('noteOff(60); noteOn(72); noteOff(64); noteOff(72)');
+    check(W('p0.i') === 2 && W("p0.steps[2].exp") === 'answer' && W("document.querySelectorAll('#targetSubLabel .p0-ans').length") >= 3, 'dado vuelta (Mi–Do): ahora pregunta con botones');
+    const wrongI = W('p0.steps[2].options.findIndex((o, i) => i !== p0.steps[2].correct)');
+    W(`document.querySelectorAll('#targetSubLabel .p0-ans')[${wrongI}].click()`);
+    check(W('p0.i') === 2 && W('feedbackText.textContent').includes('Pista'), 'respuesta equivocada: no avanza y da la pista (sin decir la respuesta)');
+    W(`document.querySelectorAll('#targetSubLabel .p0-ans')[p0.steps[2].correct].click()`);
+    check(W('p0.i') === 3 && W('feedbackText.textContent').includes('6ta menor'), 'respuesta correcta: avanza y explica (3ra mayor ↔ 6ta menor)');
+
+    // Quintas 1: todo el piano y el círculo del profe
+    W("pickFragmentById('ej-quintas-1')");
+    const q1 = JSON.parse(W('JSON.stringify(p0.steps)'));
+    const p1 = q1.filter(s => s.part === 1), p2 = q1.filter(s => s.part === 2);
+    check(p1.every(s => s.notes[1] - s.notes[0] === 7) && p1[0].notes[0] === 36 && Math.max(...p1.map(s => s.notes[1])) <= 108, 'parte 1: diez 5tas justas desde Do2, sin salirse del piano');
+    check(p2.map(s => s.note % 12).join() === '0,7,2,9,4,11,6,1,8,3,10,5,0', 'parte 2: C G D A E B F# C# G# D# A# F C, el orden del profe');
+    check(p2.every((s, i) => i === 0 || [7, -5].includes(s.note - p2[i - 1].note)) && Math.min(...p2.map(s => s.note)) >= 60 && Math.max(...p2.map(s => s.note)) <= 72, 'parte 2: siempre 5ta arriba o 4ta abajo, en una sola octava');
+    // Quintas 2: las 12 escalas
+    W("pickFragmentById('ej-quintas-2')");
+    const q2 = JSON.parse(W('JSON.stringify(p0.steps)'));
+    check(q2.length === 97, '12 escalas de 8 notas + el Do final');
+    const scalesOk = [0,7,2,9,4,11,6,1,8,3,10,5].every((pc, k) => {
+      const sc = q2.slice(k * 8, k * 8 + 8).map(s => s.note);
+      return sc[0] % 12 === pc && sc.map(n => n - sc[0]).join() === '0,2,4,5,7,9,11,12';
+    });
+    check(scalesOk, 'cada bloque es la escala mayor de su tonalidad, en el orden del profe');
+    check(q2.every(s => s.marks[0].f >= 1 && s.marks[0].f <= 5) && q2.slice(0, 8).map(s => s.marks[0].f).join('') === '12312345', 'cada nota con su dedo (Do mayor 1-2-3-1-2-3-4-5)');
+    check(q2[8].text.includes('1 sostenido') && q2[8].text.includes('F#') && q2[64].text.includes('La♭'), 'dice el sostenido nuevo (G: F#) y que G# es teórica (suena La♭)');
+    // Accesos desde Intervalos y Escalas
+    W("selectCategory('intervals'); document.getElementById('invGuideBtn').click()");
+    check(W('currentFragment.id') === 'ej-inversiones' && W('currentMode') === 'fragments', 'el botón ↔ Inversiones de Intervalos abre el ejercicio');
+    W("selectCategory('scales'); document.getElementById('q2GuideBtn').click()");
+    check(W('currentFragment.id') === 'ej-quintas-2', 'el botón ⟳ Escalas por quintas de Escalas abre el ejercicio');
+    check(W("document.getElementById('pedalBox').style.display") === 'none', 'estos ejercicios no muestran la caja del pedal');
+    W("selectCategory('today')");
   }
 
   console.log(`\n${passes} pruebas OK, ${failures} fallos`);

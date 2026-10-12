@@ -896,6 +896,29 @@ y dentro de "Más ▾": `free | functions`.
   explicación: levantar antes de tocar (hueco), soltar el dedo antes de cambiar o de volver a pisar (vuelve
   al TOCA del ciclo), levantar antes de soltar, tocar con el pie arriba. `p0.part4errors` decide el mensaje
   final (limpio → "sigue con Pedal 1"; si no, repetir). Hay prueba con un recorrido completo y los errores.
+- **Ejercicios guiados de inversiones y quintas (12 oct 2026).** Jorge: "no vi un ejercicio dedicado a
+  las inversiones… también un ejercicio de quintas como pidió el profe". Las piezas `tarea-inversiones` y
+  `tarea-quintas` se TOCAN, pero no obligan a pensar ni a nombrar. Se generalizó el motor de Pedal 0:
+  `GUIDES` (`pedal0 | inv | quintas1 | quintas2`, cada uno con `build`, `parts` y `done`), `guideMeta()`,
+  `p0Advance`, `p0.finalErrors` (antes `part4errors`: errores en la ÚLTIMA parte, la que decide el mensaje).
+  Pasos nuevos: `exp:'chord'` (las teclas de `notes`, juntas o de a una: `p0.chordGot` deja hacerlo con el
+  mouse) con `wrong(note)` opcional, y `exp:'answer'` (botones `.p0-ans` en `targetSubLabel`, delegados;
+  `p0Answer`). `marks` = teclas marcadas con dedo y mano. La caja del pedal solo sale en `pedal0`.
+  - `ej-inversiones` (`invBuild`, 48 pasos): parte 1, 8 intervalos con las dos teclas marcadas: tocar →
+    darlo vuelta (la de abajo sube una octava; si toca la de abajo, se lo dice) → "¿qué intervalo es?";
+    parte 2, otros 8 desde otras notas: tocar → "¿en qué se convierte?" ANTES de tocarlo → comprobarlo con
+    solo la nota de arriba marcada. Opciones = la inversión + el original (el error típico) + vecinos.
+    `invExplain` da la regla: los números suman 9, mayor ↔ menor, justa y tritono no cambian.
+  - `ej-quintas-1` (`q1Build`): parte 1, diez 5tas justas de Do2 a Re#7–La#7 ("por todo el piano"; la
+    12ª ya no cabe); parte 2, las 12 del profe en una octava (Do4–Do5) con la regla "5ta arriba si cabe,
+    si no 4ta abajo": sale exactamente C G D A E B F# C# G# D# A# F C, y enseña que 4ta abajo = 5ta arriba
+    dada vuelta (conecta con las inversiones).
+  - `ej-quintas-2` (`q2Build`, 97 pasos): las 12 escalas mayores en ese orden, una octava con la derecha
+    desde la octava 4, dedos de `SCALE_DEFS` (para G#, D#, A# los de La♭, Mi♭, Si♭: mismas teclas), y el
+    sostenido nuevo de cada una; G#, D#, A# rotuladas "teórica: suena como…" (así las nombró el profe).
+  - Las tres van en "De la clase" con `tarea:true` (entran a la rotación del punto `tarea` del plan, que
+    para un guiado dice "Ejercicio guiado"). Accesos directos: `#invGuideBtn` (↔ Inversiones) en la barra
+    "Cómo practicar" de Intervalos y `#q2GuideBtn`/`#q1GuideBtn` junto a las familias de Escalas.
 - **"Minueto en Sol" (Christian Petzold, BWV Anh. 114, Cuaderno de Ana Magdalena Bach), octubre 2026**
   (`minueto-sol`, Clásicas, primera de la categoría, entra al plan). La clase pidió "canciones clásicas de
   compositores famosos, de a poco" y que Jorge eligiera una; le recomendé el Himno (o Mozart si ya lo tenía)

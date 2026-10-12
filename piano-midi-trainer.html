@@ -941,6 +941,9 @@
   .beat-line.bar{ stroke:rgba(255,255,255,0.26); stroke-width:1.6; }
   .ped-mark line{ stroke:rgba(150,200,170,0.55); stroke-width:1.4; stroke-dasharray:6 4; }
   .ped-mark text{ font-size:15px; font-weight:600; fill:#a8d8b8; pointer-events:none; }
+  .p0-answers{ display:flex; flex-wrap:wrap; gap:8px; margin-top:8px; }
+  .p0-answers .ghost-btn{ font-size:19px; padding:8px 16px; color:#f1ead9; border-color:rgba(241,234,217,0.45); background:rgba(241,234,217,0.06); }
+  .p0-answers .ghost-btn:hover{ background:rgba(241,234,217,0.14); }
   .pedal-box{ display:flex; flex-wrap:wrap; gap:6px 12px; align-items:center; font-size:18px; margin-top:4px; }
   .pedal-box .ped-state{ padding:2px 10px; border-radius:6px; border:1px solid rgba(150,200,170,0.5); color:#a8d8b8; }
   .pedal-box .ped-state.down{ background:rgba(120,190,150,0.22); color:#d2f0dc; font-weight:600; }
@@ -1193,6 +1196,8 @@
       <button class="mode-tab sub active" data-family="major">Mayores</button>
       <button class="mode-tab sub" data-family="minor">Menores</button>
       <button class="mode-tab sub" data-family="pentatonic">Pentatónicas</button>
+      <button id="q2GuideBtn" class="ghost-btn" title="Las 12 escalas mayores en el orden del profe (C G D A E B F# C# G# D# A# F), guiado.">⟳ Escalas por quintas</button>
+      <button id="q1GuideBtn" class="ghost-btn" title="Sube de quinta en quinta por todo el piano, guiado.">⟳ Quintas por el piano</button>
     </div>
     <div class="mode-tabs sub-tabs scroll-tabs" id="scaleSubTabs" style="display:none;"></div>
     <div id="scaleOptBar" class="reg-bar" style="display:none;">
@@ -1290,6 +1295,7 @@
       <button id="ivHideBtn" class="ghost-btn" title="Solo se marca la nota de partida, que cambia de lugar en cada intervalo. La segunda la encuentras tú.">🙈 Sin pista</button>
       <button id="ivTempoBtn" class="ghost-btn" title="Con metrónomo: tocas el intervalo en el tiempo elegido, desde la nota que quieras.">⏱ A tiempo</button>
       <button id="earModeBtn" class="ghost-btn" title="La app toca el intervalo y tú lo tienes que encontrar en el piano.">👂 De oído</button>
+      <button id="invGuideBtn" class="ghost-btn" title="Ejercicio guiado: tocas un intervalo, lo das vuelta y dices en qué se convirtió.">↔ Inversiones</button>
       <button id="nameModeBtn" class="ghost-btn" title="Suenan o se ven dos notas y dices qué intervalo es, lo más rápido que puedas. Es lo que pide el profe: reconocerlos de golpe.">⚡ Nombrar</button>
       <span class="reg-group" id="ivBeatGroup" style="display:none;"><span class="reg-label g-rep">Tocar en el tiempo</span>
       <div class="reg-picker g-rep" id="ivBeatPicker">
@@ -5927,6 +5933,24 @@ const SONGS = [
       {lh:[48], lhF:[1], rh:[60], rhF:[1], dur:4, label:'c. 12 · Fin · Do'},
     ]
   },
+  {
+    id:'ej-inversiones', cat:'clase', tarea:true, plan:true, guide:'inv',
+    name:'Ejercicio · Inversiones de intervalos (guiado)',
+    tip:'Tocas un intervalo, lo das vuelta (la nota de abajo sube una octava) y dices en qué se convirtió. Primero con las teclas marcadas; después adivinas antes de tocar.',
+    tempo:60, steps:[{lh:[], rh:[60], rhF:[1], dur:4}]
+  },
+  {
+    id:'ej-quintas-1', cat:'clase', tarea:true, plan:true, guide:'quintas1',
+    name:'Ejercicio · Quintas por todo el piano (guiado)',
+    tip:'Sube de 5ta en 5ta desde el Do grave hasta arriba, y después recorre las 12 (C G D A E B F# C# G# D# A# F) en una zona: 5ta arriba o 4ta abajo.',
+    tempo:60, steps:[{lh:[], rh:[60], rhF:[1], dur:4}]
+  },
+  {
+    id:'ej-quintas-2', cat:'clase', tarea:true, plan:true, guide:'quintas2',
+    name:'Ejercicio · Escalas en orden de quintas (guiado)',
+    tip:'Las 12 escalas mayores en el orden del profe, una octava con la derecha y con su digitación. En cada una aparece un sostenido nuevo: la app te dice cuál.',
+    tempo:60, steps:[{lh:[], rh:[60], rhF:[1], dur:4}]
+  },
   // Tarea de la academia (septiembre): guía "Ejercicios para practicar escalas"
   // de pianoencasa.com. Melodía + acordes en bloque, tal como la hoja (ver CLAUDE.md).
   {
@@ -8007,7 +8031,7 @@ function pedalInput(down, t){
   pedalEvents.push({ t, down });
   if(pedalEvents.length > 400) pedalEvents.splice(0, 200);
   renderPedalBox();
-  if(currentFragment && currentFragment.guide && (currentMode === 'fragments')) p0Event(down ? 'down' : 'up');
+  if(currentFragment && currentFragment.guide === 'pedal0' && (currentMode === 'fragments')) p0Event(down ? 'down' : 'up');
 }
 function pedalStateAt(t){
   let s = null;
@@ -8082,7 +8106,7 @@ function pedalWrapUp(after){
   }, 1500);
 }
 function pieceHasPedal(){
-  return !!(currentFragment && (currentFragment.guide || (currentFragment.steps && currentFragment.steps.some(s => s.ped)))) &&
+  return !!(currentFragment && (currentFragment.guide === 'pedal0' || (!currentFragment.guide && currentFragment.steps && currentFragment.steps.some(s => s.ped)))) &&
          (currentMode === 'fragments' || currentMode === 'agility');
 }
 function renderPedalBox(){
@@ -8166,6 +8190,10 @@ function checkFragment(note){
 }
 registerNoteHandler('fragments', checkFragment);
 registerNoteHandler('agility', checkFragment);
+[['invGuideBtn', 'ej-inversiones'], ['q2GuideBtn', 'ej-quintas-2'], ['q1GuideBtn', 'ej-quintas-1']].forEach(([id, frag]) => {
+  const b = document.getElementById(id);
+  if(b) b.addEventListener('click', () => { selectCategory('fragments'); pickFragmentById(frag); });
+});
 registerNoteOffHandler('fragments', note => { if(currentFragment && currentFragment.guide) p0Event('off', note); });
 
 // ---- Pedal 0: guía interactiva del pedal (pedido de Jorge: "el paso a paso,
@@ -8193,7 +8221,7 @@ function p0Build(){
   // Partes 3 y 4: el cambio (toca → arriba → abajo → suelta)
   const cycle = (part, n, first, help) => {
     const tag = part === 3 ? '' : ' (solo)';
-    S.push({ part, cycle:true, big:help ? 'TOCA ' + nm(n) : nm(n), note:n, exp:'on',
+    S.push({ part, cycle:true, tag: help ? '' : 'toca → ▲ → ▼ → suelta', big:help ? 'TOCA ' + nm(n) : nm(n), note:n, exp:'on',
       text: help ? (first ? 'Toca ' + nm(n) + ' con el pie abajo. El pie todavía NO se mueve.' : 'Toca ' + nm(n) + '. Escucha: se mezcla con la anterior… eso se arregla ahora.') : 'Toca ' + nm(n) + ' y haz el cambio tú solo: arriba, abajo, suelta.' + tag,
       cond:() => !pedalIsDown ? 'Primero pisa el pedal ▼ y después toca ' + nm(n) + '.' : null });
     S.push({ part, cycle:true, big:help ? 'ARRIBA ▲' : nm(n) + ' · ▲', note:n, exp:'up', text: help ? 'Con el dedo en la tecla, levanta el pie: se apaga lo anterior.' : '' });
@@ -8208,9 +8236,129 @@ function p0Build(){
   [60, 62, 64, 65, 67, 65, 64, 62].forEach((n, i) => cycle(4, n, i === 0, false));
   return S;
 }
-const p0 = { steps:null, i:0, errors:0, part4errors:0, done:false, frag:null };
+// ---- Más ejercicios guiados con el mismo motor (octubre 2026, pedido de Jorge:
+// "no hay un ejercicio que me permita reforzar las inversiones, ni uno de quintas
+// como pidió el profe"). Pasos nuevos: 'chord' (estas teclas, juntas o de a una)
+// y 'answer' (pregunta con botones). Ver CLAUDE.md.
+const PROF_KEYS = ['C','G','D','A','E','B','F#','C#','G#','D#','A#','F','C'];
+const PROF_PCS = [0,7,2,9,4,11,6,1,8,3,10,5,0];
+function ivNum(name){ const m = /^(\d+)/.exec(name); return m ? +m[1] : null; }
+function invExplain(s){
+  const A = INTERVALS[s].name, B = INTERVALS[12 - s].name;
+  let why;
+  if(s === 6) why = 'el tritono sigue siendo tritono (6 + 6 = 12 semitonos)';
+  else {
+    const q = /justa/.test(A) ? 'justa sigue justa' : /mayor/.test(A) ? 'mayor se vuelve menor' : 'menor se vuelve mayor';
+    why = ivNum(A) + ' + ' + ivNum(B) + ' = 9, y ' + q;
+  }
+  return A + ' ↔ ' + B + ': ' + why + '.';
+}
+function shuffled(a){ a = a.slice(); for(let i = a.length - 1; i > 0; i--){ const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+function invQuiz(s){
+  const right = INTERVALS[12 - s].name;
+  const pool = [INTERVALS[s].name];
+  [12 - s - 1, 12 - s + 1, 12 - s + 2, 12 - s - 2].forEach(k => { if(k >= 1 && k <= 11) pool.push(INTERVALS[k].name); });
+  const opts = [right];
+  pool.forEach(o => { if(opts.length < 4 && opts.indexOf(o) < 0) opts.push(o); });
+  const sh = shuffled(opts);
+  return { options: sh, correct: sh.indexOf(right) };
+}
+function invBuild(){
+  const S = [], nl = noteLabel;
+  const L1 = [[60,64],[62,65],[60,67],[60,65],[60,62],[64,65],[65,71],[60,69]];
+  const L2 = [[67,71],[57,60],[62,69],[55,60],[65,67],[59,60],[62,71],[64,72]];
+  L1.forEach(([a, b]) => {
+    const sm = b - a, q = invQuiz(sm);
+    S.push({ part:1, exp:'chord', notes:[a, b], marks:[{n:a, f:1}, {n:b, f:sm > 7 ? 5 : sm > 4 ? 4 : sm > 2 ? 3 : 2}], big:nl(a) + ' + ' + nl(b),
+      text:'Toca juntas ' + nl(a) + ' y ' + nl(b) + ': es una <b>' + INTERVALS[sm].name + '</b>.' });
+    S.push({ part:1, exp:'chord', notes:[b, a + 12], marks:[{n:b}, {n:a + 12}], big:nl(b) + ' + ' + nl(a + 12),
+      text:'Ahora dalo vuelta: el ' + nl(a) + ' de abajo sube una octava. Toca ' + nl(b) + ' y ' + nl(a + 12) + '.',
+      wrong: n => n === a ? 'Ese es el ' + nl(a) + ' de abajo: súbelo una octava (mismo nombre, más arriba).' : null });
+    S.push({ part:1, exp:'answer', big:'¿Qué intervalo es?', text:'De ' + nl(b) + ' a ' + nl(a + 12) + ' hay ' + (12 - sm) + ' semitonos.',
+      options:q.options, correct:q.correct, explain:invExplain(sm) });
+  });
+  L2.forEach(([a, b]) => {
+    const sm = b - a, q = invQuiz(sm);
+    S.push({ part:2, exp:'chord', notes:[a, b], marks:[{n:a}, {n:b}], big:nl(a) + ' + ' + nl(b),
+      text:'Toca esta <b>' + INTERVALS[sm].name + '</b>.' });
+    S.push({ part:2, exp:'answer', big:'¿En qué se convierte?', text:'Si das vuelta esta ' + INTERVALS[sm].name + ', ¿qué intervalo sale? Piénsalo antes de tocar.',
+      options:q.options, correct:q.correct, explain:invExplain(sm) });
+    S.push({ part:2, exp:'chord', notes:[b, a + 12], marks:[{n:b}], big:'Compruébalo',
+      text:'Deja el ' + nl(b) + ' y busca tú el ' + nl(a) + ' una octava más arriba.',
+      wrong: n => n === a ? 'Ese es el de abajo: el ' + nl(a) + ' tiene que quedar ARRIBA del ' + nl(b) + '.' : null });
+  });
+  return S;
+}
+function q1Build(){
+  const S = [], nl = noteLabel;
+  [36,43,50,57,64,71,78,85,92,99].forEach((x, i) => {
+    const lh = x < 60;
+    S.push({ part:1, exp:'chord', notes:[x, x + 7], marks:[{n:x, f:lh ? 5 : 1, h:lh ? 'lh' : 'rh'}, {n:x + 7, f:lh ? 1 : 5, h:lh ? 'lh' : 'rh'}],
+      big:PROF_KEYS[i] + ' → ' + PROF_KEYS[i + 1], tag:'5ta justa',
+      text:(i === 0 ? 'Desde el Do grave, sube de 5ta en 5ta. ' : '') + 'Toca ' + nl(x) + ' y su 5ta justa, ' + nl(x + 7) + '.' +
+        (i === 9 ? ' Llegaste arriba: la quinta siguiente (F) ya no cabe en el piano.' : '') });
+  });
+  let n = 60;
+  PROF_KEYS.forEach((k, i) => {
+    let move = '';
+    if(i > 0){ const up = n + 7 <= 72; n = up ? n + 7 : n - 5; move = up ? 'sube una 5ta' : 'baja una 4ta (llega a la misma nota que una 5ta arriba: es su inversión)'; }
+    S.push({ part:2, exp:'on', note:n, marks:[{n}], big:k + ' · ' + nl(n),
+      text:i === 0 ? 'Ahora las 12 en una sola zona del piano. Empieza en ' + nl(n) + '.' : move + ' → ' + nl(n) + (i === 12 ? '. ¡De vuelta en C: el círculo se cerró!' : '.') });
+  });
+  return S;
+}
+function q2Build(){
+  const S = [], nl = noteLabel;
+  const NEW = ['', 'F#', 'C#', 'G#', 'D#', 'A#', 'E# (suena Fa)', 'B# (suena Do)'];
+  PROF_PCS.slice(0, 12).forEach((pc, i) => {
+    const k = PROF_KEYS[i], root = 60 + pc;
+    const def = SCALE_DEFS.find(d => d.family === 'major' && d.rootPc === pc && !d.warn);
+    const fing = (def ? def.rh : '12312345').split('').map(Number);
+    let info;
+    if(i === 0) info = 'sin alteraciones';
+    else if(i <= 7) info = i + (i === 1 ? ' sostenido' : ' sostenidos') + ' · el nuevo: ' + NEW[i];
+    else if(i <= 10) info = 'teórica (como la nombró el profe): suena igual que ' + ['La♭', 'Mi♭', 'Si♭'][i - 8] + ' mayor';
+    else info = '1 bemol: Si♭ · la última antes de volver a C';
+    [0,2,4,5,7,9,11,12].forEach((st, j) => {
+      const n = root + st;
+      S.push({ part:i < 4 ? 1 : i < 8 ? 2 : 3, exp:'on', note:n, marks:[{n, f:fing[j]}], big:k + ' mayor · ' + nl(n),
+        text:j === 0 ? '<b>' + k + ' mayor</b> · ' + info + '. Sube la escala con la derecha.' : k + ' mayor · nota ' + (j + 1) + ' de 8.' });
+    });
+  });
+  S.push({ part:3, exp:'on', note:72, marks:[{n:72, f:5}], big:'C · ' + nl(72), text:'Y de vuelta a C: el círculo de quintas se cerró.' });
+  return S;
+}
+const GUIDES = {
+  pedal0: { build:() => p0Build(), parts:4,
+    done:e => e === 0 ? 'La parte 4 te salió sin errores: ya entiendes el cambio. Sigue con <b>Pedal 1</b>.'
+      : 'Terminaste. En la parte 4 hubo ' + e + (e === 1 ? ' corrección' : ' correcciones') + ': repítelo (toca cualquier tecla) hasta que salga limpio, y después pasa a <b>Pedal 1</b>.' },
+  inv: { build:invBuild, parts:2,
+    done:e => (e === 0 ? 'La parte 2 sin errores: ya sabes dar vuelta los intervalos.' : 'Terminaste con ' + e + (e === 1 ? ' error' : ' errores') + ' en la parte 2: repítelo (toca cualquier tecla).') +
+      ' La regla: los números suman 9; mayor ↔ menor; justa y tritono no cambian.' },
+  quintas1: { build:q1Build, parts:2,
+    done:e => 'Recorriste las 12 por quintas.' + (e ? ' Hubo ' + e + (e === 1 ? ' nota equivocada' : ' notas equivocadas') + ' en la parte 2.' : '') + ' Toca cualquier tecla para repetir.' },
+  quintas2: { build:q2Build, parts:3,
+    done:e => 'Las 12 escalas en orden de quintas.' + (e ? ' Hubo ' + e + (e === 1 ? ' nota equivocada' : ' notas equivocadas') + ' en la última parte.' : ' La última parte, limpia.') + ' Toca cualquier tecla para repetir.' },
+};
+function guideMeta(){ return GUIDES[currentFragment && currentFragment.guide] || GUIDES.pedal0; }
+const p0 = { steps:null, i:0, errors:0, finalErrors:0, done:false, frag:null, chordGot:new Set() };
 function p0Reset(){
-  p0.steps = p0Build(); p0.i = 0; p0.errors = 0; p0.part4errors = 0; p0.done = false;
+  p0.steps = guideMeta().build(); p0.i = 0; p0.errors = 0; p0.finalErrors = 0; p0.done = false; p0.chordGot = new Set();
+}
+function p0Advance(okMsg){
+  p0.i++; p0.chordGot = new Set();
+  if(p0.i >= p0.steps.length){
+    p0.done = true;
+    if(typeof recordPracticeDone === 'function') recordPracticeDone();
+  }
+  renderP0(okMsg || 'ok');
+}
+function p0Answer(i){
+  if(!p0.steps || p0.done) return;
+  const st = p0.steps[p0.i];
+  if(!st || st.exp !== 'answer') return;
+  if(i === st.correct){ p0Advance('✓ ' + st.explain); return; }
+  p0Fail('No es ' + st.options[i] + '. Pista: los números suman 9; mayor ↔ menor; justa y tritono no cambian.');
 }
 // Si algo sale fuera de orden en un ciclo, se vuelve al TOCA de ese ciclo.
 function p0BackToCycleStart(){
@@ -8218,7 +8366,7 @@ function p0BackToCycleStart(){
 }
 function p0Fail(msg){
   p0.errors++;
-  if(p0.steps[p0.i] && p0.steps[p0.i].part === 4) p0.part4errors++;
+  if(p0.steps[p0.i] && p0.steps[p0.i].part === guideMeta().parts) p0.finalErrors++;
   renderP0(msg);
 }
 function p0Event(type, note){
@@ -8226,17 +8374,24 @@ function p0Event(type, note){
   if(!p0.steps || p0.frag !== currentFragment){ p0.frag = currentFragment; p0Reset(); }
   if(p0.done){ if(type === 'on'){ p0Reset(); renderP0(); } return; }
   const st = p0.steps[p0.i];
-  const nm = n => P0_NAMES[n] || noteLabel(n);
+  const nm = n => (currentFragment.guide === 'pedal0' && P0_NAMES[n]) || noteLabel(n);
+  if(st.exp === 'answer') return;
+  if(st.exp === 'chord'){
+    if(type !== 'on') return;
+    if(st.notes.indexOf(note) < 0){
+      const w = st.wrong && st.wrong(note);
+      p0Fail(w || 'Esa es ' + nm(note) + ': toca ' + st.notes.map(nm).join(' y ') + '.');
+      return;
+    }
+    p0.chordGot.add(note);
+    if(st.notes.every(n => p0.chordGot.has(n) || activeNotes.has(n))) p0Advance();
+    return;
+  }
   // Lo que se espera
   if(type === st.exp && (st.note === undefined || st.exp === 'up' || st.exp === 'down' || note === st.note)){
     const err = st.cond ? st.cond() : null;
     if(err){ p0Fail(err); return; }
-    p0.i++;
-    if(p0.i >= p0.steps.length){
-      p0.done = true;
-      if(typeof recordPracticeDone === 'function') recordPracticeDone();
-    }
-    renderP0('ok');
+    p0Advance();
     return;
   }
   // Errores típicos dentro del ciclo del cambio
@@ -8255,7 +8410,7 @@ function p0Event(type, note){
     if(st.exp === 'off' && type === 'up'){ p0BackToCycleStart(); p0Fail('Levantaste el pie antes de soltar el dedo. Vuelve a pisar ▼ y toca ' + nm(st.note) + ' otra vez.'); return; }
     return;
   }
-  if(type === 'on' && st.note !== undefined && note !== st.note){ renderP0('Esa no: toca ' + nm(st.note) + '.'); return; }
+  if(type === 'on' && st.note !== undefined && note !== st.note){ p0Fail('Esa es ' + nm(note) + ': toca ' + nm(st.note) + '.'); return; }
   if(type === 'on' && st.exp !== 'on'){ renderP0('Todavía no toques: ' + (st.exp === 'down' ? 'primero pisa el pedal ▼.' : st.exp === 'up' ? 'primero levanta el pie ▲.' : 'primero suelta el dedo.')); return; }
 }
 function renderP0(msg){
@@ -8263,29 +8418,36 @@ function renderP0(msg){
   if(!p0.steps || p0.frag !== currentFragment){ p0.frag = currentFragment; p0Reset(); }
   clearAllHighlights();
   const total = p0.steps.length;
+  const meta = guideMeta();
   if(p0.done){
     progressText.textContent = `Paso ${total} / ${total}`;
     targetNoteLabel.textContent = '¡Listo!';
-    const clean = p0.part4errors === 0;
-    targetSubLabel.innerHTML = clean
-      ? 'La parte 4 te salió sin errores: ya entiendes el cambio. Sigue con <b>Pedal 1</b>.'
-      : 'Terminaste. En la parte 4 hubo ' + p0.part4errors + (p0.part4errors === 1 ? ' corrección' : ' correcciones') + ': repítelo (toca cualquier tecla) hasta que salga limpio, y después pasa a <b>Pedal 1</b>.';
-    feedbackText.textContent = '';
-    feedbackText.className = 'feedback';
+    targetSubLabel.innerHTML = meta.done(p0.finalErrors);
+    if(msg && msg.charAt(0) === '✓'){ feedbackText.textContent = msg; feedbackText.className = 'feedback correct'; }
+    else { feedbackText.textContent = ''; feedbackText.className = 'feedback'; }
     renderPedalBox();
     return;
   }
   const st = p0.steps[p0.i];
   progressText.textContent = `Paso ${p0.i + 1} / ${total}`;
   targetNoteLabel.textContent = st.big;
-  targetSubLabel.innerHTML = '<b>Parte ' + st.part + ' de 4</b>' + (st.text ? ' · ' + st.text : '') +
-    (st.part === 4 ? ' &nbsp;<span class="ped-tag">toca → ▲ → ▼ → suelta</span>' : '');
-  if(st.note !== undefined){ markTarget(st.note, 'rh'); drawFingerNum(st.note, P0_FING[st.note], 'rh'); }
+  let sub = '<b>Parte ' + st.part + ' de ' + meta.parts + '</b>' + (st.text ? ' · ' + st.text : '') +
+    (st.tag ? ' &nbsp;<span class="ped-tag">' + st.tag + '</span>' : '');
+  if(st.exp === 'answer') sub += '<span class="p0-answers">' + st.options.map((o, i) => '<button class="ghost-btn p0-ans" data-i="' + i + '">' + o + '</button>').join('') + '</span>';
+  targetSubLabel.innerHTML = sub;
+  const marks = st.marks || (st.note !== undefined ? [{ n:st.note, f:P0_FING[st.note] }] : []);
+  marks.forEach(m => { markTarget(m.n, m.h || 'rh'); if(m.f) drawFingerNum(m.n, m.f, m.h || 'rh'); });
   if(msg === 'ok'){ feedbackText.textContent = '✓'; feedbackText.className = 'feedback correct'; }
+  else if(msg && msg.charAt(0) === '✓'){ feedbackText.textContent = msg; feedbackText.className = 'feedback correct'; }
   else if(msg){ feedbackText.textContent = msg; feedbackText.className = 'feedback wrong'; }
   else { feedbackText.textContent = ''; feedbackText.className = 'feedback'; }
   renderPedalBox();
 }
+
+targetSubLabel.addEventListener('click', e => {
+  const b = e.target.closest && e.target.closest('.p0-ans');
+  if(b) p0Answer(+b.dataset.i);
+});
 
 listenBtn.addEventListener('click', () => {
   if(isPlayingBack){ stopFragmentPlayback(); return; }
@@ -11560,7 +11722,7 @@ function buildTodayPlan(seed){
   if(today < CHORDS_PAUSED_UNTIL){
     const tareas = leastPracticed(SONGS.filter(s => s.tarea), progress.songs, 'id');
     const tarea = tareas[0];
-    items.push({ key:'tarea', min:4, block:'keep', title:'Tarea: ' + tarea.name, sub:'Cada mano sola y después juntas. Esta semana sin acordes.',
+    items.push({ key:'tarea', min:4, block:'keep', title:'Tarea: ' + tarea.name, sub:tarea.guide ? 'Ejercicio guiado: la app te pide una cosa a la vez.' : 'Cada mano sola y después juntas. Esta semana sin acordes.',
       done: () => (progress.songs[tarea.id] || {}).lastDay === today || (progress.cascade[tarea.id] || {}).lastDay === today,
       go: () => { selectCategory('fragments'); pickFragmentById(tarea.id); } });
   } else {
