@@ -3076,6 +3076,7 @@ COORD_DRILLS.forEach(d => AGILITY_DRILLS.push(d));
 const AGIL_GROUPS = [
   {id:'dedos', name:'Dedos'},
   {id:'manos', name:'Manos juntas'},
+  {id:'hanon', name:'Hanon'},
 ];
 
 // Digitación (lhF/rhF, paralela a lh/rh): no viene del profesor de Jorge,
@@ -3620,7 +3621,7 @@ function buildHanonSong(n){
     });
   });
   steps.push({ lh:[48], lhF:[5], rh:[60], rhF:[1], dur:4, label:'Final' });
-  return { id:'hanon-' + n, cat:'hanon', plan:false, name:'Hanon ' + n, tip:HANON_JR_INFO[n - 1], tempo:60, steps };
+  return { id:'hanon-' + n, grupo:'hanon', fixed:true, plan:false, name:'Hanon ' + n, tip:HANON_JR_INFO[n - 1], tempo:60, steps };
 }
 
 // Beyer, Melodía en Sol (4/4, 16 compases = 64 tiempos). Derecha con Sol4=1 … Re5=5; izquierda
@@ -6938,10 +6939,10 @@ const SONG_CATS = [
   {id:'finales',   name:'Finales'},
   {id:'patrones',  name:'Patrones'},
   {id:'pedal',     name:'Pedal'},
-  {id:'hanon',     name:'Hanon'},
 ];
 
-const FRAGMENTS = SONGS;
+// Hanon son ejercicios de técnica: viven en Agilidad (grupo 'hanon'), no en Piezas.
+const FRAGMENTS = SONGS.filter(s => s.grupo !== 'hanon');
 
 // ref = cómo reconocerlo de oído; tip = qué practicar / dónde cae en el teclado.
 const INTERVALS = [
@@ -7938,6 +7939,7 @@ function agilRandomOn(){ return agilRandom && !!currentDrillShape.coord; }
 
 function rebuildAgilityFragment(){
   const shape = currentDrillShape;
+  if(shape.fixed){ currentFragment = shape; return; }
   // Se sortea AQUÍ y no en cada paso: dentro de una vuelta el ejercicio tiene
   // que quedarse quieto (si no, "Escuchar" y la cascada tocarían otra cosa).
   // Cada vuelta nueva trae un sorteo nuevo, que es el punto del modo.
@@ -7958,6 +7960,10 @@ function rebuildAgilityFragment(){
 }
 
 function refreshAgilOctavePickers(){
+  // Los Hanon traen sus notas exactas: no hay octava que elegir.
+  const octBox = $('agilOpts');
+  if(octBox) octBox.style.display = (practiceFamily === 'agility' && !currentDrillShape.fixed) ? 'block' : 'none';
+  if(currentDrillShape.fixed){ renderAgilRandomBar(); return; }
   // si la octava elegida dejó de caber en el patrón actual, se corrige antes de dibujar
   if(!shapeOctaveValid(agilRhOct, currentDrillShape, 'rh')){
     for(let o = 8; o >= 0; o--){ if(shapeOctaveValid(o, currentDrillShape, 'rh')){ agilRhOct = o; break; } }
@@ -8069,6 +8075,8 @@ try {
   if(g && AGIL_GROUPS.some(x => x.id === g)) agilGroup = g;
 } catch(e){}
 function visibleDrills(){
+  // Hanon son pasos fijos con notas absolutas (sin octava ni al azar): salen de SONGS.
+  if(agilGroup === 'hanon') return SONGS.filter(s => s.grupo === 'hanon');
   const list = AGILITY_DRILLS.filter(d => d.grupo === agilGroup);
   return list.length ? list : AGILITY_DRILLS;
 }
@@ -8175,7 +8183,7 @@ function renderSubTabs(){
 // Se llama al entrar a "Agilidad" o "Fragmentos" desde el menú principal.
 function loadPracticeFamily(family){
   practiceFamily = family;
-  $('agilOpts').style.display = family === 'agility' ? 'block' : 'none';
+  $('agilOpts').style.display = family === 'agility' && !(currentDrillShape && currentDrillShape.fixed) ? 'block' : 'none';
   show($('fragCatBar'), family === 'songs', 'flex');
   show($('agilGroupBar'), family === 'agility', 'flex');
   if(family !== 'agility') show($('agilRandomBar'), false, 'flex');
@@ -12108,7 +12116,7 @@ function pickFragmentById(id){
   // Lo mismo para Agilidad: el plan de "Hoy" manda a un ejercicio concreto que
   // puede estar en el otro grupo. Sin esto el botón no existe y el enlace de
   // Hoy no hace nada (el mismo fallo silencioso que ya tuvo Fragmentos).
-  const drill = AGILITY_DRILLS.find(d => d.id === id);
+  const drill = AGILITY_DRILLS.find(d => d.id === id) || SONGS.find(d => d.id === id && d.grupo === 'hanon');
   if(drill && drill.grupo !== agilGroup){
     agilGroup = drill.grupo;
     try { localStorage.setItem('agilGroup', agilGroup); } catch(e){}

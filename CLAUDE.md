@@ -951,6 +951,20 @@ y dentro de "Más ▾": `free | functions`.
     respetan: el **2 cruza sobre el pulgar** al Fa♯ (c. 15, 25, 26, 28) y el **4** en el c. 31; la izquierda
     hace octavas 1→5 (c. 20 La, c. 24 Re) y salto Re3(5)→Do4(1) en el c. 8.
   - **Tempo 84 es mío** (la hoja no trae): para aprender. Un minueto suele ir bastante más rápido.
+- **Hanon pasó de Piezas a Agilidad (12 oct 2026, pedido de Jorge: "déjame los hanon como ejercicios de
+  habilidad, que en realidad eso son").** Tiene razón: son técnica, no repertorio. Ahora hay un **tercer grupo
+  de Agilidad, `Hanon`** (`AGIL_GROUPS`, junto a Dedos y Manos juntas) y la categoría `hanon` desapareció de
+  `SONG_CATS`/Piezas. Cómo está hecho, para no romperlo:
+  - Los 12 siguen en `SONGS` (así Escuchar, la cascada y el Tramo funcionan igual) pero con `grupo:'hanon'` y
+    `fixed:true` **en vez de `cat`**; `FRAGMENTS` se filtra para no incluirlos (por eso no salen en Piezas ni en
+    "Todas"). `visibleDrills()` los devuelve cuando `agilGroup === 'hanon'`.
+  - **No son de `AGILITY_DRILLS`** a propósito: esos son patrones relativos con octava elegible y modo al azar;
+    Hanon trae notas exactas. `rebuildAgilityFragment` los usa tal cual (`currentFragment = shape`),
+    `refreshAgilOctavePickers` esconde la caja de octavas (`#agilOpts`) y `agilRandomOn` ya es falso (`coord`
+    no existe). `pickFragmentById` también los encuentra.
+  - **Efecto en el progreso**: en Agilidad `recordPracticeDone` escribe en `progress.drills` (antes, como
+    Piezas, en `progress.songs`). Lo ya guardado bajo `songs.hanon-N` queda huérfano e inofensivo. Como no están
+    en `AGILITY_DRILLS`, `coordPend` y el calentamiento del plan de Hoy **no** los proponen (siguen `plan:false`).
 - **"Sorrow" (Motoi Sakuraba), octubre 2026** (`sorrow-1..4`, Populares). Jorge: "me gusta mucho para
   practicar porque los días están de lluvia y grises… dime cómo está para mi nivel e ir subiendo nivel". Pasó
   MusicXML + MIDI + PDF (MuseScore 4.3.2, transcripción firmada "AIYO v2", subtítulo "What's Up?"; **no sé de qué

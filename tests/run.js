@@ -991,12 +991,12 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
 
   section('Fragmentos por categoría');
   W("try { localStorage.removeItem('fragCat'); } catch(e){}; fragCat = 'all'");
-  check(W('SONGS.filter(s => !s.cat || !SONG_CATS.some(c => c.id === s.cat)).length') === 0,
-    'toda pieza tiene una categoría que existe en SONG_CATS');
+  check(W("SONGS.filter(s => s.grupo !== 'hanon' && (!s.cat || !SONG_CATS.some(c => c.id === s.cat))).length") === 0,
+    'toda pieza (menos los Hanon, que son de Agilidad) tiene una categoría que existe en SONG_CATS');
   W("selectCategory('fragments')");
   check(doc.getElementById('fragCatBar').style.display === 'flex', 'la barra de categorías sale en Fragmentos');
-  check(doc.querySelectorAll('#fragSubTabs .mode-tab').length === W('SONGS.length'),
-    'con "Todas" se listan todas las piezas');
+  check(doc.querySelectorAll('#fragSubTabs .mode-tab').length === W('FRAGMENTS.length') && W('FRAGMENTS.length') === W('SONGS.length') - 12,
+    'con "Todas" se listan todas las piezas (los 12 Hanon están en Agilidad)');
   const catBtn = (id) => [...doc.querySelectorAll('#fragCatPicker .reg-btn')].find(b => b.dataset.cat === id);
   check(SONG_CATS_ok(), 'no se dibuja ninguna categoría vacía');
   function SONG_CATS_ok(){
@@ -1363,9 +1363,18 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
 
   section('Hanon Junior 1-12, Beyer y Köhler (partituras de dominio público que pasó Jorge)');
   {
-    const hs = W("SONGS.filter(s => s.cat === 'hanon')");
+    const hs = W("SONGS.filter(s => s.grupo === 'hanon')");
     check(hs.length === 12 && hs.every((s, i) => s.id === 'hanon-' + (i + 1) && s.plan === false && s.tempo === 60), '12 ejercicios Hanon, fuera del plan de Hoy, ♩=60');
-    check(W("SONG_CATS.some(c => c.id === 'hanon')"), 'hay una categoría Hanon en Piezas');
+    check(!W("SONG_CATS.some(c => c.id === 'hanon')") && !W("FRAGMENTS.some(f => f.grupo === 'hanon')"), 'Hanon ya no está en Piezas');
+    check(W("AGIL_GROUPS.some(g => g.id === 'hanon')"), 'hay un grupo Hanon en Agilidad');
+    W("selectCategory('agility'); selectAgilGroup('hanon')");
+    check(doc.querySelectorAll('#fragSubTabs .mode-tab').length === 12 && doc.getElementById('agilOpts').style.display === 'none', 'Agilidad · Hanon lista los 12 y esconde las octavas (traen notas exactas)');
+    W("practiceIndex = 0; startFragmentStep()");
+    check(W("currentFragment.id") === 'hanon-1' && W("currentFragment.steps.length") === 121, 'el ejercicio elegido es Hanon 1 con sus 121 pasos');
+    W("pickFragmentById('hanon-5')");
+    check(W("currentFragment.id") === 'hanon-5', 'pickFragmentById llega a un Hanon');
+    W("selectAgilGroup('dedos'); selectCategory('today')");
+    check(W("currentDrillShape.fixed") !== true, 'volver a Dedos deja un ejercicio normal');
     const BARS = [15, 14, 14, 15, 15, 14, 14, 14, 14, 14, 14, 15];   // contados en el PDF
     check(hs.every((s, i) => s.steps.length === BARS[i] * 8 + 1 && s.steps.reduce((a, x) => a + x.dur, 0) === BARS[i] * 4 + 4),
       'cada ejercicio trae sus compases de 8 corcheas + la redonda final (compases contados en el PDF)');
