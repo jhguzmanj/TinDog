@@ -1364,7 +1364,7 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
   section('Hanon Junior 1-12, Beyer y Köhler (partituras de dominio público que pasó Jorge)');
   {
     const hs = W("SONGS.filter(s => s.grupo === 'hanon')");
-    check(hs.length === 12 && hs.every((s, i) => s.id === 'hanon-' + (i + 1) && s.plan === false && s.tempo === 60), '12 ejercicios Hanon, fuera del plan de Hoy, ♩=60');
+    check(hs.length === 12 && hs.every((s, i) => s.id === 'hanon-' + (i + 1) && s.plan === false && s.tempo === 40), '12 ejercicios Hanon, fuera del plan de Hoy, ♩=40 (el impreso en el JSON del Hanon 2)');
     check(!W("SONG_CATS.some(c => c.id === 'hanon')") && !W("FRAGMENTS.some(f => f.grupo === 'hanon')"), 'Hanon ya no está en Piezas');
     check(W("AGIL_GROUPS.some(g => g.id === 'hanon')"), 'hay un grupo Hanon en Agilidad');
     W("selectCategory('agility'); selectAgilGroup('hanon')");

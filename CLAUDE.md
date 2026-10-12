@@ -970,6 +970,9 @@ y dentro de "Más ▾": `free | functions`.
     en orden 1→12, subtítulo "Hanon N de 12"), y con los 12 estrenados vuelve la rotación por el menos
     practicado (que ahora incluye los Hanon). "Estrenado" = una vuelta hecha, no limpia ni a tempo, igual que la
     coordinación. Hay prueba de la secuencia 1, 2 y del regreso a la rotación.
+- **Hanon a ♩=40 (12 oct 2026, Jorge: "bájale la velocidad").** Pasaron de ♩=60 (número mío) a **♩=40, el que
+  traía impreso el JSON del Hanon 2** (la hoja del PDF no trae tempo). Corcheas a 40 = 80 notas por minuto. Para ir
+  aún más despacio sigue la velocidad de la cascada. Si se prefiere otro número, es `tempo` en `buildHanonSong`.
 - **"Sorrow" (Motoi Sakuraba), octubre 2026** (`sorrow-1..4`, Populares). Jorge: "me gusta mucho para
   practicar porque los días están de lluvia y grises… dime cómo está para mi nivel e ir subiendo nivel". Pasó
   MusicXML + MIDI + PDF (MuseScore 4.3.2, transcripción firmada "AIYO v2", subtítulo "What's Up?"; **no sé de qué
