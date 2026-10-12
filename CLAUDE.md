@@ -951,6 +951,39 @@ y dentro de "Más ▾": `free | functions`.
     respetan: el **2 cruza sobre el pulgar** al Fa♯ (c. 15, 25, 26, 28) y el **4** en el c. 31; la izquierda
     hace octavas 1→5 (c. 20 La, c. 24 Re) y salto Re3(5)→Do4(1) en el c. 8.
   - **Tempo 84 es mío** (la hoja no trae): para aprender. Un minueto suele ir bastante más rápido.
+- **"Sorrow" (Motoi Sakuraba), octubre 2026** (`sorrow-1..4`, Populares). Jorge: "me gusta mucho para
+  practicar porque los días están de lluvia y grises… dime cómo está para mi nivel e ir subiendo nivel". Pasó
+  MusicXML + MIDI + PDF (MuseScore 4.3.2, transcripción firmada "AIYO v2", subtítulo "What's Up?"; **no sé de qué
+  juego es ni lo afirmo**). Sol menor (2 bemoles), **6/4** (`meter:6`), ♩=80 impreso, 19 compases con música + 3
+  vacíos al final (no van). **Sin dedos ni pedal en la hoja**: los dedos y el pedal de la versión 4 son MÍOS.
+  Generador `sorrow_gen.py` en el scratchpad de la sesión; los pasos van en `SORROW_A`, `SORROW_A_ORIG`,
+  `SORROW_B_EASY`, `SORROW_B_ORIG`.
+  - **Verificación**: MusicXML y MIDI dan las mismas notas y duraciones (ojo: salen del mismo archivo de
+    MuseScore, no son fuentes independientes); el PDF se miró entero contra la lectura; cada compás suma 6.
+    Armonía: el bajo de la Parte 1 baja de a semitono Sol–Fa–Mi–Mib–Re (el "lamento" clásico) bajo un mismo
+    dibujo de la derecha.
+  - **Dos defectos de la hoja**: (1) el bajo de los c. 16-18 es **Sol0 (MIDI 19), que no existe en un piano de
+    88 teclas** (empieza en La0 = 21): el MIDI lo "toca" igual. Va en **Sol1**, la octava más cercana que existe.
+    (2) El **Do6 redondo del c. 18** (dos octavas sobre el Sib4 anterior) se ve raro; la hoja y el MIDI coinciden,
+    así que se dejó y el rótulo lo avisa. Si suena mal de oído contra la grabación, probar Do5.
+  - **Niveles (lo que pidió: "ir subiendo")**: 1 = Parte 1 (c. 1-8) tal cual salvo la izquierda de los c. 7-8
+    (triada Re3-Fa3-La3 → quinta Re3-La3); 2 = Parte 2 fácil (c. 9-19): izquierda en **quintas justas 5-1** (las
+    dos primeras notas de cada arpegio, juntas) y derecha con las **dos notas de arriba** de cada acorde; 3 = las
+    dos juntas (mismos pasos, `concat`); 4 = como la hoja (acordes de 3, arpegios de 5, pedal mío). 1 y 2 entran
+    al plan de Hoy; 3 y 4 `plan:false`. Las fáciles cumplen la regla de dos teclas por mano (hay prueba).
+  - **Dedos**: derecha de la Parte 1 fija Re4 1, La4 2, Sib4 3, Re5 5 (el hueco grande va entre 1 y 2, el más
+    flexible; abarca una octava); c. 6 octavas Sib/La con 1-5. Izquierda c. 1-5 en una posición (Sol 1 … Re 5,
+    el bajo cromático cae dedo a dedo). Parte 2 original: arpegio **5-2-1-3-2** (el 3 cruza sobre el pulgar) en
+    todos los compases; acordes Re-Sol-Sib 1-2-3, Re-Sol-Do 1-2-4, Fa-La-Re / Re-Fa-La / Mib-Sol-Sib 1-3-5.
+  - **Pedal (solo la 4)**: pisa al empezar y cambia donde entra el bajo (cada compás, más c. 6-8 tiempo 4,
+    c. 15 en el 3½, c. 16 tiempo 4 y c. 17 tiempos 3 y 5): 25 marcas. En la 1-3 la izquierda sostiene con el
+    dedo y no hace falta.
+  - **No se representan**: los acordes arpegiados (rolled) de la Parte 2 (se tocan en bloque), las dinámicas
+    (f, ff, mp, mf) ni los silencios de la izquierda (sigue sonando, convención de `SONGS`).
+  - **Evaluación honesta que se le dio**: la Parte 1 está a su alcance con trabajo (un solo dibujo repetido,
+    pero corcheas seguidas a ♩=80 y una octava de abertura); lo difícil son las octavas del c. 6 y los c. 7-8 sin
+    respiro. La Parte 2 de la hoja (arpegios de 15-19 semitonos con cruce y acordes de 3) está por encima de su
+    nivel hoy; la versión fácil no.
 - **Finales (octubre 2026, categoría `finales`, los cinco con `plan:false`).**
   Jorge: "una de las cosas que siempre me han gustado del piano son los endings;
   lo he intentado solo y no se escucha bien". Pidió 5, mezclando clásicos y

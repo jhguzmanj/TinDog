@@ -3364,7 +3364,7 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
     const qp = JSON.parse(W("JSON.stringify(SONGS.find(s => s.id === 'tarea-quintas').steps.map(s => s.ped || '').filter(Boolean))"));
     check(qp.length === 13 && qp[0] === 'on' && qp.slice(1).every(p => p === 'change'), 'quintas: pisa en el c. 1 y cambia en los 12 compases siguientes');
     check(W("SONGS.find(s => s.id === 'tarea-quintas').steps.every(s => !s.ped || (s.label && s.lh.length === 2))"), 'cada cambio cae justo en el primer tiempo, con la nota nueva de la izquierda');
-    check(W("SONGS.filter(s => s.steps.some(st => st.ped) && s.cat !== 'pedal').map(s => s.id).sort().join()") === 'ave-maria,dia-de-lluvia,tarea-quintas', 'fuera de los ejercicios de pedal, llevan pedal las quintas, Día de lluvia y Ave María');
+    check(W("SONGS.filter(s => s.steps.some(st => st.ped) && s.cat !== 'pedal').map(s => s.id).sort().join()") === 'ave-maria,dia-de-lluvia,sorrow-4,tarea-quintas', 'fuera de los ejercicios de pedal, llevan pedal las quintas, Día de lluvia, Ave María y Sorrow (la de la hoja)');
     // Día de lluvia: pisa con el primer La y cambia en cada ataque de la izquierda (cada acorde)
     const dl = JSON.parse(W("JSON.stringify(SONGS.find(s => s.id === 'dia-de-lluvia').steps.map(s => [s.lh.length, s.ped || '']))"));
     check(dl.every(([l, p]) => (l > 0) === (p !== '')) && dl[0][1] === 'on' && dl.filter(x => x[1] === 'change').length === 14,
@@ -3609,6 +3609,48 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
     W('pedalInput(false); pedalInput(true); noteOff(60); noteOff(64)');
     check(W('p0.steps[p0.i].text').includes('dalo vuelta'), 'cambio hecho: sigue con darlo vuelta');
     W("document.getElementById('pedalToggleBtn').click(); pedalIsDown = false; selectCategory('today')");
+  }
+
+  section('Sorrow (Motoi Sakuraba): MusicXML + MIDI, cuatro niveles');
+  {
+    const S = id => JSON.parse(W(`JSON.stringify(SONGS.find(s => s.id === '${id}'))`));
+    const v = ['sorrow-1','sorrow-2','sorrow-3','sorrow-4'].map(S);
+    check(v.every(x => x && x.cat === 'popular' && x.meter === 6 && x.tempo === 80), 'cuatro entradas en Populares, 6/4, ♩=80 (el impreso)');
+    check(!v[0].plan === true && v[0].plan !== false && v[1].plan !== false && v[2].plan === false && v[3].plan === false, 'al plan de Hoy entran las dos partes; las completas no');
+    // compases: cada uno suma 6 (los rótulos "c. N" son el ancla)
+    // compases: cada rótulo "c. N" cae justo en el tiempo (N-1)·6 (el c. 17 empieza dentro del acorde ligado del 16)
+    const barAt = st => { let t = 0, ok = true, n = 0; st.forEach(x => { const m = x.label && x.label.match(/^c\. (\d+)/); if(m){ n++; if(Math.abs(t - (m[1]-1)*6 + st.off) > 1e-9) ok = false; } t += x.dur; }); return {ok, n, t}; };
+    const bA = barAt(Object.assign(v[0].steps, {off:0})), bB = barAt(Object.assign(v[1].steps, {off:48})), bC = barAt(Object.assign(v[3].steps, {off:0}));
+    check(bA.ok && bB.ok && bC.ok, 'cada compás empieza en su tiempo: todos suman 6');
+    check(Math.abs(bA.t - 48) < 1e-9 && Math.abs(bB.t - 66) < 1e-9 && Math.abs(bC.t - 114) < 1e-9 && bA.n === 8 && bC.n === 18, 'Parte 1 = c. 1-8 (48 tiempos), Parte 2 = c. 9-19 (66), completa = 114: los 3 compases vacíos del final no van');
+    // derecha de los c. 1-3 y 5 (leída de la hoja, escrita aparte): Re La Sib Re Sib La | Re La Sib(blanca)
+    const rhBar = (st, n) => { let b = 0, out = []; st.forEach(x => { if(x.label && /^c\. \d+/.test(x.label)) b++; if(b === n && x.rh.length) out.push(x.rh.join('+')); }); return out.join(' '); };
+    const pat = '62 69 70 74 70 69 62 69 70';
+    check([1,2,3,5].every(n => rhBar(v[0].steps, n) === pat), 'c. 1, 2, 3 y 5: Re La Sib Re Sib La Re La Sib');
+    check(rhBar(v[0].steps, 4) === '62 69 70 74 70 69 62', 'c. 4: termina en Re4 largo');
+    check(rhBar(v[0].steps, 6) === '62 69 70 74 70 69 62 70+82 69+81', 'c. 6: octavas Sib y La');
+    check(rhBar(v[0].steps, 7) === '62 69 70 74 70 69 62 69 70 74 70 69', 'c. 7: doce corcheas');
+    // el bajo: Sol Fa Mi Mib Re (baja de a semitono) | Do | Re | Re1+Re2
+    const lhFirst = st => { const out = []; st.forEach(x => { if(x.label && /^c\. \d+/.test(x.label)) out.push(x.lh.join('+')); }); return out.join(' '); };
+    check(lhFirst(v[0].steps) === '43 41 40 39 38 36 38 26+38', 'bajo de la Parte 1: Sol2 Fa2 Mi2 Mib2 Re2 | Do2 | Re2 | Re1+Re2');
+    check(lhFirst(v[3].steps).split(' ').slice(8).join(' ') === '43 38 39 38 43 38 39 31 31 ', 'bajo de la Parte 2 (hoja): Sol Re Mib Re Sol Re Mib, y Sol1 al final');
+    // Sol0 (MIDI 19) no existe en el piano: va en Sol1
+    check(v.every(x => x.steps.every(st => st.lh.concat(st.rh).every(n => n >= 21 && n <= 108))), 'ninguna nota fuera de las 88 teclas (el Sol0 de la hoja va en Sol1)');
+    // niveles fáciles: dos teclas por mano como máximo
+    check([0,1,2].every(i => v[i].steps.every(st => st.lh.length <= 2 && st.rh.length <= 2)), 'Parte 1, Parte 2 fácil y completa fácil: máximo dos teclas por mano');
+    check(v[3].steps.some(st => st.rh.length === 3) && v[3].steps.some(st => st.lh.length === 3), 'la de la hoja conserva los acordes de 3');
+    check(v[1].steps.filter(st => st.lh.length === 2).every(st => st.lh[1] - st.lh[0] === 7 && st.lhF.join() === '5,1'), 'Parte 2 fácil: la izquierda solo toca quintas justas, 5-1');
+    // dedos: cada nota con su dedo; derecha de la Parte 1 en posición fija
+    check(v.every(x => x.steps.every(st => (!st.lh.length || (st.lhF && st.lhF.length === st.lh.length)) && (!st.rh.length || (st.rhF && st.rhF.length === st.rh.length)))), 'cada nota trae su dedo');
+    const fixed = {62:1, 69:2, 70:3, 74:5};
+    check(v[0].steps.filter(st => st.rh.length === 1).every(st => fixed[st.rh[0]] === st.rhF[0]), 'Parte 1: Re4 1, La4 2, Sib4 3, Re5 5 siempre (la mano no se mueve)');
+    // las manos no se cruzan
+    check(v.every(x => x.steps.every(st => !st.lh.length || !st.rh.length || Math.max(...st.lh) < Math.min(...st.rh))), 'la izquierda nunca queda por encima de la derecha');
+    // pedal: solo en la de la hoja, cambia donde entra el bajo
+    const ped = v[3].steps.filter(st => st.ped);
+    check(ped[0].ped === 'on' && ped.length === 25 && ped.slice(1).every(st => st.ped === 'change' && (st.lh.length || st.label)), 'la de la hoja: pisa al empezar y cambia 24 veces, siempre con una nota del bajo');
+    check([0,1,2].every(i => v[i].steps.every(st => !st.ped)), 'las versiones fáciles van sin pedal');
+    check(v[2].steps.length === v[0].steps.length + v[1].steps.length, 'la completa fácil es Parte 1 + Parte 2 fácil (los mismos pasos)');
   }
 
   console.log(`\n${passes} pruebas OK, ${failures} fallos`);
