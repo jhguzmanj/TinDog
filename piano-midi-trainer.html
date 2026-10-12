@@ -1385,6 +1385,7 @@
           <button class="hand-btn active" data-hand="both">Ambas</button>
         </div>
         <button id="listenBtn" class="ghost-btn">▶ Escuchar</button>
+        <button id="pedalToggleBtn" class="ghost-btn" style="display:none;" title="Practicar con o sin pedal de resonancia. Consejo: aprende primero la pieza sin pedal.">🦶 Pedal: sí</button>
         <button id="cascadeBtn" class="ghost-btn">🌊 Modo cascada</button>
       </div>
       <div id="fragTip" class="tip"></div>
@@ -1747,6 +1748,15 @@ function midiNoteOn(note, vel){
 // que su propio pedal.
 function midiPedal(on){ sendMidi([0xb0 | MIDI_OUT_CH, 64, on ? 127 : 0]); }
 // Texto para Jorge de lo que pide un paso con `ped`.
+// Pedal sí/no (pedido de Jorge): con "no", las marcas `ped` de las piezas se
+// ignoran en todo (Escuchar, paso a paso, cascada, juicio) y los guiados que lo
+// admiten no piden cambios de pie. Se recuerda en localStorage.
+let pedalOn = true;        // piezas con marcas de pedal: por defecto sí
+let pedalGuideOn = false;  // ejercicios guiados (inversiones, quintas): por defecto no
+try { if(localStorage.getItem('pedalOn') === '0') pedalOn = false; if(localStorage.getItem('pedalGuide') === '1') pedalGuideOn = true; } catch(e){}
+function isPedalGuide(){ return !!(currentFragment && PEDAL_GUIDES.indexOf(currentFragment.guide) >= 0); }
+function stepPed(step){ return pedalOn ? step.ped : undefined; }
+const PEDAL_GUIDES = ['inv', 'quintas1'];   // guiados con pedal opcional (pedal0 siempre lo usa)
 const PEDAL_TXT = { on:'▼ pisa el pedal', change:'▲▼ cambia el pedal (levanta y vuelve a pisar)', off:'▲ suelta el pedal' };
 function midiNoteOff(note){
   sendMidi([0x80 | MIDI_OUT_CH, note, 0]);
@@ -7953,6 +7963,7 @@ function startFragmentStep(){
   // `playFragment` llega aquí con `isPlayingBack` ya en false, así que no
   // se muerde la cola.
   stopFragmentPlayback();
+  renderPedalToggle();
   // Pedal 0 es un guía, no una pieza: sin Escuchar ni cascada.
   const isGuide = !!(currentFragment && currentFragment.guide);
   ['listenBtn', 'cascadeBtn'].forEach(id => { const b = document.getElementById(id); if(b) b.style.display = isGuide ? 'none' : ''; });
@@ -7987,7 +7998,7 @@ function startFragmentStep(){
   if(currentHand !== 'lh' && step.rh.length) parts.push('<span class="hand-tag rh">DER</span>' + step.rh.map(noteLabel).join(' '));
   let sub = parts.join(' &nbsp;·&nbsp; ');
   if(step.label) sub = step.label + ' &nbsp;—&nbsp; ' + sub;
-  if(step.ped) sub += ' &nbsp;<span class="ped-tag">' + PEDAL_TXT[step.ped] + '</span>';
+  if(stepPed(step)) sub += ' &nbsp;<span class="ped-tag">' + PEDAL_TXT[step.ped] + '</span>';
   targetSubLabel.innerHTML = sub;
   renderPedalBox();
 
@@ -8031,7 +8042,7 @@ function pedalInput(down, t){
   pedalEvents.push({ t, down });
   if(pedalEvents.length > 400) pedalEvents.splice(0, 200);
   renderPedalBox();
-  if(currentFragment && currentFragment.guide === 'pedal0' && (currentMode === 'fragments')) p0Event(down ? 'down' : 'up');
+  if(currentFragment && currentMode === 'fragments' && (currentFragment.guide === 'pedal0' || (pedalGuideOn && isPedalGuide()))) p0Event(down ? 'down' : 'up');
 }
 function pedalStateAt(t){
   let s = null;
@@ -8105,8 +8116,34 @@ function pedalWrapUp(after){
     if(after) after(pedalSummary);
   }, 1500);
 }
+function pedalToggleRelevant(){
+  if(!currentFragment || (currentMode !== 'fragments' && currentMode !== 'agility')) return false;
+  if(currentFragment.guide) return PEDAL_GUIDES.indexOf(currentFragment.guide) >= 0;
+  return !!(currentFragment.steps && currentFragment.steps.some(s => s.ped));
+}
+function renderPedalToggle(){
+  const b = document.getElementById('pedalToggleBtn');
+  if(!b) return;
+  b.style.display = pedalToggleRelevant() ? '' : 'none';
+  const on = isPedalGuide() ? pedalGuideOn : pedalOn;
+  b.textContent = on ? '🦶 Pedal: sí' : '🦶 Pedal: no';
+  b.classList.toggle('active', on);
+}
+function pedalChoice(){ return isPedalGuide() ? pedalGuideOn : pedalOn; }
+function setPedalOn(on){
+  if(isPedalGuide()){ pedalGuideOn = !!on; try { localStorage.setItem('pedalGuide', on ? '1' : '0'); } catch(e){} }
+  else { pedalOn = !!on; try { localStorage.setItem('pedalOn', on ? '1' : '0'); } catch(e){} }
+  if(!on) pedalReset();
+  if(currentFragment && currentFragment.guide) p0.frag = null;   // el guía se rearma con o sin pasos de pedal
+  practiceIndex = 0;
+  try { if(cascadeOn && cascade) exitCascade(); } catch(e){}
+  startFragmentStep();
+  renderPedalToggle();
+  renderPedalBox();
+}
+document.addEventListener('click', e => { if(e.target && e.target.id === 'pedalToggleBtn') setPedalOn(!pedalChoice()); });
 function pieceHasPedal(){
-  return !!(currentFragment && (currentFragment.guide === 'pedal0' || (!currentFragment.guide && currentFragment.steps && currentFragment.steps.some(s => s.ped)))) &&
+  return !!(currentFragment && (currentFragment.guide === 'pedal0' || (pedalGuideOn && isPedalGuide()) || (pedalOn && !currentFragment.guide && currentFragment.steps && currentFragment.steps.some(s => s.ped)))) &&
          (currentMode === 'fragments' || currentMode === 'agility');
 }
 function renderPedalBox(){
@@ -8156,7 +8193,7 @@ function checkFragment(note){
   const allPresent = [...target].every(n => activeNotes.has(n));
   if(allPresent){
     fragJustPlayed = target;
-    pedalStep('f' + practiceIndex, step.ped);
+    pedalStep('f' + practiceIndex, stepPed(step));
     feedbackText.textContent = 'Correcto';
     feedbackText.className = 'feedback correct';
     document.querySelectorAll('.target').forEach(r => { r.classList.remove('target'); r.classList.add('correct'); });
@@ -8341,9 +8378,24 @@ const GUIDES = {
     done:e => 'Las 12 escalas en orden de quintas.' + (e ? ' Hubo ' + e + (e === 1 ? ' nota equivocada' : ' notas equivocadas') + ' en la última parte.' : ' La última parte, limpia.') + ' Toca cualquier tecla para repetir.' },
 };
 function guideMeta(){ return GUIDES[currentFragment && currentFragment.guide] || GUIDES.pedal0; }
+// Con pedal: se pisa al empezar y, después de cada intervalo/nota tocado, se cambia
+// CON LAS TECLAS PISADAS (lo de Pedal 0): ▲ y ▼. Así lo tocado sigue sonando al soltar.
+function withPedalSteps(S){
+  const out = [{ part:S[0].part, exp:'down', big:'PISA ▼', text:'Ejercicio con pedal: pisa el pedal para empezar (lo puedes apagar con 🦶 Pedal).' }];
+  S.forEach(st => {
+    out.push(st);
+    if(st.exp === 'chord' || st.exp === 'on'){
+      out.push({ part:st.part, exp:'up', big:'▲ Pie arriba', text:'Con las teclas todavía pisadas, levanta el pie…', tag:'cambio de pedal' });
+      out.push({ part:st.part, exp:'down', big:'▼ Pie abajo', text:'…y vuelve a pisar. Ahora suelta las teclas: siguen sonando.', tag:'cambio de pedal' });
+    }
+  });
+  return out;
+}
 const p0 = { steps:null, i:0, errors:0, finalErrors:0, done:false, frag:null, chordGot:new Set() };
 function p0Reset(){
-  p0.steps = guideMeta().build(); p0.i = 0; p0.errors = 0; p0.finalErrors = 0; p0.done = false; p0.chordGot = new Set();
+  p0.steps = guideMeta().build();
+  if(pedalGuideOn && isPedalGuide()) p0.steps = withPedalSteps(p0.steps);
+  p0.i = 0; p0.errors = 0; p0.finalErrors = 0; p0.done = false; p0.chordGot = new Set();
 }
 function p0Advance(okMsg){
   p0.i++; p0.chordGot = new Set();
@@ -8529,7 +8581,7 @@ async function playFragment(){
     if(token !== playbackToken) break;
     // Cambio de pedal: se levanta JUSTO cuando entra la nota nueva y se vuelve a
     // pisar después de tocarla (pedal "sincopado"), que es como se hace con el pie.
-    const pedNow = step.ped;
+    const pedNow = stepPed(step);
     if(pedNow) pedalLift();
     heldRh = heldRh.filter(h => {
       if(h.end > clock + 1e-6) return true;
@@ -9979,7 +10031,7 @@ function buildCascadeSchedule(){
     cascadeHandNotes(step).forEach(x => {
       // `rhDur`: una nota de la derecha que sigue pisada más allá de su paso
       const len = (x.hand === 'rh' && step.rhDur && step.rhDur > step.dur) ? step.rhDur * beatMs : dur;
-      events.push({ note: x.n, hand: x.hand, finger: x.f, tStart: t, tEnd: t + len * 0.85, step: si, ped: step.ped,
+      events.push({ note: x.n, hand: x.hand, finger: x.f, tStart: t, tEnd: t + len * 0.85, step: si, ped: stepPed(step),
                     hit: false, missed: false, el: null, fingerEl: null });
     });
     t += dur;
@@ -10002,7 +10054,7 @@ function buildCascadeSchedule(){
   // borrado), pero no suenan como clic.
   let tp = 0;
   cascadeSteps().steps.forEach(step => {
-    if(step.ped) beats.push({ k: null, t: tp, bar: false, ped: step.ped, el: null, clicked: true });
+    if(stepPed(step)) beats.push({ k: null, t: tp, bar: false, ped: step.ped, el: null, clicked: true });
     tp += step.dur * beatMs;
   });
   return { events, beats, totalMs: t, beatMs };

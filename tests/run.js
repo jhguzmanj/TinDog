@@ -3575,6 +3575,42 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
     W("selectCategory('today')");
   }
 
+  section('Pedal sí / no');
+  {
+    W("soundEnabled = false; pedalEvents.length = 0; pedalIsDown = false; selectCategory('fragments'); pickFragmentById('tarea-quintas')");
+    const btn = () => W("(() => { const b = document.getElementById('pedalToggleBtn'); return b.style.display + '|' + b.textContent; })()");
+    check(btn() === '|🦶 Pedal: sí', 'pieza con pedal: el botón aparece y arranca en sí');
+    check(W("buildCascadeSchedule().beats.filter(b => b.ped).length") === 13 && W('targetSubLabel.innerHTML').includes('ped-tag'), 'con pedal: marcas en la cascada y aviso en el paso');
+    W("document.getElementById('pedalToggleBtn').click()");
+    check(btn() === '|🦶 Pedal: no' && W("localStorage.getItem('pedalOn')") === '0', 'un clic lo apaga y se recuerda');
+    check(W("buildCascadeSchedule().beats.filter(b => b.ped).length") === 0 && !W('targetSubLabel.innerHTML').includes('ped-tag') && W("document.getElementById('pedalBox').style.display") === 'none',
+      'sin pedal: ni marcas, ni aviso, ni caja del pedal');
+    // Escuchar sin pedal no manda CC64 al piano
+    W(`window.__midi = []; window.__mo = midiOut; window.__st = soundTarget; midiOut = { send: b => window.__midi.push(b.join(':')) }; soundTarget = 'piano';
+       window.__cf = currentFragment; currentFragment = { id:'__pp', name:'t', tip:'t', tempo:6000, steps:[ {lh:[], rh:[60], rhF:[1], dur:1, ped:'on'}, {lh:[], rh:[62], rhF:[2], dur:1, ped:'change'} ] };`);
+    await W('playFragment()');
+    check(!W("window.__midi.some(m => m === '176:64:127')"), 'Escuchar sin pedal: no pisa el pedal del piano');
+    W("midiOut = window.__mo; soundTarget = window.__st; currentFragment = window.__cf");
+    W("document.getElementById('pedalToggleBtn').click()");
+    check(btn() === '|🦶 Pedal: sí', 'otro clic lo vuelve a encender');
+    // Piezas sin pedal: el botón no aparece
+    W("pickFragmentById('dia-de-lluvia')"); check(btn().startsWith('|'), 'Día de lluvia (tiene pedal): botón visible');
+    W("pickFragmentById('amanecer')"); check(btn().startsWith('none'), 'una pieza sin pedal: el botón no aparece');
+    W("pickFragmentById('ej-quintas-2')"); check(btn().startsWith('none'), 'escalas por quintas: sin opción de pedal (las escalas van sin pedal)');
+    // Guiado de inversiones: por defecto sin pedal; con pedal agrega el cambio después de cada intervalo
+    W("pickFragmentById('ej-inversiones')");
+    check(btn() === '|🦶 Pedal: no' && W('p0.steps.length') === 48, 'inversiones: arranca sin pedal (48 pasos, como antes)');
+    W("document.getElementById('pedalToggleBtn').click()");
+    check(btn() === '|🦶 Pedal: sí' && W("localStorage.getItem('pedalGuide')") === '1' && W('targetNoteLabel.textContent') === 'PISA ▼', 'con pedal: empieza pidiendo pisar');
+    check(W("p0.steps.filter(s => s.exp === 'up').length") === 32, 'un cambio de pedal (▲ ▼) después de cada uno de los 32 intervalos tocados');
+    check(W("localStorage.getItem('pedalOn')") === '1', 'la elección de los guiados no toca la de las piezas');
+    W('pedalInput(true); noteOn(60); noteOn(64)');
+    check(W('targetNoteLabel.textContent') === '▲ Pie arriba', 'tocado el intervalo: pide levantar el pie con las teclas pisadas');
+    W('pedalInput(false); pedalInput(true); noteOff(60); noteOff(64)');
+    check(W('p0.steps[p0.i].text').includes('dalo vuelta'), 'cambio hecho: sigue con darlo vuelta');
+    W("document.getElementById('pedalToggleBtn').click(); pedalIsDown = false; selectCategory('today')");
+  }
+
   console.log(`\n${passes} pruebas OK, ${failures} fallos`);
   if(errors.length) console.log('Errores de consola:', errors);
   process.exit(failures || errors.length ? 1 : 0);

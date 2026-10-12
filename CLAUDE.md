@@ -919,6 +919,16 @@ y dentro de "Más ▾": `free | functions`.
   - Las tres van en "De la clase" con `tarea:true` (entran a la rotación del punto `tarea` del plan, que
     para un guiado dice "Ejercicio guiado"). Accesos directos: `#invGuideBtn` (↔ Inversiones) en la barra
     "Cómo practicar" de Intervalos y `#q2GuideBtn`/`#q1GuideBtn` junto a las familias de Escalas.
+- **Pedal sí / no (12 oct 2026, pedido de Jorge: "dame la opción de usar o no el pedal").** Botón
+  `#pedalToggleBtn` ("🦶 Pedal: sí/no") junto a Escuchar; solo se ve donde aplica (`pedalToggleRelevant`).
+  **Dos preferencias separadas a propósito**: `pedalOn` (piezas con marcas `ped`, por defecto SÍ, como
+  antes; localStorage `pedalOn`) y `pedalGuideOn` (guiados `inv` y `quintas1`, por defecto NO;
+  localStorage `pedalGuide`). Con las piezas en "no", `stepPed(step)` devuelve `undefined` y TODO lo
+  ignora (Escuchar no manda CC64, sin chip, sin marcas en la cascada, sin juicio ni caja del pedal): es
+  el "apréndela primero sin pedal". En los guiados en "sí", `withPedalSteps` pide pisar al empezar y,
+  después de cada intervalo o nota, el cambio ▲ ▼ con las teclas pisadas (la técnica de Pedal 0).
+  **Escalas por quintas y Pedal 0 no tienen opción**: las escalas se practican sin pedal (se mezclan las
+  8 notas) y Pedal 0 es el ejercicio del pedal. Hay pruebas.
 - **"Minueto en Sol" (Christian Petzold, BWV Anh. 114, Cuaderno de Ana Magdalena Bach), octubre 2026**
   (`minueto-sol`, Clásicas, primera de la categoría, entra al plan). La clase pidió "canciones clásicas de
   compositores famosos, de a poco" y que Jorge eligiera una; le recomendé el Himno (o Mozart si ya lo tenía)
