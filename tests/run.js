@@ -1408,6 +1408,16 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
     }
     check(h2ok, 'Hanon 2, c. 8-14: la misma tecla lleva siempre el mismo dedo en la derecha (antes el Re llevaba 2 y 3)');
     check(h2second, 'Hanon 2, c. 8-14: la segunda nota de cada compás lleva el 3 en las dos manos');
+    // Hanon 3, mismo arreglo: c. 8-14 con la derecha en espejo de la izquierda (13543234 → 53123432)
+    const h3 = hs[2].steps;
+    let h3ok = true, h3mirror = true;
+    for(let b = 7; b < 14; b++){
+      const bar = h3.slice(b * 8, b * 8 + 8), seen = {};
+      bar.forEach(x => { if(seen[x.rh[0]] !== undefined && seen[x.rh[0]] !== x.rhF[0]) h3ok = false; seen[x.rh[0]] = x.rhF[0]; });
+      if(bar.some(x => x.rhF[0] !== 6 - x.lhF[0])) h3mirror = false;
+    }
+    check(h3ok, 'Hanon 3, c. 8-14: la misma tecla lleva siempre el mismo dedo en la derecha');
+    check(h3mirror, 'Hanon 3, c. 8-14: la derecha es el espejo de la izquierda (6 − dedo)');
     check(hs.slice(0, 11).every(s => s.steps.slice(0, -1).filter(x => x.label).length === s.steps.length >> 3), 'un rótulo "c. N" al inicio de cada compás (para el Tramo)');
     // El plan de Hoy nunca manda un Hanon como "pieza".
     W("progress = emptyProgress(); todayPlan = buildTodayPlan(1)");

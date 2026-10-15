@@ -982,6 +982,11 @@ y dentro de "Más ▾": `free | functions`.
   parecidos en 4, 7, 8 y 11 (listados al avisarle); **no se tocaron** porque no los pidió ni hay hoja para
   confirmar. Lo que NO es error y se queda: la izquierda de 2 y 3 sube Do-Mi-La con **Mi 3** y vuelve a bajar con
   **Mi 4** (Mi con 3 es el dedo intermedio del salto Do 5 → La 1; con 4 es la posición de La 1-Sol 2-Fa 3-Mi 4).
+- **Hanon 3: mismo arreglo que el 2 (15 oct 2026, Jorge: "corrige también el Hanon 3").** En los c. 8-14 la derecha
+  traía `52123432` (Re con 2 y con 3 en el mismo compás); quedó `53123432` = espejo exacto de la izquierda
+  (`13543234`, 6 − dedo). Hay prueba (misma tecla, mismo dedo; espejo de la izquierda). **Siguen sin tocar** los casos
+  parecidos de 4, 7, 8 y 11: no los pidió y sin la hoja no se pueden confirmar. La izquierda de 3 (Mi 3 al subir, 4 al
+  bajar) se queda, por la misma razón que en el 2.
 - **"Sorrow" (Motoi Sakuraba), octubre 2026** (`sorrow-1..4`, Populares). Jorge: "me gusta mucho para
   practicar porque los días están de lluvia y grises… dime cómo está para mi nivel e ir subiendo nivel". Pasó
   MusicXML + MIDI + PDF (MuseScore 4.3.2, transcripción firmada "AIYO v2", subtítulo "What's Up?"; **no sé de qué
