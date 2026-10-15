@@ -817,6 +817,12 @@ y dentro de "Más ▾": `free | functions`.
     (La 1 … Mi5 5) desde el c. 9, con UN salto avisado (Si4 → Mi5). Pedal: cambia en cada ataque de la izquierda (16).
   - Hay prueba de todo lo anterior (compases, bajo, posiciones, cadencia rota, silencio, final, pedal, notas de color).
     **No pude oírla** (la sesión no tiene audio): si una de las notas de color suena "mal" en vez de "dulce", se cambia.
+  - **Final más melódico (mismo día, Jorge: "suena bien, mejorar el final que suene melódico, solo eso").** Antes
+    terminaba en dos compases (Do-Si sobre Mi, La): correcto pero seco. Ahora la coda son 4 compases (c. 15-18, la pieza
+    pasa a **18 compases / 54 tiempos**): la melodía sube Do–Re (sobre Fa) hasta Mi (sobre Rem/La) y desde ahí **baja por
+    grados Mi-Re-Do-Si-La**, con dos apoyaturas seguidas (Mi→Re sobre Rem, Do→Si sobre Mi) antes de la tónica: una
+    cadena de suspiros. Bajo Fa–La–Si–La, todo en la posición de la derecha con el pulgar en La4 (sin saltos nuevos).
+    El resto de la pieza no se tocó. Hay prueba de la línea de la coda.
 - **Clase del 10 de octubre de 2026** (Jorge: "una clase potente"). Al profe le gustó Día de lluvia;
   la crítica fue que "faltó un cierre un poco más melodioso". Tareas: intervalos fuerte; escala cromática
   de ida y vuelta "por todo el piano"; inversiones de intervalos; escalas por quintas (C G D A E B F# C#

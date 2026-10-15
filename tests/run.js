@@ -3707,7 +3707,7 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
     check(!!su && su.meter === 3 && su.tempo <= 66, 'existe, en 3/4 y lenta (♩ ≤ 66)');
     const bars = []; let t = 0;
     su.steps.forEach(x => { const b = Math.floor(t / 3 + 1e-9); (bars[b] = bars[b] || []).push(x); t += x.dur; });
-    check(t === 48 && bars.length === 16 && bars.every(b => b.reduce((a, x) => a + x.dur, 0) === 3), '16 compases de 3 tiempos');
+    check(t === 54 && bars.length === 18 && bars.every(b => b.reduce((a, x) => a + x.dur, 0) === 3), '18 compases de 3 tiempos');
     check(su.steps.every(x => x.lh.length <= 2 && x.rh.length <= 1), 'máximo dos teclas en la izquierda y una (la melodía) en la derecha');
     const rhAll = su.steps.flatMap(x => x.rh), lhAll = su.steps.flatMap(x => x.lh);
     check(Math.max(...lhAll) < Math.min(...rhAll), 'las manos no se cruzan');
@@ -3718,14 +3718,16 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
     const salto = su.steps.findIndex(x => /Salto/.test(x.label || ''));
     check(salto > 0 && su.steps.every((x, i) => x.rh.every((n, j) => (i < salto ? PA : PB)[n] === x.rhF[j])), 'derecha en dos posiciones (pulgar en Mi4 y en La4) con un solo salto avisado');
     const bass = bars.map(b => b[0].lh[0]);
-    check(JSON.stringify(bass) === JSON.stringify([45,41,41,47,45,43,41,47,41,45,47,45,48,43,47,45]), 'bajo: Lam Fa Rem/Fa Mi/Si | Lam Do/Sol Rem/Fa Mi/Si | Fa Rem/La Mi/Si Lam | Do Do/Sol Mi/Si Lam');
+    check(JSON.stringify(bass) === JSON.stringify([45,41,41,47,45,43,41,47,41,45,47,45,48,43,41,45,47,45]), 'bajo: Lam Fa Rem/Fa Mi/Si | Lam Do/Sol Rem/Fa Mi/Si | Fa Rem/La Mi/Si Lam | Do Do/Sol | Fa Rem/La Mi/Si Lam');
     check(bass[7] === 47 && bass[8] === 41, 'cadencia rota: Mi (c. 8) va a Fa (c. 9), no a La');
     check(bars[12][0].rh.length === 0 && bars[12][0].dur === 2, 'silencio de la derecha en el c. 13');
-    check(bars[15][0].rh[0] === 69 && bars[15][0].lh.join() === '45,48' && bars[15][0].dur === 3, 'termina en La sobre La–Do (3ra menor)');
+    check(bars[17][0].rh[0] === 69 && bars[17][0].lh.join() === '45,48' && bars[17][0].dur === 3, 'termina en La sobre La–Do (3ra menor)');
+    const coda = bars.slice(14).flat().map(x => x.rh[0]);
+    check(JSON.stringify(coda) === JSON.stringify([72,74,76,74,72,71,69]), 'final melódico: sube Do-Re-Mi y baja por grados Mi-Re-Do-Si-La');
     const peds = su.steps.filter(x => x.ped);
-    check(peds.length === 16 && su.steps.every(x => !!x.ped === (x.lh.length > 0)), 'pedal: pisa al empezar y cambia cada vez que entra la izquierda');
+    check(peds.length === 18 && su.steps.every(x => !!x.ped === (x.lh.length > 0)), 'pedal: pisa al empezar y cambia cada vez que entra la izquierda');
     // Las notas que rozan el acorde bajan un grado a descansar (c. 2, 6, 15)
-    check([[1,71,69],[5,71,69],[14,72,71]].every(([b, a, r]) => bars[b][0].rh[0] === a && bars[b][1].rh[0] === r), 'las notas de color (Si sobre Fa, Si sobre Do, Do sobre Mi) bajan un grado');
+    check([[1,71,69],[5,71,69],[15,76,74],[16,72,71]].every(([b, a, r]) => bars[b][0].rh[0] === a && bars[b][1].rh[0] === r), 'las notas de color (Si sobre Fa, Si sobre Do, Mi sobre Rem, Do sobre Mi) bajan un grado');
   }
 
   console.log(`\n${passes} pruebas OK, ${failures} fallos`);
