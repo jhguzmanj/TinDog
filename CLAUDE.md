@@ -987,6 +987,13 @@ y dentro de "Más ▾": `free | functions`.
   (`13543234`, 6 − dedo). Hay prueba (misma tecla, mismo dedo; espejo de la izquierda). **Siguen sin tocar** los casos
   parecidos de 4, 7, 8 y 11: no los pidió y sin la hoja no se pueden confirmar. La izquierda de 3 (Mi 3 al subir, 4 al
   bajar) se queda, por la misma razón que en el 2.
+- **Hanon 2, subida: 2.º paso con el 3 en las dos manos (15 oct 2026, Jorge: "cuando se marca el 2 de la derecha y al
+  tiempo el 3 de la izquierda, ambos deberían ser 3").** En los c. 1-7 la derecha era `12543432` y la izquierda
+  `53123234`: en el 2.º paso (Mi) caían **2 contra 3**, el único paso de la subida donde no sumaban 6 (espejo).
+  Quedó `13543432`. **Costo que se le dijo**: ahora el Mi de la derecha lleva 3 la primera vez y 2 al final del
+  compás (la misma "tecla con dos dedos" que antes se corrigió en la bajada); la alternativa que habría dejado cada
+  tecla con un solo dedo era bajar la izquierda a 4 en ese paso (`54123234`). Hanon 3 tiene el mismo 2/3 en la subida
+  (`12543432` / `53123432`) y **no se tocó**: no lo pidió.
 - **"Sorrow" (Motoi Sakuraba), octubre 2026** (`sorrow-1..4`, Populares). Jorge: "me gusta mucho para
   practicar porque los días están de lluvia y grises… dime cómo está para mi nivel e ir subiendo nivel". Pasó
   MusicXML + MIDI + PDF (MuseScore 4.3.2, transcripción firmada "AIYO v2", subtítulo "What's Up?"; **no sé de qué

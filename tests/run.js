@@ -1408,6 +1408,8 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
     }
     check(h2ok, 'Hanon 2, c. 8-14: la misma tecla lleva siempre el mismo dedo en la derecha (antes el Re llevaba 2 y 3)');
     check(h2second, 'Hanon 2, c. 8-14: la segunda nota de cada compás lleva el 3 en las dos manos');
+    // Hanon 2, subida (c. 1-7): en el 2.º paso la derecha lleva 3 igual que la izquierda (antes 2 contra 3)
+    check(h2.slice(0, 56).filter((x, i) => i % 8 === 1).every(x => x.rhF[0] === 3 && x.lhF[0] === 3), 'Hanon 2, c. 1-7: en el 2.º paso de cada compás las dos manos marcan el 3');
     // Hanon 3, mismo arreglo: c. 8-14 con la derecha en espejo de la izquierda (13543234 → 53123432)
     const h3 = hs[2].steps;
     let h3ok = true, h3mirror = true;
