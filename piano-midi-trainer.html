@@ -11971,7 +11971,8 @@ function buildTodayPlan(seed){
   // peldaño de coordinación SIN estrenar, el calentamiento es ese — y en orden
   // de la escalera, no el "menos practicado": el 6 no tiene sentido antes del 1.
   // Cuando ya pasó por los seis, vuelve la rotación normal entre todos.
-  const coordPend = AGILITY_DRILLS.filter(d => d.grupo === 'manos' && !progress.drills[d.id]);
+  const coordAll = AGILITY_DRILLS.filter(d => d.grupo === 'manos');
+  const coordPend = coordAll.filter(d => !progress.drills[d.id]);
   // Último peldaño: los Hanon, en orden, cuando ya estrenó toda la coordinación.
   const hanonAll = SONGS.filter(s => s.grupo === 'hanon');
   const hanonPend = hanonAll.filter(d => !progress.drills[d.id]);
@@ -11988,6 +11989,15 @@ function buildTodayPlan(seed){
     drillSub = drill.grupo === 'manos'
       ? 'Manos juntas. Lento y parejo, que no se descuadren.'
       : 'Lento y parejo, sin mirar la mano si puedes.';
+  }
+  // Si hoy ya hizo uno, ESE es el calentamiento del día. Sin esto, al terminar
+  // Hanon 3 el "siguiente pendiente" pasaba a Hanon 4, el punto se rotulaba con
+  // el nuevo y su revisión (¿se hizo hoy?) daba que no: parecía sin marcar.
+  const doneToday = coordAll.concat(AGILITY_DRILLS, hanonAll)
+    .find(d => (progress.drills[d.id] || {}).lastDay === today);
+  if(doneToday){
+    drill = doneToday;
+    drillSub = 'Hecho hoy. Mañana sigue el siguiente.';
   }
   items.push({ key:'drill', min:3, block:'warm', title:'Calentar: ' + drill.name, sub:drillSub,
     done: () => (progress.drills[drill.id] || {}).lastDay === today,

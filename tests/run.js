@@ -1433,6 +1433,11 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
     check(warm() === 'Calentar: Hanon 1', 'estrenada la coordinación, el calentamiento es Hanon 1');
     W("progress.drills['hanon-1'] = {runs:1, lastDay:'2026-01-01'}");
     check(warm() === 'Calentar: Hanon 2' && /Hanon 2 de 12/.test(W("todayPlan.find(it => it.key === 'drill').sub")), 'hecho el 1, sigue el 2 ("Hanon 2 de 12")');
+    // Al terminar el Hanon de hoy, el punto sigue siendo ESE y queda marcado (antes pasaba al siguiente y se veía sin marcar)
+    W("progress.drills['hanon-2'] = {runs:1, lastDay:dateKey()}");
+    check(warm() === 'Calentar: Hanon 2' && W("todayPlan.find(it => it.key === 'drill').done()") === true,
+      'hecho el Hanon 2 hoy, el calentamiento sigue siendo Hanon 2 y sale marcado (no salta al 3)');
+    W("progress.drills['hanon-2'] = {runs:1, lastDay:'2026-01-01'}");
     for(let i = 2; i <= 12; i++) W(`progress.drills['hanon-${i}'] = {runs:1, lastDay:'2026-01-01'}`);
     check(W("todayPlan = buildTodayPlan(1); todayPlan.find(it => it.key === 'drill').title").startsWith('Calentar: '), 'con los 12 hechos vuelve la rotación normal');
     W("progress = emptyProgress()");

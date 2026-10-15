@@ -998,6 +998,12 @@ y dentro de "Más ▾": `free | functions`.
   `12543234` a `13543234` (2.º paso: 2 contra 3 → 3 y 3). Con esto **Hanon 3 queda espejo en los 14 compases**
   (cada paso suma 6, hay prueba). Mismo costo que en el 2: el Mi de la derecha lleva 3 al principio y 2 al final;
   la alternativa era bajar la izquierda a 4 en ese paso. Siguen sin tocar los casos de 4, 7, 8 y 11.
+- **Bug del calentamiento de Hoy (15 oct 2026, Jorge: "hice el Hanon 3 como dice la práctica y no la marca").**
+  La práctica SÍ se guardaba (`progress.drills['hanon-3']`), pero el plan se recalcula y el "siguiente
+  pendiente" (`hanonPend[0]`, igual que `coordPend[0]`) pasaba a ser Hanon 4: el punto se rotulaba con el nuevo y
+  su `done` (¿se hizo hoy?) miraba un ejercicio no hecho. Ahora, si hoy ya se hizo algún ejercicio (coordinación,
+  Agilidad o Hanon), ESE es el calentamiento del día (`doneToday`, sub "Hecho hoy…") y sale marcado; el siguiente
+  entra mañana. Con dos hechos el mismo día muestra el primero en el orden del arreglo. Hay prueba.
 - **"Sorrow" (Motoi Sakuraba), octubre 2026** (`sorrow-1..4`, Populares). Jorge: "me gusta mucho para
   practicar porque los días están de lluvia y grises… dime cómo está para mi nivel e ir subiendo nivel". Pasó
   MusicXML + MIDI + PDF (MuseScore 4.3.2, transcripción firmada "AIYO v2", subtítulo "What's Up?"; **no sé de qué
