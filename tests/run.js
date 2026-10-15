@@ -1398,6 +1398,16 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
     });
     check(hs.every(s => sentidoOk(s, 'rh') && sentidoOk(s, 'lh')), 'ningún dedo contradice el sentido de la nota (ni en la izquierda del 12)');
     check(hs[11].steps.slice(0, -1).every(x => x.lhF[0] === 6 - x.rhF[0]), 'Hanon 12: la izquierda va en espejo (6 − dedo derecho)');
+    // Hanon 2, bajada (c. 8-14): la derecha tocaba el Re con 2 y con 3 en el mismo compás; ahora siempre 3 (espejo de la izquierda: 1-3-5-4-3-4-3-2)
+    const h2 = hs[1].steps;
+    let h2ok = true, h2second = true;
+    for(let b = 7; b < 14; b++){
+      const bar = h2.slice(b * 8, b * 8 + 8), seen = {};
+      bar.forEach(x => { if(seen[x.rh[0]] !== undefined && seen[x.rh[0]] !== x.rhF[0]) h2ok = false; seen[x.rh[0]] = x.rhF[0]; });
+      if(bar[1].rhF[0] !== 3 || bar[1].lhF[0] !== 3) h2second = false;
+    }
+    check(h2ok, 'Hanon 2, c. 8-14: la misma tecla lleva siempre el mismo dedo en la derecha (antes el Re llevaba 2 y 3)');
+    check(h2second, 'Hanon 2, c. 8-14: la segunda nota de cada compás lleva el 3 en las dos manos');
     check(hs.slice(0, 11).every(s => s.steps.slice(0, -1).filter(x => x.label).length === s.steps.length >> 3), 'un rótulo "c. N" al inicio de cada compás (para el Tramo)');
     // El plan de Hoy nunca manda un Hanon como "pieza".
     W("progress = emptyProgress(); todayPlan = buildTodayPlan(1)");

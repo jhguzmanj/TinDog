@@ -973,6 +973,15 @@ y dentro de "Más ▾": `free | functions`.
 - **Hanon a ♩=40 (12 oct 2026, Jorge: "bájale la velocidad").** Pasaron de ♩=60 (número mío) a **♩=40, el que
   traía impreso el JSON del Hanon 2** (la hoja del PDF no trae tempo). Corcheas a 40 = 80 notas por minuto. Para ir
   aún más despacio sigue la velocidad de la cascada. Si se prefiere otro número, es `tempo` en `buildHanonSong`.
+- **Hanon 2: dedo del Re en la bajada (15 oct 2026, Jorge: "cuando se mueve el dedo 2 y 3 deberían ser ambos 3").**
+  En los c. 8-14 la derecha traía `52123234`: el Re de la 2ª nota con **2** y el Re de la 5ª y 7ª con **3** (misma
+  tecla, dos dedos, sin que la mano se mueva). Quedó `53123234` = **espejo exacto de la izquierda** (`13543432`,
+  6 − dedo). Es una corrección sobre lo transcrito del PDF (los dedos impresos eran 3 compases por tramo y el resto
+  se copió): **el PDF no estaba a mano para recontrastar**; la razón es la coherencia (misma tecla, mismo dedo) y el
+  espejo. Auditoría de los 12: el mismo patrón `Re 2/3` sigue en **Hanon 3 (c. 8-14, `52123432`)**, y hay casos
+  parecidos en 4, 7, 8 y 11 (listados al avisarle); **no se tocaron** porque no los pidió ni hay hoja para
+  confirmar. Lo que NO es error y se queda: la izquierda de 2 y 3 sube Do-Mi-La con **Mi 3** y vuelve a bajar con
+  **Mi 4** (Mi con 3 es el dedo intermedio del salto Do 5 → La 1; con 4 es la posición de La 1-Sol 2-Fa 3-Mi 4).
 - **"Sorrow" (Motoi Sakuraba), octubre 2026** (`sorrow-1..4`, Populares). Jorge: "me gusta mucho para
   practicar porque los días están de lluvia y grises… dime cómo está para mi nivel e ir subiendo nivel". Pasó
   MusicXML + MIDI + PDF (MuseScore 4.3.2, transcripción firmada "AIYO v2", subtítulo "What's Up?"; **no sé de qué
