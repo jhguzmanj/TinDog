@@ -3412,7 +3412,7 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
     const qp = JSON.parse(W("JSON.stringify(SONGS.find(s => s.id === 'tarea-quintas').steps.map(s => s.ped || '').filter(Boolean))"));
     check(qp.length === 13 && qp[0] === 'on' && qp.slice(1).every(p => p === 'change'), 'quintas: pisa en el c. 1 y cambia en los 12 compases siguientes');
     check(W("SONGS.find(s => s.id === 'tarea-quintas').steps.every(s => !s.ped || (s.label && s.lh.length === 2))"), 'cada cambio cae justo en el primer tiempo, con la nota nueva de la izquierda');
-    check(W("SONGS.filter(s => s.steps.some(st => st.ped) && s.cat !== 'pedal').map(s => s.id).sort().join()") === 'ave-maria,dia-de-lluvia,sorrow-4,tarea-quintas', 'fuera de los ejercicios de pedal, llevan pedal las quintas, Día de lluvia, Ave María y Sorrow (la de la hoja)');
+    check(W("SONGS.filter(s => s.steps.some(st => st.ped) && s.cat !== 'pedal').map(s => s.id).sort().join()") === 'ave-maria,dia-de-lluvia,sorrow-4,suspiro,tarea-quintas', 'fuera de los ejercicios de pedal, llevan pedal las quintas, Día de lluvia, Ave María, Sorrow (la de la hoja) y Suspiro');
     // Día de lluvia: pisa con el primer La y cambia en cada ataque de la izquierda (cada acorde)
     const dl = JSON.parse(W("JSON.stringify(SONGS.find(s => s.id === 'dia-de-lluvia').steps.map(s => [s.lh.length, s.ped || '']))"));
     check(dl.every(([l, p]) => (l > 0) === (p !== '')) && dl[0][1] === 'on' && dl.filter(x => x[1] === 'change').length === 14,
@@ -3699,6 +3699,33 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
     check(ped[0].ped === 'on' && ped.length === 25 && ped.slice(1).every(st => st.ped === 'change' && (st.lh.length || st.label)), 'la de la hoja: pisa al empezar y cambia 24 veces, siempre con una nota del bajo');
     check([0,1,2].every(i => v[i].steps.every(st => !st.ped)), 'las versiones fáciles van sin pedal');
     check(v[2].steps.length === v[0].steps.length + v[1].steps.length, 'la completa fácil es Parte 1 + Parte 2 fácil (los mismos pasos)');
+  }
+
+  section('Suspiro (La menor): pieza romántica, mía');
+  {
+    const su = W("SONGS.find(s => s.id === 'suspiro')");
+    check(!!su && su.meter === 3 && su.tempo <= 66, 'existe, en 3/4 y lenta (♩ ≤ 66)');
+    const bars = []; let t = 0;
+    su.steps.forEach(x => { const b = Math.floor(t / 3 + 1e-9); (bars[b] = bars[b] || []).push(x); t += x.dur; });
+    check(t === 48 && bars.length === 16 && bars.every(b => b.reduce((a, x) => a + x.dur, 0) === 3), '16 compases de 3 tiempos');
+    check(su.steps.every(x => x.lh.length <= 2 && x.rh.length <= 1), 'máximo dos teclas en la izquierda y una (la melodía) en la derecha');
+    const rhAll = su.steps.flatMap(x => x.rh), lhAll = su.steps.flatMap(x => x.lh);
+    check(Math.max(...lhAll) < Math.min(...rhAll), 'las manos no se cruzan');
+    check(rhAll.concat(lhAll).every(n => [0,2,4,5,7,8,9,11].includes(n % 12)) && rhAll.filter(n => n % 12 === 8).length === 2, 'La menor armónica: solo blancas y el Sol♯ (dos veces, en las semicadencias)');
+    const LF = {48:1, 47:2, 45:3, 43:4, 41:5};
+    check(su.steps.every(x => x.lh.every((n, i) => LF[n] === x.lhF[i])), 'izquierda fija con el pulgar en Do3 (cada tecla, el mismo dedo)');
+    const PA = {64:1, 65:2, 68:3, 69:4, 71:5}, PB = {69:1, 71:2, 72:3, 74:4, 76:5};
+    const salto = su.steps.findIndex(x => /Salto/.test(x.label || ''));
+    check(salto > 0 && su.steps.every((x, i) => x.rh.every((n, j) => (i < salto ? PA : PB)[n] === x.rhF[j])), 'derecha en dos posiciones (pulgar en Mi4 y en La4) con un solo salto avisado');
+    const bass = bars.map(b => b[0].lh[0]);
+    check(JSON.stringify(bass) === JSON.stringify([45,41,41,47,45,43,41,47,41,45,47,45,48,43,47,45]), 'bajo: Lam Fa Rem/Fa Mi/Si | Lam Do/Sol Rem/Fa Mi/Si | Fa Rem/La Mi/Si Lam | Do Do/Sol Mi/Si Lam');
+    check(bass[7] === 47 && bass[8] === 41, 'cadencia rota: Mi (c. 8) va a Fa (c. 9), no a La');
+    check(bars[12][0].rh.length === 0 && bars[12][0].dur === 2, 'silencio de la derecha en el c. 13');
+    check(bars[15][0].rh[0] === 69 && bars[15][0].lh.join() === '45,48' && bars[15][0].dur === 3, 'termina en La sobre La–Do (3ra menor)');
+    const peds = su.steps.filter(x => x.ped);
+    check(peds.length === 16 && su.steps.every(x => !!x.ped === (x.lh.length > 0)), 'pedal: pisa al empezar y cambia cada vez que entra la izquierda');
+    // Las notas que rozan el acorde bajan un grado a descansar (c. 2, 6, 15)
+    check([[1,71,69],[5,71,69],[14,72,71]].every(([b, a, r]) => bars[b][0].rh[0] === a && bars[b][1].rh[0] === r), 'las notas de color (Si sobre Fa, Si sobre Do, Do sobre Mi) bajan un grado');
   }
 
   console.log(`\n${passes} pruebas OK, ${failures} fallos`);

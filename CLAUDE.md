@@ -801,6 +801,22 @@ y dentro de "Más ▾": `free | functions`.
     5ª + DOS octavas = **19ª**. Con la derecha en la 4ª octava, Mi4 sobre La2 (19 semitonos) sí es
     una 12ª. Como intervalo SIMPLE sigue siendo una 5ª justa en los dos casos. Los PDF y la tabla
     de intervalos para el profe usan el intervalo simple y no cambian.
+- **"Suspiro (La menor)" (15 oct 2026, original)** (`suspiro`, "De la clase", después de Día de lluvia, ♩=58, 3/4,
+  entra al plan). Jorge, "romántico y triste": pidió una pieza con lo estudiado, con ocho rasgos románticos (modo menor,
+  armonía que sorprende, melodía cantable, tempo lento, dinámicas suaves, pedal por armonía, rubato, acentos). Es MÍA.
+  - **Cómo se cumplió cada rasgo sin pasar de dos teclas por mano**: la riqueza armónica NO sale de acordes de 3-4
+    notas sino de **notas de la melodía que rozan el bajo** y bajan un grado: Si sobre Fa (c. 2, la 4ta aumentada del
+    "lidio"), Si sobre Do (c. 6, 7ma mayor), Mi sobre Fa (c. 9, Fa maj7) y Do sobre Mi (c. 15, apoyatura que cae a Si).
+    **Cadencia rota** Mi→Fa (c. 8→9, en vez de Mi→La) = el clímax; **silencio** de la derecha en el c. 13 con el Do de
+    la izquierda sonando; **modulación suave** = un recuerdo de Do mayor (c. 13-14) antes de la cadencia final Mi→Lam.
+    Sol♯ (La menor armónica) solo en las dos semicadencias (c. 4 y 8). Termina en La sobre La–Do (3ra menor).
+  - **Lo que la app NO representa** (va en rótulos y `tip`, lo hace Jorge): dinámicas (p, pp, mf en el c. 9), rubato
+    ("estira" en los finales de frase) y acentos ("apoya el La").
+  - **Posiciones**: izquierda fija con el pulgar en Do3 (la de Día de lluvia: La 3, Fa 5, Sol 4, Si 2, intervalos 5-1
+    y 3-1 solo en c. 9, 12 y 16); derecha pulgar en Mi4 (Mi 1 Fa 2 Sol♯ 3 La 4 Si 5) en c. 1-8 y pulgar en La4
+    (La 1 … Mi5 5) desde el c. 9, con UN salto avisado (Si4 → Mi5). Pedal: cambia en cada ataque de la izquierda (16).
+  - Hay prueba de todo lo anterior (compases, bajo, posiciones, cadencia rota, silencio, final, pedal, notas de color).
+    **No pude oírla** (la sesión no tiene audio): si una de las notas de color suena "mal" en vez de "dulce", se cambia.
 - **Clase del 10 de octubre de 2026** (Jorge: "una clase potente"). Al profe le gustó Día de lluvia;
   la crítica fue que "faltó un cierre un poco más melodioso". Tareas: intervalos fuerte; escala cromática
   de ida y vuelta "por todo el piano"; inversiones de intervalos; escalas por quintas (C G D A E B F# C#
