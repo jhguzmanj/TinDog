@@ -994,6 +994,10 @@ y dentro de "Más ▾": `free | functions`.
   compás (la misma "tecla con dos dedos" que antes se corrigió en la bajada); la alternativa que habría dejado cada
   tecla con un solo dedo era bajar la izquierda a 4 en ese paso (`54123234`). Hanon 3 tiene el mismo 2/3 en la subida
   (`12543432` / `53123432`) y **no se tocó**: no lo pidió.
+- **Hanon 3, subida: igual que el 2 (15 oct 2026, Jorge: "haz lo mismo en el Hanon 3").** c. 1-7 la derecha pasó de
+  `12543234` a `13543234` (2.º paso: 2 contra 3 → 3 y 3). Con esto **Hanon 3 queda espejo en los 14 compases**
+  (cada paso suma 6, hay prueba). Mismo costo que en el 2: el Mi de la derecha lleva 3 al principio y 2 al final;
+  la alternativa era bajar la izquierda a 4 en ese paso. Siguen sin tocar los casos de 4, 7, 8 y 11.
 - **"Sorrow" (Motoi Sakuraba), octubre 2026** (`sorrow-1..4`, Populares). Jorge: "me gusta mucho para
   practicar porque los días están de lluvia y grises… dime cómo está para mi nivel e ir subiendo nivel". Pasó
   MusicXML + MIDI + PDF (MuseScore 4.3.2, transcripción firmada "AIYO v2", subtítulo "What's Up?"; **no sé de qué
