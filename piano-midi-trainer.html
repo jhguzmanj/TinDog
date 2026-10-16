@@ -7115,6 +7115,9 @@ let showFingers = true, scaleTempoMode = false, scaleBlockMode = false;
 // tiempo del compás). "De oído" sigue siendo `earMode`, aparte. Arriba por lo
 // mismo que `chordReps`: lo lee `enterMode`.
 let ivMode = 'show';
+// Unísono con marcas / sin pista: es la misma nota DOS veces (como suena al
+// escucharlo). Guarda que ya se tocó la primera; se limpia en cada intervalo.
+let ivUniFirst = false;
 // ⚡ Nombrar: ver u oír un intervalo y decir cuál es, rápido. Declarado aquí,
 // junto a ivMode, porque lo leen enterMode y startIntervalStep.
 let nameMode = false, nameQ = null, nameToken = 0, nameTimer = null;
@@ -8988,6 +8991,7 @@ function startIntervalStep(){
   const topRect = getRect(top);
   if(ivStepTimer){ clearTimeout(ivStepTimer); ivStepTimer = null; }
   ivT = { done:0, timing:[], await:false };
+  ivUniFirst = false;
   show($('timingBox'), ivMode === 'tempo' && !earMode, 'flex');
   if(earMode){
     // De oído: solo se marca la nota de partida; la segunda hay que encontrarla.
@@ -9030,7 +9034,9 @@ function startIntervalStep(){
     scrollToTargets();
     return;
   }
-  targetSubLabel.textContent = noteLabel(root) + '  →  ' + noteLabel(top) + ' — toca ambas juntas';
+  targetSubLabel.textContent = iv.semitones === 0
+    ? noteLabel(root) + '  →  ' + noteLabel(top) + ' — la misma tecla dos veces: toca, suelta y vuelve a tocar'
+    : noteLabel(root) + '  →  ' + noteLabel(top) + ' — toca ambas juntas';
   if(rootRect) rootRect.classList.add('target');
   if(topRect) topRect.classList.add('target');
 
@@ -9125,6 +9131,13 @@ function checkInterval(playedNote){
   }
   if(ivMode === 'tempo'){ checkIvTempo(iv); return; }
   const hide = ivMode === 'hide';
+  if(iv.semitones === 0 && playedNote === root && !ivUniFirst){
+    // Primera de las dos: con una sola pulsación no se oye un unísono, se oye una nota.
+    ivUniFirst = true;
+    feedbackText.textContent = 'Una. Suelta y tócala otra vez: el unísono es la misma nota dos veces.';
+    feedbackText.className = 'feedback';
+    return;
+  }
   const allPresent = activeNotes.has(root) && activeNotes.has(top);
   if(allPresent){
     feedbackText.textContent = hide ? 'Correcto: ' + noteLabel(root) + ' → ' + noteLabel(top) : 'Correcto';

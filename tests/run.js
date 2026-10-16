@@ -652,6 +652,27 @@ check(W('currentInput') === null, 'al desaparecer el piano se suelta el puerto')
 check(doc.getElementById('deviceBadge').textContent === 'Práctica Piano' && !doc.getElementById('deviceBadge').classList.contains('live'), 'el distintivo vuelve a su estado sin conexión');
 check(doc.getElementById('connectBtn').style.display === '' && doc.getElementById('connectionPanel').style.display === 'flex', 'y reaparece el botón para reintentar');
 
+section('Unísono: la misma tecla dos veces');
+ev('#mainTabs [data-cat="intervals"]');
+if(W('earMode')) ev('#earModeBtn');
+W("setIvMode('show'); activeNotes.clear(); practiceIndex = 0; startIntervalStep()");
+check(doc.getElementById('targetSubLabel').textContent.includes('dos veces'), 'el rótulo dice que es la misma tecla dos veces');
+const u2 = W('currentIntervalRoot()');
+const uRuns = () => W('(progress.intervals[0] || {}).runs || 0');
+const uBefore = uRuns();
+W(`noteOn(${u2})`);
+check(W('practiceIndex') === 0 && uRuns() === uBefore, 'con un solo toque todavía no se da por hecho');
+check(doc.getElementById('feedbackText').textContent.includes('otra vez'), 'pide tocarla otra vez');
+W(`noteOff(${u2}); noteOn(${u2}); noteOff(${u2})`);
+check(uRuns() === uBefore + 1, 'el segundo toque completa el unísono');
+W("if(ivStepTimer){ clearTimeout(ivStepTimer); ivStepTimer = null; } setIvMode('hide'); activeNotes.clear(); practiceIndex = 0; startIntervalStep()");
+const u3 = W('currentIntervalRoot()');
+W(`noteOn(${u3}); noteOff(${u3})`);
+check(uRuns() === uBefore + 1, 'sin pista: un toque tampoco basta');
+W(`noteOn(${u3}); noteOff(${u3})`);
+check(uRuns() === uBefore + 2, 'sin pista: dos toques sí');
+W("if(ivStepTimer){ clearTimeout(ivStepTimer); ivStepTimer = null; } setIvMode('show')");
+
 section('Oído: el unísono se puede contestar');
 ev('#mainTabs [data-cat="intervals"]');
 if(!W('earMode')) ev('#earModeBtn');

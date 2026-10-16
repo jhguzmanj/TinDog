@@ -277,6 +277,13 @@ y dentro de "Más ▾": `free | functions`.
   (así se entrena el oído de verdad: se sabe entre qué elegir); decir
   `practiceIndex` sí lo sería y se sigue tapando. Con más de 6 candidatos el
   rótulo pasa a "entre todos los que llevas" en vez de listarlos.
+- **Unísono = dos toques (16 oct 2026, Jorge: "cuando se reproduce se escucha dos veces pero yo solo toco
+  una vez").** Con marcas y Sin pista, `checkInterval` daba el unísono por hecho con UNA pulsación (raíz y
+  llegada son la misma tecla, `activeNotes` las tiene a las dos). Ahora la primera pulsación solo pone
+  `ivUniFirst` (declarado junto a `ivMode`, se limpia en `startIntervalStep`) y pide "suelta y tócala otra
+  vez"; la segunda lo completa. **No se cambió, a propósito**: De oído (la app ya tocó la primera; la
+  respuesta es la segunda, un toque) y A tiempo (cada toque es el intervalo junto, armónico: en una sola
+  tecla eso es un toque). Hay prueba.
 - **Intervalos: tres maneras de practicar además de "con marcas"** (pedido de
   la clase de septiembre: "identificarlos y tocarlos por todo el piano" y mucho
   énfasis en el metrónomo). `ivMode` = `show | hide | tempo`, persistido en
