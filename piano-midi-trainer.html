@@ -10627,13 +10627,24 @@ function cascadeBurst(ev){
 function checkCascadeHit(note){
   if(!cascade || cascade.finished) return;
   const t = cascade.t;
+  // El orden importa: una nota de un paso POSTERIOR no vale mientras quede una
+  // del paso anterior por tocar (si no, tocar el 2 antes que el 1 adelantaba
+  // la pieza). Dentro de un mismo paso (acorde, dos manos) el orden es libre.
+  const pending = cascade.events.filter(ev => !ev.hit && !ev.missed);
+  const frontier = cascadeFrontier();
   let best = null, bestDist = Infinity;
   cascade.events.forEach(ev => {
     if(ev.note !== note || ev.hit || ev.missed) return;
     const d = ev.tStart - t; // >0: todavía viene bajando
-    const ok = cascade.mode === 'wait'
-      ? (d <= LIGHT_LEAD_MS && d >= -HIT_TOLERANCE_MS)
-      : (Math.abs(d) <= HIT_TOLERANCE_MS);
+    let ok;
+    if(cascade.mode === 'wait'){
+      ok = d <= LIGHT_LEAD_MS && d >= -HIT_TOLERANCE_MS && ev.tStart <= frontier + 1;
+    } else {
+      // A tempo: vale si el momento está más cerca de ESTA nota que de
+      // cualquier nota anterior que siga pendiente.
+      ok = Math.abs(d) <= HIT_TOLERANCE_MS &&
+           !pending.some(o => o.tStart < ev.tStart - 1 && Math.abs(o.tStart - t) <= Math.abs(d));
+    }
     if(ok && Math.abs(d) < bestDist){ best = ev; bestDist = Math.abs(d); }
   });
   const kr = cascadeKeyRects[note];

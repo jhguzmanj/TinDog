@@ -2374,6 +2374,14 @@ y dentro de "Más ▾": `free | functions`.
   que empezar a mitad de compás corría todas las barras. El acento del clic
   usa el mismo `bar`. Hay pruebas (4/4 igual que antes, 3/4 con anacrusa, y
   un tramo a mitad de pieza). La cuenta de entrada sigue siendo de 4.
+- **El orden de las notas importa (16 oct 2026, Jorge: "toco la del dedo 2 antes que la del 1, se marca
+  como correcta y la canción avanza").** `checkCascadeHit` buscaba CUALQUIER nota pendiente con esa tecla
+  dentro de la ventana (en espera, hasta `LIGHT_LEAD_MS` = 450 ms por delante), así que con notas rápidas
+  una del paso siguiente se daba por buena aunque faltara la del anterior. Ahora: **en espera** solo vale
+  una nota del paso de la frontera (`ev.tStart <= cascadeFrontier() + 1`); **a tempo** vale si el momento
+  está más cerca de esa nota que de cualquier nota anterior aún pendiente. Dentro de un mismo paso (acorde,
+  dos manos) el orden sigue libre. Lo que no vale cuenta como equivocada. El paso a paso nunca tuvo el
+  problema (compara con el paso actual). Hay prueba de los dos modos.
 - Tramo: `cascadeFrom/cascadeTo` (pasos 1-based) + `cascadeLoop`. Los `<select>`
   se rellenan en `refreshCascadeRange()`; el rango se resetea al cambiar de pieza.
 - Al abrir la cascada se **esconde el teclado grande** (`#keyboardWrap`) para que

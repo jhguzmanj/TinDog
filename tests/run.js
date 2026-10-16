@@ -515,6 +515,41 @@ W("exitCascade()");
 ev('#cascadeBtn');
 check(W('cascadeOn') === false && doc.getElementById('keyboardWrap').style.display === '', 'al cerrar la cascada vuelve el teclado grande');
 
+section('Cascada: el orden de las notas importa');
+// Jorge: tocaba la nota del dedo 2 antes que la del 1 y la cascada la daba
+// por buena y la pieza avanzaba. Una nota de un paso posterior no vale
+// mientras quede una del paso anterior.
+ev('#cascadeBtn');
+W("cascadeMode='wait'; applyCascadeMode(); cascadeClicks=false; startCascade(); caf(cascade.raf); cascade.raf=null");
+const ordInfo = JSON.parse(W(`JSON.stringify((() => {
+  const s1 = cascade.events.filter(e => e.tStart === cascade.events[0].tStart);
+  const s2t = Math.min(...cascade.events.filter(e => e.tStart > s1[0].tStart).map(e => e.tStart));
+  const s2 = cascade.events.filter(e => e.tStart === s2t && !s1.some(o => o.note === e.note));
+  return { s1: s1.map(e => e.note), s2note: s2[0].note, s2t };
+})())`));
+// Paso 2 muy pegado al 1 (una corchea rápida): cae dentro de lo que ya se ve encendido.
+W(`cascade.events.forEach(e => { if(e.tStart === ${ordInfo.s2t}) e.tStart = 200; }); cascade.t = 0; cascade.lastNow = 5000`);
+ordInfo.orig = ordInfo.s2t; ordInfo.s2t = 200;
+for(const n of ordInfo.s1.slice(1)) W(`noteOn(${n}); noteOff(${n})`);
+W(`noteOn(${ordInfo.s2note}); noteOff(${ordInfo.s2note})`);
+check(W('cascade.hits') === ordInfo.s1.length - 1 && W('cascade.wrong') === 1,
+  'espera: la nota del paso siguiente, tocada antes que la que falta, cuenta como equivocada');
+check(W(`cascade.events.filter(e => e.note === ${ordInfo.s2note} && e.hit).length`) === 0,
+  'espera: esa nota NO queda marcada como acertada');
+W(`noteOn(${ordInfo.s1[0]}); noteOff(${ordInfo.s1[0]})`);
+W(`noteOn(${ordInfo.s2note}); noteOff(${ordInfo.s2note})`);
+check(W(`cascade.events.filter(e => e.tStart === ${ordInfo.s2t} && e.note === ${ordInfo.s2note})[0].hit`) === true,
+  'espera: tocada en su turno, sí vale');
+W("exitCascade()");
+W("cascadeMode='timed'; applyCascadeMode(); startCascade(); caf(cascade.raf); cascade.raf=null");
+W(`cascade.events.forEach(e => { if(e.tStart === ${ordInfo.orig}) e.tStart = 200; }); cascade.t = 50; cascade.lastNow = 5000`);
+W(`noteOn(${ordInfo.s2note}); noteOff(${ordInfo.s2note})`);
+check(W(`cascade.events.filter(e => e.tStart === ${ordInfo.s2t} && e.note === ${ordInfo.s2note})[0].hit`) !== true,
+  'a tempo: una nota del paso siguiente tocada en el momento del anterior no vale');
+W("exitCascade()");
+ev('#cascadeBtn');
+W("cascadeMode='wait'; applyCascadeMode()");
+
 section('Pentagramas lado a lado y consejo por intervalo');
 ev('#mainTabs [data-cat="scales"]');
 W("scaleHand='both'; refreshScaleHand(); startScaleRun()");
