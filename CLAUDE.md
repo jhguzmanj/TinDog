@@ -1026,6 +1026,25 @@ y dentro de "Más ▾": `free | functions`.
   su `done` (¿se hizo hoy?) miraba un ejercicio no hecho. Ahora, si hoy ya se hizo algún ejercicio (coordinación,
   Agilidad o Hanon), ESE es el calentamiento del día (`doneToday`, sub "Hecho hoy…") y sale marcado; el siguiente
   entra mañana. Con dos hechos el mismo día muestra el primero en el orden del arreglo. Hay prueba.
+- **Dragon Ball GT: dedos rehechos y solo el tema completo (16 oct 2026).** Jorge: "la izquierda solo mueve el 1,
+  podría ocupar mejor la mano; en la derecha, cuando se repite el 1 casi no da tiempo y estoy usando el 2"; y "déjala
+  completa, si la quiero por partes la señalo en la cascada". **Se quitaron `dbgt` y `dbgt-2`**: queda `dbgt-full`
+  (mismo `id`, el progreso guardado se conserva) y la estrofa `dbgt-3`. `DBGT_P1`/`DBGT_P2` siguen como arreglos
+  internos (la completa es su `concat`); se agregaron rótulos `c. 1`, `c. 9`, `c. 16`… para el Tramo.
+  - **La regla vieja "toda la izquierda con el pulgar" QUEDA ABOLIDA.** Su razón (que la mano no choque con la
+    derecha) se mantiene, pero con otra regla: **el pulgar izquierdo siempre por debajo del pulgar derecho**. Tema:
+    Do4 1, Si3 2, La3 1 (el pulgar pasa por debajo), y desde el c. 4 posición fija con el pulgar en Sol3 (Sol 1, Fa 2,
+    Mi 3, Re 4; c. 8 Mi 3, Sol 1); c. 16-19 Sol 2, Lab 1, Sib 2, Do 1. Queda UN pulgar repetido a propósito (La3→Sol3,
+    c. 3→4, redondas): el Sol con el 2 pondría el pulgar sobre el La3 que la derecha toca en el c. 5. Estrofa:
+    posición fija con el pulgar en Do4 (Do 1, Sib 2, Lab 3, Sol 4, Fa 5); en el c. 6 el pulgar sube al Re4 y el Sol
+    va con el 5.
+  - **Derecha: ningún dedo en dos teclas seguidas.** Tema c. 4 y 12: el Si3 pasa de 1 a **2** (era Do 1 → Si 1 → La 1,
+    tres pulgares; es lo que Jorge ya hacía); c. 16-19 en posición pulgar en Si3 (Re 3, Do 2, Si 1), Do 2, Re 1, y el
+    Mi4 del clímax con el 2 (antes 1 y luego otro 1 en Do5). Estrofa c. 12: el Mib5 4 → Sib4 4 (mismo dedo saltando)
+    pasó a Sib con el pulgar y el 3 cruzando al Lab, como en la escala.
+  - Hay pruebas: digitación de la izquierda, que use ≥4 dedos distintos, que el pulgar izquierdo no llegue a la nota
+    más grave de la derecha en ningún compás (tema y estrofa), y que la derecha no repita dedo en teclas distintas.
+    Las notas NO cambiaron (las pruebas de transcripción siguen igual).
 - **"Sorrow" (Motoi Sakuraba), octubre 2026** (`sorrow-1..4`, Populares). Jorge: "me gusta mucho para
   practicar porque los días están de lluvia y grises… dime cómo está para mi nivel e ir subiendo nivel". Pasó
   MusicXML + MIDI + PDF (MuseScore 4.3.2, transcripción firmada "AIYO v2", subtítulo "What's Up?"; **no sé de qué

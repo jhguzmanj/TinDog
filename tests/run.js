@@ -1183,16 +1183,16 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
     'el tempo es el real de la canción (120 BPM), no una versión lenta puesta sin verificar');
 
   section('Dragon Ball GT: la transcripción cuadra');
-  const dbP1 = W('SONGS.find(s => s.id === "dbgt").steps');
-  const dbP2 = W('SONGS.find(s => s.id === "dbgt-2").steps');
   const dbFull = W('SONGS.find(s => s.id === "dbgt-full").steps');
+  // Las dos mitades sueltas se quitaron (Jorge la toca completa; para practicar por
+  // partes está el Tramo de la cascada). Se cortan aquí para las pruebas de siempre.
+  const dbP1 = dbFull.slice(0, 33), dbP2 = dbFull.slice(33);
+  check(!W('SONGS.some(s => s.id === "dbgt" || s.id === "dbgt-2")'), 'ya no están la Parte 1 y la Parte 2 sueltas: solo el tema completo');
   const sum = st => st.reduce((a, x) => a + x.dur, 0);
   // Verificación 1 de CLAUDE.md: las duraciones tienen que dar 4 por compás.
   check(sum(dbP1) === 32, `Parte 1: ${sum(dbP1)} tiempos = 8 compases justos`);
   check(sum(dbP2) === 52, `Parte 2: ${sum(dbP2)} tiempos = 13 compases justos`);
   check(sum(dbFull) === 84, `Completo: ${sum(dbFull)} tiempos = 21 compases (los de la partitura)`);
-  check(JSON.stringify(dbFull) === JSON.stringify(dbP1.concat(dbP2)),
-    'la completa es Parte 1 + Parte 2, no una copia que se pueda desincronizar');
   // Verificación 2: el bajo tiene que dar la progresión. Las redondas de la
   // izquierda en los compases 1-7 bajan una escala entera de Do a Re.
   const dbBass = dbP1.filter(x => x.lh.length).map(x => x.lh[0]);
@@ -1224,11 +1224,28 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
     (x.lh.length === 0 || (x.lhF && x.lhF.length === x.lh.length)) &&
     (x.rh.length === 0 || (x.rhF && x.rhF.length === x.rh.length))),
     'cada nota trae su dedo');
-  // La izquierda va TODA con el pulgar. En la mano izquierda el pulgar es el
-  // dedo de más a la derecha, así que el resto de la mano queda hacia abajo y
-  // no invade el registro de la derecha, que en esta pieza baja hasta La3.
-  check(dbFull.every(x => x.lhF ? x.lhF.every(f => f === 1) : true),
-    'toda la izquierda va con el pulgar (si no, la mano se abre hacia arriba y choca con la derecha)');
+  // Dedos (octubre 2026): la izquierda ya no va toda con el pulgar.
+  const dbLhF = dbP1.filter(x => x.lh.length).map(x => x.lhF[0]);
+  check(dbLhF.join() === '1,2,1,1,2,3,4,3,1', 'izquierda c. 1-8: Do 1, Si 2, La 1 (pulgar por debajo) y desde el c. 4 posición fija con el pulgar en Sol (Sol 1, Fa 2, Mi 3, Re 4)');
+  check(new Set(dbFull.filter(x => x.lh.length).map(x => x.lhF[0])).size >= 4, 'la izquierda usa la mano entera, no solo el pulgar');
+  // El pulgar izquierdo nunca sube hasta donde está la derecha: lo que ocupa la
+  // izquierda (su nota + los dedos que quedan arriba hasta el pulgar) queda por
+  // debajo de la nota más grave de la derecha en ese compás.
+  const WH = [0,2,4,5,7,9,11];
+  const thumbOf = (n, f) => { let m = n, k = f - 1; while(k > 0){ m++; if(WH.includes(m % 12)) k--; } return m; };
+  let dbBar = [], dbT = 0, dbBars = [];
+  dbFull.forEach(x => { const b = Math.floor(dbT / 4 + 1e-9); (dbBars[b] = dbBars[b] || []).push(x); dbT += x.dur; });
+  let lhTop = null, choques = [];
+  dbBars.forEach((bar, i) => {
+    bar.forEach(x => { if(x.lh.length) lhTop = Math.max(...x.lh.map((n, j) => thumbOf(n, x.lhF[j]))); });
+    const rhMin = Math.min(...bar.flatMap(x => x.rh));
+    if(lhTop !== null && rhMin !== Infinity && lhTop >= rhMin - 1) choques.push(i + 1);
+  });
+  check(choques.length === 0, 'el pulgar izquierdo siempre queda debajo de la derecha, sin chocar (' + choques.join(',') + ')');
+  // Derecha: ningún dedo toca dos teclas distintas seguidas (antes Do 1 → Si 1 → La 1).
+  const repeats = st => { const out = []; let prev = null; st.forEach((x, i) => { if(x.rh.length !== 1){ prev = x.rh.length ? null : prev; return; } const n = x.rh[0], f = x.rhF[0]; if(prev && prev.f === f && prev.n !== n) out.push(i); prev = {n, f}; }); return out; };
+  check(repeats(dbFull).length === 0, 'tema: en la derecha ningún dedo repite en dos teclas distintas seguidas (' + repeats(dbFull).join(',') + ')');
+  check(dbFull.filter(x => x.rh[0] === 59).every(x => x.rhF[0] !== 1 || x.label === undefined) && dbP1[19].rhF[0] === 2, 'el Si3 del c. 4 va con el 2 (la mano baja), no con un tercer pulgar seguido');
   check(dbFull.every(x => !x.lh.length || !x.rh.length || Math.max(...x.lh) < Math.min(...x.rh)),
     'la izquierda siempre queda por debajo de la derecha');
   // Segunda fuente: la hoja de virtualpiano que encontró Jorge. Su melodía es
@@ -1254,8 +1271,15 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
     'la estrofa cae entera en Do menor salvo un Reb de paso (si estuviera mal leída, no daría una tonalidad)');
   check(dbV.some(x => x.rh.some(n => [1, 3, 8, 10].includes(n % 12))),
     'y sí trae teclas negras en la melodía, al revés que el tema');
-  check(dbV.every(x => x.lhF ? x.lhF.every(f => f === 1) : true),
-    'la izquierda de la estrofa también va toda con el pulgar');
+  const VLF = {60:1, 58:2, 56:3, 55:4, 53:5};
+  check(dbV.filter(x => x.lh.length).every(x => VLF[x.lh[0]] === x.lhF[0] || (x.lh[0] === 62 && x.lhF[0] === 1) || (x.lh[0] === 55 && x.lhF[0] === 5)),
+    'estrofa: la izquierda en posición con el pulgar en Do4 (Do 1, Sib 2, Lab 3, Sol 4, Fa 5); solo el c. 6 sube al Re');
+  { let vb = [], vt = 0, top = null, ch = [];
+    dbV.forEach(x => { const k = Math.floor(vt / 4 + 1e-9); (vb[k] = vb[k] || []).push(x); vt += x.dur; });
+    vb.forEach((bar, i) => { bar.forEach(x => { if(x.lh.length) top = Math.max(...x.lh.map((n, j) => thumbOf(n, x.lhF[j]))); });
+      const m = Math.min(...bar.flatMap(x => x.rh)); if(top !== null && m !== Infinity && top >= m - 1) ch.push(i + 1); });
+    check(ch.length === 0, 'estrofa: el pulgar izquierdo siempre queda debajo de la derecha (' + ch.join(',') + ')'); }
+  check(repeats(dbV).length === 0, 'estrofa: en la derecha ningún dedo repite en dos teclas distintas seguidas (' + repeats(dbV).join(',') + ')');
   check(dbV.every(x => !x.lh.length || !x.rh.length || Math.max(...x.lh) < Math.min(...x.rh)),
     'y siempre queda por debajo de la derecha');
 
@@ -2721,7 +2745,7 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
       }
       return out;
     };
-    for(const id of ['cumple', 'estrellita', 'flaca', 'bella-ciao', 'dbgt', 'dbgt-2', 'camino-intervalos', 'amanecer', 'colegiala', 'jingle-bells'])
+    for(const id of ['cumple', 'estrellita', 'flaca', 'bella-ciao', 'dbgt-full', 'dbgt-3', 'camino-intervalos', 'amanecer', 'colegiala', 'jingle-bells'])
       check(pinkyHops(id).length === 0, id + ': ningún meñique pasa de una tecla a otra seguida (' + pinkyHops(id).join(' ') + ')');
     // Cumpleaños feliz (octubre 2026): versión de Janneke Gunther en Fa mayor, izquierda simplificada.
     const cu = W("SONGS.find(s => s.id === 'cumple')");

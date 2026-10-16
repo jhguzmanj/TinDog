@@ -3149,76 +3149,74 @@ const ODA_P2 = [
 ];
 
 // "Dragon Ball GT" (Akihito Tokunaga, arreglo de Thiago Marconato), transcrita
-// de la partitura que pasó Jorge. Mismo reparto en dos mitades que el Himno.
-// Compases 1-8: el tema, primera vez. La izquierda son redondas que bajan una
-// escala entera (Do4 Si3 La3 Sol3 Fa3 Mi3 Re3) — una nota por compás, con el
-// compás entero para moverse.
-// TODA la izquierda va con el PULGAR, a propósito. En la mano izquierda el
-// pulgar es el dedo de más a la derecha: poniéndolo sobre la nota, el resto de
-// la mano queda hacia abajo y fuera del camino. Con la digitación anterior
-// (5 en Fa3, 4 en Sol3…) la mano se abría HACIA ARRIBA y el pulgar caía encima
-// de las teclas que la derecha necesita en los compases 4 y 5 — se chocaban.
+// de la partitura que pasó Jorge. En la app va solo el tema completo (las dos
+// mitades sueltas se quitaron a pedido de Jorge: el Tramo de la cascada hace eso).
+// La izquierda son redondas que bajan una escala (Do4 Si3 La3 Sol3 Fa3 Mi3 Re3).
+// DEDOS DE LA IZQUIERDA (octubre 2026, Jorge: "solo se mueve el 1"): ya no todo
+// con el pulgar. Do 1, Si 2, La 1 (el pulgar pasa por debajo), y desde el c. 4 una
+// posición fija con el pulgar en Sol3 (Sol 1, Fa 2, Mi 3, Re 4). La regla que
+// manda es que el pulgar izquierdo quede SIEMPRE más abajo que el pulgar derecho:
+// por eso el La del c. 3 va con el 1 (con el 3 el pulgar caería en el Do4 que toca
+// la derecha) y el Sol del c. 4 también (la derecha baja al La3 en el c. 5).
+// DERECHA: ningún dedo repite en dos teclas seguidas. El Si3 de los c. 4 y 12 va
+// con el 2 (antes Do 1 → Si 1 → La 1: tres pulgares seguidos).
 const DBGT_P1 = [
-  // 1 — derecha en posición Re4 (Re=1 Mi=2 Fa=3 Sol=4 La=5)
-  {lh:[60], lhF:[1], rh:[67], rhF:[4], dur:1}, {lh:[], rh:[67], rhF:[4], dur:1},
+  // 1-7 — derecha en posición Re4 (Re=1 Mi=2 Fa=3 Sol=4 La=5)
+  {lh:[60], lhF:[1], rh:[67], rhF:[4], dur:1, label:'c. 1 · Tema'}, {lh:[], rh:[67], rhF:[4], dur:1},
   {lh:[], rh:[64], rhF:[2], dur:0.5}, {lh:[], rh:[65], rhF:[3], dur:0.5},
   {lh:[], rh:[67], rhF:[4], dur:0.5}, {lh:[], rh:[69], rhF:[5], dur:0.5},
-  // 2
-  {lh:[59], lhF:[1], rh:[67], rhF:[4], dur:1}, {lh:[], rh:[65], rhF:[3], dur:1},
+  {lh:[59], lhF:[2], rh:[67], rhF:[4], dur:1}, {lh:[], rh:[65], rhF:[3], dur:1},
   {lh:[], rh:[64], rhF:[2], dur:1},  {lh:[], rh:[62], rhF:[1], dur:1},
-  // 3 — la derecha baja: pulgar al Do4 (Do=1 Re=2 Mi=3 Fa=4 Sol=5)
-  {lh:[57], lhF:[1], rh:[64], rhF:[3], dur:1, label:'La derecha baja: pulgar al Do'},
+  {lh:[57], lhF:[1], rh:[64], rhF:[3], dur:1, label:'Derecha: pulgar al Do · Izquierda: el pulgar pasa por debajo, al La'},
   {lh:[], rh:[64], rhF:[3], dur:1},
   {lh:[], rh:[60], rhF:[1], dur:0.5}, {lh:[], rh:[62], rhF:[2], dur:0.5},
   {lh:[], rh:[64], rhF:[3], dur:0.5}, {lh:[], rh:[65], rhF:[4], dur:0.5},
-  // 4 — el Si final dura 2 porque absorbe el silencio con que abre el compás 5
-  {lh:[55], lhF:[1], rh:[64], rhF:[3], dur:1}, {lh:[], rh:[62], rhF:[2], dur:1},
-  {lh:[], rh:[60], rhF:[1], dur:1},  {lh:[], rh:[59], rhF:[1], dur:2},
-  // 5 — tres notas sueltas y separadas: aquí la mano salta
-  {lh:[53], lhF:[1], rh:[57], rhF:[1], dur:1, label:'Saltos: la mano se mueve en cada nota'},
+  {lh:[55], lhF:[1], rh:[64], rhF:[3], dur:1, label:'Izquierda: pulgar al Sol; de aquí al c. 8 no se mueve (Fa 2, Mi 3, Re 4)'},
+  {lh:[], rh:[62], rhF:[2], dur:1},
+  {lh:[], rh:[60], rhF:[1], dur:1},  {lh:[], rh:[59], rhF:[2], dur:2, label:'Si con el 2: la mano derecha baja y el pulgar queda sobre el La'},
+  {lh:[53], lhF:[2], rh:[57], rhF:[1], dur:1, label:'Saltos: la mano derecha se mueve en cada nota'},
   {lh:[], rh:[60], rhF:[2], dur:1},  {lh:[], rh:[69], rhF:[5], dur:1},
-  // 6
-  {lh:[52], lhF:[1], rh:[67], rhF:[4], dur:2, label:'Pulgar derecho otra vez en Do'},
+  {lh:[52], lhF:[3], rh:[67], rhF:[4], dur:2, label:'Pulgar derecho otra vez en Do'},
   {lh:[], rh:[60], rhF:[1], dur:1},
   {lh:[], rh:[62], rhF:[2], dur:0.5}, {lh:[], rh:[64], rhF:[3], dur:0.5},
-  // 7
-  {lh:[50], lhF:[1], rh:[65], rhF:[4], dur:1}, {lh:[], rh:[64], rhF:[3], dur:1},
+  {lh:[50], lhF:[4], rh:[65], rhF:[4], dur:1}, {lh:[], rh:[64], rhF:[3], dur:1},
   {lh:[], rh:[62], rhF:[2], dur:1},  {lh:[], rh:[60], rhF:[1], dur:1},
   // 8
-  {lh:[52], lhF:[1], rh:[64], rhF:[3], dur:2},
-  {lh:[55], lhF:[1], rh:[62], rhF:[2], dur:2, label:'Fin de la parte 1'},
+  {lh:[52], lhF:[3], rh:[64], rhF:[3], dur:2},
+  {lh:[55], lhF:[1], rh:[62], rhF:[2], dur:2, label:'c. 8 · fin de la primera vuelta'},
 ];
 // Compases 9-21: el tema otra vez (9-15 son NOTA POR NOTA los compases 1-7),
 // un final distinto en el 16, el puente de Lab-Sib y el clímax de octavas.
 const DBGT_P2 = [
   // 9-15 = 1-7
-  {lh:[60], lhF:[1], rh:[67], rhF:[4], dur:1}, {lh:[], rh:[67], rhF:[4], dur:1},
+  {lh:[60], lhF:[1], rh:[67], rhF:[4], dur:1, label:'c. 9 · El tema otra vez'}, {lh:[], rh:[67], rhF:[4], dur:1},
   {lh:[], rh:[64], rhF:[2], dur:0.5}, {lh:[], rh:[65], rhF:[3], dur:0.5},
   {lh:[], rh:[67], rhF:[4], dur:0.5}, {lh:[], rh:[69], rhF:[5], dur:0.5},
-  {lh:[59], lhF:[1], rh:[67], rhF:[4], dur:1}, {lh:[], rh:[65], rhF:[3], dur:1},
+  {lh:[59], lhF:[2], rh:[67], rhF:[4], dur:1}, {lh:[], rh:[65], rhF:[3], dur:1},
   {lh:[], rh:[64], rhF:[2], dur:1},  {lh:[], rh:[62], rhF:[1], dur:1},
-  {lh:[57], lhF:[1], rh:[64], rhF:[3], dur:1, label:'La derecha baja: pulgar al Do'},
+  {lh:[57], lhF:[1], rh:[64], rhF:[3], dur:1, label:'Derecha: pulgar al Do · Izquierda: el pulgar pasa por debajo, al La'},
   {lh:[], rh:[64], rhF:[3], dur:1},
   {lh:[], rh:[60], rhF:[1], dur:0.5}, {lh:[], rh:[62], rhF:[2], dur:0.5},
   {lh:[], rh:[64], rhF:[3], dur:0.5}, {lh:[], rh:[65], rhF:[4], dur:0.5},
-  {lh:[55], lhF:[1], rh:[64], rhF:[3], dur:1}, {lh:[], rh:[62], rhF:[2], dur:1},
-  {lh:[], rh:[60], rhF:[1], dur:1},  {lh:[], rh:[59], rhF:[1], dur:2},
-  {lh:[53], lhF:[1], rh:[57], rhF:[1], dur:1, label:'Saltos: la mano se mueve en cada nota'},
+  {lh:[55], lhF:[1], rh:[64], rhF:[3], dur:1, label:'Izquierda: pulgar al Sol; de aquí al c. 15 no se mueve (Fa 2, Mi 3, Re 4)'},
+  {lh:[], rh:[62], rhF:[2], dur:1},
+  {lh:[], rh:[60], rhF:[1], dur:1},  {lh:[], rh:[59], rhF:[2], dur:2, label:'Si con el 2: la mano derecha baja y el pulgar queda sobre el La'},
+  {lh:[53], lhF:[2], rh:[57], rhF:[1], dur:1, label:'Saltos: la mano derecha se mueve en cada nota'},
   {lh:[], rh:[60], rhF:[2], dur:1},  {lh:[], rh:[69], rhF:[5], dur:1},
-  {lh:[52], lhF:[1], rh:[67], rhF:[4], dur:2, label:'Pulgar derecho otra vez en Do'},
+  {lh:[52], lhF:[3], rh:[67], rhF:[4], dur:2, label:'Pulgar derecho otra vez en Do'},
   {lh:[], rh:[60], rhF:[1], dur:1},
   {lh:[], rh:[62], rhF:[2], dur:0.5}, {lh:[], rh:[64], rhF:[3], dur:0.5},
-  {lh:[50], lhF:[1], rh:[65], rhF:[4], dur:1}, {lh:[], rh:[64], rhF:[3], dur:1},
+  {lh:[50], lhF:[4], rh:[65], rhF:[4], dur:1}, {lh:[], rh:[64], rhF:[3], dur:1},
   {lh:[], rh:[62], rhF:[2], dur:1},  {lh:[], rh:[60], rhF:[1], dur:1},
-  // 16 — aquí ya NO es igual a la parte 1: el tema cierra hacia abajo
-  {lh:[55], lhF:[1], rh:[62], rhF:[2], dur:2, label:'Aquí cambia: final distinto al de la parte 1'},
-  {lh:[], rh:[60], rhF:[1], dur:1},  {lh:[], rh:[59], rhF:[1], dur:1},
+  // 16 — aquí cambia: la derecha baja en posición con el pulgar en Si3
+  {lh:[55], lhF:[2], rh:[62], rhF:[3], dur:2, label:'c. 16 · Final distinto · derecha: pulgar al Si (Re 3, Do 2, Si 1)'},
+  {lh:[], rh:[60], rhF:[2], dur:1},  {lh:[], rh:[59], rhF:[1], dur:1},
   // 17-18 — las dos únicas teclas negras de la pieza, las dos en la izquierda
-  {lh:[56], lhF:[1], rh:[60], rhF:[1], dur:4, label:'Lab: la primera tecla negra, en la izquierda'},
-  {lh:[58], lhF:[1], rh:[62], rhF:[2], dur:4, label:'Sib: la segunda'},
+  {lh:[56], lhF:[1], rh:[60], rhF:[2], dur:4, label:'c. 17 · Lab con el pulgar izquierdo'},
+  {lh:[58], lhF:[2], rh:[62], rhF:[1], dur:4, label:'c. 18 · Sib con el 2: la izquierda sube y el pulgar queda sobre el Do'},
   // 19-20 — el clímax: la derecha alterna cada nota con la misma una octava
   // arriba, bajando Do Si La Sol Fa Mi Re. Pulgar abajo, meñique arriba.
-  {lh:[60], lhF:[1], rh:[64], rhF:[1], dur:1, label:'Clímax: pulgar abajo, meñique una octava arriba'},
+  {lh:[60], lhF:[1], rh:[64], rhF:[2], dur:1, label:'c. 19 · Clímax: pulgar abajo, meñique una octava arriba'},
   {lh:[], rh:[72], rhF:[1], dur:0.5}, {lh:[], rh:[84], rhF:[5], dur:0.5},
   {lh:[], rh:[71], rhF:[1], dur:0.5}, {lh:[], rh:[83], rhF:[5], dur:0.5},
   {lh:[], rh:[69], rhF:[1], dur:0.5}, {lh:[], rh:[81], rhF:[5], dur:0.5},
@@ -3228,7 +3226,7 @@ const DBGT_P2 = [
   {lh:[], rh:[64], rhF:[1], dur:0.5}, {lh:[], rh:[76], rhF:[5], dur:0.5},
   {lh:[], rh:[62], rhF:[1], dur:0.5}, {lh:[], rh:[74], rhF:[5], dur:0.5},
   // 21 — la derecha calla, la izquierda cierra sola en Do
-  {lh:[60], lhF:[1], rh:[], dur:4, label:'Fin: cierra la izquierda sola'},
+  {lh:[60], lhF:[1], rh:[], dur:4, label:'c. 21 · Fin: cierra la izquierda sola'},
 ];
 
 // La ESTROFA no viene de la partitura (que es solo el tema) sino de la hoja de
@@ -3241,15 +3239,15 @@ const DBGT_P2 = [
 // La izquierda, como en el resto de la pieza, va toda con el pulgar.
 const DBGT_V = [
   // 1
-  {lh:[56], lhF:[1], rh:[], dur:2, label:'La estrofa entra sola con la izquierda'},
+  {lh:[56], lhF:[3], rh:[], dur:2, label:'La estrofa entra sola con la izquierda'},
   {lh:[], rh:[72], rhF:[5], dur:0.5}, {lh:[], rh:[72], rhF:[5], dur:0.5},
   {lh:[], rh:[72], rhF:[5], dur:0.5}, {lh:[], rh:[72], rhF:[5], dur:0.5},
   // 2
-  {lh:[58], lhF:[1], rh:[72], rhF:[5], dur:1},
+  {lh:[58], lhF:[2], rh:[72], rhF:[5], dur:1},
   {lh:[], rh:[70], rhF:[4], dur:0.5}, {lh:[], rh:[68], rhF:[3], dur:0.5},
   {lh:[], rh:[70], rhF:[4], dur:0.5}, {lh:[], rh:[72], rhF:[5], dur:1.5},
   // 3
-  {lh:[55], lhF:[1], rh:[70], rhF:[4], dur:2},
+  {lh:[55], lhF:[4], rh:[70], rhF:[4], dur:2},
   {lh:[], rh:[70], rhF:[4], dur:0.5}, {lh:[], rh:[70], rhF:[4], dur:0.5},
   {lh:[], rh:[70], rhF:[4], dur:0.5}, {lh:[], rh:[70], rhF:[4], dur:0.5},
   // 4
@@ -3257,38 +3255,38 @@ const DBGT_V = [
   {lh:[], rh:[68], rhF:[3], dur:0.5}, {lh:[], rh:[67], rhF:[2], dur:0.5},
   {lh:[], rh:[68], rhF:[3], dur:0.5}, {lh:[], rh:[70], rhF:[4], dur:1.5},
   // 5
-  {lh:[53], lhF:[1], rh:[68], rhF:[3], dur:2},
+  {lh:[53], lhF:[5], rh:[68], rhF:[3], dur:2},
   {lh:[], rh:[68], rhF:[3], dur:0.5}, {lh:[], rh:[68], rhF:[3], dur:0.5},
   {lh:[], rh:[68], rhF:[3], dur:0.5}, {lh:[], rh:[68], rhF:[3], dur:0.5},
   // 6
-  {lh:[62], lhF:[1], rh:[68], rhF:[3], dur:1}, {lh:[], rh:[67], rhF:[2], dur:1},
-  {lh:[55], lhF:[1], rh:[67], rhF:[2], dur:1}, {lh:[], rh:[65], rhF:[1], dur:1},
+  {lh:[62], lhF:[1], rh:[68], rhF:[3], dur:1, label:'Izquierda: el pulgar sube al Re'}, {lh:[], rh:[67], rhF:[2], dur:1},
+  {lh:[55], lhF:[5], rh:[67], rhF:[2], dur:1, label:'Sol con el 5; en el compás siguiente el pulgar vuelve al Do'}, {lh:[], rh:[65], rhF:[1], dur:1},
   // 7
   {lh:[60], lhF:[1], rh:[65], rhF:[1], dur:1}, {lh:[], rh:[67], rhF:[2], dur:1},
   {lh:[], rh:[63], rhF:[1], dur:0.5, label:'La mano baja: el pulgar pasa al Mib'},
   {lh:[], rh:[65], rhF:[2], dur:0.5}, {lh:[], rh:[67], rhF:[3], dur:1},
   // 8
-  {lh:[58], lhF:[1], rh:[], dur:2},
+  {lh:[58], lhF:[2], rh:[], dur:2},
   {lh:[], rh:[61], rhF:[1], dur:0.5, label:'Reb: la única nota fuera de tono, de paso'},
   {lh:[], rh:[68], rhF:[3], dur:0.5}, {lh:[], rh:[70], rhF:[4], dur:1},
   // 9 — segunda vuelta
-  {lh:[56], lhF:[1], rh:[72], rhF:[5], dur:2, label:'Segunda vuelta de la estrofa'},
+  {lh:[56], lhF:[3], rh:[72], rhF:[5], dur:2, label:'Segunda vuelta de la estrofa'},
   {lh:[], rh:[72], rhF:[5], dur:0.5}, {lh:[], rh:[72], rhF:[5], dur:0.5},
   {lh:[], rh:[72], rhF:[5], dur:0.5}, {lh:[], rh:[72], rhF:[5], dur:0.5},
   // 10
-  {lh:[56], lhF:[1], rh:[72], rhF:[5], dur:1},
+  {lh:[56], lhF:[3], rh:[72], rhF:[5], dur:1},
   {lh:[], rh:[70], rhF:[4], dur:0.5}, {lh:[], rh:[68], rhF:[3], dur:0.5},
   {lh:[], rh:[70], rhF:[4], dur:0.5}, {lh:[], rh:[72], rhF:[5], dur:1.5},
   // 11 — aquí la melodía sube por encima de la posición
-  {lh:[55], lhF:[1], rh:[70], rhF:[4], dur:2},
+  {lh:[55], lhF:[4], rh:[70], rhF:[4], dur:2},
   {lh:[], rh:[70], rhF:[1], dur:0.5, label:'La mano sube: el pulgar pasa al Sib'},
   {lh:[], rh:[72], rhF:[2], dur:0.5}, {lh:[], rh:[74], rhF:[3], dur:1},
   // 12
   {lh:[60], lhF:[1], rh:[74], rhF:[3], dur:1}, {lh:[], rh:[75], rhF:[4], dur:1},
-  {lh:[], rh:[70], rhF:[4], dur:0.5, label:'Y vuelve: pulgar otra vez en Fa'},
+  {lh:[], rh:[70], rhF:[1], dur:0.5, label:'Sib con el pulgar y el 3 cruza por encima al Lab (como en la escala)'},
   {lh:[], rh:[68], rhF:[3], dur:0.5}, {lh:[], rh:[67], rhF:[2], dur:1},
   // 13
-  {lh:[53], lhF:[1], rh:[68], rhF:[3], dur:2}, {lh:[], rh:[70], rhF:[4], dur:1},
+  {lh:[53], lhF:[5], rh:[68], rhF:[3], dur:2}, {lh:[], rh:[70], rhF:[4], dur:1},
   {lh:[], rh:[68], rhF:[3], dur:1, label:'Fin de la estrofa'},
 ];
 
@@ -5804,26 +5802,10 @@ const SONGS = [
     ]
   },
   {
-    id:'dbgt',
-    cat:'popular',
-    name:'Dragon Ball GT · Parte 1',
-    tip:'Compases 1-8. La izquierda: una redonda por compás, siempre con el pulgar. La derecha baja de posición en el compás 3. El compás 5 tiene un salto: practícalo aparte.',
-    tempo:120,
-    steps: DBGT_P1
-  },
-  {
-    id:'dbgt-2',
-    cat:'popular',
-    name:'Dragon Ball GT · Parte 2',
-    tip:'Los primeros 7 compases repiten la Parte 1. Lo nuevo es el final: la derecha alterna cada nota con su octava. Bájale la VELOCIDAD en cascada hasta que salga.',
-    tempo:120,
-    steps: DBGT_P2
-  },
-  {
     id:'dbgt-full',
     cat:'popular',
     name:'Dragon Ball GT (tema completo)',
-    tip:'El tema completo. Únelo cuando cada parte te salga sola; si un tramo se traba, repítelo con "Tramo" en el modo cascada.',
+    tip:'El tema completo. Izquierda: una redonda por compás; desde el c. 4 la mano se queda con el pulgar en Sol. Si un tramo se traba, repítelo con "Tramo" en la cascada.',
     tempo:120,
     steps: DBGT_P1.concat(DBGT_P2)
   },
@@ -5831,7 +5813,7 @@ const SONGS = [
     id:'dbgt-3',
     cat:'popular',
     name:'Dragon Ball GT · Estrofa',
-    tip:'La estrofa, en Do menor (Mib, Lab y Sib). Pulgar derecho en Fa4, se mueve dos veces (marcadas). El ritmo es aproximado: el vaivén sácalo de la canción.',
+    tip:'La estrofa, en Do menor (Mib, Lab y Sib). Pulgar derecho en Fa4, se mueve dos veces (marcadas); la izquierda con el pulgar en Do4 y un dedo por nota. El ritmo es aproximado: el vaivén sácalo de la canción.',
     tempo:120,
     steps: DBGT_V
   },
