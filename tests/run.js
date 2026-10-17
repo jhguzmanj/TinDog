@@ -1060,14 +1060,42 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
   const keepMin = W('todayPlan.filter(it => it.block === "keep").reduce((a,it) => a + it.min, 0)');
   check(coreMin > keepMin, 'y se lleva más minutos que el mantenimiento (' + coreMin + ' vs ' + keepMin + ')');
   const chordsPaused = W('dateKey() < CHORDS_PAUSED_UNTIL');
-  check(W('todayPlan.filter(it => it.block === "keep").map(it => it.key)').join(',') === (chordsPaused ? 'reading,tarea' : 'reading,chords,tarea'),
+  check(W('todayPlan.filter(it => it.block === "keep").map(it => it.key)').join(',') === (chordsPaused ? 'reading,tarea,week' : 'reading,chords,tarea,week'),
     'lectura, ' + (chordsPaused ? '' : 'acordes y ') + 'la práctica de la clase siguen en el plan; las piezas de repertorio ya no (las elige Jorge)');
   // Clase del 10 de octubre: sin acordes hasta la clase siguiente; después vuelven solos
   const keepOn = d => W(`(() => { const dk = dateKey; dateKey = () => '${d}'; try { return buildTodayPlan(7).filter(it => it.block === 'keep').map(it => it.key).join(','); } finally { dateKey = dk; } })()`);
-  check(keepOn('2026-10-12') === 'reading,tarea', 'la semana del 10 de octubre no hay acordes en el plan');
-  check(keepOn('2026-10-17') === 'reading,chords,tarea', 'desde la clase del 17 de octubre vuelven los acordes, y la tarea de la clase se queda');
+  check(keepOn('2026-10-12') === 'reading,tarea,week', 'la semana del 10 de octubre no hay acordes en el plan');
+  check(keepOn('2026-10-17') === 'reading,chords,tarea,week', 'desde la clase del 17 de octubre vuelven los acordes, y la tarea de la clase se queda');
   check(!W('buildTodayPlan(3)').some(it => it.key === 'song'), 'ninguna pieza de repertorio en el plan de Hoy');
   check(doc.querySelectorAll('#todayList .today-block').length === 2, 'los dos bloques se rotulan en pantalla');
+  // Piezas de la semana: las elige Jorge (hasta 3); el plan propone una por día.
+  section('Piezas de la semana');
+  W("weekPieces = { ids:[], since:null }; todayPlan = null");
+  const wk = () => W("buildTodayPlan(1).find(it => it.key === 'week')");
+  check(wk().title.includes('Elige'), 'sin piezas elegidas, el plan pide elegirlas');
+  W("selectCategory('fragments')");
+  W("pickFragmentById('bella-ciao')");
+  const wbtn = doc.getElementById('weekPieceBtn');
+  check(wbtn.style.display !== 'none' && wbtn.textContent.includes('0/3'), 'el botón aparece en una pieza y dice 0/3');
+  wbtn.dispatchEvent(new window.MouseEvent('click', { bubbles:true }));
+  check(W('weekPieces.ids').join() === 'bella-ciao' && wbtn.textContent.includes('★') && wbtn.textContent.includes('1/3'), 'marcarla la agrega (★ 1/3)');
+  check(W('JSON.parse(localStorage.getItem("weekPieces")).ids').join() === 'bella-ciao', 'la lista se guarda');
+  check([...doc.querySelectorAll('#fragSubTabs .mode-tab')].some(b => b.dataset.frag === 'bella-ciao' && b.textContent.startsWith('★')), 'la pieza sale con ★ en la lista');
+  W("toggleWeekPiece('flaca'); toggleWeekPiece('amanecer')");
+  check(W("toggleWeekPiece('cumple')").includes('Quita una'), 'no deja pasar de 3');
+  check(W('weekPieces.ids.length') === 3, 'siguen siendo 3');
+  W("progress = emptyProgress(); progress.songs['bella-ciao'] = {runs:2, lastDay:'2000-01-02'}; progress.songs['amanecer'] = {runs:1, lastDay:'2000-01-01'}");
+  check(wk().title.includes(W("SONGS.find(s => s.id === 'flaca').name")), 'propone la que nunca tocó');
+  W("progress.songs['flaca'] = {runs:1, lastDay:'2000-01-03'}");
+  check(wk().title.includes(W("SONGS.find(s => s.id === 'amanecer').name")), 'después, la que lleva más tiempo sin tocar');
+  W("progress.songs['bella-ciao'].lastDay = dateKey()");
+  const wToday = wk();
+  check(wToday.title.includes('Bella') && W("buildTodayPlan(1).find(it => it.key === 'week').done()"), 'si hoy ya tocó una, esa es la de hoy y sale marcada');
+  W("weekPieces.since = '2000-01-01'");
+  check(wk().sub.includes('¿alguna ya sale'), 'después de una semana pregunta si cambia alguna');
+  W("pickFragmentById('ej-grados')");
+  check(wbtn.style.display === 'none', 'los ejercicios guiados no se marcan (van por la tarea)');
+  W("weekPieces = { ids:[], since:null }; saveWeekPieces(); progress = emptyProgress(); selectCategory('today'); todayPlan = buildTodayPlan(1); renderToday()");
   check(W("todayPlan.find(it => it.key === 'intervals').title").includes('Anclas') && W("todayPlan.find(it => it.key === 'ear').title").includes('Anclas'),
     'intervalos y oído arrancan en el nivel 1');
   W("todayPlan.find(it => it.key === 'intervals').go()");

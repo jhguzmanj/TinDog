@@ -1402,6 +1402,7 @@
         <button id="listenBtn" class="ghost-btn">▶ Escuchar</button>
         <button id="pedalToggleBtn" class="ghost-btn" style="display:none;" title="Practicar con o sin pedal de resonancia. Consejo: aprende primero la pieza sin pedal.">🦶 Pedal: sí</button>
         <button id="cascadeBtn" class="ghost-btn">🌊 Modo cascada</button>
+        <button id="weekPieceBtn" class="ghost-btn" style="display:none;" title="Marca hasta 3 piezas para trabajar esta semana: el plan de Hoy te propone una cada día.">☆ De la semana</button>
       </div>
       <div id="fragTip" class="tip"></div>
       <div id="cascadeWrap" style="display:none;">
@@ -7025,6 +7026,31 @@ const SONG_CATS = [
 
 // Hanon son ejercicios de técnica: viven en Agilidad (grupo 'hanon'), no en Piezas.
 const FRAGMENTS = SONGS.filter(s => s.grupo !== 'hanon');
+// Piezas de la semana (pedido de Jorge, 17 oct 2026): él elige hasta 3 piezas de
+// repertorio y el plan de Hoy le propone una cada día. Solo piezas que se tocan
+// (los guiados ya van por el punto de la tarea). `since` = cuándo se armó la lista.
+const WEEK_MAX = 3;
+let weekPieces = { ids:[], since:null };
+try {
+  const w = JSON.parse(localStorage.getItem('weekPieces') || 'null');
+  if(w && Array.isArray(w.ids)) weekPieces = { ids: w.ids.filter(id => FRAGMENTS.some(f => f.id === id && !f.guide)).slice(0, WEEK_MAX), since: w.since || null };
+} catch(e){}
+function saveWeekPieces(){ try { localStorage.setItem('weekPieces', JSON.stringify(weekPieces)); } catch(e){} }
+function weekPieceEligible(song){ return !!song && practiceFamily !== 'agility' && !song.guide && FRAGMENTS.includes(song); }
+// Devuelve un texto si no se pudo (ya hay 3), o null.
+function toggleWeekPiece(id){
+  const i = weekPieces.ids.indexOf(id);
+  if(i >= 0) weekPieces.ids.splice(i, 1);
+  else {
+    if(weekPieces.ids.length >= WEEK_MAX)
+      return 'Ya tienes ' + WEEK_MAX + ' piezas de la semana (' + weekPieces.ids.map(x => (SONGS.find(s => s.id === x) || {}).name).join(', ') + '). Quita una primero.';
+    weekPieces.ids.push(id);
+  }
+  // La lista "nueva" empieza cuando se arma de cero o se cambia una pieza.
+  weekPieces.since = weekPieces.ids.length ? dateKey() : null;
+  saveWeekPieces();
+  return null;
+}
 
 // ref = cómo reconocerlo de oído; tip = qué practicar / dónde cae en el teclado.
 const INTERVALS = [
@@ -8243,7 +8269,7 @@ function renderSubTabs(){
     // categoría la lista se redibuja y la activa puede estar en otra posición.
     const isCur = item.id === curId || (!items.some(x => x.id === curId) && i === 0);
     b.className = 'mode-tab sub' + (isCur ? ' active' : '');
-    b.textContent = item.name;
+    b.textContent = (practiceFamily !== 'agility' && weekPieces.ids.includes(item.id) ? '★ ' : '') + item.name;
     b.dataset.frag = item.id;
     b.addEventListener('click', () => {
       fragSubTabs.querySelectorAll('.mode-tab').forEach(t => t.classList.remove('active'));
@@ -8354,6 +8380,7 @@ function startFragmentStep(){
   // se muerde la cola.
   stopFragmentPlayback();
   renderPedalToggle();
+  renderWeekPieceBtn();
   // Pedal 0 es un guía, no una pieza: sin Escuchar ni cascada.
   const isGuide = !!(currentFragment && currentFragment.guide);
   ['listenBtn', 'cascadeBtn'].forEach(id => { const b = document.getElementById(id); if(b) b.style.display = isGuide ? 'none' : ''; });
@@ -8506,6 +8533,29 @@ function pedalWrapUp(after){
     if(after) after(pedalSummary);
   }, 1500);
 }
+function renderWeekPieceBtn(){
+  const b = document.getElementById('weekPieceBtn');
+  if(!b) return;
+  const ok = weekPieceEligible(currentFragment);
+  b.style.display = ok ? '' : 'none';
+  if(!ok) return;
+  const on = weekPieces.ids.includes(currentFragment.id);
+  b.classList.toggle('active', on);
+  b.textContent = (on ? '★' : '☆') + ' De la semana · ' + weekPieces.ids.length + '/' + WEEK_MAX;
+}
+document.getElementById('weekPieceBtn').addEventListener('click', () => {
+  if(!weekPieceEligible(currentFragment)) return;
+  const err = toggleWeekPiece(currentFragment.id);
+  if(err){ feedbackText.textContent = err; feedbackText.className = 'feedback wrong'; }
+  else {
+    const on = weekPieces.ids.includes(currentFragment.id);
+    feedbackText.textContent = on ? '★ ' + currentFragment.name + ' es pieza de la semana. El plan de Hoy te la va a proponer.' : currentFragment.name + ' salió de las piezas de la semana.';
+    feedbackText.className = 'feedback';
+  }
+  todayPlan = null;
+  renderWeekPieceBtn();
+  renderSubTabs();
+});
 function pedalToggleRelevant(){
   if(!currentFragment || (currentMode !== 'fragments' && currentMode !== 'agility')) return false;
   if(currentFragment.guide) return PEDAL_GUIDES.indexOf(currentFragment.guide) >= 0;
@@ -12353,6 +12403,28 @@ function buildTodayPlan(seed){
     sub:tarea.guide ? 'Ejercicio guiado: la app te pide una cosa a la vez.' : 'Cada mano sola y después juntas.',
     done: () => (progress.songs[tarea.id] || {}).lastDay === today || (progress.cascade[tarea.id] || {}).lastDay === today,
     go: () => { selectCategory('fragments'); pickFragmentById(tarea.id); } });
+
+  // Piezas de la semana: las elige Jorge (hasta 3). Cada día una: la que lleva más
+  // tiempo sin tocar. Si hoy ya tocó una, ESA es la de hoy (mismo arreglo que el
+  // calentamiento: si no, al tocarla el punto saltaba a la siguiente sin marcarse).
+  const playedOn = (id) => [progress.songs[id], progress.cascade[id]].reduce((d, r) => (r && r.lastDay && (!d || r.lastDay > d)) ? r.lastDay : d, null);
+  const week = weekPieces.ids.map(id => SONGS.find(s => s.id === id)).filter(Boolean);
+  if(!week.length){
+    items.push({ key:'week', min:5, block:'keep', title:'Elige tus piezas de la semana',
+      sub:'En Piezas, abre la que quieras trabajar y toca "☆ De la semana" (hasta ' + WEEK_MAX + '). Cada día te propongo una.',
+      done: () => false,
+      go: () => { selectCategory('fragments'); } });
+  } else {
+    const piece = week.find(s => playedOn(s.id) === today) ||
+      week.slice().sort((a, b) => (playedOn(a.id) || '').localeCompare(playedOn(b.id) || ''))[0];
+    const days = weekPieces.since ? Math.round((new Date(today) - new Date(weekPieces.since)) / 86400000) : 0;
+    const others = week.filter(s => s !== piece).map(s => s.name);
+    items.push({ key:'week', min:5, block:'keep', title:'Pieza de la semana: ' + piece.name,
+      sub:'Completa o un tramo en la cascada.' + (others.length ? ' Las otras: ' + others.join(' · ') + '.' : '') +
+        (days >= 7 ? ' Llevas ' + days + ' días con estas: ¿alguna ya sale y la cambias por otra?' : ''),
+      done: () => playedOn(piece.id) === today,
+      go: () => { selectCategory('fragments'); pickFragmentById(piece.id); } });
+  }
 
   return items;
 }

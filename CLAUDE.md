@@ -2635,6 +2635,15 @@ explicó antes que la app estaba congelada y que era un modo grande; dijo que s�
   queda en lectura + acordes (desde `CHORDS_PAUSED_UNTIL`) + **`tarea`**, que ahora va siempre: la pieza o ejercicio
   guiado `tarea:true` menos practicado. Costo, dicho a Jorge: lo que no elija él en Piezas ya nadie se lo recuerda.
   `plan:false` sigue sirviendo para la rotación del calentamiento (coordinación), no para piezas. Hay prueba.
+  **Piezas de la semana (17 oct 2026, Jorge, después de lo anterior: "agrega la práctica de tres piezas semanales y
+  las vamos eligiendo mejor").** Botón `#weekPieceBtn` ("☆ De la semana · n/3") en la barra de Piezas; solo en piezas
+  que se tocan (no Agilidad ni guiados: esos van por la tarea). Máximo `WEEK_MAX` = 3; con 3 no deja agregar y dice
+  cuáles hay. Las elegidas llevan ★ en la lista. Se guarda en localStorage `weekPieces` (`{ids, since}`, `since` =
+  último cambio de la lista); **no va en `progress` ni en el respaldo**: una lista no se fusiona por máximos (y el
+  archivo suelto y el artifact tienen listas distintas). Punto `week` (5 min, `keep`, después de `tarea`): sin
+  piezas pide elegirlas; con piezas propone la que lleva más tiempo sin tocar (`songs` o `cascade`), salvo que hoy
+  ya tocó una (esa es la de hoy y sale marcada, mismo arreglo que el calentamiento). Con `since` de 7+ días
+  pregunta si cambia alguna: el "irlas eligiendo mejor" es de Jorge, la app solo lo recuerda. Hay prueba.
   **El `go` del paso 2 deja el metrónomo listo** en el BPM de la meta y enciende
   `⏱ Con metrónomo`: si hay que ir a buscarlo a mano, no se usa.
 - Exportar/importar JSON desde la pestaña Progreso. **Importar FUSIONA, no pisa**
@@ -2678,7 +2687,7 @@ cualquier otro navegador funcionan igual que antes (`cloudState: 'off'`).
 `chordReps` (repeticiones de acordes), `chordGroup` (qué acordes: básicos / demás / todos),
 `audioFallback` (sonido alternativo, ver más abajo),
 `solfaShown`, `cascadeSpeed`, `scaleOpts` (mano/octavas/sentido/dedos/variante menor),
-`metroBpm`, `metroMeter`, `rhythmLevel`, `readingLevel`, `handsShown`, `soundTarget`.
+`metroBpm`, `metroMeter`, `rhythmLevel`, `weekPieces`, `readingLevel`, `handsShown`, `soundTarget`.
 
 ## Diseño (jerarquía deliberada)
 Regla que manda: el 90% del tiempo Jorge mira **una sola cosa** — qué tecla toca
