@@ -550,6 +550,55 @@ W("exitCascade()");
 ev('#cascadeBtn');
 W("cascadeMode='wait'; applyCascadeMode()");
 
+section('Cantar: detección de la voz, rango e igualar la nota');
+{
+  // Señales generadas: un seno, una "voz" con armónicos, silencio y ruido.
+  const gen = (f, harm, amp) => W(`(() => { const sr = 44100, b = new Float32Array(2048);
+    for(let i = 0; i < b.length; i++){ let v = 0; ${JSON.stringify(harm)}.forEach((a, k) => v += a * Math.sin(2 * Math.PI * f * (k + 1) * i / sr)); b[i] = v * ${amp}; }
+    const p = detectPitch(b, sr); return p ? p.freq : null; })()`.replace(/\bf\b/g, String(f)));
+  const f220 = gen(220, [1], 0.3), fVoice = gen(130.81, [1, 0.6, 0.4, 0.25], 0.2), f523 = gen(523.25, [1, 0.3], 0.3);
+  check(Math.abs(f220 - 220) < 1, 'seno de 220 Hz: lo detecta como La3 (' + (f220 && f220.toFixed(1)) + ' Hz)');
+  check(Math.abs(fVoice - 130.81) < 1, 'voz grave con armónicos (Do3): no se va a la octava (' + (fVoice && fVoice.toFixed(1)) + ' Hz)');
+  check(Math.abs(f523 - 523.25) < 2, 'Do5 con armónicos (' + (f523 && f523.toFixed(1)) + ' Hz)');
+  check(gen(220, [1], 0.001) === null, 'silencio: no inventa una nota');
+  check(W(`(() => { const b = new Float32Array(2048); let s = 7; for(let i = 0; i < b.length; i++){ s = (s * 16807) % 2147483647; b[i] = (s / 2147483647 - 0.5) * 0.5; } return detectPitch(b, 44100); })()`) === null,
+    'ruido: no inventa una nota');
+  check(Math.round(W('freqToMidi(440)')) === 69 && Math.abs(W('freqToMidi(261.63)') - 60) < 0.01, 'frecuencia → tecla (La4 = 69, Do4 = 60)');
+
+  ev('#mainTabs [data-cat="sing"]');
+  check(doc.getElementById('singPanel').style.display !== 'none' && W("currentMode") === 'sing', 'pestaña Cantar abre su panel');
+  W("soundEnabled = false; SING.low = SING.high = SING.natural = null; SING.step = 'range'; SING.mutedUntil = 0; singRender()");
+  // Rango: cada nota sostenida 400 ms entra; un destello corto no.
+  const feed = (m, t0, ms) => { for(let t = 0; t <= ms; t += 50) W(`singOnPitch(${m}, ${t0 + t})`); };
+  feed(50.1, 1000, 600); feed(57, 2000, 600); feed(62.2, 3000, 600);
+  feed(75, 4000, 150); W('singOnPitch(null, 4200)');
+  check(W('SING.low') === 50 && W('SING.high') === 62, 'rango: guarda la más grave y la más aguda sostenidas (Re3 a Re4), no el destello corto');
+  check(JSON.parse(window.localStorage.getItem('singRange')).high === 62, 'el rango se recuerda');
+  feed(55, 5000, 500);
+  doc.getElementById('singNaturalBtn').dispatchEvent(new window.MouseEvent('click', { bubbles:true }));
+  check(W('SING.natural') === 55, 'tono natural: la nota que está sonando al tocar el botón');
+  // Igualar
+  ev('#singStepPicker [data-step="match"]');
+  const tg = W('SING.target');
+  check(tg >= 51 && tg <= 61, 'igualar: la nota pedida cae dentro del rango (sin los bordes)');
+  W('SING.mutedUntil = 0; SING.hist = []');
+  feed(tg - 1.2, 10000, 300);
+  check(doc.getElementById('singBig').textContent.includes('Sube'), 'cantando más grave: "Sube la voz"');
+  W('SING.hist = []'); feed(tg + 12, 11000, 300);
+  check(doc.getElementById('singBig').textContent.includes('octava'), 'una octava arriba: lo dice, no lo da por bueno');
+  const hits0 = W('SING.hits');
+  W('SING.hist = []'); feed(tg + 0.2, 12000, 400);
+  check(W('SING.hits') === hits0, 'en la nota, pero menos de 0,7 s: todavía no cuenta');
+  feed(tg + 0.2, 12450, 400);
+  check(W('SING.hits') === hits0 + 1, 'sostenida 0,7 s dentro de ±35 cents: afinada');
+  W('SING.mutedUntil = 99999; SING.hist = []; SING.holdSince = 0'); feed(tg, 20000, 1000);
+  check(W('SING.hits') === hits0 + 1, 'mientras suena la nota de la app no escucha (no cuenta el piano como tu voz)');
+  W("if(SING.nextTimer){ clearTimeout(SING.nextTimer); SING.nextTimer = null; } SING.on = true; SING.stream = { getTracks: () => [] }");
+  ev('#mainTabs [data-cat="today"]');
+  check(W('SING.on') === false, 'salir de Cantar apaga el micrófono');
+  W("SING.step = 'range'; SING.mutedUntil = 0");
+}
+
 section('Pentagramas lado a lado y consejo por intervalo');
 ev('#mainTabs [data-cat="scales"]');
 W("scaleHand='both'; refreshScaleHand(); startScaleRun()");

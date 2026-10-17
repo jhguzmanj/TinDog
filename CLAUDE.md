@@ -104,7 +104,7 @@ Orden dentro del `<script>`:
    plan de "Hoy", panel de progreso. Termina con `selectCategory('today')`.
 
 ## Pestañas (`data-cat`)
-`today | scales | agility | chords | intervals | reading | rhythm | fragments (rotulada "Piezas") | progress`,
+`today | scales | agility | chords | intervals | reading | rhythm | sing ("Cantar") | fragments (rotulada "Piezas") | progress`,
 y dentro de "Más ▾": `free | functions`.
 
 ## Datos principales
@@ -2566,6 +2566,36 @@ decía hacia qué lado se equivoca Jorge.
 - **No se hizo** (no se eligió): subdivisiones audibles en el metrónomo, tap tempo
   y volumen del clic. Si el ritmo en corcheas cuesta, la primera mejora sería el
   clic de la subdivisión.
+
+## Cantar (`sing`, pestaña "Cantar", 17 oct 2026)
+Pedido del profe (vía Jorge): "identificar mi tono natural de la voz, cantar los tonos y sus intervalos y
+reconocerlos; eso me cuesta". **Hueco real**: todo lo demás mide las manos; nada escuchaba la voz. Se le
+explicó antes que la app estaba congelada y que era un modo grande; dijo que sí.
+- **Micrófono** (`singStart`): `getUserMedia` sin cancelación de eco, supresión de ruido ni ganancia
+  automática (deforman el tono), a un `AnalyserNode` de 2048 muestras, **nunca a los parlantes**. Un cuadro
+  por `raf`. `singStop` corta las pistas; lo llaman `enterMode` (salir de la pestaña) y `visibilitychange`.
+  **En el artifact casi seguro está bloqueado** (igual que el MIDI: el iframe no delega el permiso); el
+  mensaje lo dice y manda al archivo suelto. No se pudo comprobar dentro del visor.
+- **`detectPitch(buf, sr)`**: autocorrelación normalizada (NSDF, método de McLeod): salta el primer lóbulo,
+  toma el PRIMER pico ≥ 90% del más alto (si no, cae una octava abajo) e interpola en parábola. Devuelve
+  `null` con silencio (RMS < 0,01) o ruido (claridad < 0,6). Rango ~65 Hz–1 kHz. Es una función pura: hay
+  pruebas con un seno, una "voz" con armónicos (Do3), Do5, silencio y ruido.
+- **`singOnPitch(m, now)`** recibe la nota MIDI con decimales (o `null`); mediana de los últimos 5 cuadros.
+  Mientras suena la nota de la app (`mutedUntil`, 1,5 s) no escucha: si no, el piano por los parlantes
+  contaría como voz. Por eso también se pide usar audífonos.
+- **Paso 1 · Tu rango**: cada nota SOSTENIDA 400 ms (`SING_STABLE_MS`) amplía `low`/`high` (entre Do2 y Do6,
+  fuera de eso es error del detector); "Este es mi tono natural" guarda la nota que suena en ese momento.
+  Persiste en `singRange`. El teclado marca el rango en azul y el tono natural en dorado.
+- **Paso 2 · Igualar la nota**: la app elige una nota dentro del rango (sin los bordes si el rango tiene ≥ 6
+  semitonos), la toca y la marca. Vale si se sostiene **0,7 s dentro de ±35 cents** (`SING_HOLD_MS`,
+  `SING_OK_CENTS`: números MÍOS, ajustables). Dice "Sube/Baja la voz" y detecta la **octava equivocada**
+  (la dice, no la acepta). Aguja de ±100 cents con la zona verde de ±35.
+- **No se hizo todavía, a propósito**: intervalos cantados (el paso 3). Jorge aceptó empezar por rango +
+  igualar y agregar los intervalos cuando confirme que la detección funciona con SU voz. No guarda progreso
+  (solo `markActivity`): si se quiere en el plan de Hoy, es una sección nueva de `progress`.
+- **Probado en Chromium real** con micrófono falso (`--use-file-for-fake-audio-capture`, un WAV de Sol3 con
+  5 armónicos y vibrato de ±30 cents): muestra Sol3 con los cents oscilando ±20, rango 55–55, sin errores y
+  sin scroll horizontal a 390 px. **No con una voz humana**: falta la confirmación de Jorge.
 
 ## Progreso (localStorage `pianoProgress1`)
 ```

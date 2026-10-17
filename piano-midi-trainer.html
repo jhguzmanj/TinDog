@@ -523,6 +523,18 @@
   .read-sub{ font-size:19px; color:var(--text-dim); line-height:1.4; display:block; margin-top:4px; font-family:'Source Sans 3',sans-serif; }
 
   /* ===== Ritmo ===== */
+  .sing-top{ display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin-bottom:10px; }
+  .sing-now{ display:flex; align-items:baseline; gap:16px; flex-wrap:wrap; }
+  .sing-note{ font-family:'Fraunces',serif; font-size:56px; color:var(--ivory); line-height:1; font-variant-numeric:tabular-nums; }
+  .sing-note.ok{ color:var(--correct); }
+  .sing-cents{ font-size:24px; color:var(--text-dim); font-variant-numeric:tabular-nums; }
+  .sing-meter{ position:relative; height:56px; border-radius:10px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.12); overflow:hidden; }
+  .sing-zone{ position:absolute; top:0; bottom:0; left:41%; width:18%; background:rgba(120,190,130,0.22); border-left:1px solid rgba(120,190,130,0.6); border-right:1px solid rgba(120,190,130,0.6); }
+  .sing-needle{ position:absolute; top:6px; bottom:6px; left:50%; width:6px; margin-left:-3px; border-radius:3px; background:var(--brass); transition:left 80ms linear; opacity:0.25; }
+  .sing-needle.live{ opacity:1; }
+  .sing-needle.ok{ background:var(--correct); }
+  .sing-lab{ position:absolute; bottom:4px; font-size:16px; color:var(--text-dim); }
+  .sing-lab.l{ left:10px; } .sing-lab.r{ right:10px; }
   .rhythm-stage{ display:flex; flex-direction:column; gap:14px; margin-top:6px; }
   .rhythm-big{ font-family:'Fraunces',serif; font-size:30px; color:var(--ivory); line-height:1.25; text-wrap:balance; }
   .rhythm-big.count{ color:var(--text-dim); }
@@ -1180,6 +1192,7 @@
       <button class="mode-tab" data-cat="intervals">Intervalos</button>
       <button class="mode-tab" data-cat="reading">Lectura</button>
       <button class="mode-tab" data-cat="rhythm">Ritmo</button>
+      <button class="mode-tab" data-cat="sing">Cantar</button>
       <span class="tab-sep" aria-hidden="true"></span>
       <button class="mode-tab" data-cat="fragments">Piezas</button>
       <span class="tab-sep" aria-hidden="true"></span>
@@ -1464,6 +1477,28 @@
         <div class="rhythm-result" id="rhythmResult"></div>
       </div>
       <div class="tip" id="rhythmTip"></div>
+    </div>
+
+    <div id="singPanel" style="display:none;">
+      <div class="sing-top">
+        <button id="singMicBtn" class="ghost-btn primary">🎤 Activar micrófono</button>
+        <span class="read-sub" id="singStatus">Usa audífonos: así el micrófono oye tu voz y no el piano.</span>
+      </div>
+      <div class="reg-bar">
+        <div class="reg-group"><span class="reg-label g-type">Paso</span>
+          <div class="reg-picker" id="singStepPicker">
+            <button class="reg-btn active" data-step="range">1 · Tu rango</button>
+            <button class="reg-btn" data-step="match">2 · Igualar la nota</button>
+          </div>
+        </div>
+      </div>
+      <div class="rhythm-stage">
+        <div class="sing-now"><span class="sing-note" id="singNote">—</span><span class="sing-cents" id="singCents"></span></div>
+        <div class="sing-meter" id="singMeter" aria-hidden="true"><div class="sing-zone"></div><div class="sing-needle" id="singNeedle"></div><span class="sing-lab l">← más grave</span><span class="sing-lab r">más agudo →</span></div>
+        <div class="rhythm-big" id="singBig"></div>
+        <div class="read-sub" id="singSay"></div>
+        <div class="rhythm-actions" id="singActions"></div>
+      </div>
     </div>
 
     <div id="progressPanel" class="info-panel" style="display:none;">
@@ -7264,12 +7299,14 @@ function enterMode(mode){
   show(todayPanel, mode === 'today');
   show(readingPanel, mode === 'reading');
   show($('rhythmPanel'), mode === 'rhythm');
+  show($('singPanel'), mode === 'sing');
+  if(mode !== 'sing' && typeof singStop === 'function') singStop();
   show(progressPanel, mode === 'progress');
   if(mode !== 'fragments' && mode !== 'agility' && typeof closeCascade === 'function'){
     closeCascade();
   }
   if(mode !== 'reading' && typeof stopReading === 'function') stopReading();
-  const noPractice = ['free','functions','today','reading','rhythm','progress'];
+  const noPractice = ['free','functions','today','reading','rhythm','sing','progress'];
   if(isScale && typeof ensureValidOctaves === 'function') ensureValidOctaves();
   if(noPractice.includes(mode)){
     practiceInfo.style.display = 'none';
@@ -7283,6 +7320,7 @@ function enterMode(mode){
   if(mode === 'today' && typeof renderToday === 'function') renderToday();
   if(mode === 'reading' && typeof startReading === 'function') startReading();
   if(mode === 'rhythm' && typeof startRhythmMode === 'function') startRhythmMode();
+  if(mode === 'sing' && typeof singRender === 'function') singRender();
   if(mode === 'progress' && typeof renderProgress === 'function') renderProgress();
 }
 
@@ -11484,6 +11522,7 @@ metroToggle.addEventListener('click', () => { if(metro.on) metroStop(); else met
 // quedaba sonando de fondo aunque Jorge ya no estuviera mirando la práctica.
 document.addEventListener('visibilitychange', () => {
   if(document.hidden && metro.on) metroStop();
+  if(document.hidden && typeof singStop === 'function') singStop();
 });
 // Tocar las casillas cambia los tiempos por compás: 4 → 2 → 3 → 4…
 $('metroBeats').addEventListener('click', () => {
@@ -12485,6 +12524,241 @@ $('resetBtn').addEventListener('click', () => {
 });
 
 // Arranque: pestaña "Hoy" con el plan del día.
+
+// ---- Cantar (clase: "identificar mi tono natural, cantar los tonos y sus intervalos y
+// reconocerlos"). El micrófono escucha la voz y detectPitch saca la frecuencia por
+// autocorrelación normalizada (McLeod). Paso 1: rango y tono natural. Paso 2: igualar
+// una nota que toca la app. Ver CLAUDE.md.
+const SING_RANGE_MIN = 36, SING_RANGE_MAX = 84;   // Do2–Do6: fuera de eso es un error del detector
+const SING_STABLE_MS = 400, SING_HOLD_MS = 700, SING_OK_CENTS = 35;
+const SING = { stream:null, src:null, an:null, buf:null, raf:null, on:false, step:'range',
+  hist:[], stableNote:null, stableSince:0, lastLive:null,
+  low:null, high:null, natural:null,
+  target:null, prevTarget:null, holdSince:0, hits:0, tries:0, mutedUntil:0, nextTimer:null };
+try {
+  const r = JSON.parse(localStorage.getItem('singRange') || 'null');
+  if(r && r.low >= SING_RANGE_MIN && r.high <= SING_RANGE_MAX && r.low <= r.high){ SING.low = r.low; SING.high = r.high; SING.natural = r.natural || null; }
+} catch(e){}
+function singSave(){ try { localStorage.setItem('singRange', JSON.stringify({ low:SING.low, high:SING.high, natural:SING.natural })); } catch(e){} }
+function singName(n){ return solfaLabel(n) + ' (' + noteLabel(n) + ')'; }
+function freqToMidi(f){ return 69 + 12 * Math.log2(f / 440); }
+
+function detectPitch(buf, sr){
+  const n = buf.length;
+  let rms = 0;
+  for(let i = 0; i < n; i++) rms += buf[i] * buf[i];
+  if(Math.sqrt(rms / n) < 0.01) return null;          // silencio
+  const maxLag = Math.min(Math.floor(sr / 65), n >> 1); // nada más grave que ~Do2
+  const W = n - maxLag;
+  const nsdf = new Float32Array(maxLag + 2);
+  for(let tau = 1; tau <= maxLag; tau++){
+    let ac = 0, m = 0;
+    for(let i = 0; i < W; i++){ const a = buf[i], b = buf[i + tau]; ac += a * b; m += a * a + b * b; }
+    nsdf[tau] = m ? 2 * ac / m : 0;
+  }
+  let tau = 1;
+  while(tau < maxLag && nsdf[tau] > 0) tau++;          // salta el primer lóbulo (retraso ~0)
+  const peaks = [];
+  for(; tau < maxLag; tau++){
+    if(nsdf[tau] > 0){
+      let pk = tau;
+      while(tau < maxLag && nsdf[tau] > 0){ if(nsdf[tau] > nsdf[pk]) pk = tau; tau++; }
+      peaks.push(pk);
+    }
+  }
+  if(!peaks.length) return null;
+  const top = Math.max(...peaks.map(p => nsdf[p]));
+  const pick = peaks.find(p => nsdf[p] >= 0.9 * top);  // el primero casi tan alto: evita la octava de abajo
+  if(nsdf[pick] < 0.6) return null;                     // ruido, no una nota
+  const a = nsdf[pick - 1], b = nsdf[pick], c = nsdf[pick + 1];
+  const d = a - 2 * b + c;
+  const shift = d ? 0.5 * (a - c) / d : 0;
+  return { freq: sr / (pick + shift), clarity: b };
+}
+
+function singMeter(cents, live, ok){
+  const el = $('singNeedle');
+  if(!el) return;
+  const c = Math.max(-100, Math.min(100, cents || 0));
+  el.style.left = (50 + c * 0.45) + '%';
+  el.classList.toggle('live', !!live);
+  el.classList.toggle('ok', !!ok);
+}
+
+// Llega un valor por cuadro (m = nota MIDI con decimales, o null si no hay voz).
+function singOnPitch(m, now){
+  if(now < SING.mutedUntil) m = null;                  // suena la nota de la app: no es tu voz
+  const noteEl = $('singNote'), centsEl = $('singCents');
+  if(m === null || m < 30 || m > 90){
+    SING.hist = []; SING.stableNote = null; SING.holdSince = 0;
+    if(noteEl){ noteEl.textContent = '—'; noteEl.classList.remove('ok'); }
+    if(centsEl) centsEl.textContent = '';
+    singMeter(0, false, false);
+    return;
+  }
+  SING.hist.push(m); if(SING.hist.length > 5) SING.hist.shift();
+  const med = SING.hist.slice().sort((x, y) => x - y)[SING.hist.length >> 1];
+  const near = Math.round(med);
+  if(SING.stableNote !== near){ SING.stableNote = near; SING.stableSince = now; }
+  const stable = now - SING.stableSince >= SING_STABLE_MS;
+  if(noteEl) noteEl.textContent = singName(near);
+  if(SING.step === 'range'){
+    const cents = Math.round((med - near) * 100);
+    if(centsEl) centsEl.textContent = (cents > 0 ? '+' : '') + cents + ' cents';
+    singMeter(cents, true, Math.abs(cents) <= SING_OK_CENTS);
+    if(stable && near >= SING_RANGE_MIN && near <= SING_RANGE_MAX){
+      let changed = false;
+      if(SING.low === null || near < SING.low){ SING.low = near; changed = true; }
+      if(SING.high === null || near > SING.high){ SING.high = near; changed = true; }
+      if(changed){ singSave(); singRender(); }
+    }
+    return;
+  }
+  // Paso 2: igualar la nota
+  if(SING.target === null) return;
+  const diff = med - SING.target, cents = Math.round(diff * 100);
+  const ok = Math.abs(cents) <= SING_OK_CENTS;
+  if(centsEl) centsEl.textContent = ok ? '✓ en la nota' : (cents > 0 ? '+' : '') + cents + ' cents';
+  if(noteEl) noteEl.classList.toggle('ok', ok);
+  singMeter(cents, true, ok);
+  const big = $('singBig');
+  if(ok){
+    if(!SING.holdSince) SING.holdSince = now;
+    if(big && !SING.nextTimer) { big.textContent = '¡Ahí! Sostenla…'; big.className = 'rhythm-big good'; }
+    if(now - SING.holdSince >= SING_HOLD_MS && !SING.nextTimer) singHit();
+  } else {
+    SING.holdSince = 0;
+    if(!big || SING.nextTimer) return;
+    const octave = Math.abs(diff - 12) < 0.5 ? 'arriba' : Math.abs(diff + 12) < 0.5 ? 'abajo' : null;
+    big.textContent = octave ? 'Es la misma nota, pero una octava más ' + octave + ': busca la de la tecla marcada.'
+      : diff < 0 ? 'Sube la voz ↑' : 'Baja la voz ↓';
+    big.className = 'rhythm-big';
+  }
+}
+function singHit(){
+  SING.hits++;
+  const big = $('singBig');
+  if(big){ big.textContent = '✓ ¡Afinado! ' + singName(SING.target); big.className = 'rhythm-big good'; }
+  const r = getRect(SING.target); if(r){ r.classList.remove('target'); r.classList.add('correct'); }
+  if(typeof markActivity === 'function') markActivity();
+  singRenderScore();
+  SING.nextTimer = setTimeout(() => { SING.nextTimer = null; singNewTarget(); }, 1500);
+}
+function singRenderScore(){
+  const say = $('singSay');
+  if(say && SING.step === 'match') say.textContent = 'Afinadas hoy: ' + SING.hits + ' de ' + SING.tries + '. Tararea con "mmm" si con vocales te cuesta; si no la encuentras, desliza la voz (una "sirena") hasta que la aguja entre en la zona verde.';
+}
+function singNewTarget(){
+  if(SING.low === null || SING.high === null || SING.high - SING.low < 2){ singRender(); return; }
+  const lo = SING.low + (SING.high - SING.low >= 6 ? 1 : 0), hi = SING.high - (SING.high - SING.low >= 6 ? 1 : 0);
+  let t, guard = 0;
+  do { t = lo + Math.floor(Math.random() * (hi - lo + 1)); } while(t === SING.prevTarget && guard++ < 20);
+  SING.prevTarget = SING.target = t; SING.tries++; SING.holdSince = 0;
+  clearAllHighlights(); markTarget(t, 'rh');
+  const big = $('singBig');
+  if(big){ big.textContent = 'Escucha y canta: ' + singName(t); big.className = 'rhythm-big go'; }
+  singRenderScore();
+  singPlayTarget();
+}
+function singPlayTarget(){
+  if(SING.target === null) return;
+  const t = SING.target;
+  SING.mutedUntil = performance.now() + 1500;
+  const was = soundEnabled; soundEnabled = true;
+  playNoteSound(t);
+  soundEnabled = was;
+  setTimeout(() => stopNoteSound(t), 1200);
+}
+
+function singStatus(txt){ const el = $('singStatus'); if(el) el.textContent = txt; }
+async function singStart(){
+  if(SING.on) return;
+  const ctx = ensureAudioCtx();
+  if(!ctx || !navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+    singStatus('Este navegador no deja usar el micrófono aquí.'); return;
+  }
+  let stream;
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({ audio:{ echoCancellation:false, noiseSuppression:false, autoGainControl:false } });
+  } catch(e){
+    singStatus(inEmbeddedFrame
+      ? 'El micrófono está bloqueado dentro del visor de Claude. Abre piano-midi-trainer.html directo en el navegador.'
+      : 'No hay permiso para el micrófono. Revisa el candado de la barra de direcciones y vuelve a intentar.');
+    return;
+  }
+  SING.stream = stream;
+  SING.src = ctx.createMediaStreamSource(stream);
+  SING.an = ctx.createAnalyser(); SING.an.fftSize = 2048;
+  SING.src.connect(SING.an);                            // al analizador, NO a los parlantes
+  SING.buf = new Float32Array(SING.an.fftSize);
+  SING.on = true;
+  singStatus('Escuchando. Usa audífonos si el piano suena por los parlantes.');
+  singRender();
+  const loop = () => {
+    if(!SING.on) return;
+    SING.an.getFloatTimeDomainData(SING.buf);
+    const p = detectPitch(SING.buf, ctx.sampleRate);
+    singOnPitch(p ? freqToMidi(p.freq) : null, performance.now());
+    SING.raf = raf(loop);
+  };
+  loop();
+}
+function singStop(){
+  if(SING.nextTimer){ clearTimeout(SING.nextTimer); SING.nextTimer = null; }
+  if(!SING.on && !SING.stream) return;
+  SING.on = false;
+  if(SING.stream) SING.stream.getTracks().forEach(t => t.stop());
+  if(SING.src) try { SING.src.disconnect(); } catch(e){}
+  SING.stream = SING.src = SING.an = null;
+  singStatus('Micrófono apagado.');
+  singRender();
+}
+function singRender(){
+  const btn = $('singMicBtn');
+  if(btn){ btn.textContent = SING.on ? '■ Apagar micrófono' : '🎤 Activar micrófono'; btn.classList.toggle('active', SING.on); }
+  document.querySelectorAll('#singStepPicker .reg-btn').forEach(b => b.classList.toggle('active', b.dataset.step === SING.step));
+  const big = $('singBig'), say = $('singSay'), act = $('singActions');
+  if(!big || !act) return;
+  if(SING.step === 'range'){
+    clearAllHighlights();
+    if(SING.low !== null){ for(let n = SING.low; n <= SING.high; n++) markTarget(n, 'lh'); }
+    if(SING.natural !== null) markTarget(SING.natural, 'rh');
+    big.className = 'rhythm-big';
+    big.textContent = SING.low === null ? 'Todavía no hay rango medido.'
+      : 'Tu rango: ' + singName(SING.low) + ' a ' + singName(SING.high) + ' (' + (SING.high - SING.low) + ' semitonos)' +
+        (SING.natural !== null ? ' · Tono natural: ' + singName(SING.natural) : '');
+    say.textContent = '1) Di "mmm" o "hola" relajado, como al hablar, y toca "Este es mi tono natural". ' +
+      '2) Canta "aaa" bajando despacio hasta tu nota más grave cómoda, y después subiendo hasta la más aguda cómoda. Sin forzar: si raspa o duele, ya pasaste el límite. La app guarda cada nota que sostienes medio segundo.';
+    act.innerHTML = '<button class="ghost-btn primary" id="singNaturalBtn">Este es mi tono natural</button>' +
+      '<button class="ghost-btn" id="singResetBtn">Borrar rango</button>';
+    $('singNaturalBtn').onclick = () => {
+      if(SING.stableNote === null){ big.textContent = 'No te oigo: di "mmm" y, mientras suena, toca el botón.'; big.className = 'rhythm-big bad'; return; }
+      SING.natural = SING.stableNote; singSave(); singRender();
+    };
+    $('singResetBtn').onclick = () => { SING.low = SING.high = SING.natural = null; singSave(); singRender(); };
+  } else {
+    if(SING.low === null || SING.high - SING.low < 2){
+      clearAllHighlights();
+      big.className = 'rhythm-big bad';
+      big.textContent = 'Primero mide tu rango (paso 1): así la app solo te pide notas que puedes cantar.';
+      say.textContent = ''; act.innerHTML = '';
+      return;
+    }
+    act.innerHTML = '<button class="ghost-btn primary" id="singPlayBtn">🔊 Oír otra vez</button>' +
+      '<button class="ghost-btn" id="singNextBtn">Otra nota</button>';
+    $('singPlayBtn').onclick = () => singPlayTarget();
+    $('singNextBtn').onclick = () => { if(SING.nextTimer){ clearTimeout(SING.nextTimer); SING.nextTimer = null; } singNewTarget(); };
+    if(SING.target === null) singNewTarget();
+    else { clearAllHighlights(); markTarget(SING.target, 'rh'); singRenderScore(); }
+    if(!SING.on){ big.className = 'rhythm-big'; big.textContent = 'Activa el micrófono para empezar.'; }
+  }
+}
+$('singMicBtn').addEventListener('click', () => { if(SING.on) singStop(); else singStart(); });
+document.querySelectorAll('#singStepPicker .reg-btn').forEach(b => b.addEventListener('click', () => {
+  if(SING.nextTimer){ clearTimeout(SING.nextTimer); SING.nextTimer = null; }
+  SING.step = b.dataset.step; SING.target = null; singRender();
+}));
+
 selectCategory('today');
 initCloudBackup();
 // Decodifica el piano real mientras Jorge mira la pantalla: así la primera tecla ya suena a piano.
