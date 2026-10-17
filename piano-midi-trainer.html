@@ -1198,6 +1198,8 @@
       <button class="mode-tab sub" data-family="pentatonic">Pentatónicas</button>
       <button id="q2GuideBtn" class="ghost-btn" title="Las 12 escalas mayores en el orden del profe (C G D A E B F# C# G# D# A# F), guiado.">⟳ Escalas por quintas</button>
       <button id="q1GuideBtn" class="ghost-btn" title="Sube de quinta en quinta por todo el piano, guiado.">⟳ Quintas por el piano</button>
+      <button id="gradosGuideBtn" class="ghost-btn" title="Los grados de la escala de Do y los acordes que salen de ellos, guiado.">① Grados</button>
+      <button id="pentaGuideBtn" class="ghost-btn" title="La pentatónica de Do empezando en cada nota, con un acorde en la izquierda, guiado.">♫ Pentatónica + acorde</button>
     </div>
     <div class="mode-tabs sub-tabs scroll-tabs" id="scaleSubTabs" style="display:none;"></div>
     <div id="scaleOptBar" class="reg-bar" style="display:none;">
@@ -6282,6 +6284,25 @@ const SONGS = [
     tip:'Las 12 escalas mayores en el orden del profe, una octava con la derecha y con su digitación. En cada una aparece un sostenido nuevo: la app te dice cuál.',
     tempo:60, steps:[{lh:[], rh:[60], rhF:[1], dur:4}]
   },
+  {
+    id:'ej-grados', cat:'clase', tarea:true, plan:true, guide:'grados',
+    name:'Ejercicio · Grados de la escala (guiado)',
+    tip:'Cada nota de la escala de Do tiene un número: su grado. Los nombras, los buscas sin marcas y armas acordes con grados salteados (1-3-5).',
+    tempo:60, steps:[{lh:[], rh:[60], rhF:[1], dur:4}]
+  },
+  {
+    id:'ej-penta-grados', cat:'clase', tarea:true, plan:true, guide:'pentaGrados',
+    name:'Ejercicio · Pentatónica desde cada nota, con acorde (guiado)',
+    tip:'La pentatónica de Do empezando en Do, Re, Mi, Sol y La, con un acorde de tres dedos en la izquierda (Do, Fa, Do, Sol, La menor). Mismas 5 notas, otro carácter según dónde empiezas.',
+    tempo:60, steps:[{lh:[], rh:[60], rhF:[1], dur:4}]
+  },
+  {
+    id:'penta-acordes', cat:'clase', tarea:true,
+    name:'Melodía pentatónica con acordes (I–vi–IV–V)',
+    tip:'Derecha solo con Do Re Mi Sol La, mano abierta (Do 1 Re 2 Mi 3 Sol 4 La 5), sin moverse. Izquierda: un acorde completo por compás, 5-3-1, en el tiempo 1 y sostenido. Cada acorde es un grado de Do.',
+    tempo:66,
+    steps:buildPentaAcordes()
+  },
   // Tarea de la academia (septiembre): guía "Ejercicios para practicar escalas"
   // de pianoencasa.com. Melodía + acordes en bloque, tal como la hoja (ver CLAUDE.md).
   {
@@ -8558,7 +8579,7 @@ function checkFragment(note){
 }
 registerNoteHandler('fragments', checkFragment);
 registerNoteHandler('agility', checkFragment);
-[['invGuideBtn', 'ej-inversiones'], ['q2GuideBtn', 'ej-quintas-2'], ['q1GuideBtn', 'ej-quintas-1']].forEach(([id, frag]) => {
+[['invGuideBtn', 'ej-inversiones'], ['q2GuideBtn', 'ej-quintas-2'], ['q1GuideBtn', 'ej-quintas-1'], ['gradosGuideBtn', 'ej-grados'], ['pentaGuideBtn', 'ej-penta-grados']].forEach(([id, frag]) => {
   const b = document.getElementById(id);
   if(b) b.addEventListener('click', () => { selectCategory('fragments'); pickFragmentById(frag); });
 });
@@ -8696,6 +8717,131 @@ function q2Build(){
   S.push({ part:3, exp:'on', note:72, marks:[{n:72, f:5}], big:'C · ' + nl(72), text:'Y de vuelta a C: el círculo de quintas se cerró.' });
   return S;
 }
+// ---- Clase del 17 oct 2026: grados, tríadas y pentatónica con acordes en la
+// izquierda (tres dedos desde esta clase). Ver CLAUDE.md.
+const DO_DEG = {0:1, 2:2, 4:3, 5:4, 7:5, 9:6, 11:7};          // clase de nota → grado en Do mayor
+const PENTA_DO = [60, 62, 64, 67, 69];                         // Do Re Mi Sol La = grados 1 2 3 5 6
+const LH_TRIAD = {
+  C:  { name:'Do',       deg:'I',  notes:[48, 52, 55], f:[5, 3, 1], spell:'Do-Mi-Sol' },
+  F:  { name:'Fa',       deg:'IV', notes:[41, 45, 48], f:[5, 3, 1], spell:'Fa-La-Do' },
+  G:  { name:'Sol',      deg:'V',  notes:[43, 47, 50], f:[5, 3, 1], spell:'Sol-Si-Re' },
+  Am: { name:'La menor', deg:'vi', notes:[45, 48, 52], f:[5, 3, 1], spell:'La-Do-Mi' },
+};
+// "Melodía pentatónica con acordes" (MÍA, 17 oct 2026): 12 compases, Do–Lam–Fa–Sol.
+function buildPentaAcordes(){
+  const T = {
+    C:{ lh:[48, 52, 55] }, Am:{ lh:[45, 48, 52] }, F:{ lh:[41, 45, 48] }, G:{ lh:[43, 47, 50] } };
+  const RF = {60:1, 62:2, 64:3, 67:4, 69:5};
+  const BARS = [
+    ['C',  [[64,1],[67,1],[69,1],[67,1]], 'c. 1 · Parte 1 · Grado I: Do (Do-Mi-Sol)'],
+    ['Am', [[64,2],[60,1],[62,1]],        'c. 2 · Grado vi: La menor (La-Do-Mi)'],
+    ['F',  [[69,2],[67,1],[64,1]],        'c. 3 · Grado IV: Fa (Fa-La-Do)'],
+    ['G',  [[62,4]],                      'c. 4 · Grado V: Sol (Sol-Si-Re) · queda en el aire'],
+    ['C',  [[64,1],[67,1],[69,1],[67,1]], 'c. 5 · Parte 2 · la misma pregunta'],
+    ['Am', [[69,2],[67,1],[64,1]],        'c. 6 · La menor'],
+    ['F',  [[69,1],[67,1],[64,1],[62,1]], 'c. 7 · Fa · baja por la pentatónica'],
+    ['C',  [[60,4]],                      'c. 8 · Respuesta: vuelve a Do (grado I)'],
+    ['Am', [[69,1],[67,1],[64,1],[67,1]], 'c. 9 · Parte 3 · Desde La sobre La menor: más triste'],
+    ['F',  [[69,2],[67,2]],               'c. 10 · Fa'],
+    ['G',  [[67,2],[64,1],[62,1]],        'c. 11 · Sol: pide volver a casa'],
+    ['C',  [[60,4]],                      'c. 12 · Fin en Do'],
+  ];
+  const steps = [];
+  BARS.forEach(([ch, notes, label]) => notes.forEach(([n, d], j) => {
+    const st = { lh:j === 0 ? T[ch].lh.slice() : [], rh:[n], rhF:[RF[n]], dur:d };
+    if(j === 0){ st.lhF = [5, 3, 1]; st.label = label; }
+    steps.push(st);
+  }));
+  return steps;
+}
+function pentaWrong(n, expected, prev){
+  const nl = noteLabel;
+  if(PENTA_DO.some(p => p % 12 === n % 12)){
+    if(n % 12 === expected % 12) return 'Es la nota, pero en otra octava: busca el ' + nl(expected) + '.';
+    return 'Esa es de la pentatónica, pero no es la que sigue' + (prev ? ' después de ' + nl(prev) : '') + '. El orden es Do Re Mi Sol La.';
+  }
+  return nl(n) + ' no está en la pentatónica de Do: no tiene Fa ni Si, ni teclas negras.';
+}
+function pentaBuild(){
+  const S = [], nl = noteLabel;
+  const RUNS = [
+    { start:60, ch:'C',  mood:0, explain:'Alegre: empezaste y terminaste en Do sobre el acorde de Do (grado I). Es la pentatónica MAYOR.' },
+    { start:62, ch:'F',  feel:'Re sobre el acorde de Fa: escucha cómo queda abierta, sin terminar de cerrar.' },
+    { start:64, ch:'C',  feel:'Mi es la 3ra del acorde de Do: escucha cómo suena dulce, distinto de terminar en Do.' },
+    { start:67, ch:'G',  feel:'Sol sobre su propio acorde (grado V): escucha cómo pide volver a Do.' },
+    { start:69, ch:'Am', mood:1, explain:'Triste: las MISMAS 5 notas, pero desde La y sobre La menor (grado vi). Es la pentatónica MENOR: La menor es la relativa de Do.' },
+  ];
+  [1, 2].forEach(part => {
+    RUNS.forEach((r, k) => {
+      const tr = LH_TRIAD[r.ch];
+      const i0 = PENTA_DO.indexOf(r.start);
+      const run = PENTA_DO.slice(i0).concat(PENTA_DO.slice(0, i0).map(n => n + 12)).concat([r.start + 12]);
+      S.push({ part, exp:'chord', notes:tr.notes.slice(), marks:tr.notes.map((n, j) => ({ n, f:tr.f[j], h:'lh' })),
+        big:'Izq: ' + tr.name, tag:'grado ' + tr.deg,
+        text:(part === 1 && k === 0 ? 'La pentatónica de Do empezando en cada una de sus 5 notas, con un acorde debajo. ' : '') +
+          (part === 2 && k === 0 ? 'Ahora sin marcas en la derecha: tú buscas las notas. ' : '') +
+          'Vuelta ' + (k + 1) + ' de 5 · empiezas en <b>' + nl(r.start) + '</b>. Con la izquierda pon <b>' + tr.name + '</b> (' + tr.spell + ', grado ' + tr.deg + ' de Do), dedos 5-3-1, y <b>déjalo pisado</b>.' });
+      run.forEach((n, j) => {
+        const last = j === run.length - 1;
+        S.push({ part, exp:'chord', notes:[n], ignore:tr.notes,
+          marks:part === 1 || j === 0 ? [{ n, f:[1, 2, 3][j % 3], h:'rh' }] : [],
+          big:part === 1 || j === 0 ? nl(n) : 'Nota ' + (j + 1) + ' de 6', tag:'nota ' + (j + 1) + ' de 6',
+          text:j === 0 ? 'Derecha: de ' + nl(r.start) + ' hasta el ' + nl(r.start) + ' de arriba, dedos 1-2-3-1-2-3. Mantén el acorde.'
+            : last ? 'Termina en ' + nl(n) + (r.feel ? '. ' + r.feel : '.') : '',
+          wrong:m => pentaWrong(m, n, j ? run[j - 1] : null) });
+      });
+      if(r.mood !== undefined) S.push({ part, exp:'answer', big:'¿Cómo sonó?', text:'Escucha la última nota contra el acorde de la izquierda.',
+        options:['Alegre', 'Triste'], correct:r.mood, explain:r.explain,
+        hint:'Vuelve a tocar el acorde con la última nota y escúchalo. ¿Mayor (alegre) o menor (triste)?' });
+    });
+  });
+  return S;
+}
+function gradosBuild(){
+  const S = [], nl = noteLabel;
+  const SCALE = [60, 62, 64, 65, 67, 69, 71, 72], FING = [1, 2, 3, 1, 2, 3, 4, 5];
+  const DEG_OPTS = ['1', '2', '3', '4', '5', '6', '7'];
+  const degText = 'Do 1 · Re 2 · Mi 3 · Fa 4 · Sol 5 · La 6 · Si 7';
+  // Parte 1: la escala con su número
+  SCALE.forEach((n, j) => S.push({ part:1, exp:'chord', notes:[n], marks:[{ n, f:FING[j] }], big:'Grado ' + (j + 1) + ' · ' + nl(n),
+    text:j === 0 ? 'Cada nota de la escala tiene un número: su <b>grado</b>. Do es el 1 porque la escala de Do empieza ahí.'
+      : j === 7 ? 'El 8 es otra vez Do, una octava arriba: desde aquí se vuelve a contar 1.' : 'Grado ' + (j + 1) + ' de Do mayor.' }));
+  // Parte 2: ¿qué grado es?
+  [67, 64, 69, 65, 62, 71].forEach(n => {
+    const d = DO_DEG[n % 12];
+    S.push({ part:2, exp:'answer', marks:[{ n }], big:'¿Qué grado es ' + nl(n) + '?', text:'En la escala de Do mayor.',
+      options:DEG_OPTS, correct:d - 1, explain:nl(n) + ' es el grado ' + d + '. (' + degText + ')',
+      hint:'Cuenta desde Do = 1, subiendo por las teclas blancas.' });
+  });
+  // Parte 3: búscalo sin marcas
+  [5, 3, 6, 2, 4, 7, 1].forEach(d => {
+    const n = SCALE[d - 1];
+    S.push({ part:3, exp:'chord', notes:[n], marks:[], big:'Toca el grado ' + d, text:'De Do mayor, entre ' + nl(60) + ' y ' + nl(71) + '. Sin marcas: cuenta desde Do.',
+      wrong:m => {
+        const md = DO_DEG[m % 12];
+        if(md === d) return 'Es el grado ' + d + ', pero en otra octava: búscalo entre ' + nl(60) + ' y ' + nl(71) + '.';
+        return 'Esa es ' + nl(m) + (md ? ', el grado ' + md : ', una negra: no está en la escala de Do') + '. Cuenta desde Do = 1.';
+      } });
+  });
+  // Parte 4: acordes con grados salteados
+  const CH = [
+    { notes:[60, 64, 67], f:[1, 3, 5], big:'Grado I · Do', text:'Un acorde (tríada) se arma con grados salteados: 1-3-5 = <b>Do-Mi-Sol</b>. Tócalas juntas con 1-3-5.' },
+    { notes:[65, 69, 72], f:[1, 3, 5], big:'Grado IV · Fa', text:'Desde el grado 4: 4-6-8 = <b>Fa-La-Do</b>, el acorde de Fa.' },
+    { notes:[67, 71, 74], f:[1, 3, 5], big:'Grado V · Sol', text:'Desde el grado 5: 5-7-9 = <b>Sol-Si-Re</b>, el acorde de Sol.' },
+    { notes:[69, 72, 76], f:[1, 3, 5], big:'Grado vi · La menor', text:'Desde el grado 6: 6-8-10 = <b>La-Do-Mi</b>, La menor. En números romanos: mayúscula = acorde mayor (I, IV, V), minúscula = menor (vi).' },
+    { notes:[60, 64, 67, 71], f:[1, 2, 3, 5], big:'Tétrada · Do 7ma mayor', text:'Si sumas un grado más (1-3-5-7 = Do-Mi-Sol-Si) es una <b>tétrada</b>: 4 notas. Tócala para oírla.' },
+  ];
+  CH.forEach(c => S.push({ part:4, exp:'chord', notes:c.notes, marks:c.notes.map((n, j) => ({ n, f:c.f[j] })), big:c.big, text:c.text }));
+  S.push({ part:4, exp:'answer', big:'¿Qué acordes caben enteros en la pentatónica?', text:'La pentatónica de Do es Do Re Mi Sol La = grados 1 2 3 5 6.',
+    options:['Do y La menor', 'Fa y Sol', 'Do y Sol', 'Fa y La menor'], correct:0,
+    explain:'Do-Mi-Sol y La-Do-Mi usan solo notas de la pentatónica. Fa necesita el Fa (grado 4) y Sol necesita el Si (grado 7), que la pentatónica no tiene.',
+    hint:'Revisa nota por nota: ¿la pentatónica tiene Fa? ¿Tiene Si?' });
+  S.push({ part:4, exp:'answer', big:'¿En qué grado de Do empieza La menor?', text:'La menor usa las mismas teclas blancas que Do mayor.',
+    options:['1', '3', '5', '6'], correct:3,
+    explain:'En el 6: La menor son las mismas teclas de Do mayor empezando en el grado 6. Por eso se llaman <b>relativas</b>.',
+    hint:'Cuenta desde Do = 1 hasta llegar a La.' });
+  return S;
+}
 const GUIDES = {
   pedal0: { build:() => p0Build(), parts:4,
     done:e => e === 0 ? 'La parte 4 te salió sin errores: ya entiendes el cambio. Sigue con <b>Pedal 1</b>.'
@@ -8707,6 +8853,12 @@ const GUIDES = {
     done:e => 'Recorriste las 12 por quintas.' + (e ? ' Hubo ' + e + (e === 1 ? ' nota equivocada' : ' notas equivocadas') + ' en la parte 2.' : '') + ' Toca cualquier tecla para repetir.' },
   quintas2: { build:q2Build, parts:3,
     done:e => 'Las 12 escalas en orden de quintas.' + (e ? ' Hubo ' + e + (e === 1 ? ' nota equivocada' : ' notas equivocadas') + ' en la última parte.' : ' La última parte, limpia.') + ' Toca cualquier tecla para repetir.' },
+  grados: { build:gradosBuild, parts:4,
+    done:e => (e === 0 ? 'La última parte sin errores.' : 'Hubo ' + e + (e === 1 ? ' error' : ' errores') + ' en la última parte: repítelo (toca cualquier tecla).') +
+      ' Lo clave: tríada = grados 1-3-5; pentatónica = 1-2-3-5-6; La menor empieza en el grado 6 de Do.' },
+  pentaGrados: { build:pentaBuild, parts:2,
+    done:e => (e === 0 ? 'La parte sin marcas te salió limpia.' : 'En la parte sin marcas hubo ' + e + (e === 1 ? ' error' : ' errores') + ': repítela (toca cualquier tecla).') +
+      ' Mismas 5 notas: desde Do sobre Do suena mayor; desde La sobre La menor, menor. Sigue con la <b>melodía pentatónica con acordes</b>.' },
 };
 function guideMeta(){ return GUIDES[currentFragment && currentFragment.guide] || GUIDES.pedal0; }
 // Con pedal: se pisa al empezar y, después de cada intervalo/nota tocado, se cambia
@@ -8741,7 +8893,7 @@ function p0Answer(i){
   const st = p0.steps[p0.i];
   if(!st || st.exp !== 'answer') return;
   if(i === st.correct){ p0Advance('✓ ' + st.explain); return; }
-  p0Fail('No es ' + st.options[i] + '. Pista: los números suman 9; mayor ↔ menor; justa y tritono no cambian.');
+  p0Fail('No es ' + st.options[i] + '. ' + (st.hint || 'Pista: los números suman 9; mayor ↔ menor; justa y tritono no cambian.'));
 }
 // Si algo sale fuera de orden en un ciclo, se vuelve al TOCA de ese ciclo.
 function p0BackToCycleStart(){
@@ -8759,6 +8911,8 @@ function p0Event(type, note){
   const st = p0.steps[p0.i];
   const nm = n => (currentFragment.guide === 'pedal0' && P0_NAMES[n]) || noteLabel(n);
   if(st.exp === 'answer') return;
+  // Teclas que la otra mano tiene que sostener (el acorde de la izquierda): volver a tocarlas no es error.
+  if(type === 'on' && st.ignore && st.ignore.indexOf(note) >= 0) return;
   if(st.exp === 'chord'){
     if(type !== 'on') return;
     if(st.notes.indexOf(note) < 0){

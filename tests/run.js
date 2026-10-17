@@ -1692,14 +1692,14 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
   section('Tarea de la clase del 10 de octubre: cinco melodías (intervalos, cromática, inversiones, quintas, pentatónica)');
   {
     const T = W("SONGS.filter(s => s.tarea)");
-    check(T.map(s => s.id).join() === 'tarea-intervalos,tarea-cromatica,tarea-inversiones,tarea-quintas,tarea-pentatonica,ej-inversiones,ej-quintas-1,ej-quintas-2', 'las cinco melodías y los tres ejercicios guiados, en orden');
+    check(T.map(s => s.id).join() === 'tarea-intervalos,tarea-cromatica,tarea-inversiones,tarea-quintas,tarea-pentatonica,ej-inversiones,ej-quintas-1,ej-quintas-2,ej-grados,ej-penta-grados,penta-acordes', 'las cinco melodías y los tres ejercicios guiados, en orden (más lo de la clase del 17)');
     check(T.every(s => s.cat === 'clase' && s.plan !== false && s.tip.length < 260), 'van en "De la clase", entran al plan y el tip es corto');
     const barsOf = s => { const bars = []; let t = 0; s.steps.forEach(x => { const b = Math.floor(t / 4 + 1e-9); (bars[b] = bars[b] || []).push(x); t += x.dur; }); return { bars, total: t }; };
     T.filter(s => !s.guide).forEach(s => {
       const { bars, total } = barsOf(s);
       check(Math.abs(total % 4) < 1e-9 && bars.every(b => Math.abs(b.reduce((a, x) => a + x.dur, 0) - 4) < 1e-9) && bars.every(b => b[0].label && b[0].label.startsWith('c. ')),
         `${s.name}: ${bars.length} compases de 4 tiempos, cada uno con su rótulo`);
-      check(s.steps.every(x => x.lh.length <= 2 && x.rh.length <= 2 && x.lh.length === (x.lhF || []).length && x.rh.length === (x.rhF || []).length), `${s.name}: máximo dos teclas por mano (sin acordes esta semana) y cada tecla con su dedo`);
+      if(s.id !== 'penta-acordes') check(s.steps.every(x => x.lh.length <= 2 && x.rh.length <= 2 && x.lh.length === (x.lhF || []).length && x.rh.length === (x.rhF || []).length), `${s.name}: máximo dos teclas por mano (sin acordes esta semana) y cada tecla con su dedo`);
       check(Math.max(...s.steps.flatMap(x => x.lh)) < Math.min(...s.steps.flatMap(x => x.rh)), `${s.name}: las manos no se cruzan`);
     });
     const byId = id => T.find(s => s.id === id);
@@ -3645,6 +3645,62 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
     W("pickFragmentById('pedal-1')");
     check(W("document.getElementById('listenBtn').style.display") === '' && W("document.getElementById('cascadeBtn').style.display") === '', 'en Pedal 1 vuelven Escuchar y la cascada');
     W("pedalIsDown = false; selectCategory('today')");
+  }
+
+  section('Clase del 17 oct: grados, pentatónica desde cada nota y melodía con acordes');
+  {
+    W("soundEnabled = false; selectCategory('fragments'); pickFragmentById('ej-grados')");
+    const G = JSON.parse(W('JSON.stringify(p0.steps)'));
+    check(G.filter(s => s.part === 1).map(s => s.notes[0]).join() === '60,62,64,65,67,69,71,72', 'grados, parte 1: la escala de Do con su número (8 = Do de arriba)');
+    const DEG = {0:1, 2:2, 4:3, 5:4, 7:5, 9:6, 11:7};
+    check(G.filter(s => s.part === 2).every(s => s.exp === 'answer' && +s.options[s.correct] === DEG[s.marks[0].n % 12]), 'parte 2: cada pregunta "¿qué grado es?" tiene la respuesta correcta');
+    check(G.filter(s => s.part === 3).every(s => s.marks.length === 0 && DEG[s.notes[0] % 12] === +/grado (\d)/.exec(s.big)[1]), 'parte 3: buscar el grado sin marcas, y la nota pedida es la de ese grado');
+    const tri = G.filter(s => s.part === 4 && s.exp === 'chord');
+    check(tri.slice(0, 4).every(s => s.notes.length === 3 && s.notes[1] - s.notes[0] >= 3 && s.notes[1] - s.notes[0] <= 4 && s.notes[2] - s.notes[0] === 7), 'parte 4: tríadas I, IV, V y vi armadas con 1-3-5 (3ra + 5ta justa)');
+    check(G.filter(s => s.exp === 'answer' && s.part === 4).map(s => s.options[s.correct]).join() === 'Do y La menor,6', 'parte 4: Do y La menor caben en la pentatónica; La menor empieza en el grado 6');
+    W('p0.i = p0.steps.findIndex(s => s.part === 3); renderP0()');
+    W('noteOn(64); noteOff(64)');
+    check(W('feedbackText.textContent').includes('grado 3') && W('p0.steps[p0.i].part') === 3, 'grado equivocado: dice qué grado tocó y no avanza');
+    W('noteOn(79); noteOff(79)');
+    check(W('feedbackText.textContent').includes('otra octava'), 'grado correcto en otra octava: lo dice');
+    W('noteOn(67); noteOff(67)');
+    check(W('targetNoteLabel.textContent') === 'Toca el grado 3', 'el grado 5 correcto avanza al siguiente');
+    W("p0.i = p0.steps.length - 1; renderP0(); document.querySelectorAll('#targetSubLabel .p0-ans')[0].click()");
+    check(W('feedbackText.textContent').includes('Cuenta desde Do'), 'respuesta equivocada: pista propia (no la de inversiones)');
+
+    W("pickFragmentById('ej-penta-grados')");
+    const P = JSON.parse(W('JSON.stringify(p0.steps)'));
+    const lhSteps = P.filter(s => s.marks && s.marks.length === 3 && s.marks.every(m => m.h === 'lh'));
+    check(lhSteps.length === 10 && lhSteps.every(s => s.notes.length === 3 && s.marks.map(m => m.f).join() === '5,3,1'), 'pentatónica: 5 vueltas × 2 partes, cada una con un acorde de tres dedos (5-3-1) en la izquierda');
+    const starts = P.filter((s, i) => i > 0 && P[i - 1].marks && P[i - 1].marks.length === 3).map(s => s.notes[0]);
+    check(starts.join() === '60,62,64,67,69,60,62,64,67,69', 'empieza en Do, Re, Mi, Sol y La (las cinco notas de la pentatónica)');
+    check(lhSteps.slice(0, 5).map(s => s.notes[0]).join() === '48,41,48,43,45', 'acordes: Do, Fa, Do, Sol, La menor (en fundamental)');
+    check(P.filter(s => s.exp === 'chord' && s.notes.length === 1).every(s => [0, 2, 4, 7, 9].includes(s.notes[0] % 12) && s.notes[0] >= 60), 'la derecha solo toca Do Re Mi Sol La, por encima del acorde');
+    check(P.filter(s => s.exp === 'answer').map(s => s.options[s.correct]).join() === 'Alegre,Triste,Alegre,Triste', 'pregunta alegre/triste solo en Do (mayor) y La (menor)');
+    check(P.filter(s => s.part === 2 && s.exp === 'chord' && s.notes.length === 1).filter(s => s.marks.length).length === 5, 'parte 2: en la derecha solo se marca la nota de partida');
+    check(W('targetNoteLabel.textContent') === 'Izq: Do', 'arranca pidiendo el acorde de Do con la izquierda');
+    W('noteOn(48); noteOn(52); noteOn(55)');
+    check(W('p0.i') === 1, 'acorde completo: pasa a la derecha');
+    W('noteOn(60); noteOff(60)');
+    W('noteOff(48); noteOn(48)');
+    check(W('p0.i') === 2 && W('p0.errors') === 0, 'volver a tocar una tecla del acorde de la izquierda no cuenta como error');
+    W('noteOn(65); noteOff(65)');
+    check(W('feedbackText.textContent').includes('no tiene Fa') && W('p0.i') === 2, 'el Fa: no está en la pentatónica, lo dice y no avanza');
+    W('noteOff(48); noteOff(52); noteOff(55)');
+
+    const PA = W("SONGS.find(s => s.id === 'penta-acordes')");
+    const tot = PA.steps.reduce((a, x) => a + x.dur, 0);
+    let t = 0; const attackAt = [];
+    PA.steps.forEach(x => { if(x.lh.length) attackAt.push(t); t += x.dur; });
+    check(tot === 48 && attackAt.join() === '0,4,8,12,16,20,24,28,32,36,40,44', 'melodía: 12 compases de 4, un acorde en el tiempo 1 de cada compás');
+    const TRI = ['48,52,55', '45,48,52', '41,45,48', '43,47,50'];
+    check(PA.steps.filter(x => x.lh.length).every(x => TRI.includes(x.lh.join()) && x.lhF.join() === '5,3,1'), 'cada acorde es Do, La menor, Fa o Sol completo, con 5-3-1');
+    check(PA.steps.every(x => x.rh.length === 1 && [0, 2, 4, 7, 9].includes(x.rh[0] % 12)), 'la derecha: solo la pentatónica de Do, una nota a la vez');
+    const RF = {60:1, 62:2, 64:3, 67:4, 69:5};
+    check(PA.steps.every(x => x.rhF[0] === RF[x.rh[0]]), 'la derecha no se mueve: cada tecla siempre con el mismo dedo');
+    check(Math.max(...PA.steps.flatMap(x => x.lh)) < Math.min(...PA.steps.flatMap(x => x.rh)), 'las manos no se cruzan');
+    check(PA.steps[PA.steps.length - 1].rh[0] === 60 && PA.steps[PA.steps.length - 2].lh.length === 0, 'termina en Do');
+    W("selectCategory('today')");
   }
 
   section('Ejercicios guiados: inversiones y quintas');

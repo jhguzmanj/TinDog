@@ -948,6 +948,34 @@ y dentro de "Más ▾": `free | functions`.
   - Las tres van en "De la clase" con `tarea:true` (entran a la rotación del punto `tarea` del plan, que
     para un guiado dice "Ejercicio guiado"). Accesos directos: `#invGuideBtn` (↔ Inversiones) en la barra
     "Cómo practicar" de Intervalos y `#q2GuideBtn`/`#q1GuideBtn` junto a las familias de Escalas.
+- **Clase del 17 oct 2026: grados, tríadas y pentatónica con acordes.** Temas: díadas/tríadas/tétradas (foco en
+  tríadas), grados de la escala, pentatónica de Do acompañada con un acorde en la izquierda según el grado, la
+  pentatónica empezando en cada una de sus notas, y Do mayor / La menor (relativa). **Regla nueva del profe: desde
+  esta clase la izquierda toca el acorde COMPLETO, tres dedos.** La regla de "dos teclas por mano" queda para las
+  piezas anteriores (no se tocaron); la prueba de dos teclas de la tarea del 10 oct excluye `penta-acordes`.
+  Al resumir la clase Jorge mezcló "grados 1, 2, 3, 5, 7, 8" y dijo que La menor "compone" la pentatónica; se le
+  corrigió: tríada = 1-3-5, tétrada = 1-3-5-7, pentatónica mayor = 1-2-3-5-6, el 8 es el 1 una octava arriba, y La
+  menor es la RELATIVA de Do (mismas teclas). Lo aceptó.
+  - `ej-grados` (`guide:'grados'`, `gradosBuild`, 4 partes): escala de Do con el número de cada grado; "¿qué grado
+    es?" con botones 1-7; buscar el grado sin marcas (dice qué grado tocó, u "otra octava"); tríadas I, IV, V, vi
+    con 1-3-5 en la derecha, una tétrada (Do 7ma mayor, solo para oírla) y dos preguntas: qué acordes caben enteros
+    en la pentatónica (Do y La menor: Fa pide el grado 4 y Sol el 7, que no tiene) y en qué grado empieza La menor (6).
+  - `ej-penta-grados` (`guide:'pentaGrados'`, `pentaBuild`, 2 partes): la pentatónica de Do empezando en Do, Re, Mi,
+    Sol y La (una octava, dedos 1-2-3-1-2-3, todo blanco), cada vuelta sobre un acorde de la izquierda en fundamental
+    5-3-1: **Do, Fa, Do, Sol, La menor. La elección es mía y Jorge dijo que es la misma que dio el profe.** Pregunta
+    "¿alegre o triste?" solo en Do y La (las dos que tienen respuesta clara); en Re/Mi/Sol solo una frase de qué
+    escuchar, no una "respuesta correcta" de algo subjetivo. Parte 2 sin marcas en la derecha salvo la nota de partida.
+    Motor: paso con `ignore` (teclas del acorde que la otra mano sostiene: volver a tocarlas no es error) y `hint`
+    por pregunta (antes la pista de `p0Answer` era la de inversiones para todo).
+  - `penta-acordes` "Melodía pentatónica con acordes (I–vi–IV–V)" (MÍA, `buildPentaAcordes`, ♩=66, 12 compases):
+    la "melodía con acordes y pentatónica" que pidió el profe. Derecha mano abierta fija (Do 1 Re 2 Mi 3 Sol 4 La 5),
+    solo pentatónica; izquierda un acorde completo 5-3-1 al tiempo 1 de cada compás (Do Lam Fa Sol | Do Lam Fa Do |
+    Lam Fa Sol Do), en fundamental a propósito (es "el acorde del grado", igual que en Acordes): la mano se mueve
+    un poco en cada compás. Partes: pregunta (queda en Re sobre Sol), respuesta (vuelve a Do), y desde La sobre La
+    menor (más triste) hasta cerrar en Do. Si el salto de la izquierda cuesta, la salida es usar posiciones cercanas
+    (Do-Mi-La, Do-Fa-La, Si-Re-Sol, todas con el Do o el Si abajo).
+  - Las tres van en "De la clase" con `tarea:true`. Accesos: `#gradosGuideBtn` y `#pentaGuideBtn` junto a las
+    familias de Escalas. Hay pruebas de las tres.
 - **Pedal sí / no (12 oct 2026, pedido de Jorge: "dame la opción de usar o no el pedal").** Botón
   `#pedalToggleBtn` ("🦶 Pedal: sí/no") junto a Escuchar; solo se ve donde aplica (`pedalToggleRelevant`).
   **Dos preferencias separadas a propósito**: `pedalOn` (piezas con marcas `ped`, por defecto SÍ, como
