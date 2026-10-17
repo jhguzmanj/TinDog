@@ -970,10 +970,11 @@ y dentro de "Más ▾": `free | functions`.
   - `penta-acordes` "Melodía pentatónica con acordes (I–vi–IV–V)" (MÍA, `buildPentaAcordes`, ♩=66, 12 compases):
     la "melodía con acordes y pentatónica" que pidió el profe. Derecha mano abierta fija (Do 1 Re 2 Mi 3 Sol 4 La 5),
     solo pentatónica; izquierda un acorde completo 5-3-1 al tiempo 1 de cada compás (Do Lam Fa Sol | Do Lam Fa Do |
-    Lam Fa Sol Do), en fundamental a propósito (es "el acorde del grado", igual que en Acordes): la mano se mueve
-    un poco en cada compás. Partes: pregunta (queda en Re sobre Sol), respuesta (vuelve a Do), y desde La sobre La
-    menor (más triste) hasta cerrar en Do. Si el salto de la izquierda cuesta, la salida es usar posiciones cercanas
-    (Do-Mi-La, Do-Fa-La, Si-Re-Sol, todas con el Do o el Si abajo).
+    Lam Fa Sol Do). Partes: pregunta (queda en Re sobre Sol), respuesta (vuelve a Do), y desde La sobre La menor (más
+    triste) hasta cerrar en Do. **Acordes en posiciones juntas (pedido de Jorge el mismo día)**: salió en fundamental
+    (la mano saltaba cada compás) y ahora va Do-Mi-Sol 5-3-1, Do-Mi-La 5-3-1, Do-Fa-La 5-2-1, Si-Re-Sol 5-3-1: el
+    meñique vive en Do3 (baja a Si2 solo en Sol), todo entre Si2 y La3. Se pierde que el bajo sea la fundamental del
+    grado (Lam, Fa y Sol quedan invertidos); el ejercicio guiado sigue en fundamental para enseñar el grado.
   - Las tres van en "De la clase" con `tarea:true`. Accesos: `#gradosGuideBtn` y `#pentaGuideBtn` junto a las
     familias de Escalas. Hay pruebas de las tres.
 - **Pedal sí / no (12 oct 2026, pedido de Jorge: "dame la opción de usar o no el pedal").** Botón

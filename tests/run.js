@@ -3693,8 +3693,10 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
     let t = 0; const attackAt = [];
     PA.steps.forEach(x => { if(x.lh.length) attackAt.push(t); t += x.dur; });
     check(tot === 48 && attackAt.join() === '0,4,8,12,16,20,24,28,32,36,40,44', 'melodía: 12 compases de 4, un acorde en el tiempo 1 de cada compás');
-    const TRI = ['48,52,55', '45,48,52', '41,45,48', '43,47,50'];
-    check(PA.steps.filter(x => x.lh.length).every(x => TRI.includes(x.lh.join()) && x.lhF.join() === '5,3,1'), 'cada acorde es Do, La menor, Fa o Sol completo, con 5-3-1');
+    const TRI = { '48,52,55':'5,3,1', '48,52,57':'5,3,1', '48,53,57':'5,2,1', '47,50,55':'5,3,1' };
+    check(PA.steps.filter(x => x.lh.length).every(x => TRI[x.lh.join()] === x.lhF.join()), 'cada acorde es Do, La menor, Fa o Sol completo, en posición junta (Do-Mi-Sol, Do-Mi-La, Do-Fa-La, Si-Re-Sol)');
+    check(Math.max(...PA.steps.flatMap(x => x.lh)) - Math.min(...PA.steps.flatMap(x => x.lh)) <= 10 && PA.steps.filter(x => x.lh.length).every(x => [47, 48].includes(x.lh[0])),
+      'la izquierda casi no se mueve: el meñique siempre en Do3 (o Si2 en Sol), todo entre Si2 y La3');
     check(PA.steps.every(x => x.rh.length === 1 && [0, 2, 4, 7, 9].includes(x.rh[0] % 12)), 'la derecha: solo la pentatónica de Do, una nota a la vez');
     const RF = {60:1, 62:2, 64:3, 67:4, 69:5};
     check(PA.steps.every(x => x.rhF[0] === RF[x.rh[0]]), 'la derecha no se mueve: cada tecla siempre con el mismo dedo');

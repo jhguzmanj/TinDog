@@ -6299,7 +6299,7 @@ const SONGS = [
   {
     id:'penta-acordes', cat:'clase', tarea:true,
     name:'Melodía pentatónica con acordes (I–vi–IV–V)',
-    tip:'Derecha solo con Do Re Mi Sol La, mano abierta (Do 1 Re 2 Mi 3 Sol 4 La 5), sin moverse. Izquierda: un acorde completo por compás, 5-3-1, en el tiempo 1 y sostenido. Cada acorde es un grado de Do.',
+    tip:'Derecha solo con Do Re Mi Sol La, mano abierta (Do 1 Re 2 Mi 3 Sol 4 La 5), sin moverse. Izquierda: un acorde completo por compás, en posiciones juntas (Do-Mi-Sol, Do-Mi-La, Do-Fa-La, Si-Re-Sol) para que la mano casi no se mueva.',
     tempo:66,
     steps:buildPentaAcordes()
   },
@@ -8730,13 +8730,15 @@ const LH_TRIAD = {
 // "Melodía pentatónica con acordes" (MÍA, 17 oct 2026): 12 compases, Do–Lam–Fa–Sol.
 function buildPentaAcordes(){
   const T = {
-    C:{ lh:[48, 52, 55] }, Am:{ lh:[45, 48, 52] }, F:{ lh:[41, 45, 48] }, G:{ lh:[43, 47, 50] } };
+    // Posiciones juntas (pedido de Jorge): el Do3 (o el Si2) queda abajo y la mano casi no se mueve.
+    C:{ lh:[48, 52, 55], f:[5, 3, 1] }, Am:{ lh:[48, 52, 57], f:[5, 3, 1] },
+    F:{ lh:[48, 53, 57], f:[5, 2, 1] }, G:{ lh:[47, 50, 55], f:[5, 3, 1] } };
   const RF = {60:1, 62:2, 64:3, 67:4, 69:5};
   const BARS = [
     ['C',  [[64,1],[67,1],[69,1],[67,1]], 'c. 1 · Parte 1 · Grado I: Do (Do-Mi-Sol)'],
-    ['Am', [[64,2],[60,1],[62,1]],        'c. 2 · Grado vi: La menor (La-Do-Mi)'],
-    ['F',  [[69,2],[67,1],[64,1]],        'c. 3 · Grado IV: Fa (Fa-La-Do)'],
-    ['G',  [[62,4]],                      'c. 4 · Grado V: Sol (Sol-Si-Re) · queda en el aire'],
+    ['Am', [[64,2],[60,1],[62,1]],        'c. 2 · Grado vi: La menor (Do-Mi-La: el pulgar sube a La)'],
+    ['F',  [[69,2],[67,1],[64,1]],        'c. 3 · Grado IV: Fa (Do-Fa-La, 5-2-1)'],
+    ['G',  [[62,4]],                      'c. 4 · Grado V: Sol (Si-Re-Sol: el meñique baja a Si) · queda en el aire'],
     ['C',  [[64,1],[67,1],[69,1],[67,1]], 'c. 5 · Parte 2 · la misma pregunta'],
     ['Am', [[69,2],[67,1],[64,1]],        'c. 6 · La menor'],
     ['F',  [[69,1],[67,1],[64,1],[62,1]], 'c. 7 · Fa · baja por la pentatónica'],
@@ -8749,7 +8751,7 @@ function buildPentaAcordes(){
   const steps = [];
   BARS.forEach(([ch, notes, label]) => notes.forEach(([n, d], j) => {
     const st = { lh:j === 0 ? T[ch].lh.slice() : [], rh:[n], rhF:[RF[n]], dur:d };
-    if(j === 0){ st.lhF = [5, 3, 1]; st.label = label; }
+    if(j === 0){ st.lhF = T[ch].f.slice(); st.label = label; }
     steps.push(st);
   }));
   return steps;
