@@ -3698,10 +3698,10 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
     check(Math.max(...PA.steps.flatMap(x => x.lh)) - Math.min(...PA.steps.flatMap(x => x.lh)) <= 10 && PA.steps.filter(x => x.lh.length).every(x => [47, 48].includes(x.lh[0])),
       'la izquierda casi no se mueve: el meñique siempre en Do3 (o Si2 en Sol), todo entre Si2 y La3');
     check(PA.steps.every(x => x.rh.length === 1 && [0, 2, 4, 7, 9].includes(x.rh[0] % 12)), 'la derecha: solo la pentatónica de Do, una nota a la vez');
-    const RF = {60:1, 62:2, 64:3, 67:4, 69:5};
-    check(PA.steps.every(x => x.rhF[0] === RF[x.rh[0]]), 'la derecha no se mueve: cada tecla siempre con el mismo dedo');
+    const RF = {72:1, 74:2, 76:3, 79:4, 81:5};
+    check(PA.tempo === 80 && PA.steps.every(x => x.rh[0] >= 72 && x.rhF[0] === RF[x.rh[0]]), 'la derecha una octava arriba (pulgar en Do5) y no se mueve; ♩=80');
     check(Math.max(...PA.steps.flatMap(x => x.lh)) < Math.min(...PA.steps.flatMap(x => x.rh)), 'las manos no se cruzan');
-    check(PA.steps[PA.steps.length - 1].rh[0] === 60 && PA.steps[PA.steps.length - 2].lh.length === 0, 'termina en Do');
+    check(PA.steps[PA.steps.length - 1].rh[0] === 72 && PA.steps[PA.steps.length - 2].lh.length === 0, 'termina en Do');
     W("selectCategory('today')");
   }
 

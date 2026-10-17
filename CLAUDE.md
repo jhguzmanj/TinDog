@@ -975,6 +975,11 @@ y dentro de "Más ▾": `free | functions`.
     (la mano saltaba cada compás) y ahora va Do-Mi-Sol 5-3-1, Do-Mi-La 5-3-1, Do-Fa-La 5-2-1, Si-Re-Sol 5-3-1: el
     meñique vive en Do3 (baja a Si2 solo en Sol), todo entre Si2 y La3. Se pierde que el bajo sea la fundamental del
     grado (Lam, Fa y Sol quedan invertidos); el ejercicio guiado sigue en fundamental para enseñar el grado.
+    **Más clara (mismo día, Jorge: "está muy triste")**: la derecha subió una octava (pulgar en Do5, Do5–La5, mismos
+    dedos; La5 lleva una línea adicional) y el tempo de ♩=66 a 80. Se le explicó que la octava aclara el registro (las
+    manos ya no se tocan: hay más de una octava entre ellas) pero no cambia lo menor: la Parte 3 desde La menor sigue
+    triste A PROPÓSITO, es el contraste que enseña la clase. Los datos de `BARS` siguen en la 4ta octava y
+    `buildPentaAcordes` suma 12 al armar los pasos.
   - Las tres van en "De la clase" con `tarea:true`. Accesos: `#gradosGuideBtn` y `#pentaGuideBtn` junto a las
     familias de Escalas. Hay pruebas de las tres.
 - **Pedal sí / no (12 oct 2026, pedido de Jorge: "dame la opción de usar o no el pedal").** Botón

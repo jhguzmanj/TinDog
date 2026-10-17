@@ -6299,8 +6299,8 @@ const SONGS = [
   {
     id:'penta-acordes', cat:'clase', tarea:true,
     name:'Melodía pentatónica con acordes (I–vi–IV–V)',
-    tip:'Derecha solo con Do Re Mi Sol La, mano abierta (Do 1 Re 2 Mi 3 Sol 4 La 5), sin moverse. Izquierda: un acorde completo por compás, en posiciones juntas (Do-Mi-Sol, Do-Mi-La, Do-Fa-La, Si-Re-Sol) para que la mano casi no se mueva.',
-    tempo:66,
+    tip:'Derecha solo con Do Re Mi Sol La, una octava arriba del Do central (pulgar en Do5, Re 2 Mi 3 Sol 4 La 5), sin moverse. Izquierda: un acorde completo por compás, en posiciones juntas (Do-Mi-Sol, Do-Mi-La, Do-Fa-La, Si-Re-Sol) para que la mano casi no se mueva.',
+    tempo:80,
     steps:buildPentaAcordes()
   },
   // Tarea de la academia (septiembre): guía "Ejercicios para practicar escalas"
@@ -8750,7 +8750,8 @@ function buildPentaAcordes(){
   ];
   const steps = [];
   BARS.forEach(([ch, notes, label]) => notes.forEach(([n, d], j) => {
-    const st = { lh:j === 0 ? T[ch].lh.slice() : [], rh:[n], rhF:[RF[n]], dur:d };
+    // La derecha suena una octava arriba (pedido de Jorge: "muy triste"); los datos de arriba están en la 4ta octava.
+    const st = { lh:j === 0 ? T[ch].lh.slice() : [], rh:[n + 12], rhF:[RF[n]], dur:d };
     if(j === 0){ st.lhF = T[ch].f.slice(); st.label = label; }
     steps.push(st);
   }));
