@@ -2630,6 +2630,11 @@ explicó antes que la app estaba congelada y que era un modo grande; dijo que s�
   lo proponía para siempre — y la cascada es justo donde esos ejercicios sirven. Ahora
   `recordCascadeResult` también llama a `recordPracticeDone()`. El punto de Ritmo pide **2 rondas**
   (`dayRec().rhythm >= 2`, aprobadas o no) y ahora el subtítulo lo dice. Hay prueba.
+  **Sin piezas de repertorio (17 oct 2026, Jorge: "sacar de la práctica las piezas, solo dejar las que son de
+  práctica; las piezas las selecciono yo").** El punto `song` (pieza menos practicada) se quitó. El bloque `keep`
+  queda en lectura + acordes (desde `CHORDS_PAUSED_UNTIL`) + **`tarea`**, que ahora va siempre: la pieza o ejercicio
+  guiado `tarea:true` menos practicado. Costo, dicho a Jorge: lo que no elija él en Piezas ya nadie se lo recuerda.
+  `plan:false` sigue sirviendo para la rotación del calentamiento (coordinación), no para piezas. Hay prueba.
   **El `go` del paso 2 deja el metrónomo listo** en el BPM de la meta y enciende
   `⏱ Con metrónomo`: si hay que ir a buscarlo a mano, no se usa.
 - Exportar/importar JSON desde la pestaña Progreso. **Importar FUSIONA, no pisa**

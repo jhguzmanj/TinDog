@@ -12333,15 +12333,8 @@ function buildTodayPlan(seed){
     done: () => (dayRec().reading || 0) >= 10,
     go: () => { readingLevel = lvIdx; selectCategory('reading'); } });
 
-  // Clase del 10 de octubre: "no practicar acordes esta semana". Hasta la clase
-  // siguiente el punto de Acordes se cambia por una melodía de la tarea.
-  if(today < CHORDS_PAUSED_UNTIL){
-    const tareas = leastPracticed(SONGS.filter(s => s.tarea), progress.songs, 'id');
-    const tarea = tareas[0];
-    items.push({ key:'tarea', min:4, block:'keep', title:'Tarea: ' + tarea.name, sub:tarea.guide ? 'Ejercicio guiado: la app te pide una cosa a la vez.' : 'Cada mano sola y después juntas. Esta semana sin acordes.',
-      done: () => (progress.songs[tarea.id] || {}).lastDay === today || (progress.cascade[tarea.id] || {}).lastDay === today,
-      go: () => { selectCategory('fragments'); pickFragmentById(tarea.id); } });
-  } else {
+  // Acordes: en pausa hasta la clase del 17 de octubre ("no practicar acordes esta semana").
+  if(today >= CHORDS_PAUSED_UNTIL){
     const groupA = CHORDS.slice(CHORD_GROUPS[0].from, CHORD_GROUPS[0].to), groupB = CHORDS.slice(CHORD_GROUPS[1].from, CHORD_GROUPS[1].to);
     const aDone = groupA.every(c => ((progress.chords[c.name] || {}).runs || 0) >= 3);
     const pool = aDone ? groupB : groupA;
@@ -12352,15 +12345,14 @@ function buildTodayPlan(seed){
       go: () => { selectCategory('chords'); pickChordByName(chordsPick[0].name); } });
   }
 
-  // Los "Patrones" son acordes en la izquierda: eso ya lo cubre el punto de
-  // Acordes del plan, así que la pieza sale de las canciones de verdad.
-  // `plan:false`: piezas que Jorge pidió tener "para más adelante" — están a
-  // mano en Piezas, pero el plan no las propone todavía.
-  const songs = leastPracticed(SONGS.filter(s => s.cat !== 'patrones' && s.plan !== false), progress.songs, 'id');
-  const song = songs[Math.min(rnd(2), songs.length - 1)];
-  items.push({ key:'song', min:4, block:'keep', title:'Pieza: ' + song.name, sub:'Manos separadas primero, después juntas.',
-    done: () => (progress.songs[song.id] || {}).lastDay === today || (progress.cascade[song.id] || {}).lastDay === today,
-    go: () => { selectCategory('fragments'); pickFragmentById(song.id); } });
+  // Solo la práctica de la clase (`tarea:true`: melodías y ejercicios guiados). Las piezas
+  // de repertorio ya no entran al plan: Jorge las elige él en Piezas (pedido del 17 oct 2026).
+  const tareas = leastPracticed(SONGS.filter(s => s.tarea), progress.songs, 'id');
+  const tarea = tareas[0];
+  items.push({ key:'tarea', min:4, block:'keep', title:'Tarea: ' + tarea.name,
+    sub:tarea.guide ? 'Ejercicio guiado: la app te pide una cosa a la vez.' : 'Cada mano sola y después juntas.',
+    done: () => (progress.songs[tarea.id] || {}).lastDay === today || (progress.cascade[tarea.id] || {}).lastDay === today,
+    go: () => { selectCategory('fragments'); pickFragmentById(tarea.id); } });
 
   return items;
 }

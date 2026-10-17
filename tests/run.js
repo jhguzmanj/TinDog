@@ -1060,12 +1060,13 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
   const keepMin = W('todayPlan.filter(it => it.block === "keep").reduce((a,it) => a + it.min, 0)');
   check(coreMin > keepMin, 'y se lleva más minutos que el mantenimiento (' + coreMin + ' vs ' + keepMin + ')');
   const chordsPaused = W('dateKey() < CHORDS_PAUSED_UNTIL');
-  check(W('todayPlan.filter(it => it.block === "keep").map(it => it.key)').join(',') === (chordsPaused ? 'reading,tarea,song' : 'reading,chords,song'),
-    'lectura, ' + (chordsPaused ? 'la tarea de la clase (esta semana sin acordes)' : 'acordes') + ' y pieza siguen en el plan: foco no es abandono');
+  check(W('todayPlan.filter(it => it.block === "keep").map(it => it.key)').join(',') === (chordsPaused ? 'reading,tarea' : 'reading,chords,tarea'),
+    'lectura, ' + (chordsPaused ? '' : 'acordes y ') + 'la práctica de la clase siguen en el plan; las piezas de repertorio ya no (las elige Jorge)');
   // Clase del 10 de octubre: sin acordes hasta la clase siguiente; después vuelven solos
   const keepOn = d => W(`(() => { const dk = dateKey; dateKey = () => '${d}'; try { return buildTodayPlan(7).filter(it => it.block === 'keep').map(it => it.key).join(','); } finally { dateKey = dk; } })()`);
-  check(keepOn('2026-10-12') === 'reading,tarea,song', 'la semana del 10 de octubre el plan cambia Acordes por una melodía de la tarea');
-  check(keepOn('2026-10-17') === 'reading,chords,song', 'desde la clase del 17 de octubre vuelven los acordes');
+  check(keepOn('2026-10-12') === 'reading,tarea', 'la semana del 10 de octubre no hay acordes en el plan');
+  check(keepOn('2026-10-17') === 'reading,chords,tarea', 'desde la clase del 17 de octubre vuelven los acordes, y la tarea de la clase se queda');
+  check(!W('buildTodayPlan(3)').some(it => it.key === 'song'), 'ninguna pieza de repertorio en el plan de Hoy');
   check(doc.querySelectorAll('#todayList .today-block').length === 2, 'los dos bloques se rotulan en pantalla');
   check(W("todayPlan.find(it => it.key === 'intervals').title").includes('Anclas') && W("todayPlan.find(it => it.key === 'ear').title").includes('Anclas'),
     'intervalos y oído arrancan en el nivel 1');
