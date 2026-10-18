@@ -1061,6 +1061,12 @@ y dentro de "Más ▾": `free | functions`.
   `12543234` a `13543234` (2.º paso: 2 contra 3 → 3 y 3). Con esto **Hanon 3 queda espejo en los 14 compases**
   (cada paso suma 6, hay prueba). Mismo costo que en el 2: el Mi de la derecha lleva 3 al principio y 2 al final;
   la alternativa era bajar la izquierda a 4 en ese paso. Siguen sin tocar los casos de 4, 7, 8 y 11.
+- **Hanon 4, bajada: 4.º paso con el 3 en las dos manos (18 oct 2026, Jorge: "cuando vuelve de derecha a izquierda
+  el dedo 3 y 2 se activan pero deberían ser ambos el dedo 3").** c. 8-15 la derecha pasó de `54521234` a `54531234`
+  (izquierda `12135432`). Antes era el único paso que no sumaba 6, y además la misma tecla llevaba el 2 en el 4.º
+  paso y el 3 en el 7.º del mismo compás. Ahora Hanon 4 queda espejo en los 15 compases (hay prueba). La mano en esa
+  bajada: 5 arriba, 3 dos teclas más abajo (una 3ra), pulgar dos más abajo: cabe sin moverla. Quedan sin revisar los
+  casos parecidos de 7, 8 y 11 (no los pidió).
 - **Bug del calentamiento de Hoy (15 oct 2026, Jorge: "hice el Hanon 3 como dice la práctica y no la marca").**
   La práctica SÍ se guardaba (`progress.drills['hanon-3']`), pero el plan se recalcula y el "siguiente
   pendiente" (`hanonPend[0]`, igual que `coordPend[0]`) pasaba a ser Hanon 4: el punto se rotulaba con el nuevo y

@@ -1581,6 +1581,10 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
     // Hanon 3, subida (c. 1-7): el 2.º paso lleva 3 en las dos manos; con eso todo el ejercicio es espejo (suman 6)
     check(h3.slice(0, 56).filter((x, i) => i % 8 === 1).every(x => x.rhF[0] === 3 && x.lhF[0] === 3), 'Hanon 3, c. 1-7: en el 2.º paso de cada compás las dos manos marcan el 3');
     check(h3.slice(0, 112).every(x => x.rhF[0] === 6 - x.lhF[0]), 'Hanon 3: de arriba abajo, cada paso suma 6 entre las dos manos (espejo)');
+    // Hanon 4, bajada (c. 8-15): el 4.º paso llevaba 2 en la derecha contra 3 en la izquierda (54521234 → 54531234)
+    const h4 = hs[3].steps;
+    check(h4.slice(56, 120).filter((x, i) => i % 8 === 3).every(x => x.rhF[0] === 3 && x.lhF[0] === 3), 'Hanon 4, c. 8-15: en el 4.º paso de cada compás las dos manos marcan el 3');
+    check(h4.slice(0, 120).every(x => x.rhF[0] === 6 - x.lhF[0]), 'Hanon 4: de arriba abajo, cada paso suma 6 entre las dos manos (espejo)');
     check(hs.slice(0, 11).every(s => s.steps.slice(0, -1).filter(x => x.label).length === s.steps.length >> 3), 'un rótulo "c. N" al inicio de cada compás (para el Tramo)');
     // El plan de Hoy nunca manda un Hanon como "pieza".
     W("progress = emptyProgress(); todayPlan = buildTodayPlan(1)");
