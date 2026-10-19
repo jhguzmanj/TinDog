@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE score-partwise PUBLIC "-//Recordare//DTD MusicXML 4.0 Partwise//EN" "http://www.musicxml.org/dtds/partwise.dtd">
+<score-partwise version="4.0">
+  <work><work-title>Final 3 · Tercera de Picardía (clásico)</work-title></work>
+  <identification><creator type="composer">Original de Jorge y Claude (app Piano MIDI Trainer)</creator><encoding><software>Piano MIDI Trainer · tools/export-musicxml.js</software></encoding></identification>
+  <part-list><score-part id="P1"><part-name>Piano</part-name></score-part></part-list>
+  <part id="P1">
+    <measure number="1">
+      <attributes><divisions>12</divisions><key><fifths>0</fifths><mode>minor</mode></key><time><beats>4</beats><beat-type>4</beat-type></time><staves>2</staves><clef number="1"><sign>G</sign><line>2</line></clef><clef number="2"><sign>F</sign><line>4</line></clef></attributes>
+      <direction placement="above"><direction-type><metronome><beat-unit>quarter</beat-unit><per-minute>60</per-minute></metronome></direction-type><sound tempo="60"/></direction>
+      <note><pitch><step>E</step><octave>4</octave></pitch><duration>12</duration><voice>1</voice><type>quarter</type><staff>1</staff><notations><technical><fingering>3</fingering></technical></notations></note>
+      <note><pitch><step>D</step><octave>4</octave></pitch><duration>12</duration><voice>1</voice><type>quarter</type><staff>1</staff><notations><technical><fingering>2</fingering></technical></notations></note>
+      <note><pitch><step>C</step><octave>4</octave></pitch><duration>24</duration><voice>1</voice><type>half</type><staff>1</staff><notations><technical><fingering>1</fingering></technical></notations></note>
+      <backup><duration>48</duration></backup>
+      <note><pitch><step>A</step><octave>2</octave></pitch><duration>48</duration><voice>2</voice><type>whole</type><staff>2</staff><notations><technical><fingering>1</fingering></technical></notations></note>
+      <backup><duration>48</duration></backup>
+      <direction placement="above"><direction-type><words>c. 1 · Lam (i): triste</words></direction-type><voice>3</voice><staff>1</staff></direction>
+    </measure>
+    <measure number="2">
+      <note><pitch><step>F</step><octave>4</octave></pitch><duration>24</duration><voice>1</voice><type>half</type><staff>1</staff><notations><technical><fingering>4</fingering></technical></notations></note>
+      <note><pitch><step>D</step><octave>4</octave></pitch><duration>24</duration><voice>1</voice><type>half</type><staff>1</staff><notations><technical><fingering>2</fingering></technical></notations></note>
+      <backup><duration>48</duration></backup>
+      <note><pitch><step>F</step><octave>2</octave></pitch><duration>48</duration><voice>2</voice><type>whole</type><staff>2</staff><notations><technical><fingering>4</fingering></technical></notations></note>
+      <backup><duration>48</duration></backup>
+      <direction placement="above"><direction-type><words>c. 2 · Fa (VI)</words></direction-type><voice>3</voice><staff>1</staff></direction>
+    </measure>
+    <measure number="3">
+      <note><pitch><step>D</step><octave>4</octave></pitch><duration>48</duration><voice>1</voice><type>whole</type><staff>1</staff><notations><technical><fingering>2</fingering></technical></notations></note>
+      <note><chord/><pitch><step>G</step><alter>1</alter><octave>4</octave></pitch><duration>48</duration><voice>1</voice><type>whole</type><accidental>sharp</accidental><staff>1</staff><notations><technical><fingering>5</fingering></technical></notations></note>
+      <backup><duration>48</duration></backup>
+      <note><pitch><step>E</step><octave>2</octave></pitch><duration>48</duration><voice>2</voice><type>whole</type><staff>2</staff><notations><technical><fingering>5</fingering></technical></notations></note>
+      <backup><duration>48</duration></backup>
+      <direction placement="above"><direction-type><words>c. 3 · Mi7 (V7): Re y Sol# forman un tritono, máxima tensión</words></direction-type><voice>3</voice><staff>1</staff></direction>
+    </measure>
+    <measure number="4">
+      <note><pitch><step>C</step><alter>1</alter><octave>4</octave></pitch><duration>48</duration><voice>1</voice><type>whole</type><accidental>sharp</accidental><staff>1</staff><notations><technical><fingering>1</fingering></technical></notations></note>
+      <note><chord/><pitch><step>E</step><octave>4</octave></pitch><duration>48</duration><voice>1</voice><type>whole</type><staff>1</staff><notations><technical><fingering>3</fingering></technical></notations></note>
+      <backup><duration>48</duration></backup>
+      <note><pitch><step>A</step><octave>1</octave></pitch><duration>48</duration><voice>2</voice><type>whole</type><staff>2</staff><notations><technical><fingering>5</fingering></technical></notations></note>
+      <note><chord/><pitch><step>A</step><octave>2</octave></pitch><duration>48</duration><voice>2</voice><type>whole</type><staff>2</staff><notations><technical><fingering>1</fingering></technical></notations></note>
+      <backup><duration>48</duration></backup>
+      <direction placement="above"><direction-type><words>c. 4 · La MAYOR: Do# en vez de Do (pulgar en la negra). Meñique izquierdo baja a La1</words></direction-type><voice>3</voice><staff>1</staff></direction>
+    </measure>
+  </part>
+</score-partwise>

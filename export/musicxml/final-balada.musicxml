@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE score-partwise PUBLIC "-//Recordare//DTD MusicXML 4.0 Partwise//EN" "http://www.musicxml.org/dtds/partwise.dtd">
+<score-partwise version="4.0">
+  <work><work-title>Final 5 · Balada con arpegio (moderno)</work-title></work>
+  <identification><creator type="composer">Original de Jorge y Claude (app Piano MIDI Trainer)</creator><encoding><software>Piano MIDI Trainer · tools/export-musicxml.js</software></encoding></identification>
+  <part-list><score-part id="P1"><part-name>Piano</part-name></score-part></part-list>
+  <part id="P1">
+    <measure number="1">
+      <attributes><divisions>12</divisions><key><fifths>-1</fifths><mode>major</mode></key><time><beats>4</beats><beat-type>4</beat-type></time><staves>2</staves><clef number="1"><sign>G</sign><line>2</line></clef><clef number="2"><sign>F</sign><line>4</line></clef></attributes>
+      <direction placement="above"><direction-type><metronome><beat-unit>quarter</beat-unit><per-minute>66</per-minute></metronome></direction-type><sound tempo="66"/></direction>
+      <note><pitch><step>C</step><octave>4</octave></pitch><duration>24</duration><voice>1</voice><type>half</type><staff>1</staff><notations><technical><fingering>1</fingering></technical></notations></note>
+      <note><chord/><pitch><step>F</step><octave>4</octave></pitch><duration>24</duration><voice>1</voice><type>half</type><staff>1</staff><notations><technical><fingering>4</fingering></technical></notations></note>
+      <note><pitch><step>C</step><octave>4</octave></pitch><duration>24</duration><voice>1</voice><type>half</type><staff>1</staff><notations><technical><fingering>1</fingering></technical></notations></note>
+      <note><chord/><pitch><step>G</step><octave>4</octave></pitch><duration>24</duration><voice>1</voice><type>half</type><staff>1</staff><notations><technical><fingering>5</fingering></technical></notations></note>
+      <backup><duration>48</duration></backup>
+      <note><pitch><step>F</step><octave>2</octave></pitch><duration>48</duration><voice>2</voice><type>whole</type><staff>2</staff><notations><technical><fingering>5</fingering></technical></notations></note>
+      <note><chord/><pitch><step>C</step><octave>3</octave></pitch><duration>48</duration><voice>2</voice><type>whole</type><staff>2</staff><notations><technical><fingering>1</fingering></technical></notations></note>
+      <backup><duration>48</duration></backup>
+      <direction placement="above"><direction-type><words>c. 1 · Fa (IV), abierto: Do + Fa</words></direction-type><voice>3</voice><staff>1</staff></direction>
+      <forward><duration>24</duration><voice>3</voice><staff>1</staff></forward>
+      <direction placement="above"><direction-type><words>Fa con 9na: Do + Sol, el sonido &quot;moderno&quot;</words></direction-type><voice>3</voice><staff>1</staff></direction>
+    </measure>
+    <measure number="2">
+      <note><pitch><step>F</step><octave>4</octave></pitch><duration>24</duration><voice>1</voice><type>half</type><staff>1</staff><notations><technical><fingering>4</fingering></technical></notations></note>
+      <note><chord/><pitch><step>G</step><octave>4</octave></pitch><duration>24</duration><voice>1</voice><type>half</type><staff>1</staff><notations><technical><fingering>5</fingering></technical></notations></note>
+      <note><pitch><step>E</step><octave>4</octave></pitch><duration>24</duration><voice>1</voice><type>half</type><staff>1</staff><notations><technical><fingering>3</fingering></technical></notations></note>
+      <note><chord/><pitch><step>G</step><octave>4</octave></pitch><duration>24</duration><voice>1</voice><type>half</type><staff>1</staff><notations><technical><fingering>5</fingering></technical></notations></note>
+      <backup><duration>48</duration></backup>
+      <note><pitch><step>C</step><octave>3</octave></pitch><duration>48</duration><voice>2</voice><type>whole</type><staff>2</staff><notations><technical><fingering>1</fingering></technical></notations></note>
+      <backup><duration>48</duration></backup>
+      <direction placement="above"><direction-type><words>c. 2 · Do suspendido: Fa + Sol</words></direction-type><voice>3</voice><staff>1</staff></direction>
+      <forward><duration>24</duration><voice>3</voice><staff>1</staff></forward>
+      <direction placement="above"><direction-type><words>Se resuelve: el Fa baja a Mi</words></direction-type><voice>3</voice><staff>1</staff></direction>
+    </measure>
+    <measure number="3">
+      <note><rest/><duration>36</duration><voice>1</voice><type>half</type><dot/><staff>1</staff></note>
+      <note><pitch><step>C</step><octave>4</octave></pitch><duration>12</duration><voice>1</voice><type>quarter</type><staff>1</staff><notations><technical><fingering>1</fingering></technical></notations></note>
+      <backup><duration>48</duration></backup>
+      <note><pitch><step>C</step><octave>2</octave></pitch><duration>12</duration><voice>2</voice><type>quarter</type><staff>2</staff><notations><technical><fingering>5</fingering></technical></notations></note>
+      <note><pitch><step>G</step><octave>2</octave></pitch><duration>12</duration><voice>2</voice><type>quarter</type><staff>2</staff><notations><technical><fingering>2</fingering></technical></notations></note>
+      <note><pitch><step>C</step><octave>3</octave></pitch><duration>24</duration><tie type="start"/><voice>2</voice><type>half</type><staff>2</staff><notations><tied type="start"/><technical><fingering>1</fingering></technical></notations></note>
+      <backup><duration>48</duration></backup>
+      <direction placement="above"><direction-type><words>c. 3 · Arpegio de Do, pisa el pedal: Do2</words></direction-type><voice>3</voice><staff>1</staff></direction>
+    </measure>
+    <measure number="4">
+      <note><pitch><step>E</step><octave>4</octave></pitch><duration>12</duration><voice>1</voice><type>quarter</type><staff>1</staff><notations><technical><fingering>3</fingering></technical></notations></note>
+      <note><pitch><step>G</step><octave>4</octave></pitch><duration>36</duration><voice>1</voice><type>half</type><dot/><staff>1</staff><notations><technical><fingering>5</fingering></technical></notations></note>
+      <backup><duration>48</duration></backup>
+      <note><pitch><step>C</step><octave>3</octave></pitch><duration>48</duration><tie type="stop"/><voice>2</voice><type>whole</type><staff>2</staff><notations><tied type="stop"/></notations></note>
+      <backup><duration>48</duration></backup>
+      <direction placement="above"><direction-type><words>c. 4 · Sigue subiendo, más lento por dentro</words></direction-type><voice>3</voice><staff>1</staff></direction>
+      <forward><duration>12</duration><voice>3</voice><staff>1</staff></forward>
+      <direction placement="above"><direction-type><words>Sol4 y deja sonar todo hasta que se apague</words></direction-type><voice>3</voice><staff>1</staff></direction>
+    </measure>
+  </part>
+</score-partwise>

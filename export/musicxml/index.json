@@ -1,0 +1,170 @@
+[
+ {
+  "id": "amanecer",
+  "name": "Amanecer",
+  "tempo": 92,
+  "meter": 4,
+  "measures": 13,
+  "beats": 52
+ },
+ {
+  "id": "camino-intervalos",
+  "name": "Camino de intervalos (original)",
+  "tempo": 72,
+  "meter": 4,
+  "measures": 12,
+  "beats": 48
+ },
+ {
+  "id": "dia-de-lluvia",
+  "name": "Día de lluvia",
+  "tempo": 60,
+  "meter": 4,
+  "measures": 14,
+  "beats": 56
+ },
+ {
+  "id": "suspiro",
+  "name": "Suspiro (La menor)",
+  "tempo": 58,
+  "meter": 3,
+  "measures": 18,
+  "beats": 54
+ },
+ {
+  "id": "tarea-intervalos",
+  "name": "Pasos y saltos (intervalos)",
+  "tempo": 72,
+  "meter": 4,
+  "measures": 8,
+  "beats": 32
+ },
+ {
+  "id": "tarea-cromatica",
+  "name": "Paseo cromático",
+  "tempo": 72,
+  "meter": 4,
+  "measures": 16,
+  "beats": 64
+ },
+ {
+  "id": "tarea-inversiones",
+  "name": "Espejos (inversiones)",
+  "tempo": 60,
+  "meter": 4,
+  "measures": 13,
+  "beats": 52
+ },
+ {
+  "id": "tarea-quintas",
+  "name": "Viaje por las quintas",
+  "tempo": 60,
+  "meter": 4,
+  "measures": 13,
+  "beats": 52
+ },
+ {
+  "id": "tarea-pentatonica",
+  "name": "Pentatónica de Do",
+  "tempo": 76,
+  "meter": 4,
+  "measures": 12,
+  "beats": 48
+ },
+ {
+  "id": "penta-acordes",
+  "name": "Melodía pentatónica con acordes (I–vi–IV–V)",
+  "tempo": 80,
+  "meter": 4,
+  "measures": 12,
+  "beats": 48
+ },
+ {
+  "id": "final-perfecta",
+  "name": "Final 1 · Cadencia perfecta (clásico)",
+  "tempo": 72,
+  "meter": 4,
+  "measures": 4,
+  "beats": 16
+ },
+ {
+  "id": "final-amen",
+  "name": "Final 2 · Amén (clásico)",
+  "tempo": 66,
+  "meter": 4,
+  "measures": 3,
+  "beats": 12
+ },
+ {
+  "id": "final-picardia",
+  "name": "Final 3 · Tercera de Picardía (clásico)",
+  "tempo": 60,
+  "meter": 4,
+  "measures": 4,
+  "beats": 16
+ },
+ {
+  "id": "final-epico",
+  "name": "Final 4 · Épico ♭VI–♭VII–I (moderno)",
+  "tempo": 96,
+  "meter": 4,
+  "measures": 3,
+  "beats": 12
+ },
+ {
+  "id": "final-balada",
+  "name": "Final 5 · Balada con arpegio (moderno)",
+  "tempo": 66,
+  "meter": 4,
+  "measures": 4,
+  "beats": 16
+ },
+ {
+  "id": "pedal-1",
+  "name": "Pedal 1 · El pie solo (redondas)",
+  "tempo": 60,
+  "meter": 4,
+  "measures": 9,
+  "beats": 36
+ },
+ {
+  "id": "pedal-2",
+  "name": "Pedal 2 · Cada dos tiempos (blancas)",
+  "tempo": 60,
+  "meter": 4,
+  "measures": 5,
+  "beats": 20
+ },
+ {
+  "id": "pedal-3",
+  "name": "Pedal 3 · En cada nota (negras)",
+  "tempo": 60,
+  "meter": 4,
+  "measures": 5,
+  "beats": 20
+ },
+ {
+  "id": "pedal-4",
+  "name": "Pedal 4 · Un pedal por acorde",
+  "tempo": 66,
+  "meter": 4,
+  "measures": 8,
+  "beats": 32
+ },
+ {
+  "id": "pedal-5",
+  "name": "Pedal 5 · Dos acordes por compás",
+  "tempo": 66,
+  "meter": 4,
+  "measures": 8,
+  "beats": 32
+ },
+ {
+  "id": "pedal-6",
+  "name": "Pedal 6 · Acompañamiento de balada",
+  "tempo": 72,
+  "meter": 4,
+  "measures": 9,
+  "beats": 36
+ }
+]

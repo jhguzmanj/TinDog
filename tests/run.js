@@ -3950,6 +3950,41 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
     check([[1,71,69],[5,71,69],[15,76,74],[16,72,71]].every(([b, a, r]) => bars[b][0].rh[0] === a && bars[b][1].rh[0] === r), 'las notas de color (Si sobre Fa, Si sobre Do, Mi sobre Rem, Do sobre Mi) bajan un grado');
   }
 
+  // Exportar a MusicXML: las piezas originales se escriben, se vuelven a leer y se comparan con SONGS.
+  section('Exportar a MusicXML');
+  {
+    const os = require('os');
+    const exp = require('../tools/export-musicxml');
+    const { verify } = require('../tools/verify-musicxml');
+    const songsAll = JSON.parse(W('JSON.stringify(SONGS)'));
+    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'mxl-'));
+    let built = 0;
+    for(const id of Object.keys(exp.SPECS)){
+      const s = songsAll.find(x => x.id === id);
+      if(!s){ check(false, 'MusicXML: ' + id + ' ya no está en SONGS'); continue; }
+      fs.writeFileSync(path.join(tmp, id + '.musicxml'), exp.build(s, exp.SPECS[id]).xml); built++;
+    }
+    const r = verify(tmp, songsAll);
+    check(built === Object.keys(exp.SPECS).length && built >= 21, 'MusicXML: se exportan las ' + built + ' piezas originales');
+    check(r.problems.length === 0, 'MusicXML: al releerlo coincide con los datos de la app (notas, ritmo, dedos, pedal, rótulos, tempo): ' + r.problems.slice(0, 3).join(' | '));
+    // el export guardado en el repo no puede quedar viejo respecto de SONGS
+    const stale = Object.keys(exp.SPECS).filter(id => {
+      const f = path.join(__dirname, '..', 'export', 'musicxml', id + '.musicxml');
+      return !fs.existsSync(f) || fs.readFileSync(f, 'utf8') !== fs.readFileSync(path.join(tmp, id + '.musicxml'), 'utf8');
+    });
+    check(stale.length === 0, 'MusicXML: export/musicxml está al día (si falla: node tools/export-musicxml.js): ' + stale.join(', '));
+    // la tonalidad se respeta: Viaje por las quintas cambia de armadura en cada compás y escribe La♭, Mi♭ y Si♭ con bemoles
+    const q = fs.readFileSync(path.join(tmp, 'tarea-quintas.musicxml'), 'utf8');
+    check([0,1,2,3,4,5,6,7,-4,-3,-2,-1].every(f => q.includes('<fifths>' + f + '</fifths>')) && q.includes('<alter>-1</alter>'), 'MusicXML: Viaje por las quintas lleva la armadura de cada tonalidad');
+    // el Paseo cromático sube con sostenidos y baja con bemoles
+    const c = fs.readFileSync(path.join(tmp, 'tarea-cromatica.musicxml'), 'utf8');
+    check(c.includes('<alter>1</alter>') && c.includes('<alter>-1</alter>'), 'MusicXML: el Paseo cromático usa sostenidos al subir y bemoles al bajar');
+    // el verificador de verdad detecta un error (no es un sello de goma)
+    fs.writeFileSync(path.join(tmp, 'amanecer.musicxml'), fs.readFileSync(path.join(tmp, 'amanecer.musicxml'), 'utf8').replace('<step>D</step>', '<step>E</step>'));
+    check(verify(tmp, songsAll).problems.length > 0, 'MusicXML: el verificador detecta una nota cambiada');
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
+
   console.log(`\n${passes} pruebas OK, ${failures} fallos`);
   if(errors.length) console.log('Errores de consola:', errors);
   process.exit(failures || errors.length ? 1 : 0);

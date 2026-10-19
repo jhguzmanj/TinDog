@@ -2603,6 +2603,32 @@ explicó antes que la app estaba congelada y que era un modo grande; dijo que s�
   5 armónicos y vibrato de ±30 cents): muestra Sol3 con los cents oscilando ±20, rango 55–55, sin errores y
   sin scroll horizontal a 390 px. **No con una voz humana**: falta la confirmación de Jorge.
 
+## Exportar a MusicXML (19 oct 2026)
+Pedido de Jorge: pasar "las canciones que hemos hecho nosotros" a la otra aplicación de piezas que arma en el PC fijo.
+- **Qué se exporta** (`SPECS` en `tools/export-musicxml.js`): las 15 piezas ORIGINALES (Amanecer, Camino de intervalos,
+  Día de lluvia, Suspiro, las 5 melodías `tarea-*`, `penta-acordes`, los 5 `final-*`) y, aparte, `pedal-1..6` (ejercicios
+  míos, no canciones; se incluyeron porque sobraba poco y se pueden borrar de `SPECS`). **No** van: lo transcrito de una hoja
+  ajena (`clase-*`, Hanon, Beyer, Köhler, Sorrow, Waymaker, etc.: para esas vale más el MusicXML original de Jorge, con armadura,
+  repeticiones y dinámicas que la app nunca guardó), los ejercicios guiados (`guide`) ni `cuatro-acordes`/`cadencia`/`arpegio`.
+- **Archivos**: `export/musicxml/*.musicxml` + `index.json` + `LEEME.md`. Se regeneran con `node tools/export-musicxml.js`; la
+  prueba compara lo guardado contra lo regenerado y **falla si SONGS cambió y no se volvió a exportar**.
+- **Cómo se traduce `SONGS`**: un paso = tiempo; la izquierda queda sostenida hasta su siguiente ataque (así suena, y así
+  se escribe una ligadura en `SONGS`); la derecha dura `rhDur` si lo trae (sin pasar del siguiente ataque); `rh:[]` es silencio.
+  Lo que cruza una barra de compás se parte y se liga. `divisions` = 12 (cubre corcheas, semicorcheas y tresillos, aunque ninguna
+  original usa tresillos). Dedos → `<fingering>` (solo en la primera nota de una ligadura); pedal → `<pedal>` en el pentagrama 2;
+  `label` → `<words>` sobre el 1. Las dos últimas viven en una voz 3 vacía con `<forward>` (no consumen tiempo ni dibujan notas).
+- **Deletreo**: la app guarda todo con sostenidos, así que la armadura y la ortografía las fija `SPECS` a mano. `tarea-cromatica`
+  sube con sostenidos y baja con bemoles (`flatsWhenDown`). `tarea-quintas` cambia de armadura en cada compás (`byBar`): G#, D#
+  y A# mayor (como las nombró el profe) se escriben como La♭, Mi♭ y Si♭ (mismas teclas; evita Fx y armaduras de 8 sostenidos).
+  Día de lluvia, Suspiro y Final 3 van en La menor sin armadura (Sol♯ como alteración).
+- **Verificación** (`tools/verify-musicxml.js`): relee cada archivo y compara con `SONGS` altura, inicio y fin (con ligaduras
+  unidas), dedo, pedal, rótulos, tempo, compás, largo y armadura por compás. Una prueba cambia una nota a propósito y exige que
+  el verificador la detecte. Salió limpio en las 21. **Lo que NO se pudo comprobar**: abrirlos en MuseScore/Finale (no hay en
+  el entorno ni `pip` tenía red para Verovio): si un programa los dibuja raro, probablemente es la voz 3 de `<forward>` o los
+  `<accidental>` automáticos; el contenido musical sí está verificado.
+- **Qué se pierde** (la app nunca lo tuvo): dinámicas, ligaduras de expresión, repeticiones, adornos y barras de corcheas.
+- **Si la otra app prefiere JSON**: es más fiel (casi un volcado de `SONGS`) y más barato; no se hizo porque no lo pidió.
+
 ## Progreso (localStorage `pianoProgress1`)
 ```
 { v:1, days:{ 'YYYY-MM-DD': {sec, notes, scales, chords, intervals, ear, reading, drills, songs, cascade} },
