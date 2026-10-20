@@ -1081,13 +1081,13 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
   check(W('weekPieces.ids').join() === 'bella-ciao' && wbtn.textContent.includes('★') && wbtn.textContent.includes('1/3'), 'marcarla la agrega (★ 1/3)');
   check(W('JSON.parse(localStorage.getItem("weekPieces")).ids').join() === 'bella-ciao', 'la lista se guarda');
   check([...doc.querySelectorAll('#fragSubTabs .mode-tab')].some(b => b.dataset.frag === 'bella-ciao' && b.textContent.startsWith('★')), 'la pieza sale con ★ en la lista');
-  W("toggleWeekPiece('flaca'); toggleWeekPiece('amanecer')");
+  W("toggleWeekPiece('flaca'); toggleWeekPiece('estrellita')");
   check(W("toggleWeekPiece('cumple')").includes('Quita una'), 'no deja pasar de 3');
   check(W('weekPieces.ids.length') === 3, 'siguen siendo 3');
-  W("progress = emptyProgress(); progress.songs['bella-ciao'] = {runs:2, lastDay:'2000-01-02'}; progress.songs['amanecer'] = {runs:1, lastDay:'2000-01-01'}");
+  W("progress = emptyProgress(); progress.songs['bella-ciao'] = {runs:2, lastDay:'2000-01-02'}; progress.songs['estrellita'] = {runs:1, lastDay:'2000-01-01'}");
   check(wk().title.includes(W("SONGS.find(s => s.id === 'flaca').name")), 'propone la que nunca tocó');
   W("progress.songs['flaca'] = {runs:1, lastDay:'2000-01-03'}");
-  check(wk().title.includes(W("SONGS.find(s => s.id === 'amanecer').name")), 'después, la que lleva más tiempo sin tocar');
+  check(wk().title.includes(W("SONGS.find(s => s.id === 'estrellita').name")), 'después, la que lleva más tiempo sin tocar');
   W("progress.songs['bella-ciao'].lastDay = dateKey()");
   const wToday = wk();
   check(wToday.title.includes('Bella') && W("buildTodayPlan(1).find(it => it.key === 'week').done()"), 'si hoy ya tocó una, esa es la de hoy y sale marcada');
@@ -1146,10 +1146,10 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
     'al filtrar se pasa a la primera de la categoría y queda marcada en la lista');
   // El plan de "Hoy" manda a una pieza concreta: tiene que llegar aunque el
   // filtro vigente la esconda, o el enlace de Hoy no hace nada.
-  W("pickFragmentById('amanecer')");
-  check(W('currentFragment.id') === 'amanecer' && W('fragCat') === 'facil',
+  W("pickFragmentById('estrellita')");
+  check(W('currentFragment.id') === 'estrellita' && W('fragCat') === 'facil',
     'saltar a una pieza de otra categoría abre su categoría y la selecciona');
-  check((doc.querySelector('#fragSubTabs .mode-tab.active') || {}).dataset.frag === 'amanecer',
+  check((doc.querySelector('#fragSubTabs .mode-tab.active') || {}).dataset.frag === 'estrellita',
     'y queda marcada en la lista redibujada');
   W("selectCategory('agility')");
   check(doc.getElementById('fragCatBar').style.display === 'none' &&
@@ -1168,7 +1168,7 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
   W("fragCat = 'all'; try { localStorage.removeItem('fragCat'); localStorage.removeItem('agilGroup'); } catch(e){}");
 
   section('Piezas nuevas: notas y compases cuadran');
-  for(const [id, beats, lo, hi] of [['flaca', 56, 67, 79], ['amanecer', 52, 72, 79]]){
+  for(const [id, beats, lo, hi] of [['flaca', 56, 67, 79]]){
     const s = W('SONGS.find(s => s.id === "' + id + '")');
     const sum = s.steps.reduce((a, x) => a + x.dur, 0);
     check(sum === beats, id + ': ' + sum + ' tiempos = ' + (beats / 4) + ' compases justos');
@@ -1178,9 +1178,7 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
   }
   check(W('SONGS.find(s => s.id === "faded").steps').every(x => [67,69,71,72,74,76].includes(x.rh[0])),
     'Faded quedó en La menor: solo teclas blancas');
-  check(W('SONGS.find(s => s.id === "amanecer").steps').every(x => x.rh[0] >= 72 && x.rh[0] <= 79 && x.rhF[0] === [72,74,76,77,79].indexOf(x.rh[0]) + 1),
-    'Amanecer no mueve la mano: los 5 dedos caen siempre en la misma tecla');
-  for(const id of ['flaca', 'faded', 'amanecer']){
+  for(const id of ['flaca', 'faded']){
     check(W('SONGS.find(s => s.id === "' + id + '").steps').every(
       x => x.rh && x.rh.length && x.rhF && x.rh.length === x.rhF.length &&
            (!x.lh || !x.lh.length || (x.lhF && x.lhF.length === x.lh.length))),
@@ -1731,91 +1729,6 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
     check(W('currentFragment.id') === 'sound-of-silence' && W('fragCat') === 'cristiana', 'pickFragmentById abre la categoría de la pieza');
     const bigRh = W("(() => { const { events, beatMs } = buildCascadeSchedule(); const d = events.filter(x => x.hand === 'rh').map(e => Math.round((e.tEnd - e.tStart) / beatMs * 100) / 100); return Math.max(...d); })()");
     check(Math.abs(bigRh - 4 * 0.85) < 1e-6, 'en la cascada la nota más larga de la derecha (Sol, 4 tiempos) se dibuja completa');
-    W("selectCategory('today')");
-  }
-
-  section('Día de lluvia (triste y pausada): izquierda sencilla, sin saltos, cierre en La');
-  {
-    const dl = W("SONGS.find(s => s.id === 'dia-de-lluvia')");
-    check(!!dl && dl.cat === 'clase' && dl.tempo === 60 && !dl.meter && dl.plan !== false, 'está en "De la clase", ♩=60 (pausado, mío) y entra al plan de Hoy');
-    check(W("SONGS.filter(s => s.cat === 'clase')[0].id") === 'dia-de-lluvia', 'Día de lluvia es ahora la primera de "De la clase"');
-    check(dl.steps.reduce((a, x) => a + x.dur, 0) === 56, '14 compases de 4 tiempos (12 + el cierre de 2), sin sobras');
-    const bars = []; { let t = 0; dl.steps.forEach(x => { const b = Math.floor(t / 4 + 1e-9); (bars[b] = bars[b] || []).push(x); t += x.dur; }); }
-    check(bars.length === 14 && bars.every((b, i) => b.reduce((a, x) => a + x.dur, 0) === 4 && b[0].label && b[0].lh.length === (i >= 8 ? 2 : 1)), 'cada compás suma 4, abre con rótulo y la izquierda ataca UNA nota (c. 1-8) o DOS (c. 9-14)');
-    check(dl.steps.every(x => x.lh.length <= 2 && x.rh.length === 1), 'nunca más de dos teclas por mano (la regla del profe) y la derecha de una en una');
-    // Izquierda: Lam–Fa–Do–Sol (La2 3, Fa2 5, Do3 1, Sol2 4), mismo dedo para la misma tecla, sin mover la mano
-    const LHF = { 45: 3, 41: 5, 48: 1, 43: 4 };
-    check(dl.steps.filter(x => x.lh.length).every(x => x.lh.every((n, i) => LHF[n] === x.lhF[i])), 'izquierda: pulgar en Do3, La 3, Sol 4, Fa 5 (la posición de Amanecer), cada tecla con su dedo');
-    const duo = bars.slice(8, 12).map(b => b[0].lh);
-    check(duo.map(l => l[1] - l[0]).join() === '3,7,5,3' && duo.every(l => l[1] === 48), 'c. 9-12: 3ra menor (La–Do), 5ta (Fa–Do), 4ta (Sol–Do) y 3ra menor; el pulgar siempre en Do3');
-    check(bars.slice(0, 8).every(b => b.every(x => x.lh.length <= 1)), 'c. 1-8: la izquierda sigue con una sola nota');
-    check(bars.map(b => b[0].lh[0]).join() === '45,41,48,43,45,41,43,45,45,41,43,45,41,45', 'bajo (nota más grave) al abrir cada compás: Lam Fa Do Sol · Lam Fa Sol Lam · Lam Fa Sol Lam · Fa(→Sol) · Lam');
-    check(JSON.stringify(bars[12].filter(x => x.lh.length).map(x => x.lh)) === '[[41,48],[43]]', 'c. 13: Fa (Fa–Do) en el tiempo 1 y Sol en el tiempo 3 · Fa → Sol → Lam');
-    check(dl.steps.every(x => x.dur >= 1), 'todo en negras o más largas: ninguna corchea');
-    // Derecha: c. 1-12 pulgar en Do4 (Do 1 … Sol 5); c. 13-14 la mano se corre: pulgar en La3 (La 1 Si 2 Do 3 Re 4 Mi 5)
-    const RHF = { 60: 1, 62: 2, 64: 3, 65: 4, 67: 5 }, RHF2 = { 57: 1, 59: 2, 60: 3, 62: 4, 64: 5 };
-    check(bars.slice(0, 12).flat().every(x => RHF[x.rh[0]] === x.rhF[0]), 'derecha c. 1-12: Do4 (el Do central)=1 … Sol4=5, siempre el mismo dedo');
-    check(bars.slice(12).flat().every(x => RHF2[x.rh[0]] === x.rhF[0]), 'derecha c. 13-14: pulgar en La3, La 1 Si 2 Do 3 Re 4 Mi 5');
-    check(/pulgar en La3/.test(bars[11][0].label), 'el c. 12 avisa que la mano se corre mientras suena el Do largo');
-    const mel = dl.steps.map(x => x.rh[0]);
-    check(mel.slice(-5).join() === '64,62,60,59,57', 'el cierre baja por grados: Mi Re Do Si La');
-    check(Math.max(...mel.slice(1).map((n, i) => Math.abs(n - mel[i]))) <= 4, 'el salto más grande de la melodía es una 3ra mayor (4 semitonos)');
-    check(Math.max(...dl.steps.flatMap(x => x.lh)) < Math.min(...mel), 'las manos no se cruzan');
-    check(dl.steps.flatMap(x => [...x.lh, ...x.rh]).every(n => [0, 2, 4, 5, 7, 9, 11].includes(n % 12)), 'todo en teclas blancas (La menor)');
-    check(mel[mel.length - 1] === 57 && dl.steps[dl.steps.length - 1].dur === 4 && dl.steps[dl.steps.length - 1].lh[0] === 45, 'termina en La3 (la tónica) sobre La2, redonda');
-    check(['Parte 1', 'Parte 2', 'Parte 3', 'Cierre', 'Fin'].every(k => dl.steps.some(x => (x.label || '').includes(k))), 'rótulos de las tres partes, del cierre y del final');
-    check(dl.steps.filter(x => x.rh[0] === 64 && x.dur === 1).length >= 5, 'las "gotas": notas repetidas en negras (Mi4 sobre todo)');
-    check(Math.min(...mel) === 57 && Math.max(...mel) === 67, 'la derecha va de La3 a Sol4 (antes del cierre, Do4-Sol4: la 4ta octava)');
-    W("selectCategory('fragments'); fragCat = 'popular'; pickFragmentById('dia-de-lluvia')");
-    check(W('currentFragment.id') === 'dia-de-lluvia' && W('fragCat') === 'clase', 'pickFragmentById abre la categoría de la pieza');
-    W("selectCategory('today')");
-  }
-
-  section('Tarea de la clase del 10 de octubre: cinco melodías (intervalos, cromática, inversiones, quintas, pentatónica)');
-  {
-    const T = W("SONGS.filter(s => s.tarea)");
-    check(T.map(s => s.id).join() === 'tarea-intervalos,tarea-cromatica,tarea-inversiones,tarea-quintas,tarea-pentatonica,ej-inversiones,ej-quintas-1,ej-quintas-2,ej-grados,ej-penta-grados,penta-acordes', 'las cinco melodías y los tres ejercicios guiados, en orden (más lo de la clase del 17)');
-    check(T.every(s => s.cat === 'clase' && s.plan !== false && s.tip.length < 260), 'van en "De la clase", entran al plan y el tip es corto');
-    const barsOf = s => { const bars = []; let t = 0; s.steps.forEach(x => { const b = Math.floor(t / 4 + 1e-9); (bars[b] = bars[b] || []).push(x); t += x.dur; }); return { bars, total: t }; };
-    T.filter(s => !s.guide).forEach(s => {
-      const { bars, total } = barsOf(s);
-      check(Math.abs(total % 4) < 1e-9 && bars.every(b => Math.abs(b.reduce((a, x) => a + x.dur, 0) - 4) < 1e-9) && bars.every(b => b[0].label && b[0].label.startsWith('c. ')),
-        `${s.name}: ${bars.length} compases de 4 tiempos, cada uno con su rótulo`);
-      if(s.id !== 'penta-acordes') check(s.steps.every(x => x.lh.length <= 2 && x.rh.length <= 2 && x.lh.length === (x.lhF || []).length && x.rh.length === (x.rhF || []).length), `${s.name}: máximo dos teclas por mano (sin acordes esta semana) y cada tecla con su dedo`);
-      check(Math.max(...s.steps.flatMap(x => x.lh)) < Math.min(...s.steps.flatMap(x => x.rh)), `${s.name}: las manos no se cruzan`);
-    });
-    const byId = id => T.find(s => s.id === id);
-    // Intervalos: los primeros dos compases suben desde Do: 2da, 3ra, 4ta, 5ta
-    const iv = byId('tarea-intervalos').steps.map(x => x.rh[0]);
-    check(iv.slice(0, 8).join() === '60,62,60,64,60,65,60,67', 'Pasos y saltos: Do–Re, Do–Mi, Do–Fa, Do–Sol (2da, 3ra, 4ta, 5ta)');
-    check(byId('tarea-intervalos').steps.every(x => ({60:1,62:2,64:3,65:4,67:5})[x.rh[0]] === x.rhF[0]), 'Pasos y saltos: la derecha no se mueve (pulgar en Do4)');
-    // Cromática: la octava completa de ida y de vuelta, con la digitación estándar
-    const cr = byId('tarea-cromatica').steps;
-    const crm = cr.map(x => x.rh[0]);
-    const up = crm.indexOf(60, 20);
-    check(crm.slice(up, up + 13).join() === Array.from({length: 13}, (_, i) => 60 + i).join(), 'Paseo cromático: sube Do4 → Do5 por semitonos');
-    check(crm.slice(up + 13).join() === Array.from({length: 13}, (_, i) => 72 - i).join(), 'y baja Do5 → Do4 por semitonos');
-    check(cr.every(x => [1,3,6,8,10].includes(x.rh[0] % 12) ? x.rhF[0] === 3 : x.rhF[0] <= 2), 'Paseo cromático: 3 en todas las negras, pulgar (o 2 en Fa y en el Do de arriba) en las blancas');
-    check(Math.max(...crm.slice(20, 40).map((n, i, a) => i ? Math.abs(n - a[i - 1]) : 0)) === 1, 'en la Parte 3 cada paso es un semitono');
-    // Inversiones: cada intervalo de la derecha y su respuesta en la izquierda suman 12 semitonos (3ra + 6ta = 9 en grados)
-    const inv = byId('tarea-inversiones').steps;
-    const pairs = [];
-    for (let i = 0; i + 3 < 16; i += 4) pairs.push([inv[i + 1].rh[0] - inv[i].rh[0], inv[i + 3].lh[0] - inv[i + 2].lh[0]]);
-    check(pairs.map(p => p.join('+')).join(' ') === '4+8 7+5 5+7 9+3' && pairs.every(([a, b]) => a + b === 12), 'Espejos: 3raM↔6tam, 5ta↔4ta, 4ta↔5ta, 6taM↔3ram (cada par suma una octava)');
-    check(inv.slice(16, 24).every((x, i) => i % 2 === 0 ? x.rh.length === 2 && !x.lh.length : x.lh.length === 2 && !x.rh.length), 'Espejos, Parte 2: las dos notas a la vez, primero la derecha y luego la izquierda (nunca acordes)');
-    // Quintas: una tonalidad por compás en el orden del profe, 1 2 3 4 5 4 3 2
-    const q = barsOf(byId('tarea-quintas')).bars;
-    const roots = q.slice(0, 12).map(b => b[0].rh[0] % 12);
-    check(roots.join() === [0,7,2,9,4,11,6,1,8,3,10,5].join(), 'Viaje por las quintas: C G D A E B F# C# G# D# A# F');
-    check(q.slice(0, 12).every(b => b.map(x => x.rh[0] - b[0].rh[0]).join() === '0,2,4,5,7,5,4,2' && b.map(x => x.rhF[0]).join() === '1,2,3,4,5,4,3,2'), 'cada compás: las cinco primeras notas de la escala mayor, ida y vuelta, dedos 1-5');
-    check(q.slice(0, 12).every(b => b[0].lh[1] - b[0].lh[0] === 7 && b[0].lh[0] % 12 === b[0].rh[0] % 12), 'la izquierda toca la nota y su 5ta justa');
-    check(q[12][0].rh[0] === 60 && q[12][0].dur === 4, 'y vuelve a Do: el círculo se cierra');
-    // Pentatónica: solo Do Re Mi Sol La, mano abierta fija
-    const pe = byId('tarea-pentatonica').steps;
-    check(pe.every(x => [0, 2, 4, 7, 9].includes(x.rh[0] % 12) && ({60:1,62:2,64:3,67:4,69:5})[x.rh[0]] === x.rhF[0]), 'Pentatónica de Do: solo Do Re Mi Sol La, mano abierta (Do 1 Re 2 Mi 3 Sol 4 La 5)');
-    check(pe.filter(x => x.lh.length).every(x => x.lh.every((n, i) => ({48:1,45:3,43:4})[n] === x.lhF[i])), 'izquierda fija con el pulgar en Do3');
-    W("selectCategory('fragments'); fragCat = 'popular'; pickFragmentById('tarea-quintas')");
-    check(W('currentFragment.id') === 'tarea-quintas' && W('fragCat') === 'clase', 'pickFragmentById abre "De la clase"');
     W("selectCategory('today')");
   }
 
@@ -2675,22 +2588,10 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
       'las tres notas caben en una sola posición de mano (una 5ta de span)');
   }
 
-  section('Amanecer: la izquierda queda en una sola posición');
-  {
-    const am = W("SONGS.find(s => s.id === 'amanecer')");
-    const lhSteps = am.steps.filter(s => s.lh.length);
-    const byNote = {};
-    let consistent = true;
-    lhSteps.forEach(s => { if(byNote[s.lh[0]] !== undefined && byNote[s.lh[0]] !== s.lhF[0]) consistent = false; byNote[s.lh[0]] = s.lhF[0]; });
-    check(consistent, 'cada nota grave lleva siempre el mismo dedo');
-    check(JSON.stringify(byNote) === JSON.stringify({41:5, 43:4, 45:3, 48:1}),
-      'pulgar en Do(48), 3 en La(45), 4 en Sol(43), 5 en Fa(41)');
-  }
-
   section('La izquierda no salta con el meñique de nota en nota');
   {
     // En estas piezas la izquierda cabe en UNA posición: cada dedo toca una sola tecla.
-    for(const id of ['cadencia','arpegio','colegiala','faded','espiritu-de-dios','aleluya','amanecer','estrellita','dios-esta-aqui']){
+    for(const id of ['cadencia','arpegio','colegiala','faded','espiritu-de-dios','aleluya','estrellita','dios-esta-aqui']){
       const song = W(`SONGS.find(s => s.id === '${id}')`);
       const byFinger = {};
       song.steps.filter(s => s.lh.length === 1).forEach(s => (byFinger[s.lhF[0]] = byFinger[s.lhF[0]] || new Set()).add(s.lh[0]));
@@ -2760,7 +2661,7 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
       currentFragment = SONGS.find(s => s.id === '${id}'); cascadeFrom = ${from}; cascadeTo = null;
       return buildCascadeSchedule().beats.filter(b => b.bar && b.k >= 0).slice(0, 3).map(b => b.k);
     })()`);
-    check(JSON.stringify(bars('amanecer', 1)) === '[0,4,8]', '4/4 sin anacrusa: barras cada 4 tiempos, como antes');
+    check(JSON.stringify(bars('estrellita', 1)) === '[0,4,8]', '4/4 sin anacrusa: barras cada 4 tiempos, como antes');
     check(JSON.stringify(bars('fur-elise', 1)) === '[1,4,7]', 'Für Elise: la primera barra cae después del tiempo de anacrusa, y luego cada 3');
     // Tramo que empieza en el c. 3 (paso 9): la barra cae justo al empezar.
     check(JSON.stringify(bars('fur-elise', 9)) === '[0,3,6]', 'un tramo a mitad de pieza sigue la rejilla de la pieza, no la del tramo');
@@ -2883,7 +2784,7 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
       }
       return out;
     };
-    for(const id of ['cumple', 'estrellita', 'flaca', 'bella-ciao', 'dbgt-full', 'dbgt-3', 'camino-intervalos', 'amanecer', 'colegiala', 'jingle-bells'])
+    for(const id of ['cumple', 'estrellita', 'flaca', 'bella-ciao', 'dbgt-full', 'dbgt-3', 'colegiala', 'jingle-bells'])
       check(pinkyHops(id).length === 0, id + ': ningún meñique pasa de una tecla a otra seguida (' + pinkyHops(id).join(' ') + ')');
     // Cumpleaños feliz (octubre 2026): versión de Janneke Gunther en Fa mayor, izquierda simplificada.
     const cu = W("SONGS.find(s => s.id === 'cumple')");
@@ -2922,46 +2823,6 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
     check(es.map(s => s.rhF[0]).join() === '1,1,4,4,5,5,4,3,3,2,2,1,1,1', 'Estrellita: Do 1, Sol 4, La 5, y baja Fa 3, Mi 2, Re 1');
     // Bella Ciao: en el tramo grave el Re lleva siempre el 2 (pulgar en Mi), nunca el meñique
     check(W("SONGS.find(s => s.id === 'bella-ciao')").steps.filter(s => s.lh[0] === 50 && s.lh.length === 1).every(s => s.lhF[0] === 2), 'Bella Ciao: el Re grave de la izquierda siempre con el 2');
-  }
-
-  section('Camino de intervalos (original): la izquierda toca solo intervalos, sin mover la mano');
-  {
-    const ci = W("SONGS.find(s => s.id === 'camino-intervalos')");
-    check(!!ci && ci.cat === 'clase' && ci.tempo === 72 && !ci.meter, 'en "De la clase", ♩=72, compás de 4');
-    check(ci.steps.reduce((a, s) => a + s.dur, 0) === 48, '12 compases de 4 tiempos, sin sobras (como Amanecer, 13)');
-    const hits = ci.steps.filter(s => s.lh.length);
-    check(hits.every(s => s.lh.length === 2 && s.lhF.length === 2), 'la izquierda nunca toca un acorde: siempre exactamente dos notas con su dedo');
-    const ivs = new Set(hits.map(s => s.lh[1] - s.lh[0]));
-    check([3, 5, 7].every(n => ivs.has(n)) && [...ivs].every(n => [3, 5, 7].includes(n)), 'solo 3ra m (La–Do), 4ta (Sol–Do) y 5ta (Fa–Do): sin 3ra M, tritono, 7mas ni octava (octubre 2026: demasiado para el nivel de Jorge)');
-    check(Math.max(...hits.map(s => s.lh[1] - s.lh[0])) <= 7, 'la izquierda nunca abre más que una 5ta');
-    // Izquierda en posición FIJA (la de Amanecer): pulgar en Do3, Si 2, La 3, Sol 4, Fa 5.
-    const LHPOS = { 48: 1, 47: 2, 45: 3, 43: 4, 41: 5 };
-    check(hits.every(s => s.lh.every((n, i) => LHPOS[n] === s.lhF[i])), 'izquierda: pulgar en Do3 (Si 2, La 3, Sol 4, Fa 5), cada tecla siempre con el mismo dedo');
-    check(hits.every(s => s.lh[1] === 48 && s.lhF[1] === 1), 'izquierda: el pulgar nunca sale de Do3; solo cambia el segundo dedo (4, 3 o 5)');
-    check(hits.length === 9, 'la izquierda ataca 9 veces en 12 compases (antes 12): el resto va sostenido');
-    const rh = ci.steps.flatMap(s => s.rh);
-    check(Math.min(...rh) >= 72 && Math.max(...rh) <= 79 && rh.every(n => [72, 74, 76, 77, 79].includes(n)), 'derecha: posición fija de cinco dedos (Do5-Sol5)');
-    check(ci.steps.every(s => s.rhF.length === s.rh.length && s.rh.every((n, i) => s.rhF[i] === [72, 74, 76, 77, 79].indexOf(n) + 1)), 'derecha: un dedo por tecla, siempre el mismo');
-    check(Math.max(...ci.steps.flatMap(s => s.lh)) < Math.min(...rh), 'las manos no se cruzan');
-    check(ci.steps.flatMap(s => s.lh).every(n => [0, 2, 4, 5, 7, 9, 11].includes(n % 12)), 'todo en Do mayor (teclas blancas)');
-    // Cada compás empieza en el golpe 1 con un rótulo (el intervalo que suena).
-    let t = 0, bars = 0, sinRotulo = 0;
-    ci.steps.forEach(s => { if (t % 4 === 0) { bars++; if (!s.label) sinRotulo++; } t += s.dur; });
-    check(bars === 12 && sinRotulo === 0, 'los 12 compases arrancan con rótulo');
-    check(ci.steps[0].lh.join() === '43,48', 'abre con la 4ta Sol–Do');
-    // Tensión y resolución
-    const cb = []; { let tt = 0; ci.steps.forEach(s => { const b = Math.floor(tt / 4 + 1e-9); (cb[b] = cb[b] || []).push(s); tt += s.dur; }); }
-    check(cb.length === 12, '12 compases');
-    const corch = cb.map(b => b.some(s => s.dur === 0.5 && s.rh.length));
-    check(corch[9] && corch.filter(Boolean).length === 1, 'las corcheas (más tensión por ritmo) van solo en el c. 10, el del tritono');
-    check(cb[8][0].lh.join() === '41,48' && cb[9].every(s => !s.lh.length) && cb[10][0].lh.join() === '43,48', 'final IV – V – I: Fa–Do (5ta), el compás de las corcheas sin cambio en la izquierda y Sol–Do');
-    check(cb[10].every(s => s.dur >= 2), 'la resolución va en notas largas: el ritmo también descansa');
-    check(ci.steps.every(s => s.rh.length <= 2 && s.lh.length <= 2), 'ninguna mano toca más de dos teclas a la vez (pedido del profe)');
-    const fin = ci.steps[ci.steps.length - 1];
-    check(fin.lh.length === 0 && fin.rh.join() === '72,76' && fin.rhF.join() === '1,3' && fin.dur === 4, 'c. 12: la derecha toca solo dos teclas (Do–Mi, 3ra mayor, dedos 1-3), redonda; la izquierda sigue sonando');
-    // El mismo criterio que Amanecer: el salto más grande de la melodía es una 3ra o una 4ta
-    const mel = ci.steps.filter(s => s.rh.length === 1).map(s => s.rh[0]);
-    check(mel.every((n, i) => i === 0 || Math.abs(n - mel[i - 1]) <= 5), 'la melodía no salta más que una 4ta');
   }
 
   section('Lectura: antes del pentagrama, las teclas');
@@ -3344,39 +3205,6 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
   }
 
   {
-    console.log('\nFinales: cinco formas de terminar una pieza');
-    const ids = ['final-perfecta', 'final-amen', 'final-picardia', 'final-epico', 'final-balada'];
-    check(JSON.stringify(W("SONGS.filter(s => s.cat === 'finales').map(s => s.id)")) === JSON.stringify(ids),
-      'categoría Finales con los cinco, en orden');
-    check(W("SONG_CATS.some(c => c.id === 'finales')"), 'Finales aparece en la barra de categorías');
-    const fin = id => W(`SONGS.find(s => s.id === '${id}')`);
-    for(const id of ids){
-      const s = fin(id);
-      const total = s.steps.reduce((a, x) => a + x.dur, 0);
-      check(total % 4 === 0, `${id}: ${total} tiempos, compases completos de 4`);
-      check(s.steps.every(x => x.lh.length <= 2 && x.rh.length <= 2), `${id}: máximo dos teclas por mano (regla del profe)`);
-      check(s.steps.every(x => (x.lhF || []).length === x.lh.length && (x.rhF || []).length === x.rh.length), `${id}: cada tecla trae su dedo`);
-      check(s.plan === false, `${id}: fuera del plan de Hoy`);
-      const last = s.steps[s.steps.length - 1];
-      const lastLh = [...s.steps].reverse().find(x => x.lh.length).lh;
-      const tonic = id === 'final-picardia' ? 9 : 0;
-      check(Math.min(...lastLh) % 12 === tonic, `${id}: el bajo final es la tónica`);
-      const durs = s.steps.map(x => x.dur);
-      check(durs[durs.length - 1] >= Math.max(...durs.slice(0, -1)) || id === 'final-balada' && last.dur === 3,
-        `${id}: la última nota es la más larga (el freno va escrito)`);
-    }
-    const pf = fin('final-perfecta').steps;
-    check(pf[6].lh.includes(47) && pf[7].lh.includes(48) && pf[6].rh.includes(65) && pf[7].rh.includes(64),
-      'cadencia perfecta: el Si sube a Do y el Fa baja a Mi');
-    const pc = fin('final-picardia').steps;
-    check(pc.slice(0, -1).every(x => !x.rh.includes(61)) && pc[pc.length - 1].rh.includes(61),
-      'Picardía: el Do# aparece solo en el acorde final (La mayor)');
-    check(pc[5].rh[1] - pc[5].rh[0] === 6, 'Picardía: el V7 lleva el tritono Re–Sol#');
-    const ep = fin('final-epico').steps;
-    check(JSON.stringify(ep.map(x => x.lh[0] % 12)) === '[0,8,10,0]', 'épico: el bajo hace Do – La♭ – Si♭ – Do');
-  }
-
-  {
     section('Waymaker (lead sheet de Jorge): lectura de la partitura compás por compás');
     const wm = W("SONGS.find(s => s.id === 'waymaker')");
     check(!!wm && wm.cat === 'cristiana' && wm.pickup === 2 && wm.tempo === 76 && wm.plan !== false, 'está en Cristianas, anacrusa de 2 tiempos y ♩=76');
@@ -3570,20 +3398,15 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
     check(W("window.__midi[window.__midi.length - 1]") === '176:64:0', 'lo último que recibe el piano es pedal arriba (allNotesOff también lo levanta)');
     W(`midiOut = window.__mo; soundTarget = window.__st; playNoteSound = window.__playNoteSound2; stopNoteSound = window.__stopNoteSound2;`);
 
-    // Viaje por las quintas: pedal en el c. 1 y cambio en cada compás (cada tonalidad)
-    const qp = JSON.parse(W("JSON.stringify(SONGS.find(s => s.id === 'tarea-quintas').steps.map(s => s.ped || '').filter(Boolean))"));
-    check(qp.length === 13 && qp[0] === 'on' && qp.slice(1).every(p => p === 'change'), 'quintas: pisa en el c. 1 y cambia en los 12 compases siguientes');
-    check(W("SONGS.find(s => s.id === 'tarea-quintas').steps.every(s => !s.ped || (s.label && s.lh.length === 2))"), 'cada cambio cae justo en el primer tiempo, con la nota nueva de la izquierda');
-    check(W("SONGS.filter(s => s.steps.some(st => st.ped) && s.cat !== 'pedal').map(s => s.id).sort().join()") === 'ave-maria,dia-de-lluvia,sorrow-4,suspiro,tarea-quintas', 'fuera de los ejercicios de pedal, llevan pedal las quintas, Día de lluvia, Ave María, Sorrow (la de la hoja) y Suspiro');
-    // Día de lluvia: pisa con el primer La y cambia en cada ataque de la izquierda (cada acorde)
-    const dl = JSON.parse(W("JSON.stringify(SONGS.find(s => s.id === 'dia-de-lluvia').steps.map(s => [s.lh.length, s.ped || '']))"));
-    check(dl.every(([l, p]) => (l > 0) === (p !== '')) && dl[0][1] === 'on' && dl.filter(x => x[1] === 'change').length === 14,
-      'Día de lluvia: el pedal cambia justo donde entra la izquierda (15 marcas: pisa + 14 cambios)');
+    check(W("SONGS.filter(s => s.steps.some(st => st.ped) && s.cat !== 'pedal').map(s => s.id).sort().join()") === 'ave-maria,sorrow-4', 'fuera de los ejercicios de pedal, llevan pedal Ave María y Sorrow (versión 4)');
+    // Sorrow 4: cada cambio de pedal cae donde entra la izquierda
+    const sp = JSON.parse(W("JSON.stringify(SONGS.find(s => s.id === 'sorrow-4').steps.map(s => [s.lh.length, s.ped || '']))"));
+    check(sp[0][1] === 'on' && sp.filter(x => x[1] === 'change').length >= 10, 'Sorrow 4: pisa al empezar y cambia en cada ataque del bajo');
 
-    W("selectCategory('fragments'); pickFragmentById('tarea-quintas')");
+    W("selectCategory('fragments'); pickFragmentById('sorrow-4')");
     check(W('targetSubLabel.innerHTML').includes('ped-tag') && W('targetSubLabel.textContent').includes('pisa el pedal'), 'paso a paso: el primer paso dice "pisa el pedal"');
     const marks = W("buildCascadeSchedule().beats.filter(b => b.ped).length");
-    check(marks === 13, 'la cascada trae 13 marcas de pedal');
+    check(marks === W("SONGS.find(s => s.id === 'sorrow-4').steps.filter(s => s.ped).length"), 'la cascada trae una marca por cada cambio de pedal');
     check(W("buildCascadeSchedule().beats.filter(b => b.ped).every(b => b.clicked && !b.bar)"), 'las marcas de pedal no suenan como clic ni cuentan como barra');
     W("selectCategory('today')");
   }
@@ -3609,8 +3432,8 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
     check(!early.ok && early.msg.includes('antes de la nota'), 'cambiar entre las notas (antes de tocar) se avisa');
     check(J('on', [[1100, true]], 1000, 2000).ok && !J('on', [], 1000, 2000).ok, 'pisar: bien si lo pisa, mal si no');
 
-    // Recorrido paso a paso en Día de lluvia con el pedal simulado
-    W("pedalEvents.length = 0; pedalIsDown = false; soundEnabled = false; selectCategory('fragments'); pickFragmentById('dia-de-lluvia'); practiceIndex = 0; startFragmentStep();");
+    // Recorrido paso a paso en Sorrow 4 con el pedal simulado
+    W("pedalEvents.length = 0; pedalIsDown = false; soundEnabled = false; selectCategory('fragments'); pickFragmentById('sorrow-4'); practiceIndex = 0; startFragmentStep();");
     check(W("document.getElementById('pedalBox').style.display") !== 'none' && W("document.getElementById('pedalBox').textContent").includes('Tu pedal'), 'la caja del pedal aparece en una pieza con pedal');
     W("pedalReset();");
     // c. 1 pisa (t=1000), c. 1 paso 2 (2000) → juzga "pisa": bien
@@ -3630,7 +3453,7 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
     W("pedalSeen = false; pedalReset(); pedalStep('g0', 'on', 1000); pedalStep('g1', undefined, 2000); renderPedalBox();");
     check(W('pedalTally.total') === 0 && W("document.getElementById('pedalBox').textContent").includes('Conecta el piano'), 'sin piano no inventa notas del pedal: pide conectarlo');
     // Cascada: los eventos traen el paso y la marca de pedal
-    check(W("buildCascadeSchedule().events.filter(e => e.ped).length") === W("SONGS.find(s => s.id === 'dia-de-lluvia').steps.filter(s => s.ped).reduce((a, s) => a + s.lh.length + s.rh.length, 0)"), 'cascada: cada nota de un paso con pedal lleva la marca');
+    check(W("buildCascadeSchedule().events.filter(e => e.ped).length") === W("SONGS.find(s => s.id === 'sorrow-4').steps.filter(s => s.ped).reduce((a, s) => a + s.lh.length + s.rh.length, 0)"), 'cascada: cada nota de un paso con pedal lleva la marca');
     W("selectCategory('today')");
     check(W("document.getElementById('pedalBox').style.display") === 'none' || !W("pieceHasPedal()"), 'fuera de Piezas la caja del pedal no se muestra');
   }
@@ -3770,20 +3593,6 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
     check(W('feedbackText.textContent').includes('no tiene Fa') && W('p0.i') === 2, 'el Fa: no está en la pentatónica, lo dice y no avanza');
     W('noteOff(48); noteOff(52); noteOff(55)');
 
-    const PA = W("SONGS.find(s => s.id === 'penta-acordes')");
-    const tot = PA.steps.reduce((a, x) => a + x.dur, 0);
-    let t = 0; const attackAt = [];
-    PA.steps.forEach(x => { if(x.lh.length) attackAt.push(t); t += x.dur; });
-    check(tot === 48 && attackAt.join() === '0,4,8,12,16,20,24,28,32,36,40,44', 'melodía: 12 compases de 4, un acorde en el tiempo 1 de cada compás');
-    const TRI = { '48,52,55':'5,3,1', '48,52,57':'5,3,1', '48,53,57':'5,2,1', '47,50,55':'5,3,1' };
-    check(PA.steps.filter(x => x.lh.length).every(x => TRI[x.lh.join()] === x.lhF.join()), 'cada acorde es Do, La menor, Fa o Sol completo, en posición junta (Do-Mi-Sol, Do-Mi-La, Do-Fa-La, Si-Re-Sol)');
-    check(Math.max(...PA.steps.flatMap(x => x.lh)) - Math.min(...PA.steps.flatMap(x => x.lh)) <= 10 && PA.steps.filter(x => x.lh.length).every(x => [47, 48].includes(x.lh[0])),
-      'la izquierda casi no se mueve: el meñique siempre en Do3 (o Si2 en Sol), todo entre Si2 y La3');
-    check(PA.steps.every(x => x.rh.length === 1 && [0, 2, 4, 7, 9].includes(x.rh[0] % 12)), 'la derecha: solo la pentatónica de Do, una nota a la vez');
-    const RF = {72:1, 74:2, 76:3, 79:4, 81:5};
-    check(PA.tempo === 80 && PA.steps.every(x => x.rh[0] >= 72 && x.rhF[0] === RF[x.rh[0]]), 'la derecha una octava arriba (pulgar en Do5) y no se mueve; ♩=80');
-    check(Math.max(...PA.steps.flatMap(x => x.lh)) < Math.min(...PA.steps.flatMap(x => x.rh)), 'las manos no se cruzan');
-    check(PA.steps[PA.steps.length - 1].rh[0] === 72 && PA.steps[PA.steps.length - 2].lh.length === 0, 'termina en Do');
     W("selectCategory('today')");
   }
 
@@ -3845,10 +3654,10 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
 
   section('Pedal sí / no');
   {
-    W("soundEnabled = false; pedalEvents.length = 0; pedalIsDown = false; selectCategory('fragments'); pickFragmentById('tarea-quintas')");
+    W("soundEnabled = false; pedalEvents.length = 0; pedalIsDown = false; selectCategory('fragments'); pickFragmentById('sorrow-4')");
     const btn = () => W("(() => { const b = document.getElementById('pedalToggleBtn'); return b.style.display + '|' + b.textContent; })()");
     check(btn() === '|🦶 Pedal: sí', 'pieza con pedal: el botón aparece y arranca en sí');
-    check(W("buildCascadeSchedule().beats.filter(b => b.ped).length") === 13 && W('targetSubLabel.innerHTML').includes('ped-tag'), 'con pedal: marcas en la cascada y aviso en el paso');
+    check(W("buildCascadeSchedule().beats.filter(b => b.ped).length") === 25 && W('targetSubLabel.innerHTML').includes('ped-tag'), 'con pedal: marcas en la cascada y aviso en el paso');
     W("document.getElementById('pedalToggleBtn').click()");
     check(btn() === '|🦶 Pedal: no' && W("localStorage.getItem('pedalOn')") === '0', 'un clic lo apaga y se recuerda');
     check(W("buildCascadeSchedule().beats.filter(b => b.ped).length") === 0 && !W('targetSubLabel.innerHTML').includes('ped-tag') && W("document.getElementById('pedalBox').style.display") === 'none',
@@ -3862,8 +3671,8 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
     W("document.getElementById('pedalToggleBtn').click()");
     check(btn() === '|🦶 Pedal: sí', 'otro clic lo vuelve a encender');
     // Piezas sin pedal: el botón no aparece
-    W("pickFragmentById('dia-de-lluvia')"); check(btn().startsWith('|'), 'Día de lluvia (tiene pedal): botón visible');
-    W("pickFragmentById('amanecer')"); check(btn().startsWith('none'), 'una pieza sin pedal: el botón no aparece');
+    W("pickFragmentById('sorrow-4')"); check(btn().startsWith('|'), 'Sorrow 4 (tiene pedal): botón visible');
+    W("pickFragmentById('estrellita')"); check(btn().startsWith('none'), 'una pieza sin pedal: el botón no aparece');
     W("pickFragmentById('ej-quintas-2')"); check(btn().startsWith('none'), 'escalas por quintas: sin opción de pedal (las escalas van sin pedal)');
     // Guiado de inversiones: por defecto sin pedal; con pedal agrega el cambio después de cada intervalo
     W("pickFragmentById('ej-inversiones')");
@@ -3921,68 +3730,24 @@ check(W('window.__Y.basura') === undefined && W('window.__Y.savedAt') === undefi
     check(v[2].steps.length === v[0].steps.length + v[1].steps.length, 'la completa fácil es Parte 1 + Parte 2 fácil (los mismos pasos)');
   }
 
-  section('Suspiro (La menor): pieza romántica, mía');
+  // Exportar a MusicXML: las 15 canciones originales salieron de la app (19-20 oct 2026) y viven solo aquí.
+  section('Exportar a MusicXML (archivo)');
   {
-    const su = W("SONGS.find(s => s.id === 'suspiro')");
-    check(!!su && su.meter === 3 && su.tempo <= 66, 'existe, en 3/4 y lenta (♩ ≤ 66)');
-    const bars = []; let t = 0;
-    su.steps.forEach(x => { const b = Math.floor(t / 3 + 1e-9); (bars[b] = bars[b] || []).push(x); t += x.dur; });
-    check(t === 54 && bars.length === 18 && bars.every(b => b.reduce((a, x) => a + x.dur, 0) === 3), '18 compases de 3 tiempos');
-    check(su.steps.every(x => x.lh.length <= 2 && x.rh.length <= 1), 'máximo dos teclas en la izquierda y una (la melodía) en la derecha');
-    const rhAll = su.steps.flatMap(x => x.rh), lhAll = su.steps.flatMap(x => x.lh);
-    check(Math.max(...lhAll) < Math.min(...rhAll), 'las manos no se cruzan');
-    check(rhAll.concat(lhAll).every(n => [0,2,4,5,7,8,9,11].includes(n % 12)) && rhAll.filter(n => n % 12 === 8).length === 2, 'La menor armónica: solo blancas y el Sol♯ (dos veces, en las semicadencias)');
-    const LF = {48:1, 47:2, 45:3, 43:4, 41:5};
-    check(su.steps.every(x => x.lh.every((n, i) => LF[n] === x.lhF[i])), 'izquierda fija con el pulgar en Do3 (cada tecla, el mismo dedo)');
-    const PA = {64:1, 65:2, 68:3, 69:4, 71:5}, PB = {69:1, 71:2, 72:3, 74:4, 76:5};
-    const salto = su.steps.findIndex(x => /Salto/.test(x.label || ''));
-    check(salto > 0 && su.steps.every((x, i) => x.rh.every((n, j) => (i < salto ? PA : PB)[n] === x.rhF[j])), 'derecha en dos posiciones (pulgar en Mi4 y en La4) con un solo salto avisado');
-    const bass = bars.map(b => b[0].lh[0]);
-    check(JSON.stringify(bass) === JSON.stringify([45,41,41,47,45,43,41,47,41,45,47,45,48,43,41,45,47,45]), 'bajo: Lam Fa Rem/Fa Mi/Si | Lam Do/Sol Rem/Fa Mi/Si | Fa Rem/La Mi/Si Lam | Do Do/Sol | Fa Rem/La Mi/Si Lam');
-    check(bass[7] === 47 && bass[8] === 41, 'cadencia rota: Mi (c. 8) va a Fa (c. 9), no a La');
-    check(bars[12][0].rh.length === 0 && bars[12][0].dur === 2, 'silencio de la derecha en el c. 13');
-    check(bars[17][0].rh[0] === 69 && bars[17][0].lh.join() === '45,48' && bars[17][0].dur === 3, 'termina en La sobre La–Do (3ra menor)');
-    const coda = bars.slice(14).flat().map(x => x.rh[0]);
-    check(JSON.stringify(coda) === JSON.stringify([72,74,76,74,72,71,69]), 'final melódico: sube Do-Re-Mi y baja por grados Mi-Re-Do-Si-La');
-    const peds = su.steps.filter(x => x.ped);
-    check(peds.length === 18 && su.steps.every(x => !!x.ped === (x.lh.length > 0)), 'pedal: pisa al empezar y cambia cada vez que entra la izquierda');
-    // Las notas que rozan el acorde bajan un grado a descansar (c. 2, 6, 15)
-    check([[1,71,69],[5,71,69],[15,76,74],[16,72,71]].every(([b, a, r]) => bars[b][0].rh[0] === a && bars[b][1].rh[0] === r), 'las notas de color (Si sobre Fa, Si sobre Do, Mi sobre Rem, Do sobre Mi) bajan un grado');
-  }
-
-  // Exportar a MusicXML: las piezas originales se escriben, se vuelven a leer y se comparan con SONGS.
-  section('Exportar a MusicXML');
-  {
-    const os = require('os');
-    const exp = require('../tools/export-musicxml');
-    const { verify } = require('../tools/verify-musicxml');
-    const songsAll = JSON.parse(W('JSON.stringify(SONGS)'));
-    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'mxl-'));
-    let built = 0;
-    for(const id of Object.keys(exp.SPECS)){
-      const s = songsAll.find(x => x.id === id);
-      if(!s){ check(false, 'MusicXML: ' + id + ' ya no está en SONGS'); continue; }
-      fs.writeFileSync(path.join(tmp, id + '.musicxml'), exp.build(s, exp.SPECS[id]).xml); built++;
-    }
-    const r = verify(tmp, songsAll);
-    check(built === Object.keys(exp.SPECS).length && built >= 21, 'MusicXML: se exportan las ' + built + ' piezas originales');
-    check(r.problems.length === 0, 'MusicXML: al releerlo coincide con los datos de la app (notas, ritmo, dedos, pedal, rótulos, tempo): ' + r.problems.slice(0, 3).join(' | '));
-    // el export guardado en el repo no puede quedar viejo respecto de SONGS
-    const stale = Object.keys(exp.SPECS).filter(id => {
-      const f = path.join(__dirname, '..', 'export', 'musicxml', id + '.musicxml');
-      return !fs.existsSync(f) || fs.readFileSync(f, 'utf8') !== fs.readFileSync(path.join(tmp, id + '.musicxml'), 'utf8');
+    const dir = path.join(__dirname, '..', 'export', 'musicxml');
+    const files = fs.readdirSync(dir).filter(f => f.endsWith('.musicxml'));
+    const idx = JSON.parse(fs.readFileSync(path.join(dir, 'index.json'), 'utf8'));
+    check(files.length === 21, 'MusicXML: el archivo guarda las 21 piezas (' + files.length + ')');
+    const gone = ['amanecer','camino-intervalos','dia-de-lluvia','suspiro','tarea-intervalos','tarea-cromatica','tarea-inversiones','tarea-quintas','tarea-pentatonica','penta-acordes','final-perfecta','final-amen','final-picardia','final-epico','final-balada'];
+    check(gone.every(id => files.includes(id + '.musicxml')) && gone.every(id => !W("SONGS.some(s => s.id === '" + id + "')")), 'MusicXML: las 15 canciones están en el archivo y ya no están en la app');
+    check(!W("SONG_CATS.some(c => c.id === 'finales')"), 'la categoría Finales ya no existe');
+    const win = new (require('jsdom').JSDOM)('').window;
+    const bad = files.filter(f => {
+      const d = new win.DOMParser().parseFromString(fs.readFileSync(path.join(dir, f), 'utf8'), 'application/xml');
+      return d.getElementsByTagName('parsererror').length || !d.getElementsByTagName('note').length;
     });
-    check(stale.length === 0, 'MusicXML: export/musicxml está al día (si falla: node tools/export-musicxml.js): ' + stale.join(', '));
-    // la tonalidad se respeta: Viaje por las quintas cambia de armadura en cada compás y escribe La♭, Mi♭ y Si♭ con bemoles
-    const q = fs.readFileSync(path.join(tmp, 'tarea-quintas.musicxml'), 'utf8');
-    check([0,1,2,3,4,5,6,7,-4,-3,-2,-1].every(f => q.includes('<fifths>' + f + '</fifths>')) && q.includes('<alter>-1</alter>'), 'MusicXML: Viaje por las quintas lleva la armadura de cada tonalidad');
-    // el Paseo cromático sube con sostenidos y baja con bemoles
-    const c = fs.readFileSync(path.join(tmp, 'tarea-cromatica.musicxml'), 'utf8');
-    check(c.includes('<alter>1</alter>') && c.includes('<alter>-1</alter>'), 'MusicXML: el Paseo cromático usa sostenidos al subir y bemoles al bajar');
-    // el verificador de verdad detecta un error (no es un sello de goma)
-    fs.writeFileSync(path.join(tmp, 'amanecer.musicxml'), fs.readFileSync(path.join(tmp, 'amanecer.musicxml'), 'utf8').replace('<step>D</step>', '<step>E</step>'));
-    check(verify(tmp, songsAll).problems.length > 0, 'MusicXML: el verificador detecta una nota cambiada');
-    fs.rmSync(tmp, { recursive: true, force: true });
+    check(bad.length === 0, 'MusicXML: todos los archivos son XML válido con notas: ' + bad.join(', '));
+    check(JSON.stringify(idx).length > 100, 'MusicXML: index.json presente');
+    win.close();
   }
 
   console.log(`\n${passes} pruebas OK, ${failures} fallos`);

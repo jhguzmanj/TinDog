@@ -2629,6 +2629,18 @@ Pedido de Jorge: pasar "las canciones que hemos hecho nosotros" a la otra aplica
 - **Qué se pierde** (la app nunca lo tuvo): dinámicas, ligaduras de expresión, repeticiones, adornos y barras de corcheas.
 - **Si la otra app prefiere JSON**: es más fiel (casi un volcado de `SONGS`) y más barato; no se hizo porque no lo pidió.
 
+### Piezas originales ELIMINADAS de la app (20 oct 2026)
+Jorge: "las piezas que ya pasamos al otro entrenador las elimines". Salieron de `SONGS` las 15 originales exportadas:
+Amanecer, Camino de intervalos, Día de lluvia, Suspiro, las 5 `tarea-*` (intervalos, cromática, inversiones, quintas,
+pentatónica), `penta-acordes` (+ `buildPentaAcordes`) y los 5 `final-*` (con la categoría `finales` de `SONG_CATS`).
+- **Dónde quedan**: `export/musicxml/` (21 archivos, ahora el archivo congelado) y el historial de git (commit `74347dc`,
+  con el código completo). **Las secciones de este archivo sobre esas piezas son historia**, ya no existen en la app.
+- **Se quedaron**: `pedal-0..6` (los ejercicios de pedal; Pedal 0 remite a "Pedal 1"), todos los `ej-*` guiados y las
+  `clase-*`. El punto `tarea` del plan ahora rota solo los guiados `ej-*`.
+- **`tools/export-musicxml.js` y `verify-musicxml.js` ya no se pueden correr contra la app actual** (sus `SPECS` piden
+  piezas que no están): para regenerar hay que sacar el commit `74347dc`. La prueba "Exportar a MusicXML" ahora solo
+  comprueba que el archivo tiene las 21 piezas, XML válido, y que las 15 ya no están en `SONGS`.
+
 ## Progreso (localStorage `pianoProgress1`)
 ```
 { v:1, days:{ 'YYYY-MM-DD': {sec, notes, scales, chords, intervals, ear, reading, drills, songs, cascade} },
